@@ -65,8 +65,7 @@ var dfa = jscc.Pattern.lexer((function(defs){
     'new','delete','void','typeof',
     '>','<','>=','<=','==','===','!=','!==','instanceof',
 ]),{ 
-    'NAME': {
-        val:
+    'NAME': 
         '[\\x0024' + 
         '\\x0041-\\x005A' + 
         '\\x005f' + 
@@ -80,9 +79,7 @@ var dfa = jscc.Pattern.lexer((function(defs){
         '\\x3400-\\x3d2d' + 
         '\\x4e00-\\x9fff' + 
         '\\xf900-\\xfaff]',
-    }
-    'DIGIT': {
-        val:
+    'DIGIT': 
         '[\\x0030-\\x0039' + 
         '\\x0660-\\x0669' +
         '\\x06f0-\\x06f9' + 
@@ -98,7 +95,6 @@ var dfa = jscc.Pattern.lexer((function(defs){
         '\\x0e50-\\x0e59' +
         '\\x0ed0-\\x0ed9' +
         '\\x1040-\\x1049]',
-    }
 });
 exports.dfaTable = function(){
     return dfa.toString();

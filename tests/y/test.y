@@ -38,8 +38,7 @@ LEX:{
     ]>
 }
 
-<IN_BLOCK>
-LEX {
+%lex <IN_BLOCK> {
     < NAME: <LETTER> (<LETTER> | <DIGIT>)* >
     < NUM: <DIGIT>+ >
     < "/*" ([^"*", "/"]|"*"[^"/"]|[^"*"]"/")* "*/" >

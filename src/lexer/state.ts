@@ -58,9 +58,10 @@ export class State<T>{
     valid: boolean = false;
     arcs: Arc<T>[] = [];
     epsilons: State<T>[] = [];
-    index: number = -1;
+    index: number = 0;
     isStart: boolean = false;
     isEnd: boolean = false;
+    marker: boolean = false;
     endAction: EndAction<T>;
     constructor(endAction?: EndAction<T>){
         this.endAction = endAction || null;
@@ -98,28 +99,34 @@ export class State<T>{
      */
     forEach(cb: (s: State<T>) => void, epOnly: boolean = false): void{
         var queue: State<T>[] = [this];
-        var deja: boolean[] = [];
+        var states: State<T>[] = [this];
+        //var deja: boolean[] = [];
     
-        deja[this.index] = true;
+        //deja[this.index] = true;
+        this.marker = true;
         while(queue.length > 0){
             var s = queue.pop();
             cb(s);
             if(!epOnly){
-                for(var j = 0;j < s.arcs.length;j++){
-                    var to = s.arcs[j].to;
-                    if(!deja[to.index]){
+                for(let arc of s.arcs){
+                    var to = arc.to;
+                    if(!to.marker){
                         queue.push(to);
-                        deja[to.index] = true;
+                        states.push(to);
+                        to.marker = true;
                     }
                 }
             }
-            for(var j = 0;j < s.epsilons.length;j++){
-                var to = s.epsilons[j];
-                if(!deja[to.index]){
+            for(let to of s.epsilons){
+                if(!to.marker){
                     queue.push(to);
-                    deja[to.index] = true;
+                    states.push(to);
+                    to.marker = true;
                 }
             }
+        }
+        for(var state of states){
+            state.marker = false;
         }
     }
     number(): void{

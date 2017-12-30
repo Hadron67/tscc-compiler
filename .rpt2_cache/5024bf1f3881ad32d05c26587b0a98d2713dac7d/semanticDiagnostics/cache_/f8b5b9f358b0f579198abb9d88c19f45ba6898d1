@@ -1,1 +1,0 @@
-[{"flatMessage":"Public property 'chars' of exported class has or is using private name 'StateArray'.","category":1,"code":4031,"type":"semantic","fileLine":"/home/cfy/programs/html_test/jscc-ts/src/lexer/state.ts (39,20)"}]

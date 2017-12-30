@@ -1,1 +1,0 @@
-{"code":"import { JsccError } from '../util/E';\r\nexport class PatternException extends JsccError {\r\n    constructor(msg) {\r\n        super(msg, 'PatternException');\r\n    }\r\n}\r\n","map":{"mappings":""}}

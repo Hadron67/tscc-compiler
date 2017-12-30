@@ -2,11 +2,8 @@ import { PatternException as E } from './pattern-exception.js';
 import { Action,Arc,EndAction,State } from './state.js';
 import { CharSet } from './char-set';
 
-export interface StringContainer{
-    val: string;
-};
 
-function stackReader(str: string, strs?: {[s: string]: StringContainer}){
+function stackReader(str: string, strs?: {[s: string]: string}){
     var stack = [{ sptr: 0,s: str,name: '' }];
     var top = stack[0];
     function checkNested(name: string){
@@ -28,7 +25,7 @@ function stackReader(str: string, strs?: {[s: string]: StringContainer}){
             return top.s[top.sptr] || null;
         },
         pushTo: function(name){
-            var nn = strs ? strs[name].val : null;
+            var nn = strs ? strs[name] : null;
             if(!nn){
                 throw new E('undefined name "' + name + '"');
             }
@@ -46,9 +43,7 @@ function stackReader(str: string, strs?: {[s: string]: StringContainer}){
  * @param {Object.<string,string>|undefined} regs
  * @returns {{result: State,stateCount: number,tail: State}}
  */
-export function compile<T>(input: string, stateCount: number = 0, regs: {[s: string]: StringContainer} = {}){
-    stateCount = stateCount || 0;
-    var stateCountDelta = 0;
+export function compile<T>(input: string, regs: {[s: string]: string} = {}){
     var reader = stackReader(input,regs);
     var c = reader.peek();
 
@@ -63,8 +58,7 @@ export function compile<T>(input: string, stateCount: number = 0, regs: {[s: str
     }
     function ns(){
         var s = new State<T>();
-        s.index = stateCount++;
-        stateCountDelta++;
+        // s.index = stateCount++;
         return s;
     }
     function eof(){
@@ -247,7 +241,6 @@ export function compile<T>(input: string, stateCount: number = 0, regs: {[s: str
     return {
         result: head,
         tail: tail,
-        stateCount: stateCountDelta
     };
 }
 /**
@@ -256,14 +249,11 @@ export function compile<T>(input: string, stateCount: number = 0, regs: {[s: str
  * 
  * @returns {{result: State,stateCount: number,tail: State}}
  */
-export function compileRaw<T>(input: string, stateCount: number = 0){
+export function compileRaw<T>(input: string){
     var sptr = 0;
-    var stateCountDelta = 0;
     var c = input.charAt(sptr);
     function ns(){
         var s = new State<T>();
-        s.index = stateCount++;
-        stateCountDelta++;
         return s;
     }
     function nc(){
@@ -285,6 +275,5 @@ export function compileRaw<T>(input: string, stateCount: number = 0){
     return {
         result: head,
         tail: tail,
-        stateCount: stateCountDelta
     };
 }

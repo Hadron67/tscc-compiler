@@ -37,7 +37,7 @@ interface RawRule {
     vars: {[vname: string]: string};
 }
 
-interface PeudoToken{
+interface PseudoToken{
     assoc: Assoc;
     pr: number;
     line: number;
@@ -65,7 +65,7 @@ export class GBuilder{
 
     selectedStates: number[] = [];
     
-    pseudoTokens: { [tname: string]: PeudoToken } = {};
+    pseudoTokens: { [tname: string]: PseudoToken } = {};
 
     private top(){
         return this.ruleStack[this.ruleStack.length - 1];

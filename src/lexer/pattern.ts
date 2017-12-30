@@ -9,12 +9,10 @@ import { console } from '../util/common';
  * @param {Object.<string,string>} regs 
  */
 function lexerBuilder<T>(regs: { [s: string]: string } = {}){
-    var stateCount = 0;
     var actions = [];
     var pr = 0;
     function ns(){
         var ret = new State<T>();
-        ret.index = stateCount++;
         return ret;
     }
     var head = ns();
@@ -24,8 +22,7 @@ function lexerBuilder<T>(regs: { [s: string]: string } = {}){
             action.priority = pr++;
             action.id = id;
             action.data = data || null;
-            var cpd = (!!raw ? compileRaw<T>(reg,stateCount) : compile<T>(reg,stateCount,regs));
-            stateCount += cpd.stateCount;
+            var cpd = (!!raw ? compileRaw<T>(reg) : compile<T>(reg,regs));
             cpd.tail.endAction = action;
             head.epsilonTo(cpd.result);
             actions.push(action);
