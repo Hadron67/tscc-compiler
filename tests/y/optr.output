@@ -1,0 +1,1949 @@
+state 0
+    [ 0: (accept) => . e ]*
+    [ 1: e => . ae aoptr e ]
+    [ 2: e => . e "?" e ":" e ]
+    [ 3: e => . e "||" e ]
+    [ 4: e => . e "&&" e ]
+    [ 5: e => . e "|" e ]
+    [ 6: e => . e "^" e ]
+    [ 7: e => . e "&" e ]
+    [ 8: e => . e coptr e ]
+    [ 9: e => . e ">>" e ]
+    [ 10: e => . e "<<" e ]
+    [ 11: e => . e ">>>" e ]
+    [ 12: e => . e "+" e ]
+    [ 13: e => . e "-" e ]
+    [ 14: e => . e "*" e ]
+    [ 15: e => . e "/" e ]
+    [ 16: e => . e "%" e ]
+    [ 17: e => . e "**" e ]
+    [ 18: e => . "~" e ]
+    [ 19: e => . "!" e ]
+    [ 20: e => . "id" ]
+    [ 21: e => . "num" ]
+    [ 22: ae => . "id" ]
+    "~" : shift,and goto state 20
+    "!" : shift,and goto state 21
+    "id" : shift,and goto state 22
+    "num" : shift,and goto state 23
+    e : goto state 1
+    ae : goto state 19
+
+
+state 1
+    [ 0: (accept) => e . ]*
+    [ 2: e => e . "?" e ":" e ]*
+    [ 3: e => e . "||" e ]*
+    [ 4: e => e . "&&" e ]*
+    [ 5: e => e . "|" e ]*
+    [ 6: e => e . "^" e ]*
+    [ 7: e => e . "&" e ]*
+    [ 8: e => e . coptr e ]*
+    [ 9: e => e . ">>" e ]*
+    [ 10: e => e . "<<" e ]*
+    [ 11: e => e . ">>>" e ]*
+    [ 12: e => e . "+" e ]*
+    [ 13: e => e . "-" e ]*
+    [ 14: e => e . "*" e ]*
+    [ 15: e => e . "/" e ]*
+    [ 16: e => e . "%" e ]*
+    [ 17: e => e . "**" e ]*
+    [ 34: coptr => . ">" ]
+    [ 35: coptr => . "<" ]
+    [ 36: coptr => . ">=" ]
+    [ 37: coptr => . "<=" ]
+    [ 38: coptr => . "==" ]
+    [ 39: coptr => . "!=" ]
+    "+" : shift,and goto state 34
+    "-" : shift,and goto state 35
+    "*" : shift,and goto state 36
+    "/" : shift,and goto state 37
+    "**" : shift,and goto state 39
+    "?" : shift,and goto state 24
+    "%" : shift,and goto state 38
+    ">" : shift,and goto state 2
+    "<" : shift,and goto state 3
+    ">=" : shift,and goto state 4
+    "<=" : shift,and goto state 5
+    "==" : shift,and goto state 6
+    "!=" : shift,and goto state 7
+    "|" : shift,and goto state 27
+    "&" : shift,and goto state 29
+    "^" : shift,and goto state 28
+    "&&" : shift,and goto state 26
+    "||" : shift,and goto state 25
+    ">>" : shift,and goto state 31
+    "<<" : shift,and goto state 32
+    ">>>" : shift,and goto state 33
+    "eof" : reduce with rule 0
+    coptr : goto state 30
+
+
+state 2
+    [ 34: coptr => ">" . ]*
+    "~" : reduce with rule 34
+    "!" : reduce with rule 34
+    "id" : reduce with rule 34
+    "num" : reduce with rule 34
+
+
+state 3
+    [ 35: coptr => "<" . ]*
+    "~" : reduce with rule 35
+    "!" : reduce with rule 35
+    "id" : reduce with rule 35
+    "num" : reduce with rule 35
+
+
+state 4
+    [ 36: coptr => ">=" . ]*
+    "~" : reduce with rule 36
+    "!" : reduce with rule 36
+    "id" : reduce with rule 36
+    "num" : reduce with rule 36
+
+
+state 5
+    [ 37: coptr => "<=" . ]*
+    "~" : reduce with rule 37
+    "!" : reduce with rule 37
+    "id" : reduce with rule 37
+    "num" : reduce with rule 37
+
+
+state 6
+    [ 38: coptr => "==" . ]*
+    "~" : reduce with rule 38
+    "!" : reduce with rule 38
+    "id" : reduce with rule 38
+    "num" : reduce with rule 38
+
+
+state 7
+    [ 39: coptr => "!=" . ]*
+    "~" : reduce with rule 39
+    "!" : reduce with rule 39
+    "id" : reduce with rule 39
+    "num" : reduce with rule 39
+
+
+state 8
+    [ 23: aoptr => "=" . ]*
+    "~" : reduce with rule 23
+    "!" : reduce with rule 23
+    "id" : reduce with rule 23
+    "num" : reduce with rule 23
+
+
+state 9
+    [ 24: aoptr => "+=" . ]*
+    "~" : reduce with rule 24
+    "!" : reduce with rule 24
+    "id" : reduce with rule 24
+    "num" : reduce with rule 24
+
+
+state 10
+    [ 25: aoptr => "-=" . ]*
+    "~" : reduce with rule 25
+    "!" : reduce with rule 25
+    "id" : reduce with rule 25
+    "num" : reduce with rule 25
+
+
+state 11
+    [ 26: aoptr => "*=" . ]*
+    "~" : reduce with rule 26
+    "!" : reduce with rule 26
+    "id" : reduce with rule 26
+    "num" : reduce with rule 26
+
+
+state 12
+    [ 27: aoptr => "/=" . ]*
+    "~" : reduce with rule 27
+    "!" : reduce with rule 27
+    "id" : reduce with rule 27
+    "num" : reduce with rule 27
+
+
+state 13
+    [ 28: aoptr => "&=" . ]*
+    "~" : reduce with rule 28
+    "!" : reduce with rule 28
+    "id" : reduce with rule 28
+    "num" : reduce with rule 28
+
+
+state 14
+    [ 29: aoptr => "|=" . ]*
+    "~" : reduce with rule 29
+    "!" : reduce with rule 29
+    "id" : reduce with rule 29
+    "num" : reduce with rule 29
+
+
+state 15
+    [ 30: aoptr => "^=" . ]*
+    "~" : reduce with rule 30
+    "!" : reduce with rule 30
+    "id" : reduce with rule 30
+    "num" : reduce with rule 30
+
+
+state 16
+    [ 31: aoptr => ">>=" . ]*
+    "~" : reduce with rule 31
+    "!" : reduce with rule 31
+    "id" : reduce with rule 31
+    "num" : reduce with rule 31
+
+
+state 17
+    [ 32: aoptr => "<<=" . ]*
+    "~" : reduce with rule 32
+    "!" : reduce with rule 32
+    "id" : reduce with rule 32
+    "num" : reduce with rule 32
+
+
+state 18
+    [ 33: aoptr => "%=" . ]*
+    "~" : reduce with rule 33
+    "!" : reduce with rule 33
+    "id" : reduce with rule 33
+    "num" : reduce with rule 33
+
+
+state 19
+    [ 1: e => ae . aoptr e ]*
+    [ 23: aoptr => . "=" ]
+    [ 24: aoptr => . "+=" ]
+    [ 25: aoptr => . "-=" ]
+    [ 26: aoptr => . "*=" ]
+    [ 27: aoptr => . "/=" ]
+    [ 28: aoptr => . "&=" ]
+    [ 29: aoptr => . "|=" ]
+    [ 30: aoptr => . "^=" ]
+    [ 31: aoptr => . ">>=" ]
+    [ 32: aoptr => . "<<=" ]
+    [ 33: aoptr => . "%=" ]
+    "=" : shift,and goto state 8
+    "+=" : shift,and goto state 9
+    "-=" : shift,and goto state 10
+    "*=" : shift,and goto state 11
+    "/=" : shift,and goto state 12
+    "&=" : shift,and goto state 13
+    "|=" : shift,and goto state 14
+    "^=" : shift,and goto state 15
+    ">>=" : shift,and goto state 16
+    "<<=" : shift,and goto state 17
+    "%=" : shift,and goto state 18
+    aoptr : goto state 40
+
+
+state 20
+    [ 18: e => "~" . e ]*
+    [ 1: e => . ae aoptr e ]
+    [ 2: e => . e "?" e ":" e ]
+    [ 3: e => . e "||" e ]
+    [ 4: e => . e "&&" e ]
+    [ 5: e => . e "|" e ]
+    [ 6: e => . e "^" e ]
+    [ 7: e => . e "&" e ]
+    [ 8: e => . e coptr e ]
+    [ 9: e => . e ">>" e ]
+    [ 10: e => . e "<<" e ]
+    [ 11: e => . e ">>>" e ]
+    [ 12: e => . e "+" e ]
+    [ 13: e => . e "-" e ]
+    [ 14: e => . e "*" e ]
+    [ 15: e => . e "/" e ]
+    [ 16: e => . e "%" e ]
+    [ 17: e => . e "**" e ]
+    [ 18: e => . "~" e ]
+    [ 19: e => . "!" e ]
+    [ 20: e => . "id" ]
+    [ 21: e => . "num" ]
+    [ 22: ae => . "id" ]
+    "~" : shift,and goto state 20
+    "!" : shift,and goto state 21
+    "id" : shift,and goto state 22
+    "num" : shift,and goto state 23
+    e : goto state 41
+    ae : goto state 19
+
+
+state 21
+    [ 19: e => "!" . e ]*
+    [ 1: e => . ae aoptr e ]
+    [ 2: e => . e "?" e ":" e ]
+    [ 3: e => . e "||" e ]
+    [ 4: e => . e "&&" e ]
+    [ 5: e => . e "|" e ]
+    [ 6: e => . e "^" e ]
+    [ 7: e => . e "&" e ]
+    [ 8: e => . e coptr e ]
+    [ 9: e => . e ">>" e ]
+    [ 10: e => . e "<<" e ]
+    [ 11: e => . e ">>>" e ]
+    [ 12: e => . e "+" e ]
+    [ 13: e => . e "-" e ]
+    [ 14: e => . e "*" e ]
+    [ 15: e => . e "/" e ]
+    [ 16: e => . e "%" e ]
+    [ 17: e => . e "**" e ]
+    [ 18: e => . "~" e ]
+    [ 19: e => . "!" e ]
+    [ 20: e => . "id" ]
+    [ 21: e => . "num" ]
+    [ 22: ae => . "id" ]
+    "~" : shift,and goto state 20
+    "!" : shift,and goto state 21
+    "id" : shift,and goto state 22
+    "num" : shift,and goto state 23
+    e : goto state 42
+    ae : goto state 19
+
+
+state 22
+    [ 20: e => "id" . ]*
+    [ 22: ae => "id" . ]*
+    "eof" : reduce with rule 20
+    "+" : reduce with rule 20
+    "-" : reduce with rule 20
+    "*" : reduce with rule 20
+    "/" : reduce with rule 20
+    "**" : reduce with rule 20
+    "?" : reduce with rule 20
+    ":" : reduce with rule 20
+    "%" : reduce with rule 20
+    ">" : reduce with rule 20
+    "<" : reduce with rule 20
+    ">=" : reduce with rule 20
+    "<=" : reduce with rule 20
+    "==" : reduce with rule 20
+    "!=" : reduce with rule 20
+    "=" : reduce with rule 22
+    "+=" : reduce with rule 22
+    "-=" : reduce with rule 22
+    "*=" : reduce with rule 22
+    "/=" : reduce with rule 22
+    "&=" : reduce with rule 22
+    "|=" : reduce with rule 22
+    "^=" : reduce with rule 22
+    ">>=" : reduce with rule 22
+    "<<=" : reduce with rule 22
+    "%=" : reduce with rule 22
+    "|" : reduce with rule 20
+    "&" : reduce with rule 20
+    "^" : reduce with rule 20
+    "&&" : reduce with rule 20
+    "||" : reduce with rule 20
+    ">>" : reduce with rule 20
+    "<<" : reduce with rule 20
+    ">>>" : reduce with rule 20
+
+
+state 23
+    [ 21: e => "num" . ]*
+    "eof" : reduce with rule 21
+    "+" : reduce with rule 21
+    "-" : reduce with rule 21
+    "*" : reduce with rule 21
+    "/" : reduce with rule 21
+    "**" : reduce with rule 21
+    "?" : reduce with rule 21
+    ":" : reduce with rule 21
+    "%" : reduce with rule 21
+    ">" : reduce with rule 21
+    "<" : reduce with rule 21
+    ">=" : reduce with rule 21
+    "<=" : reduce with rule 21
+    "==" : reduce with rule 21
+    "!=" : reduce with rule 21
+    "|" : reduce with rule 21
+    "&" : reduce with rule 21
+    "^" : reduce with rule 21
+    "&&" : reduce with rule 21
+    "||" : reduce with rule 21
+    ">>" : reduce with rule 21
+    "<<" : reduce with rule 21
+    ">>>" : reduce with rule 21
+
+
+state 24
+    [ 2: e => e "?" . e ":" e ]*
+    [ 1: e => . ae aoptr e ]
+    [ 2: e => . e "?" e ":" e ]
+    [ 3: e => . e "||" e ]
+    [ 4: e => . e "&&" e ]
+    [ 5: e => . e "|" e ]
+    [ 6: e => . e "^" e ]
+    [ 7: e => . e "&" e ]
+    [ 8: e => . e coptr e ]
+    [ 9: e => . e ">>" e ]
+    [ 10: e => . e "<<" e ]
+    [ 11: e => . e ">>>" e ]
+    [ 12: e => . e "+" e ]
+    [ 13: e => . e "-" e ]
+    [ 14: e => . e "*" e ]
+    [ 15: e => . e "/" e ]
+    [ 16: e => . e "%" e ]
+    [ 17: e => . e "**" e ]
+    [ 18: e => . "~" e ]
+    [ 19: e => . "!" e ]
+    [ 20: e => . "id" ]
+    [ 21: e => . "num" ]
+    [ 22: ae => . "id" ]
+    "~" : shift,and goto state 20
+    "!" : shift,and goto state 21
+    "id" : shift,and goto state 22
+    "num" : shift,and goto state 23
+    e : goto state 43
+    ae : goto state 19
+
+
+state 25
+    [ 3: e => e "||" . e ]*
+    [ 1: e => . ae aoptr e ]
+    [ 2: e => . e "?" e ":" e ]
+    [ 3: e => . e "||" e ]
+    [ 4: e => . e "&&" e ]
+    [ 5: e => . e "|" e ]
+    [ 6: e => . e "^" e ]
+    [ 7: e => . e "&" e ]
+    [ 8: e => . e coptr e ]
+    [ 9: e => . e ">>" e ]
+    [ 10: e => . e "<<" e ]
+    [ 11: e => . e ">>>" e ]
+    [ 12: e => . e "+" e ]
+    [ 13: e => . e "-" e ]
+    [ 14: e => . e "*" e ]
+    [ 15: e => . e "/" e ]
+    [ 16: e => . e "%" e ]
+    [ 17: e => . e "**" e ]
+    [ 18: e => . "~" e ]
+    [ 19: e => . "!" e ]
+    [ 20: e => . "id" ]
+    [ 21: e => . "num" ]
+    [ 22: ae => . "id" ]
+    "~" : shift,and goto state 20
+    "!" : shift,and goto state 21
+    "id" : shift,and goto state 22
+    "num" : shift,and goto state 23
+    e : goto state 44
+    ae : goto state 19
+
+
+state 26
+    [ 4: e => e "&&" . e ]*
+    [ 1: e => . ae aoptr e ]
+    [ 2: e => . e "?" e ":" e ]
+    [ 3: e => . e "||" e ]
+    [ 4: e => . e "&&" e ]
+    [ 5: e => . e "|" e ]
+    [ 6: e => . e "^" e ]
+    [ 7: e => . e "&" e ]
+    [ 8: e => . e coptr e ]
+    [ 9: e => . e ">>" e ]
+    [ 10: e => . e "<<" e ]
+    [ 11: e => . e ">>>" e ]
+    [ 12: e => . e "+" e ]
+    [ 13: e => . e "-" e ]
+    [ 14: e => . e "*" e ]
+    [ 15: e => . e "/" e ]
+    [ 16: e => . e "%" e ]
+    [ 17: e => . e "**" e ]
+    [ 18: e => . "~" e ]
+    [ 19: e => . "!" e ]
+    [ 20: e => . "id" ]
+    [ 21: e => . "num" ]
+    [ 22: ae => . "id" ]
+    "~" : shift,and goto state 20
+    "!" : shift,and goto state 21
+    "id" : shift,and goto state 22
+    "num" : shift,and goto state 23
+    e : goto state 45
+    ae : goto state 19
+
+
+state 27
+    [ 5: e => e "|" . e ]*
+    [ 1: e => . ae aoptr e ]
+    [ 2: e => . e "?" e ":" e ]
+    [ 3: e => . e "||" e ]
+    [ 4: e => . e "&&" e ]
+    [ 5: e => . e "|" e ]
+    [ 6: e => . e "^" e ]
+    [ 7: e => . e "&" e ]
+    [ 8: e => . e coptr e ]
+    [ 9: e => . e ">>" e ]
+    [ 10: e => . e "<<" e ]
+    [ 11: e => . e ">>>" e ]
+    [ 12: e => . e "+" e ]
+    [ 13: e => . e "-" e ]
+    [ 14: e => . e "*" e ]
+    [ 15: e => . e "/" e ]
+    [ 16: e => . e "%" e ]
+    [ 17: e => . e "**" e ]
+    [ 18: e => . "~" e ]
+    [ 19: e => . "!" e ]
+    [ 20: e => . "id" ]
+    [ 21: e => . "num" ]
+    [ 22: ae => . "id" ]
+    "~" : shift,and goto state 20
+    "!" : shift,and goto state 21
+    "id" : shift,and goto state 22
+    "num" : shift,and goto state 23
+    e : goto state 46
+    ae : goto state 19
+
+
+state 28
+    [ 6: e => e "^" . e ]*
+    [ 1: e => . ae aoptr e ]
+    [ 2: e => . e "?" e ":" e ]
+    [ 3: e => . e "||" e ]
+    [ 4: e => . e "&&" e ]
+    [ 5: e => . e "|" e ]
+    [ 6: e => . e "^" e ]
+    [ 7: e => . e "&" e ]
+    [ 8: e => . e coptr e ]
+    [ 9: e => . e ">>" e ]
+    [ 10: e => . e "<<" e ]
+    [ 11: e => . e ">>>" e ]
+    [ 12: e => . e "+" e ]
+    [ 13: e => . e "-" e ]
+    [ 14: e => . e "*" e ]
+    [ 15: e => . e "/" e ]
+    [ 16: e => . e "%" e ]
+    [ 17: e => . e "**" e ]
+    [ 18: e => . "~" e ]
+    [ 19: e => . "!" e ]
+    [ 20: e => . "id" ]
+    [ 21: e => . "num" ]
+    [ 22: ae => . "id" ]
+    "~" : shift,and goto state 20
+    "!" : shift,and goto state 21
+    "id" : shift,and goto state 22
+    "num" : shift,and goto state 23
+    e : goto state 47
+    ae : goto state 19
+
+
+state 29
+    [ 7: e => e "&" . e ]*
+    [ 1: e => . ae aoptr e ]
+    [ 2: e => . e "?" e ":" e ]
+    [ 3: e => . e "||" e ]
+    [ 4: e => . e "&&" e ]
+    [ 5: e => . e "|" e ]
+    [ 6: e => . e "^" e ]
+    [ 7: e => . e "&" e ]
+    [ 8: e => . e coptr e ]
+    [ 9: e => . e ">>" e ]
+    [ 10: e => . e "<<" e ]
+    [ 11: e => . e ">>>" e ]
+    [ 12: e => . e "+" e ]
+    [ 13: e => . e "-" e ]
+    [ 14: e => . e "*" e ]
+    [ 15: e => . e "/" e ]
+    [ 16: e => . e "%" e ]
+    [ 17: e => . e "**" e ]
+    [ 18: e => . "~" e ]
+    [ 19: e => . "!" e ]
+    [ 20: e => . "id" ]
+    [ 21: e => . "num" ]
+    [ 22: ae => . "id" ]
+    "~" : shift,and goto state 20
+    "!" : shift,and goto state 21
+    "id" : shift,and goto state 22
+    "num" : shift,and goto state 23
+    e : goto state 48
+    ae : goto state 19
+
+
+state 30
+    [ 8: e => e coptr . e ]*
+    [ 1: e => . ae aoptr e ]
+    [ 2: e => . e "?" e ":" e ]
+    [ 3: e => . e "||" e ]
+    [ 4: e => . e "&&" e ]
+    [ 5: e => . e "|" e ]
+    [ 6: e => . e "^" e ]
+    [ 7: e => . e "&" e ]
+    [ 8: e => . e coptr e ]
+    [ 9: e => . e ">>" e ]
+    [ 10: e => . e "<<" e ]
+    [ 11: e => . e ">>>" e ]
+    [ 12: e => . e "+" e ]
+    [ 13: e => . e "-" e ]
+    [ 14: e => . e "*" e ]
+    [ 15: e => . e "/" e ]
+    [ 16: e => . e "%" e ]
+    [ 17: e => . e "**" e ]
+    [ 18: e => . "~" e ]
+    [ 19: e => . "!" e ]
+    [ 20: e => . "id" ]
+    [ 21: e => . "num" ]
+    [ 22: ae => . "id" ]
+    "~" : shift,and goto state 20
+    "!" : shift,and goto state 21
+    "id" : shift,and goto state 22
+    "num" : shift,and goto state 23
+    e : goto state 49
+    ae : goto state 19
+
+
+state 31
+    [ 9: e => e ">>" . e ]*
+    [ 1: e => . ae aoptr e ]
+    [ 2: e => . e "?" e ":" e ]
+    [ 3: e => . e "||" e ]
+    [ 4: e => . e "&&" e ]
+    [ 5: e => . e "|" e ]
+    [ 6: e => . e "^" e ]
+    [ 7: e => . e "&" e ]
+    [ 8: e => . e coptr e ]
+    [ 9: e => . e ">>" e ]
+    [ 10: e => . e "<<" e ]
+    [ 11: e => . e ">>>" e ]
+    [ 12: e => . e "+" e ]
+    [ 13: e => . e "-" e ]
+    [ 14: e => . e "*" e ]
+    [ 15: e => . e "/" e ]
+    [ 16: e => . e "%" e ]
+    [ 17: e => . e "**" e ]
+    [ 18: e => . "~" e ]
+    [ 19: e => . "!" e ]
+    [ 20: e => . "id" ]
+    [ 21: e => . "num" ]
+    [ 22: ae => . "id" ]
+    "~" : shift,and goto state 20
+    "!" : shift,and goto state 21
+    "id" : shift,and goto state 22
+    "num" : shift,and goto state 23
+    e : goto state 50
+    ae : goto state 19
+
+
+state 32
+    [ 10: e => e "<<" . e ]*
+    [ 1: e => . ae aoptr e ]
+    [ 2: e => . e "?" e ":" e ]
+    [ 3: e => . e "||" e ]
+    [ 4: e => . e "&&" e ]
+    [ 5: e => . e "|" e ]
+    [ 6: e => . e "^" e ]
+    [ 7: e => . e "&" e ]
+    [ 8: e => . e coptr e ]
+    [ 9: e => . e ">>" e ]
+    [ 10: e => . e "<<" e ]
+    [ 11: e => . e ">>>" e ]
+    [ 12: e => . e "+" e ]
+    [ 13: e => . e "-" e ]
+    [ 14: e => . e "*" e ]
+    [ 15: e => . e "/" e ]
+    [ 16: e => . e "%" e ]
+    [ 17: e => . e "**" e ]
+    [ 18: e => . "~" e ]
+    [ 19: e => . "!" e ]
+    [ 20: e => . "id" ]
+    [ 21: e => . "num" ]
+    [ 22: ae => . "id" ]
+    "~" : shift,and goto state 20
+    "!" : shift,and goto state 21
+    "id" : shift,and goto state 22
+    "num" : shift,and goto state 23
+    e : goto state 51
+    ae : goto state 19
+
+
+state 33
+    [ 11: e => e ">>>" . e ]*
+    [ 1: e => . ae aoptr e ]
+    [ 2: e => . e "?" e ":" e ]
+    [ 3: e => . e "||" e ]
+    [ 4: e => . e "&&" e ]
+    [ 5: e => . e "|" e ]
+    [ 6: e => . e "^" e ]
+    [ 7: e => . e "&" e ]
+    [ 8: e => . e coptr e ]
+    [ 9: e => . e ">>" e ]
+    [ 10: e => . e "<<" e ]
+    [ 11: e => . e ">>>" e ]
+    [ 12: e => . e "+" e ]
+    [ 13: e => . e "-" e ]
+    [ 14: e => . e "*" e ]
+    [ 15: e => . e "/" e ]
+    [ 16: e => . e "%" e ]
+    [ 17: e => . e "**" e ]
+    [ 18: e => . "~" e ]
+    [ 19: e => . "!" e ]
+    [ 20: e => . "id" ]
+    [ 21: e => . "num" ]
+    [ 22: ae => . "id" ]
+    "~" : shift,and goto state 20
+    "!" : shift,and goto state 21
+    "id" : shift,and goto state 22
+    "num" : shift,and goto state 23
+    e : goto state 52
+    ae : goto state 19
+
+
+state 34
+    [ 12: e => e "+" . e ]*
+    [ 1: e => . ae aoptr e ]
+    [ 2: e => . e "?" e ":" e ]
+    [ 3: e => . e "||" e ]
+    [ 4: e => . e "&&" e ]
+    [ 5: e => . e "|" e ]
+    [ 6: e => . e "^" e ]
+    [ 7: e => . e "&" e ]
+    [ 8: e => . e coptr e ]
+    [ 9: e => . e ">>" e ]
+    [ 10: e => . e "<<" e ]
+    [ 11: e => . e ">>>" e ]
+    [ 12: e => . e "+" e ]
+    [ 13: e => . e "-" e ]
+    [ 14: e => . e "*" e ]
+    [ 15: e => . e "/" e ]
+    [ 16: e => . e "%" e ]
+    [ 17: e => . e "**" e ]
+    [ 18: e => . "~" e ]
+    [ 19: e => . "!" e ]
+    [ 20: e => . "id" ]
+    [ 21: e => . "num" ]
+    [ 22: ae => . "id" ]
+    "~" : shift,and goto state 20
+    "!" : shift,and goto state 21
+    "id" : shift,and goto state 22
+    "num" : shift,and goto state 23
+    e : goto state 53
+    ae : goto state 19
+
+
+state 35
+    [ 13: e => e "-" . e ]*
+    [ 1: e => . ae aoptr e ]
+    [ 2: e => . e "?" e ":" e ]
+    [ 3: e => . e "||" e ]
+    [ 4: e => . e "&&" e ]
+    [ 5: e => . e "|" e ]
+    [ 6: e => . e "^" e ]
+    [ 7: e => . e "&" e ]
+    [ 8: e => . e coptr e ]
+    [ 9: e => . e ">>" e ]
+    [ 10: e => . e "<<" e ]
+    [ 11: e => . e ">>>" e ]
+    [ 12: e => . e "+" e ]
+    [ 13: e => . e "-" e ]
+    [ 14: e => . e "*" e ]
+    [ 15: e => . e "/" e ]
+    [ 16: e => . e "%" e ]
+    [ 17: e => . e "**" e ]
+    [ 18: e => . "~" e ]
+    [ 19: e => . "!" e ]
+    [ 20: e => . "id" ]
+    [ 21: e => . "num" ]
+    [ 22: ae => . "id" ]
+    "~" : shift,and goto state 20
+    "!" : shift,and goto state 21
+    "id" : shift,and goto state 22
+    "num" : shift,and goto state 23
+    e : goto state 54
+    ae : goto state 19
+
+
+state 36
+    [ 14: e => e "*" . e ]*
+    [ 1: e => . ae aoptr e ]
+    [ 2: e => . e "?" e ":" e ]
+    [ 3: e => . e "||" e ]
+    [ 4: e => . e "&&" e ]
+    [ 5: e => . e "|" e ]
+    [ 6: e => . e "^" e ]
+    [ 7: e => . e "&" e ]
+    [ 8: e => . e coptr e ]
+    [ 9: e => . e ">>" e ]
+    [ 10: e => . e "<<" e ]
+    [ 11: e => . e ">>>" e ]
+    [ 12: e => . e "+" e ]
+    [ 13: e => . e "-" e ]
+    [ 14: e => . e "*" e ]
+    [ 15: e => . e "/" e ]
+    [ 16: e => . e "%" e ]
+    [ 17: e => . e "**" e ]
+    [ 18: e => . "~" e ]
+    [ 19: e => . "!" e ]
+    [ 20: e => . "id" ]
+    [ 21: e => . "num" ]
+    [ 22: ae => . "id" ]
+    "~" : shift,and goto state 20
+    "!" : shift,and goto state 21
+    "id" : shift,and goto state 22
+    "num" : shift,and goto state 23
+    e : goto state 55
+    ae : goto state 19
+
+
+state 37
+    [ 15: e => e "/" . e ]*
+    [ 1: e => . ae aoptr e ]
+    [ 2: e => . e "?" e ":" e ]
+    [ 3: e => . e "||" e ]
+    [ 4: e => . e "&&" e ]
+    [ 5: e => . e "|" e ]
+    [ 6: e => . e "^" e ]
+    [ 7: e => . e "&" e ]
+    [ 8: e => . e coptr e ]
+    [ 9: e => . e ">>" e ]
+    [ 10: e => . e "<<" e ]
+    [ 11: e => . e ">>>" e ]
+    [ 12: e => . e "+" e ]
+    [ 13: e => . e "-" e ]
+    [ 14: e => . e "*" e ]
+    [ 15: e => . e "/" e ]
+    [ 16: e => . e "%" e ]
+    [ 17: e => . e "**" e ]
+    [ 18: e => . "~" e ]
+    [ 19: e => . "!" e ]
+    [ 20: e => . "id" ]
+    [ 21: e => . "num" ]
+    [ 22: ae => . "id" ]
+    "~" : shift,and goto state 20
+    "!" : shift,and goto state 21
+    "id" : shift,and goto state 22
+    "num" : shift,and goto state 23
+    e : goto state 56
+    ae : goto state 19
+
+
+state 38
+    [ 16: e => e "%" . e ]*
+    [ 1: e => . ae aoptr e ]
+    [ 2: e => . e "?" e ":" e ]
+    [ 3: e => . e "||" e ]
+    [ 4: e => . e "&&" e ]
+    [ 5: e => . e "|" e ]
+    [ 6: e => . e "^" e ]
+    [ 7: e => . e "&" e ]
+    [ 8: e => . e coptr e ]
+    [ 9: e => . e ">>" e ]
+    [ 10: e => . e "<<" e ]
+    [ 11: e => . e ">>>" e ]
+    [ 12: e => . e "+" e ]
+    [ 13: e => . e "-" e ]
+    [ 14: e => . e "*" e ]
+    [ 15: e => . e "/" e ]
+    [ 16: e => . e "%" e ]
+    [ 17: e => . e "**" e ]
+    [ 18: e => . "~" e ]
+    [ 19: e => . "!" e ]
+    [ 20: e => . "id" ]
+    [ 21: e => . "num" ]
+    [ 22: ae => . "id" ]
+    "~" : shift,and goto state 20
+    "!" : shift,and goto state 21
+    "id" : shift,and goto state 22
+    "num" : shift,and goto state 23
+    e : goto state 57
+    ae : goto state 19
+
+
+state 39
+    [ 17: e => e "**" . e ]*
+    [ 1: e => . ae aoptr e ]
+    [ 2: e => . e "?" e ":" e ]
+    [ 3: e => . e "||" e ]
+    [ 4: e => . e "&&" e ]
+    [ 5: e => . e "|" e ]
+    [ 6: e => . e "^" e ]
+    [ 7: e => . e "&" e ]
+    [ 8: e => . e coptr e ]
+    [ 9: e => . e ">>" e ]
+    [ 10: e => . e "<<" e ]
+    [ 11: e => . e ">>>" e ]
+    [ 12: e => . e "+" e ]
+    [ 13: e => . e "-" e ]
+    [ 14: e => . e "*" e ]
+    [ 15: e => . e "/" e ]
+    [ 16: e => . e "%" e ]
+    [ 17: e => . e "**" e ]
+    [ 18: e => . "~" e ]
+    [ 19: e => . "!" e ]
+    [ 20: e => . "id" ]
+    [ 21: e => . "num" ]
+    [ 22: ae => . "id" ]
+    "~" : shift,and goto state 20
+    "!" : shift,and goto state 21
+    "id" : shift,and goto state 22
+    "num" : shift,and goto state 23
+    e : goto state 58
+    ae : goto state 19
+
+
+state 40
+    [ 1: e => ae aoptr . e ]*
+    [ 1: e => . ae aoptr e ]
+    [ 2: e => . e "?" e ":" e ]
+    [ 3: e => . e "||" e ]
+    [ 4: e => . e "&&" e ]
+    [ 5: e => . e "|" e ]
+    [ 6: e => . e "^" e ]
+    [ 7: e => . e "&" e ]
+    [ 8: e => . e coptr e ]
+    [ 9: e => . e ">>" e ]
+    [ 10: e => . e "<<" e ]
+    [ 11: e => . e ">>>" e ]
+    [ 12: e => . e "+" e ]
+    [ 13: e => . e "-" e ]
+    [ 14: e => . e "*" e ]
+    [ 15: e => . e "/" e ]
+    [ 16: e => . e "%" e ]
+    [ 17: e => . e "**" e ]
+    [ 18: e => . "~" e ]
+    [ 19: e => . "!" e ]
+    [ 20: e => . "id" ]
+    [ 21: e => . "num" ]
+    [ 22: ae => . "id" ]
+    "~" : shift,and goto state 20
+    "!" : shift,and goto state 21
+    "id" : shift,and goto state 22
+    "num" : shift,and goto state 23
+    e : goto state 59
+    ae : goto state 19
+
+
+state 41
+    [ 18: e => "~" e . ]*
+    [ 2: e => e . "?" e ":" e ]*
+    [ 3: e => e . "||" e ]*
+    [ 4: e => e . "&&" e ]*
+    [ 5: e => e . "|" e ]*
+    [ 6: e => e . "^" e ]*
+    [ 7: e => e . "&" e ]*
+    [ 8: e => e . coptr e ]*
+    [ 9: e => e . ">>" e ]*
+    [ 10: e => e . "<<" e ]*
+    [ 11: e => e . ">>>" e ]*
+    [ 12: e => e . "+" e ]*
+    [ 13: e => e . "-" e ]*
+    [ 14: e => e . "*" e ]*
+    [ 15: e => e . "/" e ]*
+    [ 16: e => e . "%" e ]*
+    [ 17: e => e . "**" e ]*
+    [ 34: coptr => . ">" ]
+    [ 35: coptr => . "<" ]
+    [ 36: coptr => . ">=" ]
+    [ 37: coptr => . "<=" ]
+    [ 38: coptr => . "==" ]
+    [ 39: coptr => . "!=" ]
+    "+" : shift,and goto state 34
+    "-" : shift,and goto state 35
+    "*" : shift,and goto state 36
+    "/" : shift,and goto state 37
+    "**" : shift,and goto state 39
+    "%" : shift,and goto state 38
+    ">" : shift,and goto state 2
+    "<" : shift,and goto state 3
+    ">=" : shift,and goto state 4
+    "<=" : shift,and goto state 5
+    "==" : shift,and goto state 6
+    "!=" : shift,and goto state 7
+    ">>" : shift,and goto state 31
+    "<<" : shift,and goto state 32
+    ">>>" : shift,and goto state 33
+    "eof" : reduce with rule 18
+    "?" : reduce with rule 18
+    ":" : reduce with rule 18
+    "|" : reduce with rule 18
+    "&" : reduce with rule 18
+    "^" : reduce with rule 18
+    "&&" : reduce with rule 18
+    "||" : reduce with rule 18
+    coptr : goto state 30
+
+
+state 42
+    [ 19: e => "!" e . ]*
+    [ 2: e => e . "?" e ":" e ]*
+    [ 3: e => e . "||" e ]*
+    [ 4: e => e . "&&" e ]*
+    [ 5: e => e . "|" e ]*
+    [ 6: e => e . "^" e ]*
+    [ 7: e => e . "&" e ]*
+    [ 8: e => e . coptr e ]*
+    [ 9: e => e . ">>" e ]*
+    [ 10: e => e . "<<" e ]*
+    [ 11: e => e . ">>>" e ]*
+    [ 12: e => e . "+" e ]*
+    [ 13: e => e . "-" e ]*
+    [ 14: e => e . "*" e ]*
+    [ 15: e => e . "/" e ]*
+    [ 16: e => e . "%" e ]*
+    [ 17: e => e . "**" e ]*
+    [ 34: coptr => . ">" ]
+    [ 35: coptr => . "<" ]
+    [ 36: coptr => . ">=" ]
+    [ 37: coptr => . "<=" ]
+    [ 38: coptr => . "==" ]
+    [ 39: coptr => . "!=" ]
+    "+" : shift,and goto state 34
+    "-" : shift,and goto state 35
+    "*" : shift,and goto state 36
+    "/" : shift,and goto state 37
+    "**" : shift,and goto state 39
+    "%" : shift,and goto state 38
+    ">" : shift,and goto state 2
+    "<" : shift,and goto state 3
+    ">=" : shift,and goto state 4
+    "<=" : shift,and goto state 5
+    "==" : shift,and goto state 6
+    "!=" : shift,and goto state 7
+    "|" : shift,and goto state 27
+    "&" : shift,and goto state 29
+    "^" : shift,and goto state 28
+    ">>" : shift,and goto state 31
+    "<<" : shift,and goto state 32
+    ">>>" : shift,and goto state 33
+    "eof" : reduce with rule 19
+    "?" : reduce with rule 19
+    ":" : reduce with rule 19
+    "&&" : reduce with rule 19
+    "||" : reduce with rule 19
+    coptr : goto state 30
+
+
+state 43
+    [ 2: e => e "?" e . ":" e ]*
+    [ 2: e => e . "?" e ":" e ]*
+    [ 3: e => e . "||" e ]*
+    [ 4: e => e . "&&" e ]*
+    [ 5: e => e . "|" e ]*
+    [ 6: e => e . "^" e ]*
+    [ 7: e => e . "&" e ]*
+    [ 8: e => e . coptr e ]*
+    [ 9: e => e . ">>" e ]*
+    [ 10: e => e . "<<" e ]*
+    [ 11: e => e . ">>>" e ]*
+    [ 12: e => e . "+" e ]*
+    [ 13: e => e . "-" e ]*
+    [ 14: e => e . "*" e ]*
+    [ 15: e => e . "/" e ]*
+    [ 16: e => e . "%" e ]*
+    [ 17: e => e . "**" e ]*
+    [ 34: coptr => . ">" ]
+    [ 35: coptr => . "<" ]
+    [ 36: coptr => . ">=" ]
+    [ 37: coptr => . "<=" ]
+    [ 38: coptr => . "==" ]
+    [ 39: coptr => . "!=" ]
+    "+" : shift,and goto state 34
+    "-" : shift,and goto state 35
+    "*" : shift,and goto state 36
+    "/" : shift,and goto state 37
+    "**" : shift,and goto state 39
+    "?" : shift,and goto state 24
+    ":" : shift,and goto state 60
+    "%" : shift,and goto state 38
+    ">" : shift,and goto state 2
+    "<" : shift,and goto state 3
+    ">=" : shift,and goto state 4
+    "<=" : shift,and goto state 5
+    "==" : shift,and goto state 6
+    "!=" : shift,and goto state 7
+    "|" : shift,and goto state 27
+    "&" : shift,and goto state 29
+    "^" : shift,and goto state 28
+    "&&" : shift,and goto state 26
+    "||" : shift,and goto state 25
+    ">>" : shift,and goto state 31
+    "<<" : shift,and goto state 32
+    ">>>" : shift,and goto state 33
+    coptr : goto state 30
+
+
+state 44
+    [ 3: e => e "||" e . ]*
+    [ 2: e => e . "?" e ":" e ]*
+    [ 3: e => e . "||" e ]*
+    [ 4: e => e . "&&" e ]*
+    [ 5: e => e . "|" e ]*
+    [ 6: e => e . "^" e ]*
+    [ 7: e => e . "&" e ]*
+    [ 8: e => e . coptr e ]*
+    [ 9: e => e . ">>" e ]*
+    [ 10: e => e . "<<" e ]*
+    [ 11: e => e . ">>>" e ]*
+    [ 12: e => e . "+" e ]*
+    [ 13: e => e . "-" e ]*
+    [ 14: e => e . "*" e ]*
+    [ 15: e => e . "/" e ]*
+    [ 16: e => e . "%" e ]*
+    [ 17: e => e . "**" e ]*
+    [ 34: coptr => . ">" ]
+    [ 35: coptr => . "<" ]
+    [ 36: coptr => . ">=" ]
+    [ 37: coptr => . "<=" ]
+    [ 38: coptr => . "==" ]
+    [ 39: coptr => . "!=" ]
+    "+" : shift,and goto state 34
+    "-" : shift,and goto state 35
+    "*" : shift,and goto state 36
+    "/" : shift,and goto state 37
+    "**" : shift,and goto state 39
+    "%" : shift,and goto state 38
+    ">" : shift,and goto state 2
+    "<" : shift,and goto state 3
+    ">=" : shift,and goto state 4
+    "<=" : shift,and goto state 5
+    "==" : shift,and goto state 6
+    "!=" : shift,and goto state 7
+    "|" : shift,and goto state 27
+    "&" : shift,and goto state 29
+    "^" : shift,and goto state 28
+    "&&" : shift,and goto state 26
+    ">>" : shift,and goto state 31
+    "<<" : shift,and goto state 32
+    ">>>" : shift,and goto state 33
+    "eof" : reduce with rule 3
+    "?" : reduce with rule 3
+    ":" : reduce with rule 3
+    "||" : reduce with rule 3
+    coptr : goto state 30
+
+
+state 45
+    [ 4: e => e "&&" e . ]*
+    [ 2: e => e . "?" e ":" e ]*
+    [ 3: e => e . "||" e ]*
+    [ 4: e => e . "&&" e ]*
+    [ 5: e => e . "|" e ]*
+    [ 6: e => e . "^" e ]*
+    [ 7: e => e . "&" e ]*
+    [ 8: e => e . coptr e ]*
+    [ 9: e => e . ">>" e ]*
+    [ 10: e => e . "<<" e ]*
+    [ 11: e => e . ">>>" e ]*
+    [ 12: e => e . "+" e ]*
+    [ 13: e => e . "-" e ]*
+    [ 14: e => e . "*" e ]*
+    [ 15: e => e . "/" e ]*
+    [ 16: e => e . "%" e ]*
+    [ 17: e => e . "**" e ]*
+    [ 34: coptr => . ">" ]
+    [ 35: coptr => . "<" ]
+    [ 36: coptr => . ">=" ]
+    [ 37: coptr => . "<=" ]
+    [ 38: coptr => . "==" ]
+    [ 39: coptr => . "!=" ]
+    "+" : shift,and goto state 34
+    "-" : shift,and goto state 35
+    "*" : shift,and goto state 36
+    "/" : shift,and goto state 37
+    "**" : shift,and goto state 39
+    "%" : shift,and goto state 38
+    ">" : shift,and goto state 2
+    "<" : shift,and goto state 3
+    ">=" : shift,and goto state 4
+    "<=" : shift,and goto state 5
+    "==" : shift,and goto state 6
+    "!=" : shift,and goto state 7
+    "|" : shift,and goto state 27
+    "&" : shift,and goto state 29
+    "^" : shift,and goto state 28
+    ">>" : shift,and goto state 31
+    "<<" : shift,and goto state 32
+    ">>>" : shift,and goto state 33
+    "eof" : reduce with rule 4
+    "?" : reduce with rule 4
+    ":" : reduce with rule 4
+    "&&" : reduce with rule 4
+    "||" : reduce with rule 4
+    coptr : goto state 30
+
+
+state 46
+    [ 5: e => e "|" e . ]*
+    [ 2: e => e . "?" e ":" e ]*
+    [ 3: e => e . "||" e ]*
+    [ 4: e => e . "&&" e ]*
+    [ 5: e => e . "|" e ]*
+    [ 6: e => e . "^" e ]*
+    [ 7: e => e . "&" e ]*
+    [ 8: e => e . coptr e ]*
+    [ 9: e => e . ">>" e ]*
+    [ 10: e => e . "<<" e ]*
+    [ 11: e => e . ">>>" e ]*
+    [ 12: e => e . "+" e ]*
+    [ 13: e => e . "-" e ]*
+    [ 14: e => e . "*" e ]*
+    [ 15: e => e . "/" e ]*
+    [ 16: e => e . "%" e ]*
+    [ 17: e => e . "**" e ]*
+    [ 34: coptr => . ">" ]
+    [ 35: coptr => . "<" ]
+    [ 36: coptr => . ">=" ]
+    [ 37: coptr => . "<=" ]
+    [ 38: coptr => . "==" ]
+    [ 39: coptr => . "!=" ]
+    "+" : shift,and goto state 34
+    "-" : shift,and goto state 35
+    "*" : shift,and goto state 36
+    "/" : shift,and goto state 37
+    "**" : shift,and goto state 39
+    "%" : shift,and goto state 38
+    ">" : shift,and goto state 2
+    "<" : shift,and goto state 3
+    ">=" : shift,and goto state 4
+    "<=" : shift,and goto state 5
+    "==" : shift,and goto state 6
+    "!=" : shift,and goto state 7
+    "&" : shift,and goto state 29
+    "^" : shift,and goto state 28
+    ">>" : shift,and goto state 31
+    "<<" : shift,and goto state 32
+    ">>>" : shift,and goto state 33
+    "eof" : reduce with rule 5
+    "?" : reduce with rule 5
+    ":" : reduce with rule 5
+    "|" : reduce with rule 5
+    "&&" : reduce with rule 5
+    "||" : reduce with rule 5
+    coptr : goto state 30
+
+
+state 47
+    [ 6: e => e "^" e . ]*
+    [ 2: e => e . "?" e ":" e ]*
+    [ 3: e => e . "||" e ]*
+    [ 4: e => e . "&&" e ]*
+    [ 5: e => e . "|" e ]*
+    [ 6: e => e . "^" e ]*
+    [ 7: e => e . "&" e ]*
+    [ 8: e => e . coptr e ]*
+    [ 9: e => e . ">>" e ]*
+    [ 10: e => e . "<<" e ]*
+    [ 11: e => e . ">>>" e ]*
+    [ 12: e => e . "+" e ]*
+    [ 13: e => e . "-" e ]*
+    [ 14: e => e . "*" e ]*
+    [ 15: e => e . "/" e ]*
+    [ 16: e => e . "%" e ]*
+    [ 17: e => e . "**" e ]*
+    [ 34: coptr => . ">" ]
+    [ 35: coptr => . "<" ]
+    [ 36: coptr => . ">=" ]
+    [ 37: coptr => . "<=" ]
+    [ 38: coptr => . "==" ]
+    [ 39: coptr => . "!=" ]
+    "+" : shift,and goto state 34
+    "-" : shift,and goto state 35
+    "*" : shift,and goto state 36
+    "/" : shift,and goto state 37
+    "**" : shift,and goto state 39
+    "%" : shift,and goto state 38
+    ">" : shift,and goto state 2
+    "<" : shift,and goto state 3
+    ">=" : shift,and goto state 4
+    "<=" : shift,and goto state 5
+    "==" : shift,and goto state 6
+    "!=" : shift,and goto state 7
+    "&" : shift,and goto state 29
+    ">>" : shift,and goto state 31
+    "<<" : shift,and goto state 32
+    ">>>" : shift,and goto state 33
+    "eof" : reduce with rule 6
+    "?" : reduce with rule 6
+    ":" : reduce with rule 6
+    "|" : reduce with rule 6
+    "^" : reduce with rule 6
+    "&&" : reduce with rule 6
+    "||" : reduce with rule 6
+    coptr : goto state 30
+
+
+state 48
+    [ 7: e => e "&" e . ]*
+    [ 2: e => e . "?" e ":" e ]*
+    [ 3: e => e . "||" e ]*
+    [ 4: e => e . "&&" e ]*
+    [ 5: e => e . "|" e ]*
+    [ 6: e => e . "^" e ]*
+    [ 7: e => e . "&" e ]*
+    [ 8: e => e . coptr e ]*
+    [ 9: e => e . ">>" e ]*
+    [ 10: e => e . "<<" e ]*
+    [ 11: e => e . ">>>" e ]*
+    [ 12: e => e . "+" e ]*
+    [ 13: e => e . "-" e ]*
+    [ 14: e => e . "*" e ]*
+    [ 15: e => e . "/" e ]*
+    [ 16: e => e . "%" e ]*
+    [ 17: e => e . "**" e ]*
+    [ 34: coptr => . ">" ]
+    [ 35: coptr => . "<" ]
+    [ 36: coptr => . ">=" ]
+    [ 37: coptr => . "<=" ]
+    [ 38: coptr => . "==" ]
+    [ 39: coptr => . "!=" ]
+    "+" : shift,and goto state 34
+    "-" : shift,and goto state 35
+    "*" : shift,and goto state 36
+    "/" : shift,and goto state 37
+    "**" : shift,and goto state 39
+    "%" : shift,and goto state 38
+    ">" : shift,and goto state 2
+    "<" : shift,and goto state 3
+    ">=" : shift,and goto state 4
+    "<=" : shift,and goto state 5
+    "==" : shift,and goto state 6
+    "!=" : shift,and goto state 7
+    ">>" : shift,and goto state 31
+    "<<" : shift,and goto state 32
+    ">>>" : shift,and goto state 33
+    "eof" : reduce with rule 7
+    "?" : reduce with rule 7
+    ":" : reduce with rule 7
+    "|" : reduce with rule 7
+    "&" : reduce with rule 7
+    "^" : reduce with rule 7
+    "&&" : reduce with rule 7
+    "||" : reduce with rule 7
+    coptr : goto state 30
+
+
+state 49
+    [ 8: e => e coptr e . ]*
+    [ 2: e => e . "?" e ":" e ]*
+    [ 3: e => e . "||" e ]*
+    [ 4: e => e . "&&" e ]*
+    [ 5: e => e . "|" e ]*
+    [ 6: e => e . "^" e ]*
+    [ 7: e => e . "&" e ]*
+    [ 8: e => e . coptr e ]*
+    [ 9: e => e . ">>" e ]*
+    [ 10: e => e . "<<" e ]*
+    [ 11: e => e . ">>>" e ]*
+    [ 12: e => e . "+" e ]*
+    [ 13: e => e . "-" e ]*
+    [ 14: e => e . "*" e ]*
+    [ 15: e => e . "/" e ]*
+    [ 16: e => e . "%" e ]*
+    [ 17: e => e . "**" e ]*
+    [ 34: coptr => . ">" ]
+    [ 35: coptr => . "<" ]
+    [ 36: coptr => . ">=" ]
+    [ 37: coptr => . "<=" ]
+    [ 38: coptr => . "==" ]
+    [ 39: coptr => . "!=" ]
+    "+" : shift,and goto state 34
+    "-" : shift,and goto state 35
+    "*" : shift,and goto state 36
+    "/" : shift,and goto state 37
+    "**" : shift,and goto state 39
+    "%" : shift,and goto state 38
+    ">>" : shift,and goto state 31
+    "<<" : shift,and goto state 32
+    ">>>" : shift,and goto state 33
+    "eof" : reduce with rule 8
+    "?" : reduce with rule 8
+    ":" : reduce with rule 8
+    ">" : reduce with rule 8
+    "<" : reduce with rule 8
+    ">=" : reduce with rule 8
+    "<=" : reduce with rule 8
+    "==" : reduce with rule 8
+    "!=" : reduce with rule 8
+    "|" : reduce with rule 8
+    "&" : reduce with rule 8
+    "^" : reduce with rule 8
+    "&&" : reduce with rule 8
+    "||" : reduce with rule 8
+    coptr : goto state 30
+
+
+state 50
+    [ 9: e => e ">>" e . ]*
+    [ 2: e => e . "?" e ":" e ]*
+    [ 3: e => e . "||" e ]*
+    [ 4: e => e . "&&" e ]*
+    [ 5: e => e . "|" e ]*
+    [ 6: e => e . "^" e ]*
+    [ 7: e => e . "&" e ]*
+    [ 8: e => e . coptr e ]*
+    [ 9: e => e . ">>" e ]*
+    [ 10: e => e . "<<" e ]*
+    [ 11: e => e . ">>>" e ]*
+    [ 12: e => e . "+" e ]*
+    [ 13: e => e . "-" e ]*
+    [ 14: e => e . "*" e ]*
+    [ 15: e => e . "/" e ]*
+    [ 16: e => e . "%" e ]*
+    [ 17: e => e . "**" e ]*
+    [ 34: coptr => . ">" ]
+    [ 35: coptr => . "<" ]
+    [ 36: coptr => . ">=" ]
+    [ 37: coptr => . "<=" ]
+    [ 38: coptr => . "==" ]
+    [ 39: coptr => . "!=" ]
+    "+" : shift,and goto state 34
+    "-" : shift,and goto state 35
+    "*" : shift,and goto state 36
+    "/" : shift,and goto state 37
+    "**" : shift,and goto state 39
+    "%" : shift,and goto state 38
+    "eof" : reduce with rule 9
+    "?" : reduce with rule 9
+    ":" : reduce with rule 9
+    ">" : reduce with rule 9
+    "<" : reduce with rule 9
+    ">=" : reduce with rule 9
+    "<=" : reduce with rule 9
+    "==" : reduce with rule 9
+    "!=" : reduce with rule 9
+    "|" : reduce with rule 9
+    "&" : reduce with rule 9
+    "^" : reduce with rule 9
+    "&&" : reduce with rule 9
+    "||" : reduce with rule 9
+    ">>" : reduce with rule 9
+    "<<" : reduce with rule 9
+    ">>>" : reduce with rule 9
+    coptr : goto state 30
+
+
+state 51
+    [ 10: e => e "<<" e . ]*
+    [ 2: e => e . "?" e ":" e ]*
+    [ 3: e => e . "||" e ]*
+    [ 4: e => e . "&&" e ]*
+    [ 5: e => e . "|" e ]*
+    [ 6: e => e . "^" e ]*
+    [ 7: e => e . "&" e ]*
+    [ 8: e => e . coptr e ]*
+    [ 9: e => e . ">>" e ]*
+    [ 10: e => e . "<<" e ]*
+    [ 11: e => e . ">>>" e ]*
+    [ 12: e => e . "+" e ]*
+    [ 13: e => e . "-" e ]*
+    [ 14: e => e . "*" e ]*
+    [ 15: e => e . "/" e ]*
+    [ 16: e => e . "%" e ]*
+    [ 17: e => e . "**" e ]*
+    [ 34: coptr => . ">" ]
+    [ 35: coptr => . "<" ]
+    [ 36: coptr => . ">=" ]
+    [ 37: coptr => . "<=" ]
+    [ 38: coptr => . "==" ]
+    [ 39: coptr => . "!=" ]
+    "+" : shift,and goto state 34
+    "-" : shift,and goto state 35
+    "*" : shift,and goto state 36
+    "/" : shift,and goto state 37
+    "**" : shift,and goto state 39
+    "%" : shift,and goto state 38
+    "eof" : reduce with rule 10
+    "?" : reduce with rule 10
+    ":" : reduce with rule 10
+    ">" : reduce with rule 10
+    "<" : reduce with rule 10
+    ">=" : reduce with rule 10
+    "<=" : reduce with rule 10
+    "==" : reduce with rule 10
+    "!=" : reduce with rule 10
+    "|" : reduce with rule 10
+    "&" : reduce with rule 10
+    "^" : reduce with rule 10
+    "&&" : reduce with rule 10
+    "||" : reduce with rule 10
+    ">>" : reduce with rule 10
+    "<<" : reduce with rule 10
+    ">>>" : reduce with rule 10
+    coptr : goto state 30
+
+
+state 52
+    [ 11: e => e ">>>" e . ]*
+    [ 2: e => e . "?" e ":" e ]*
+    [ 3: e => e . "||" e ]*
+    [ 4: e => e . "&&" e ]*
+    [ 5: e => e . "|" e ]*
+    [ 6: e => e . "^" e ]*
+    [ 7: e => e . "&" e ]*
+    [ 8: e => e . coptr e ]*
+    [ 9: e => e . ">>" e ]*
+    [ 10: e => e . "<<" e ]*
+    [ 11: e => e . ">>>" e ]*
+    [ 12: e => e . "+" e ]*
+    [ 13: e => e . "-" e ]*
+    [ 14: e => e . "*" e ]*
+    [ 15: e => e . "/" e ]*
+    [ 16: e => e . "%" e ]*
+    [ 17: e => e . "**" e ]*
+    [ 34: coptr => . ">" ]
+    [ 35: coptr => . "<" ]
+    [ 36: coptr => . ">=" ]
+    [ 37: coptr => . "<=" ]
+    [ 38: coptr => . "==" ]
+    [ 39: coptr => . "!=" ]
+    "+" : shift,and goto state 34
+    "-" : shift,and goto state 35
+    "*" : shift,and goto state 36
+    "/" : shift,and goto state 37
+    "**" : shift,and goto state 39
+    "%" : shift,and goto state 38
+    "eof" : reduce with rule 11
+    "?" : reduce with rule 11
+    ":" : reduce with rule 11
+    ">" : reduce with rule 11
+    "<" : reduce with rule 11
+    ">=" : reduce with rule 11
+    "<=" : reduce with rule 11
+    "==" : reduce with rule 11
+    "!=" : reduce with rule 11
+    "|" : reduce with rule 11
+    "&" : reduce with rule 11
+    "^" : reduce with rule 11
+    "&&" : reduce with rule 11
+    "||" : reduce with rule 11
+    ">>" : reduce with rule 11
+    "<<" : reduce with rule 11
+    ">>>" : reduce with rule 11
+    coptr : goto state 30
+
+
+state 53
+    [ 12: e => e "+" e . ]*
+    [ 2: e => e . "?" e ":" e ]*
+    [ 3: e => e . "||" e ]*
+    [ 4: e => e . "&&" e ]*
+    [ 5: e => e . "|" e ]*
+    [ 6: e => e . "^" e ]*
+    [ 7: e => e . "&" e ]*
+    [ 8: e => e . coptr e ]*
+    [ 9: e => e . ">>" e ]*
+    [ 10: e => e . "<<" e ]*
+    [ 11: e => e . ">>>" e ]*
+    [ 12: e => e . "+" e ]*
+    [ 13: e => e . "-" e ]*
+    [ 14: e => e . "*" e ]*
+    [ 15: e => e . "/" e ]*
+    [ 16: e => e . "%" e ]*
+    [ 17: e => e . "**" e ]*
+    [ 34: coptr => . ">" ]
+    [ 35: coptr => . "<" ]
+    [ 36: coptr => . ">=" ]
+    [ 37: coptr => . "<=" ]
+    [ 38: coptr => . "==" ]
+    [ 39: coptr => . "!=" ]
+    "*" : shift,and goto state 36
+    "/" : shift,and goto state 37
+    "**" : shift,and goto state 39
+    "%" : shift,and goto state 38
+    "eof" : reduce with rule 12
+    "+" : reduce with rule 12
+    "-" : reduce with rule 12
+    "?" : reduce with rule 12
+    ":" : reduce with rule 12
+    ">" : reduce with rule 12
+    "<" : reduce with rule 12
+    ">=" : reduce with rule 12
+    "<=" : reduce with rule 12
+    "==" : reduce with rule 12
+    "!=" : reduce with rule 12
+    "|" : reduce with rule 12
+    "&" : reduce with rule 12
+    "^" : reduce with rule 12
+    "&&" : reduce with rule 12
+    "||" : reduce with rule 12
+    ">>" : reduce with rule 12
+    "<<" : reduce with rule 12
+    ">>>" : reduce with rule 12
+    coptr : goto state 30
+
+
+state 54
+    [ 13: e => e "-" e . ]*
+    [ 2: e => e . "?" e ":" e ]*
+    [ 3: e => e . "||" e ]*
+    [ 4: e => e . "&&" e ]*
+    [ 5: e => e . "|" e ]*
+    [ 6: e => e . "^" e ]*
+    [ 7: e => e . "&" e ]*
+    [ 8: e => e . coptr e ]*
+    [ 9: e => e . ">>" e ]*
+    [ 10: e => e . "<<" e ]*
+    [ 11: e => e . ">>>" e ]*
+    [ 12: e => e . "+" e ]*
+    [ 13: e => e . "-" e ]*
+    [ 14: e => e . "*" e ]*
+    [ 15: e => e . "/" e ]*
+    [ 16: e => e . "%" e ]*
+    [ 17: e => e . "**" e ]*
+    [ 34: coptr => . ">" ]
+    [ 35: coptr => . "<" ]
+    [ 36: coptr => . ">=" ]
+    [ 37: coptr => . "<=" ]
+    [ 38: coptr => . "==" ]
+    [ 39: coptr => . "!=" ]
+    "*" : shift,and goto state 36
+    "/" : shift,and goto state 37
+    "**" : shift,and goto state 39
+    "%" : shift,and goto state 38
+    "eof" : reduce with rule 13
+    "+" : reduce with rule 13
+    "-" : reduce with rule 13
+    "?" : reduce with rule 13
+    ":" : reduce with rule 13
+    ">" : reduce with rule 13
+    "<" : reduce with rule 13
+    ">=" : reduce with rule 13
+    "<=" : reduce with rule 13
+    "==" : reduce with rule 13
+    "!=" : reduce with rule 13
+    "|" : reduce with rule 13
+    "&" : reduce with rule 13
+    "^" : reduce with rule 13
+    "&&" : reduce with rule 13
+    "||" : reduce with rule 13
+    ">>" : reduce with rule 13
+    "<<" : reduce with rule 13
+    ">>>" : reduce with rule 13
+    coptr : goto state 30
+
+
+state 55
+    [ 14: e => e "*" e . ]*
+    [ 2: e => e . "?" e ":" e ]*
+    [ 3: e => e . "||" e ]*
+    [ 4: e => e . "&&" e ]*
+    [ 5: e => e . "|" e ]*
+    [ 6: e => e . "^" e ]*
+    [ 7: e => e . "&" e ]*
+    [ 8: e => e . coptr e ]*
+    [ 9: e => e . ">>" e ]*
+    [ 10: e => e . "<<" e ]*
+    [ 11: e => e . ">>>" e ]*
+    [ 12: e => e . "+" e ]*
+    [ 13: e => e . "-" e ]*
+    [ 14: e => e . "*" e ]*
+    [ 15: e => e . "/" e ]*
+    [ 16: e => e . "%" e ]*
+    [ 17: e => e . "**" e ]*
+    [ 34: coptr => . ">" ]
+    [ 35: coptr => . "<" ]
+    [ 36: coptr => . ">=" ]
+    [ 37: coptr => . "<=" ]
+    [ 38: coptr => . "==" ]
+    [ 39: coptr => . "!=" ]
+    "**" : shift,and goto state 39
+    "eof" : reduce with rule 14
+    "+" : reduce with rule 14
+    "-" : reduce with rule 14
+    "*" : reduce with rule 14
+    "/" : reduce with rule 14
+    "?" : reduce with rule 14
+    ":" : reduce with rule 14
+    "%" : reduce with rule 14
+    ">" : reduce with rule 14
+    "<" : reduce with rule 14
+    ">=" : reduce with rule 14
+    "<=" : reduce with rule 14
+    "==" : reduce with rule 14
+    "!=" : reduce with rule 14
+    "|" : reduce with rule 14
+    "&" : reduce with rule 14
+    "^" : reduce with rule 14
+    "&&" : reduce with rule 14
+    "||" : reduce with rule 14
+    ">>" : reduce with rule 14
+    "<<" : reduce with rule 14
+    ">>>" : reduce with rule 14
+    coptr : goto state 30
+
+
+state 56
+    [ 15: e => e "/" e . ]*
+    [ 2: e => e . "?" e ":" e ]*
+    [ 3: e => e . "||" e ]*
+    [ 4: e => e . "&&" e ]*
+    [ 5: e => e . "|" e ]*
+    [ 6: e => e . "^" e ]*
+    [ 7: e => e . "&" e ]*
+    [ 8: e => e . coptr e ]*
+    [ 9: e => e . ">>" e ]*
+    [ 10: e => e . "<<" e ]*
+    [ 11: e => e . ">>>" e ]*
+    [ 12: e => e . "+" e ]*
+    [ 13: e => e . "-" e ]*
+    [ 14: e => e . "*" e ]*
+    [ 15: e => e . "/" e ]*
+    [ 16: e => e . "%" e ]*
+    [ 17: e => e . "**" e ]*
+    [ 34: coptr => . ">" ]
+    [ 35: coptr => . "<" ]
+    [ 36: coptr => . ">=" ]
+    [ 37: coptr => . "<=" ]
+    [ 38: coptr => . "==" ]
+    [ 39: coptr => . "!=" ]
+    "**" : shift,and goto state 39
+    "eof" : reduce with rule 15
+    "+" : reduce with rule 15
+    "-" : reduce with rule 15
+    "*" : reduce with rule 15
+    "/" : reduce with rule 15
+    "?" : reduce with rule 15
+    ":" : reduce with rule 15
+    "%" : reduce with rule 15
+    ">" : reduce with rule 15
+    "<" : reduce with rule 15
+    ">=" : reduce with rule 15
+    "<=" : reduce with rule 15
+    "==" : reduce with rule 15
+    "!=" : reduce with rule 15
+    "|" : reduce with rule 15
+    "&" : reduce with rule 15
+    "^" : reduce with rule 15
+    "&&" : reduce with rule 15
+    "||" : reduce with rule 15
+    ">>" : reduce with rule 15
+    "<<" : reduce with rule 15
+    ">>>" : reduce with rule 15
+    coptr : goto state 30
+
+
+state 57
+    [ 16: e => e "%" e . ]*
+    [ 2: e => e . "?" e ":" e ]*
+    [ 3: e => e . "||" e ]*
+    [ 4: e => e . "&&" e ]*
+    [ 5: e => e . "|" e ]*
+    [ 6: e => e . "^" e ]*
+    [ 7: e => e . "&" e ]*
+    [ 8: e => e . coptr e ]*
+    [ 9: e => e . ">>" e ]*
+    [ 10: e => e . "<<" e ]*
+    [ 11: e => e . ">>>" e ]*
+    [ 12: e => e . "+" e ]*
+    [ 13: e => e . "-" e ]*
+    [ 14: e => e . "*" e ]*
+    [ 15: e => e . "/" e ]*
+    [ 16: e => e . "%" e ]*
+    [ 17: e => e . "**" e ]*
+    [ 34: coptr => . ">" ]
+    [ 35: coptr => . "<" ]
+    [ 36: coptr => . ">=" ]
+    [ 37: coptr => . "<=" ]
+    [ 38: coptr => . "==" ]
+    [ 39: coptr => . "!=" ]
+    "**" : shift,and goto state 39
+    "eof" : reduce with rule 16
+    "+" : reduce with rule 16
+    "-" : reduce with rule 16
+    "*" : reduce with rule 16
+    "/" : reduce with rule 16
+    "?" : reduce with rule 16
+    ":" : reduce with rule 16
+    "%" : reduce with rule 16
+    ">" : reduce with rule 16
+    "<" : reduce with rule 16
+    ">=" : reduce with rule 16
+    "<=" : reduce with rule 16
+    "==" : reduce with rule 16
+    "!=" : reduce with rule 16
+    "|" : reduce with rule 16
+    "&" : reduce with rule 16
+    "^" : reduce with rule 16
+    "&&" : reduce with rule 16
+    "||" : reduce with rule 16
+    ">>" : reduce with rule 16
+    "<<" : reduce with rule 16
+    ">>>" : reduce with rule 16
+    coptr : goto state 30
+
+
+state 58
+    [ 17: e => e "**" e . ]*
+    [ 2: e => e . "?" e ":" e ]*
+    [ 3: e => e . "||" e ]*
+    [ 4: e => e . "&&" e ]*
+    [ 5: e => e . "|" e ]*
+    [ 6: e => e . "^" e ]*
+    [ 7: e => e . "&" e ]*
+    [ 8: e => e . coptr e ]*
+    [ 9: e => e . ">>" e ]*
+    [ 10: e => e . "<<" e ]*
+    [ 11: e => e . ">>>" e ]*
+    [ 12: e => e . "+" e ]*
+    [ 13: e => e . "-" e ]*
+    [ 14: e => e . "*" e ]*
+    [ 15: e => e . "/" e ]*
+    [ 16: e => e . "%" e ]*
+    [ 17: e => e . "**" e ]*
+    [ 34: coptr => . ">" ]
+    [ 35: coptr => . "<" ]
+    [ 36: coptr => . ">=" ]
+    [ 37: coptr => . "<=" ]
+    [ 38: coptr => . "==" ]
+    [ 39: coptr => . "!=" ]
+    "**" : shift,and goto state 39
+    "eof" : reduce with rule 17
+    "+" : reduce with rule 17
+    "-" : reduce with rule 17
+    "*" : reduce with rule 17
+    "/" : reduce with rule 17
+    "?" : reduce with rule 17
+    ":" : reduce with rule 17
+    "%" : reduce with rule 17
+    ">" : reduce with rule 17
+    "<" : reduce with rule 17
+    ">=" : reduce with rule 17
+    "<=" : reduce with rule 17
+    "==" : reduce with rule 17
+    "!=" : reduce with rule 17
+    "|" : reduce with rule 17
+    "&" : reduce with rule 17
+    "^" : reduce with rule 17
+    "&&" : reduce with rule 17
+    "||" : reduce with rule 17
+    ">>" : reduce with rule 17
+    "<<" : reduce with rule 17
+    ">>>" : reduce with rule 17
+    coptr : goto state 30
+
+
+state 59
+    [ 1: e => ae aoptr e . ]*
+    [ 2: e => e . "?" e ":" e ]*
+    [ 3: e => e . "||" e ]*
+    [ 4: e => e . "&&" e ]*
+    [ 5: e => e . "|" e ]*
+    [ 6: e => e . "^" e ]*
+    [ 7: e => e . "&" e ]*
+    [ 8: e => e . coptr e ]*
+    [ 9: e => e . ">>" e ]*
+    [ 10: e => e . "<<" e ]*
+    [ 11: e => e . ">>>" e ]*
+    [ 12: e => e . "+" e ]*
+    [ 13: e => e . "-" e ]*
+    [ 14: e => e . "*" e ]*
+    [ 15: e => e . "/" e ]*
+    [ 16: e => e . "%" e ]*
+    [ 17: e => e . "**" e ]*
+    [ 34: coptr => . ">" ]
+    [ 35: coptr => . "<" ]
+    [ 36: coptr => . ">=" ]
+    [ 37: coptr => . "<=" ]
+    [ 38: coptr => . "==" ]
+    [ 39: coptr => . "!=" ]
+    "+" : shift,and goto state 34
+    "-" : shift,and goto state 35
+    "*" : shift,and goto state 36
+    "/" : shift,and goto state 37
+    "**" : shift,and goto state 39
+    "?" : shift,and goto state 24
+    "%" : shift,and goto state 38
+    ">" : shift,and goto state 2
+    "<" : shift,and goto state 3
+    ">=" : shift,and goto state 4
+    "<=" : shift,and goto state 5
+    "==" : shift,and goto state 6
+    "!=" : shift,and goto state 7
+    "|" : shift,and goto state 27
+    "&" : shift,and goto state 29
+    "^" : shift,and goto state 28
+    "&&" : shift,and goto state 26
+    "||" : shift,and goto state 25
+    ">>" : shift,and goto state 31
+    "<<" : shift,and goto state 32
+    ">>>" : shift,and goto state 33
+    "eof" : reduce with rule 1
+    ":" : reduce with rule 1
+    coptr : goto state 30
+
+
+state 60
+    [ 2: e => e "?" e ":" . e ]*
+    [ 1: e => . ae aoptr e ]
+    [ 2: e => . e "?" e ":" e ]
+    [ 3: e => . e "||" e ]
+    [ 4: e => . e "&&" e ]
+    [ 5: e => . e "|" e ]
+    [ 6: e => . e "^" e ]
+    [ 7: e => . e "&" e ]
+    [ 8: e => . e coptr e ]
+    [ 9: e => . e ">>" e ]
+    [ 10: e => . e "<<" e ]
+    [ 11: e => . e ">>>" e ]
+    [ 12: e => . e "+" e ]
+    [ 13: e => . e "-" e ]
+    [ 14: e => . e "*" e ]
+    [ 15: e => . e "/" e ]
+    [ 16: e => . e "%" e ]
+    [ 17: e => . e "**" e ]
+    [ 18: e => . "~" e ]
+    [ 19: e => . "!" e ]
+    [ 20: e => . "id" ]
+    [ 21: e => . "num" ]
+    [ 22: ae => . "id" ]
+    "~" : shift,and goto state 20
+    "!" : shift,and goto state 21
+    "id" : shift,and goto state 22
+    "num" : shift,and goto state 23
+    e : goto state 61
+    ae : goto state 19
+
+
+state 61
+    [ 2: e => e "?" e ":" e . ]*
+    [ 2: e => e . "?" e ":" e ]*
+    [ 3: e => e . "||" e ]*
+    [ 4: e => e . "&&" e ]*
+    [ 5: e => e . "|" e ]*
+    [ 6: e => e . "^" e ]*
+    [ 7: e => e . "&" e ]*
+    [ 8: e => e . coptr e ]*
+    [ 9: e => e . ">>" e ]*
+    [ 10: e => e . "<<" e ]*
+    [ 11: e => e . ">>>" e ]*
+    [ 12: e => e . "+" e ]*
+    [ 13: e => e . "-" e ]*
+    [ 14: e => e . "*" e ]*
+    [ 15: e => e . "/" e ]*
+    [ 16: e => e . "%" e ]*
+    [ 17: e => e . "**" e ]*
+    [ 34: coptr => . ">" ]
+    [ 35: coptr => . "<" ]
+    [ 36: coptr => . ">=" ]
+    [ 37: coptr => . "<=" ]
+    [ 38: coptr => . "==" ]
+    [ 39: coptr => . "!=" ]
+    "+" : shift,and goto state 34
+    "-" : shift,and goto state 35
+    "*" : shift,and goto state 36
+    "/" : shift,and goto state 37
+    "**" : shift,and goto state 39
+    "%" : shift,and goto state 38
+    ">" : shift,and goto state 2
+    "<" : shift,and goto state 3
+    ">=" : shift,and goto state 4
+    "<=" : shift,and goto state 5
+    "==" : shift,and goto state 6
+    "!=" : shift,and goto state 7
+    "|" : shift,and goto state 27
+    "&" : shift,and goto state 29
+    "^" : shift,and goto state 28
+    "&&" : shift,and goto state 26
+    "||" : shift,and goto state 25
+    ">>" : shift,and goto state 31
+    "<<" : shift,and goto state 32
+    ">>>" : shift,and goto state 33
+    "eof" : reduce with rule 2
+    "?" : reduce with rule 2
+    ":" : reduce with rule 2
+    coptr : goto state 30
+
+

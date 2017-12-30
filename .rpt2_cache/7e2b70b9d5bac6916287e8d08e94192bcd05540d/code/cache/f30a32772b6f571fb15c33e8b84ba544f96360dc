@@ -1,0 +1,1 @@
+{"code":"export class File {\r\n    constructor() {\r\n        this.grammar = null;\r\n        this.opt = {};\r\n    }\r\n}\r\n","map":{"mappings":""}}

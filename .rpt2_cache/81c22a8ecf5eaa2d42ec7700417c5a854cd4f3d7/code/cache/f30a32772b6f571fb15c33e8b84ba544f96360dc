@@ -1,0 +1,1 @@
+{"code":"var File = (function () {\r\n    function File() {\r\n        this.grammar = null;\r\n        this.opt = {};\r\n    }\r\n    return File;\r\n}());\r\nexport { File };\r\n","map":{"mappings":""}}

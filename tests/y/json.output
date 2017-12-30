@@ -1,0 +1,294 @@
+state 0
+    [ 0: (accept) => . json ]*
+    [ 1: json => . primitives ]
+    [ 2: json => . "[" array "]" ]
+    [ 3: json => . "{" obj "}" ]
+    [ 4: primitives => . "id" ]
+    [ 5: primitives => . "string" ]
+    [ 6: primitives => . "num" ]
+    [ 7: primitives => . "true" ]
+    [ 8: primitives => . "false" ]
+    [ 9: primitives => . "null" ]
+    "id" : shift,and goto state 20
+    "string" : shift,and goto state 21
+    "num" : shift,and goto state 22
+    "true" : shift,and goto state 23
+    "false" : shift,and goto state 24
+    "null" : shift,and goto state 25
+    "[" : shift,and goto state 18
+    "{" : shift,and goto state 19
+    json : goto state 1
+    primitives : goto state 17
+
+
+state 1
+    [ 0: (accept) => json . ]*
+    "eof" : reduce with rule 0
+
+
+state 2
+    [ 10: array => nearray . comma ]*
+    [ 12: nearray => nearray . "," json ]*
+    [ 21: comma => . "," ]
+    [ 22: comma => . ]
+    "," : shift,and goto state 10
+    "]" : reduce with rule 22
+    comma : goto state 9
+
+
+state 3
+    [ 13: nearray => json . ]*
+    "]" : reduce with rule 13
+    "," : reduce with rule 13
+
+
+state 4
+    [ 14: obj => neobj . comma ]*
+    [ 16: neobj => neobj . "," oitem ]*
+    [ 21: comma => . "," ]
+    [ 22: comma => . ]
+    "," : shift,and goto state 12
+    "}" : reduce with rule 22
+    comma : goto state 11
+
+
+state 5
+    [ 17: neobj => oitem . ]*
+    "}" : reduce with rule 17
+    "," : reduce with rule 17
+
+
+state 6
+    [ 18: oitem => key . ":" json ]*
+    ":" : shift,and goto state 13
+
+
+state 7
+    [ 19: key => "id" . ]*
+    ":" : reduce with rule 19
+
+
+state 8
+    [ 20: key => "string" . ]*
+    ":" : reduce with rule 20
+
+
+state 9
+    [ 10: array => nearray comma . ]*
+    "]" : reduce with rule 10
+
+
+state 10
+    [ 12: nearray => nearray "," . json ]*
+    [ 21: comma => "," . ]*
+    [ 1: json => . primitives ]
+    [ 2: json => . "[" array "]" ]
+    [ 3: json => . "{" obj "}" ]
+    [ 4: primitives => . "id" ]
+    [ 5: primitives => . "string" ]
+    [ 6: primitives => . "num" ]
+    [ 7: primitives => . "true" ]
+    [ 8: primitives => . "false" ]
+    [ 9: primitives => . "null" ]
+    "id" : shift,and goto state 20
+    "string" : shift,and goto state 21
+    "num" : shift,and goto state 22
+    "true" : shift,and goto state 23
+    "false" : shift,and goto state 24
+    "null" : shift,and goto state 25
+    "[" : shift,and goto state 18
+    "{" : shift,and goto state 19
+    "]" : reduce with rule 21
+    json : goto state 14
+    primitives : goto state 17
+
+
+state 11
+    [ 14: obj => neobj comma . ]*
+    "}" : reduce with rule 14
+
+
+state 12
+    [ 16: neobj => neobj "," . oitem ]*
+    [ 21: comma => "," . ]*
+    [ 18: oitem => . key ":" json ]
+    [ 19: key => . "id" ]
+    [ 20: key => . "string" ]
+    "id" : shift,and goto state 7
+    "string" : shift,and goto state 8
+    "}" : reduce with rule 21
+    oitem : goto state 15
+    key : goto state 6
+
+
+state 13
+    [ 18: oitem => key ":" . json ]*
+    [ 1: json => . primitives ]
+    [ 2: json => . "[" array "]" ]
+    [ 3: json => . "{" obj "}" ]
+    [ 4: primitives => . "id" ]
+    [ 5: primitives => . "string" ]
+    [ 6: primitives => . "num" ]
+    [ 7: primitives => . "true" ]
+    [ 8: primitives => . "false" ]
+    [ 9: primitives => . "null" ]
+    "id" : shift,and goto state 20
+    "string" : shift,and goto state 21
+    "num" : shift,and goto state 22
+    "true" : shift,and goto state 23
+    "false" : shift,and goto state 24
+    "null" : shift,and goto state 25
+    "[" : shift,and goto state 18
+    "{" : shift,and goto state 19
+    json : goto state 16
+    primitives : goto state 17
+
+
+state 14
+    [ 12: nearray => nearray "," json . ]*
+    "]" : reduce with rule 12
+    "," : reduce with rule 12
+
+
+state 15
+    [ 16: neobj => neobj "," oitem . ]*
+    "}" : reduce with rule 16
+    "," : reduce with rule 16
+
+
+state 16
+    [ 18: oitem => key ":" json . ]*
+    "}" : reduce with rule 18
+    "," : reduce with rule 18
+
+
+state 17
+    [ 1: json => primitives . ]*
+    "eof" : reduce with rule 1
+    "]" : reduce with rule 1
+    "}" : reduce with rule 1
+    "," : reduce with rule 1
+
+
+state 18
+    [ 2: json => "[" . array "]" ]*
+    [ 10: array => . nearray comma ]
+    [ 11: array => . ]
+    [ 12: nearray => . nearray "," json ]
+    [ 13: nearray => . json ]
+    [ 1: json => . primitives ]
+    [ 2: json => . "[" array "]" ]
+    [ 3: json => . "{" obj "}" ]
+    [ 4: primitives => . "id" ]
+    [ 5: primitives => . "string" ]
+    [ 6: primitives => . "num" ]
+    [ 7: primitives => . "true" ]
+    [ 8: primitives => . "false" ]
+    [ 9: primitives => . "null" ]
+    "id" : shift,and goto state 20
+    "string" : shift,and goto state 21
+    "num" : shift,and goto state 22
+    "true" : shift,and goto state 23
+    "false" : shift,and goto state 24
+    "null" : shift,and goto state 25
+    "[" : shift,and goto state 18
+    "{" : shift,and goto state 19
+    "]" : reduce with rule 11
+    json : goto state 3
+    primitives : goto state 17
+    array : goto state 26
+    nearray : goto state 2
+
+
+state 19
+    [ 3: json => "{" . obj "}" ]*
+    [ 14: obj => . neobj comma ]
+    [ 15: obj => . ]
+    [ 16: neobj => . neobj "," oitem ]
+    [ 17: neobj => . oitem ]
+    [ 18: oitem => . key ":" json ]
+    [ 19: key => . "id" ]
+    [ 20: key => . "string" ]
+    "id" : shift,and goto state 7
+    "string" : shift,and goto state 8
+    "}" : reduce with rule 15
+    obj : goto state 27
+    neobj : goto state 4
+    oitem : goto state 5
+    key : goto state 6
+
+
+state 20
+    [ 4: primitives => "id" . ]*
+    "eof" : reduce with rule 4
+    "]" : reduce with rule 4
+    "}" : reduce with rule 4
+    "," : reduce with rule 4
+
+
+state 21
+    [ 5: primitives => "string" . ]*
+    "eof" : reduce with rule 5
+    "]" : reduce with rule 5
+    "}" : reduce with rule 5
+    "," : reduce with rule 5
+
+
+state 22
+    [ 6: primitives => "num" . ]*
+    "eof" : reduce with rule 6
+    "]" : reduce with rule 6
+    "}" : reduce with rule 6
+    "," : reduce with rule 6
+
+
+state 23
+    [ 7: primitives => "true" . ]*
+    "eof" : reduce with rule 7
+    "]" : reduce with rule 7
+    "}" : reduce with rule 7
+    "," : reduce with rule 7
+
+
+state 24
+    [ 8: primitives => "false" . ]*
+    "eof" : reduce with rule 8
+    "]" : reduce with rule 8
+    "}" : reduce with rule 8
+    "," : reduce with rule 8
+
+
+state 25
+    [ 9: primitives => "null" . ]*
+    "eof" : reduce with rule 9
+    "]" : reduce with rule 9
+    "}" : reduce with rule 9
+    "," : reduce with rule 9
+
+
+state 26
+    [ 2: json => "[" array . "]" ]*
+    "]" : shift,and goto state 28
+
+
+state 27
+    [ 3: json => "{" obj . "}" ]*
+    "}" : shift,and goto state 29
+
+
+state 28
+    [ 2: json => "[" array "]" . ]*
+    "eof" : reduce with rule 2
+    "]" : reduce with rule 2
+    "}" : reduce with rule 2
+    "," : reduce with rule 2
+
+
+state 29
+    [ 3: json => "{" obj "}" . ]*
+    "eof" : reduce with rule 3
+    "]" : reduce with rule 3
+    "}" : reduce with rule 3
+    "," : reduce with rule 3
+
+
