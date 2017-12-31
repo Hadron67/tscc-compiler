@@ -28,7 +28,7 @@ export class Conflict{
 }
 
 export function genInitialSet(g: Grammar): ItemSet{
-    var start = g.rules[0][0];
+    var start = g.nts[0].rules[0];
     var iset = new ItemSet(g);
     iset.index = 0;
     var set1 = new TokenSet(g.tokenCount);
@@ -149,7 +149,7 @@ export function genItemSets(g: Grammar): { result: List<ItemSet>, iterations: nu
 
 export function genParseTable(g: Grammar, doneList: List<ItemSet>): { result: ParseTable, conflicts: Conflict[] }{
     var conflicts = [];
-    function resolveSRConflict(set,shift,reduce){
+    function resolveSRConflict(set: ItemSet, shift: Item, reduce: Item){
         var token = g.tokens[shift.getShift()];
         if(token.assoc !== Assoc.UNDEFINED){
             var ruleP = reduce.rule.pr;
@@ -223,7 +223,7 @@ export function genParseTable(g: Grammar, doneList: List<ItemSet>): { result: Pa
                 }
                 else {
                     // do goto
-                    var tindex = set.stateIndex * g.nts.length + sItem - g.tokenCount;
+                    var tindex = set.stateIndex * g.nts.length + (-sItem - 1);
                     ptable.gotot[tindex] = item;
                 }
             }

@@ -1,7 +1,8 @@
-import { GBuilder, TokenDefType } from './gbuilder';
+import { GBuilder, RuleItemType } from './gbuilder';
 import { Assoc } from '../grammar/token-entry';
 import { CompilationError as E } from '../util/E';
 import { InputStream } from '../util/io';
+import { Context } from '../util/context';
 
 enum T  {
     EOF = 0,
@@ -13,7 +14,7 @@ enum T  {
     ARROW,
     EOL,
     OR,
-    TOKEN,
+    //TOKEN,
     SEPERATOR,
     LEFT_DIR,
     RIGHT_DIR,
@@ -23,6 +24,13 @@ enum T  {
     STATE_DIR,
     LINE_COMMENT,
     BLOCK_COMMENT,
+    GT,
+    LT,
+    DASH,
+    CBRA,
+    CKET,
+    COMMA,
+    PLUS,
     
     // highlight only
     OPEN_CURLY_BRA,
@@ -294,7 +302,10 @@ function scan(opt: { isHighlight?: boolean } = {}){
                     token.id = T.ARROW;
                     break lex;
                 }
-                err('-');
+                else {
+                    token.id = T.DASH;
+                    break lex;
+                }
             case '\'':
             case '"':
                 token.id = T.STRING;
@@ -302,19 +313,19 @@ function scan(opt: { isHighlight?: boolean } = {}){
                 break lex;
             case '<':
                 nc();
-                token.id = T.TOKEN;
-                token.val = '';
-                while(c as string !== '>' && !eof()){
-                    token.val += c;
-                    nc();
-                }
-                if(eof()){
-                    throw new E('unexpected end of file: incomplete token literal',line);
-                }
+                token.id = T.LT;
+                break lex;
+            case '>':
                 nc();
-                if(token.val === ''){
-                    throw new E('unexpected empty token',line);
-                }
+                token.id = T.GT;
+                break lex;
+            case ',':
+                nc();
+                token.id = T.COMMA;
+                break lex;
+            case '+':
+                nc();
+                token.id = T.PLUS;
                 break lex;
             default:
                 if(/[A-Za-z_$]/.test(c)){
@@ -341,9 +352,9 @@ function scan(opt: { isHighlight?: boolean } = {}){
     };
 }
 
-function parse(scanner){
+function parse(scanner, ctx: Context){
     var token = new Token();
-    var gb = new GBuilder();
+    var gb = new GBuilder(ctx);
 
     function nt(){
         scanner.next(token);
@@ -369,7 +380,7 @@ function parse(scanner){
         expect(T.EOF);
     }
 
-    function prTokens(assoc){
+    function prTokens(assoc: Assoc){
         do{
             if(token.id === T.STRING){
                 gb.defineTokenPrec(token.val,assoc,false,token.line);
@@ -401,7 +412,7 @@ function parse(scanner){
                     nt();
                     do{
                         tokenDef();
-                    }while(token.id as number === T.STRING);
+                    }while(token.id as T === T.STRING);
                     break;
                 case T.LEFT_DIR: 
                     nt();
@@ -437,18 +448,14 @@ function parse(scanner){
     /**
      * tokenDef() ->
      * 
-     * (<STRING>|<TOKEN>) [<NAME>]
+     * <STRING> [<NAME>]
      */
     function tokenDef(){
         var name = token.val;
         var alias: string = '';
         
         var tline = token.line;
-        if(token.id !== T.STRING && token.id !== T.TOKEN){
-            throw new E('unexpeted token "' + tokenNames[token.id] + '",expecting STRING or TOKEN',token.line);
-        }
-        var isString = token.id === T.STRING;
-        nt();
+        expect(T.STRING);
         if(token.id as T === T.NAME){
             alias = token.val;
             nt();
@@ -495,19 +502,26 @@ function parse(scanner){
     /**
      * ruleItems() ->
      * 
-     * ( <NAME> | (<STRING>|<TOKEN>) | <BLOCK> )* [ '%prec' (<STRING>|<NAME>) [ <BLOCK> ] ]
+     * ( <NAME> | (<STRING>|"<" <NAME> ">") | <BLOCK> )* [ '%prec' (<STRING>|<NAME>) [ <BLOCK> ] ]
      * 
      */
     function ruleItems(){
-        while(token.id === T.NAME || token.id === T.TOKEN || token.id === T.STRING || token.id === T.BLOCK){
+        while(token.id === T.NAME || token.id === T.LT || token.id === T.STRING || token.id === T.BLOCK){
             let t = token.clone();
             if(token.id === T.NAME){
                 nt();
-                gb.addRuleItem(t.val,false,t.line);
+                gb.addRuleItem(t.val,RuleItemType.NAME,t.line);
             }
-            else if(token.id === T.STRING || token.id === T.TOKEN){
+            else if(token.id === T.STRING){
                 nt();
-                gb.addRuleItem(t.val,true,t.line);
+                gb.addRuleItem(t.val,RuleItemType.STRING,t.line);
+            }
+            else if(token.id === T.LT){
+                nt();
+                t = token.clone();
+                expect(T.NAME);
+                expect(T.GT);
+                gb.addRuleItem(t.val,RuleItemType.TOKEN,t.line);
             }
             if(token.id === T.BLOCK){
                 gb.addAction(token.val);
@@ -536,6 +550,7 @@ function parse(scanner){
             }
         }
     }
+
     nt();
     file();
 
@@ -561,11 +576,11 @@ var highlightUtil = {
     scanner: scan
 };
 
-function parseSource(source){
+function parseSource(source: InputStream, ctx: Context){
     var scanner = scan();
     scanner.init(source);
     // need to filter comments.
-    return parse(commentFilter(scanner));
+    return parse(commentFilter(scanner), ctx);
 }
 
 export { highlightUtil,parseSource };

@@ -61,7 +61,7 @@ export class Item{
             }
             else {
                 //var set1 = g.sym[mItem].firstSet
-                var set1 = g.nts[mItem - g.tokenCount].firstSet
+                var set1 = g.nts[-mItem - 1].firstSet
                 set.union(set1);
                 set.remove(0);
                 if(!set1.contains(0)){
@@ -127,10 +127,10 @@ export class ItemSet implements ListNode<ItemSet>{
                 var item = this.it[hash];
                 if(item.changed && item.canShift()){
                     var ritem = item.getShift();
-                    if(!this.g.isToken(ritem)){
+                    if(ritem < 0){
                         tSet.removeAll();
                         item.getFollowSet(tSet);
-                        this.g.forEachRuleOfNt(ritem - this.g.tokenCount,function(rule){
+                        this.g.forEachRuleOfNt(-ritem - 1,function(rule){
                             changed = cela.add(rule,0,false,tSet,false) || changed;
                             return false;
                         });

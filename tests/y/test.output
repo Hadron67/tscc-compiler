@@ -1,0 +1,31 @@
+state 0
+    [ 0: (accept) => . start ]*
+    [ 1: start => . E ]
+    [ 2: E => . "a" ]
+    [ 3: E => . "b" ]
+    "a" : shift,and goto state 3
+    "b" : shift,and goto state 4
+    start : goto state 1
+    E : goto state 2
+
+
+state 1
+    [ 0: (accept) => start . ]*
+    "eof" : reduce with rule 0
+
+
+state 2
+    [ 1: start => E . ]*
+    "eof" : reduce with rule 1
+
+
+state 3
+    [ 2: E => "a" . ]*
+    "eof" : reduce with rule 2
+
+
+state 4
+    [ 3: E => "b" . ]*
+    "eof" : reduce with rule 3
+
+

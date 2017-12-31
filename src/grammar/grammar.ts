@@ -1,5 +1,5 @@
 import { TokenSet } from './token-set';
-import { TokenDef, TokenEntry } from './token-entry'
+import { TokenDef, TokenEntry, Assoc } from './token-entry'
 
 
 //@type{{sym: string,alias: string,line: number,pr: number,assoc: Assoc,used: boolean}}
@@ -8,7 +8,8 @@ import { TokenDef, TokenEntry } from './token-entry'
 export interface NtDef{
     sym: string,
     firstSet: TokenSet,
-    used: boolean
+    used: boolean,
+    rules: Rule[]
 }
 
 export class Rule {
@@ -23,6 +24,18 @@ export class Rule {
         public index: number,
         public line: number 
     ){}
+
+    calcPr(){
+        if(this.pr === -1){
+            for(let i = this.rhs.length - 1; i >= 0; i--){
+                let item = this.rhs[i];
+                if(item >= 0){
+                    this.g.tokens[item].assoc !== Assoc.UNDEFINED && 
+                    (this.pr = this.g.tokens[item].pr);
+                }
+            }
+        }
+    }
     public toString(marker?: number){
         var ret = this.index + ': ' + this.g.nts[this.lhs].sym + ' =>';
         for(var i = 0;i < this.rhs.length;i++){
@@ -30,11 +43,11 @@ export class Rule {
             if(marker === i){
                 ret += ' .';
             }
-            if(this.g.isToken(r)){
+            if(r >= 0){
                 ret += ' "' + this.g.tokens[r].sym + '"';
             }
             else {
-                ret += ' ' + this.g.nts[r - this.g.tokenCount].sym;
+                ret += ' ' + this.g.nts[-r - 1].sym;
             }
         }
         if(marker === this.rhs.length){
@@ -47,22 +60,21 @@ export class Grammar implements TokenEntry{
     public tokens: TokenDef[] = [];
     public tokenCount: number = 0;
     public nts: NtDef[] = [];
-    public rules: Rule[][] = [];
 
     isToken(t: number): boolean{
-        return t < this.tokenCount;
+        return t >= 0;
     }
 
     forEachRule(cb: (index: number, rule: Rule) => void): void{
-        for(var i = 0;i < this.rules.length;i++){
-            var rules = this.rules[i];
+        for(var i = 0;i < this.nts.length;i++){
+            var rules = this.nts[i].rules;
             for(var j = 0;j < rules.length;j++){
                 cb(i,rules[j]);
             }
         }
     }
     forEachRuleOfNt(lhs: number, cb: (rule: Rule) => boolean): void{
-        var rules = this.rules[lhs];
+        var rules = this.nts[lhs].rules;
         for(var j = 0;j < rules.length;j++){
             if(cb(rules[j])){
                 break;
@@ -75,23 +87,23 @@ export class Grammar implements TokenEntry{
             changed = false;
             // iterate for each non terminal
             for(var i = 0;i < this.nts.length;i++){
-                var rules = this.rules[i];
+                var rules = this.nts[i].rules;
                 var firstSet = this.nts[i].firstSet;
                 for(var j = 0;j < rules.length;j++){
                     var rule = rules[j];
                     if(rule.rhs.length === 0){
-                        changed = changed || firstSet.add(0);
+                        changed = firstSet.add(0) || changed;
                     }
                     else {
                         for(var k = 0;k < rule.rhs.length;k++){
                             var ritem = rule.rhs[k];
                             if(this.isToken(ritem)){
-                                changed = changed || firstSet.add(ritem + 1);
+                                changed = firstSet.add(ritem + 1) || changed;
                                 break;
                             }
                             else {
                                 if(i !== ritem){
-                                    changed = changed || firstSet.union(this.nts[ritem - this.tokenCount].firstSet);
+                                    changed = firstSet.union(this.nts[-ritem - 1].firstSet) || changed;
                                 }
                                 if(!firstSet.contains(0)){
                                     break;

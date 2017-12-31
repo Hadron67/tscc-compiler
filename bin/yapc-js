@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-
 'use strict';
-var opt = process.argv;
-opt.shift();
-opt.shift();
-process.exit(require('../cli/jscc-cli.js')(opt));
+
+require('../cli/jscc-cli.js')(process.argv)
+.then(function(ret){
+    process.exit(ret);
+});
