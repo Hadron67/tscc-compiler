@@ -2,43 +2,65 @@ import { JsccError as E } from '../util/E';
 import { Action } from '../grammar/item-set';
 import { Grammar } from '../grammar/grammar';
 import { ParseTable } from '../grammar/ptable';
+import { TokenDef, convertTokenToString } from '../grammar/token-entry';
 
 function testParse(g: Grammar, pt: ParseTable, tokens: string[]): string[]{
-    var tk = [];
-    for(var i = 0; i < tokens.length;i++){
-        var tid = g.findToken(tokens[i]);
-        if(tid === -1){
-            throw new E('cannot recognize "' + tokens[i] + '" as a token');
+    var tk: TokenDef[] = [];
+    for(let tname of tokens){
+        let tdef: TokenDef;
+        if(/<[^>]+>/.test(tname)){
+            tdef = g.findTokenByName(tname.substr(1, tname.length - 2));
+            if(tdef === null){
+                throw new E(`cannot recognize ${tname} as a token`);
+            }
         }
-        tk.push(tid);
+        else {
+            let defs = g.findTokensByAlias(tname);
+            if(defs.length === 0){
+                throw new E(`cannot recognize "${tname}" as a token`);
+            }
+            if(defs.length > 1){
+                let msg = '';
+                for(let def of defs){
+                    msg += `<${def.sym}> `;
+                }
+                throw new E(`cannot recognize "${tname}" as a token, since it can be ${msg}`);
+            }
+            tdef = defs[0];
+        }
+        tk.push(tdef);
     }
     var state = [ 0 ];
-    var stack = [];
-    var ret = [];
+    var stack: string[] = [];
+    var ret: string[] = [];
     function s(){
         return state[state.length - 1];
     }
-    function shift(ns){
+    function shift(ns: number){
         state.push(ns);
-        stack.push(g.tokens[tk.shift()].sym);
+        let tdef = tk.shift();
+        // tdef.alias === null ? stack.push(`<${tdef.sym}>`) : stack.push(tdef.alias);
+        stack.push(convertTokenToString(tdef));
+        // stack.push(g.tokens[tk.shift()].sym);
     }
     function reduce(rule){
         
     }
     function dump(){
         var ret = '';
-        for(var i = 0;i < stack.length;i++){
-            ret += stack[i] + ' ';
+        for(let s of stack){
+            ret += s + ' ';
         }
         ret += '| ';
-        for(var i = 0;i < tk.length;i++){
-            ret += g.tokens[tk[i]].sym + ' ';
+        for(let tdef of tk){
+            ret += convertTokenToString(tdef);
+            ret += ' ';
         }
         return ret;
     }
     ret.push(dump());
     do{
-        var item = pt.lookupShift(s(),tk[0] || 0);
+        var item = pt.lookupShift(s(),tk[0] ? tk[0].index : 0);
         if(item !== null){
             if(item.actionType === Action.SHIFT){
                 shift(item.shift.stateIndex);

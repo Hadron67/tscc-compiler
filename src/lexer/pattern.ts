@@ -30,7 +30,7 @@ function lexerBuilder<T>(regs: { [s: string]: string } = {}){
         done: function(){
             head.removeEpsilons();
             var dhead = head.toDFA();
-            var ret = new DFA<T>(dhead.states,actions);
+            var ret = new DFA<T>(dhead.states);
             return ret;
         }
     };

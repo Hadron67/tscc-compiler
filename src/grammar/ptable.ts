@@ -3,7 +3,7 @@ import { YYTAB } from '../util/common';
 import { endl, OutputStream } from '../util/io';
 import { Action, Item, ItemSet } from './item-set';
 import { List } from '../util/list';
-
+import { convertTokenToString } from './token-entry';
 
 export class ParseTable{
     g: Grammar;
@@ -47,7 +47,7 @@ export class ParseTable{
             for(let j = 0; j < this.g.tokenCount; j++){
                 let item = this.lookupShift(i, j);
                 if(item.actionType === Action.REDUCE){
-                    
+                    // TODO: unfinished
                 }
             }
         }
@@ -63,7 +63,7 @@ export class ParseTable{
             var shift = '';
             var reduce = '';
             var gotot = '';
-            os.writeln('state ' + i);        
+            os.writeln(`state ${i}`);        
             set.forEach(function(item){
                 os.writeln(YYTAB + item.toString({ showTrailer: false }));
             });
@@ -71,17 +71,17 @@ export class ParseTable{
                 var item = cela.lookupShift(i,j);
                 if(item !== null){
                     if(item.actionType === Action.SHIFT){
-                        shift += YYTAB + '"' + g.tokens[j].sym + '" : ' + 'shift,and goto state ' + item.shift.stateIndex + endl;
+                        shift += `${YYTAB}${convertTokenToString(g.tokens[j])} : shift, and goto state ${item.shift.stateIndex}${endl}`;
                     }
                     else {
-                        reduce += YYTAB + '"' + g.tokens[j].sym + '" : ' + 'reduce with rule ' + item.rule.index + endl;
+                        reduce += `${YYTAB}${convertTokenToString(g.tokens[j])} : reduce with rule ${item.rule.index}${endl}`;
                     }
                 }
             }
             for(var j = 0;j < ntCount;j++){
                 var item = cela.lookupGoto(i,j);
                 if(item !== null){
-                    gotot += YYTAB + '' + g.nts[j].sym + ' : ' + 'goto state ' + item.shift.stateIndex + endl;
+                    gotot += `${YYTAB}${g.nts[j].sym} : goto state ${item.shift.stateIndex}${endl}`;
                 }
             }
             os.writeln(shift + reduce + gotot);

@@ -1,9 +1,19 @@
-
 'use strict';
 
 var fs = require('fs');
 var jscc = require('../lib/jscc.js');
 var parseArgs = require('./arg.js');
+var pkg = require('../package.json');
+
+var help = 
+`usage: ${pkg.name} [options] file
+   or  ${pkg.name} --help|-h
+
+options:
+    -o, --output  Specify output file;
+    -t, --test    Run test on the given input string;
+    -h, --help    Print this help message and exit.
+`;
 
 function stream(st){
     return {
@@ -23,54 +33,79 @@ function pass(a){
     });
 }
 
-function main(options){
+function readFile(fname){
+    return new Promise(function(accept, reject){
+        fs.readFile(fname, function(err, data){
+            err ? reject(err) : accept(data.toString('utf-8'));
+        });
+    });
+}
+
+function generate(arg){
     jscc.setDebugger(console);
     var consoleStream = stream(process.stdout);
-    try {
-        var arg = parseArgs(options);
-    }
-    catch(e){
-        console.log(e.toString());
-        console.log('try yapc-js --help for help');
-        process.exit(-1);
+    
+    if(arg.help){
+        console.log(help);
+        process.exit(0);
     }
 
-    var input = fs.readFileSync(arg.input,'utf-8');
-    var result = jscc.genResult(jscc.io.StringIS(input));
-    if(result.hasError()){
-        result.printError(consoleStream);
-        return pass(result);
-    }
-    if(result.hasWarning()){
-        result.printWarning(consoleStream);
-    }
-
-    if(arg.test){
-        var r = result.testParse(arg.test.split(/[ ]+/g));
-        for(var i = 0;i < r.length;i++){
-            console.log(r[i]);
+    // var input = fs.readFileSync(arg.input,'utf-8');
+    return readFile(arg.input)
+    .then(function(input){
+        var result = jscc.genResult(jscc.io.StringIS(input));
+        if(result.hasWarning()){
+            result.printWarning(consoleStream);
         }
-    }
-
-    // no console output from now on
-    var output = fs.createWriteStream(arg.output);
-    output.cork();
-    result.printTable(stream(output));
-    output.uncork();
-    output.close();
-    return new Promise(function(acc, rej){
-        output.on('close', function(){
-            acc(result);
+        if(result.hasError()){
+            result.printError(consoleStream);
+            result.terminated && console.log('compilation terminated');
+            return pass(result);
+        }
+    
+        // no console output from now on
+        var output = fs.createWriteStream(arg.output);
+        output.cork();
+        var os = stream(output);
+        result.printDFA(os);
+        result.printTable(os);
+        output.uncork();
+        output.close();
+        return new Promise(function(acc, rej){
+            output.on('close', function(){
+                acc(result);
+            });
         });
+    });
+}
+
+function main(arg){
+    return generate(arg)
+    .then(function(result){
+        console.log(result.warningSummary());
+        if(arg.test){
+            console.log("preparing for test");
+            var r = result.testParse(arg.test.split(/[ ]+/g));
+            for(var i = 0;i < r.length;i++){
+                console.log(r[i]);
+            }
+        }
     });
 }
 
 module.exports = function(options){
     options.shift();
     options.shift();
-    return main(options)
-    .then(function(result){
-        console.log(result.warningSummary());    
-        return result.hasError() ? -1 : 0;
+    try {
+        var arg = parseArgs(options);
+    }
+    catch(e){
+        console.log(e.toString());
+        console.log(`try ${pkg.name} --help for help`);
+        return pass(-1);
+    }
+    return main(arg)
+    .catch(function(e){
+        console.log(e.toString());
     });
 }

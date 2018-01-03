@@ -1,0 +1,1494 @@
+state 0(start)
+    [\x9,\xa],\xd,' ' -> state 1
+    '"' -> state 2
+    '$',['A','Z'],'_',['a','z'] -> state 3
+    '%' -> state 4
+    ''' -> state 5
+    '(' -> state 6
+    ')' -> state 7
+    '*' -> state 8
+    '+' -> state 9
+    ',' -> state 10
+    '-' -> state 11
+    '/' -> state 12
+    ['0','9'] -> state 13
+    ':' -> state 14
+    ';' -> state 15
+    '<' -> state 16
+    '=' -> state 17
+    '>' -> state 18
+    '?' -> state 19
+    '[' -> state 20
+    ']' -> state 21
+    '^' -> state 22
+    '{' -> state 23
+    '|' -> state 24
+    '}' -> state 25
+
+state 1(end 0)
+    [\x9,\xa],\xd,' ' -> state 1
+
+state 2
+    [\x0,\x9],[\xb,'!'],['#','['],[']',oo) -> state 26
+    '"' -> state 27
+    '\' -> state 28
+
+state 3(end 3)
+    '$',['A','Z'],'_',['a','z'] -> state 29
+    ['0','9'] -> state 30
+
+state 4
+    '%' -> state 31
+    'l' -> state 32
+    'n' -> state 33
+    'o' -> state 34
+    'r' -> state 35
+
+state 5
+    [\x0,\x9],[\xb,'&'],['(','['],[']',oo) -> state 36
+    ''' -> state 37
+    '\' -> state 38
+
+state 6(end 15)
+
+state 7(end 16)
+
+state 8(end 21)
+
+state 9(end 22)
+
+state 10(end 30)
+
+state 11(end 23)
+
+state 12
+    '*' -> state 39
+    '/' -> state 40
+
+state 13(end 4)
+    ['0','9'] -> state 13
+
+state 14(end 24)
+
+state 15(end 26)
+
+state 16(end 14)
+
+state 17(end 17)
+    '>' -> state 41
+
+state 18(end 13)
+
+state 19(end 20)
+
+state 20(end 18)
+
+state 21(end 19)
+
+state 22(end 29)
+
+state 23(end 6)
+
+state 24(end 28)
+
+state 25(end 7)
+
+state 26
+    [\x0,\x9],[\xb,'!'],['#','['],[']',oo) -> state 26
+    '"' -> state 27
+    '\' -> state 28
+
+state 27(end 5)
+
+state 28
+    '"',''','\','b','f','n','r','t' -> state 42
+    'u','x' -> state 43
+
+state 29(end 3)
+    '$',['A','Z'],'_',['a','z'] -> state 29
+    ['0','9'] -> state 30
+
+state 30(end 3)
+    '$',['A','Z'],'_',['a','z'] -> state 29
+    ['0','9'] -> state 30
+
+state 31(end 27)
+
+state 32
+    'e' -> state 44
+
+state 33
+    'o' -> state 45
+
+state 34
+    'p' -> state 46
+
+state 35
+    'i' -> state 47
+
+state 36
+    [\x0,\x9],[\xb,'&'],['(','['],[']',oo) -> state 36
+    ''' -> state 37
+    '\' -> state 38
+
+state 37(end 5)
+
+state 38
+    '"',''','\','b','f','n','r','t' -> state 48
+    'u','x' -> state 49
+
+state 39
+    [\x0,')'],['+','.'],['0',oo) -> state 50
+    '*' -> state 51
+    '/' -> state 52
+
+state 40(end 2)
+    [\x0,\x9],[\xb,oo) -> state 53
+
+state 41(end 25)
+
+state 42
+    [\x0,\x9],[\xb,'!'],['#','['],[']',oo) -> state 26
+    '"' -> state 27
+    '\' -> state 28
+
+state 43
+    ['0','9'],['A','F'],['a','f'] -> state 54
+
+state 44
+    'f' -> state 55
+    'x' -> state 56
+
+state 45
+    'n' -> state 57
+
+state 46
+    't' -> state 58
+
+state 47
+    'g' -> state 59
+
+state 48
+    [\x0,\x9],[\xb,'&'],['(','['],[']',oo) -> state 36
+    ''' -> state 37
+    '\' -> state 38
+
+state 49
+    ['0','9'],['A','F'],['a','f'] -> state 60
+
+state 50
+    [\x0,')'],['+','.'],['0',oo) -> state 50
+    '*' -> state 51
+    '/' -> state 61
+
+state 51
+    [\x0,'.'],['0',oo) -> state 62
+    '/' -> state 63
+
+state 52
+    '/' -> state 64
+
+state 53(end 2)
+    [\x0,\x9],[\xb,oo) -> state 53
+
+state 54
+    [\x0,\x9],[\xb,'!'],['#','/'],[':','@'],['G','['],[']','`'],['g',oo) -> state 26
+    '"' -> state 27
+    ['0','9'],['A','F'],['a','f'] -> state 65
+    '\' -> state 28
+
+state 55
+    't' -> state 66
+
+state 56(end 9)
+
+state 57
+    'a' -> state 67
+
+state 58
+    'i' -> state 68
+
+state 59
+    'h' -> state 69
+
+state 60
+    [\x0,\x9],[\xb,'&'],['(','/'],[':','@'],['G','['],[']','`'],['g',oo) -> state 36
+    ''' -> state 37
+    ['0','9'],['A','F'],['a','f'] -> state 70
+    '\' -> state 38
+
+state 61
+    [\x0,')'],['+','.'],['0',oo) -> state 50
+    '*' -> state 51
+    '/' -> state 61
+
+state 62
+    [\x0,')'],['+','.'],['0',oo) -> state 50
+    '*' -> state 51
+    '/' -> state 52
+
+state 63(end 1)
+
+state 64
+    [\x0,')'],['+','.'],['0',oo) -> state 50
+    '*' -> state 51
+    '/' -> state 52
+
+state 65
+    [\x0,\x9],[\xb,'!'],['#','/'],[':','@'],['G','['],[']','`'],['g',oo) -> state 26
+    '"' -> state 27
+    ['0','9'],['A','F'],['a','f'] -> state 71
+    '\' -> state 28
+
+state 66(end 10)
+
+state 67
+    's' -> state 72
+
+state 68
+    'o' -> state 73
+
+state 69
+    't' -> state 74
+
+state 70
+    [\x0,\x9],[\xb,'&'],['(','/'],[':','@'],['G','['],[']','`'],['g',oo) -> state 36
+    ''' -> state 37
+    ['0','9'],['A','F'],['a','f'] -> state 75
+    '\' -> state 38
+
+state 71
+    [\x0,\x9],[\xb,'!'],['#','/'],[':','@'],['G','['],[']','`'],['g',oo) -> state 26
+    '"' -> state 27
+    ['0','9'],['A','F'],['a','f'] -> state 76
+    '\' -> state 28
+
+state 72
+    's' -> state 77
+
+state 73
+    'n' -> state 78
+
+state 74(end 11)
+
+state 75
+    [\x0,\x9],[\xb,'&'],['(','/'],[':','@'],['G','['],[']','`'],['g',oo) -> state 36
+    ''' -> state 37
+    ['0','9'],['A','F'],['a','f'] -> state 79
+    '\' -> state 38
+
+state 76
+    [\x0,\x9],[\xb,'!'],['#','['],[']',oo) -> state 26
+    '"' -> state 27
+    '\' -> state 28
+
+state 77
+    'o' -> state 80
+
+state 78(end 8)
+
+state 79
+    [\x0,\x9],[\xb,'&'],['(','['],[']',oo) -> state 36
+    ''' -> state 37
+    '\' -> state 38
+
+state 80
+    'c' -> state 81
+
+state 81(end 12)
+
+
+
+state 0(start)(end 31)
+    [\x0,'z'],'|',['~',oo) -> state 1
+    '{' -> state 2
+    '}' -> state 3
+
+state 1(end 31)
+    [\x0,'z'],'|',['~',oo) -> state 1
+
+state 2(end 32)
+
+state 3(end 33)
+
+
+
+state 0
+    [ 0: (accept) => . start ]*
+    [ 1: start => . options "%%" body "%%" ]
+    [ 2: options => . options option ]
+    [ 3: options => . ]
+    "%option" : reduce with rule 3
+    "%lex" : reduce with rule 3
+    "%left" : reduce with rule 3
+    "%right" : reduce with rule 3
+    "%nonassoc" : reduce with rule 3
+    "%%" : reduce with rule 3
+    start : goto state 1
+    options : goto state 2
+
+
+state 1
+    [ 0: (accept) => start . ]*
+    "eof" : reduce with rule 0
+
+
+state 2
+    [ 1: start => options . "%%" body "%%" ]*
+    [ 2: options => options . option ]*
+    [ 4: option => . "%lex" states_ "{" lexBody "}" ]
+    [ 5: option => . associativeDir assocTokens ]
+    [ 6: option => . "%option" "{" optionBody "}" ]
+    [ 7: associativeDir => . "%left" ]
+    [ 8: associativeDir => . "%right" ]
+    [ 9: associativeDir => . "%nonassoc" ]
+    "%option" : shift, and goto state 7
+    "%lex" : shift, and goto state 5
+    "%left" : shift, and goto state 8
+    "%right" : shift, and goto state 9
+    "%nonassoc" : shift, and goto state 10
+    "%%" : shift, and goto state 3
+    option : goto state 4
+    associativeDir : goto state 6
+
+
+state 3
+    [ 1: start => options "%%" . body "%%" ]*
+    [ 53: body => . body bodyItem ]
+    [ 54: body => . bodyItem ]
+    [ 55: bodyItem => . compoundRule ]
+    [ 56: compoundRule => . <NAME> arrow rules ";" ]
+    <NAME> : shift, and goto state 14
+    body : goto state 11
+    bodyItem : goto state 12
+    compoundRule : goto state 13
+
+
+state 4
+    [ 2: options => options option . ]*
+    "%option" : reduce with rule 2
+    "%lex" : reduce with rule 2
+    "%left" : reduce with rule 2
+    "%right" : reduce with rule 2
+    "%nonassoc" : reduce with rule 2
+    "%%" : reduce with rule 2
+
+
+state 5
+    [ 4: option => "%lex" . states_ "{" lexBody "}" ]*
+    [ 14: states_ => . "<" states ">" ]
+    [ 15: states_ => . ]
+    "<" : shift, and goto state 16
+    "{" : reduce with rule 15
+    states_ : goto state 15
+
+
+state 6
+    [ 5: option => associativeDir . assocTokens ]*
+    [ 10: assocTokens => . assocTokens tokenRef ]
+    [ 11: assocTokens => . tokenRef ]
+    [ 68: tokenRef => . "<" <NAME> ">" ]
+    [ 69: tokenRef => . <STRING> ]
+    <STRING> : shift, and goto state 46
+    "<" : shift, and goto state 45
+    assocTokens : goto state 17
+    tokenRef : goto state 18
+
+
+state 7
+    [ 6: option => "%option" . "{" optionBody "}" ]*
+    "{" : shift, and goto state 19
+
+
+state 8
+    [ 7: associativeDir => "%left" . ]*
+    <STRING> : reduce with rule 7
+    "<" : reduce with rule 7
+
+
+state 9
+    [ 8: associativeDir => "%right" . ]*
+    <STRING> : reduce with rule 8
+    "<" : reduce with rule 8
+
+
+state 10
+    [ 9: associativeDir => "%nonassoc" . ]*
+    <STRING> : reduce with rule 9
+    "<" : reduce with rule 9
+
+
+state 11
+    [ 1: start => options "%%" body . "%%" ]*
+    [ 53: body => body . bodyItem ]*
+    [ 55: bodyItem => . compoundRule ]
+    [ 56: compoundRule => . <NAME> arrow rules ";" ]
+    <NAME> : shift, and goto state 14
+    "%%" : shift, and goto state 20
+    bodyItem : goto state 21
+    compoundRule : goto state 13
+
+
+state 12
+    [ 54: body => bodyItem . ]*
+    <NAME> : reduce with rule 54
+    "%%" : reduce with rule 54
+
+
+state 13
+    [ 55: bodyItem => compoundRule . ]*
+    <NAME> : reduce with rule 55
+    "%%" : reduce with rule 55
+
+
+state 14
+    [ 56: compoundRule => <NAME> . arrow rules ";" ]*
+    [ 57: arrow => . ":" ]
+    [ 58: arrow => . "=>" ]
+    ":" : shift, and goto state 23
+    "=>" : shift, and goto state 24
+    arrow : goto state 22
+
+
+state 15
+    [ 4: option => "%lex" states_ . "{" lexBody "}" ]*
+    "{" : shift, and goto state 25
+
+
+state 16
+    [ 14: states_ => "<" . states ">" ]*
+    [ 16: states => . <NAME> ]
+    [ 17: states => . states "," <NAME> ]
+    <NAME> : shift, and goto state 27
+    states : goto state 26
+
+
+state 17
+    [ 5: option => associativeDir assocTokens . ]*
+    [ 10: assocTokens => assocTokens . tokenRef ]*
+    [ 68: tokenRef => . "<" <NAME> ">" ]
+    [ 69: tokenRef => . <STRING> ]
+    <STRING> : shift, and goto state 46
+    "<" : shift, and goto state 45
+    "%option" : reduce with rule 5
+    "%lex" : reduce with rule 5
+    "%left" : reduce with rule 5
+    "%right" : reduce with rule 5
+    "%nonassoc" : reduce with rule 5
+    "%%" : reduce with rule 5
+    tokenRef : goto state 28
+
+
+state 18
+    [ 11: assocTokens => tokenRef . ]*
+    <STRING> : reduce with rule 11
+    "%option" : reduce with rule 11
+    "%lex" : reduce with rule 11
+    "%left" : reduce with rule 11
+    "%right" : reduce with rule 11
+    "%nonassoc" : reduce with rule 11
+    "<" : reduce with rule 11
+    "%%" : reduce with rule 11
+
+
+state 19
+    [ 6: option => "%option" "{" . optionBody "}" ]*
+    [ 12: optionBody => . optionBody <NAME> "=" <STRING> ]
+    [ 13: optionBody => . ]
+    <NAME> : reduce with rule 13
+    "}" : reduce with rule 13
+    optionBody : goto state 29
+
+
+state 20
+    [ 1: start => options "%%" body "%%" . ]*
+    "eof" : reduce with rule 1
+
+
+state 21
+    [ 53: body => body bodyItem . ]*
+    <NAME> : reduce with rule 53
+    "%%" : reduce with rule 53
+
+
+state 22
+    [ 56: compoundRule => <NAME> arrow . rules ";" ]*
+    [ 59: rules => . rules "|" rule ]
+    [ 60: rules => . rule ]
+    [ 61: rule => . ruleItems ]
+    [ 62: ruleItems => . ruleItems ruleItem ]
+    [ 63: ruleItems => . ]
+    <NAME> : reduce with rule 63
+    <STRING> : reduce with rule 63
+    "{" : reduce with rule 63
+    "<" : reduce with rule 63
+    "[" : reduce with rule 63
+    ";" : reduce with rule 63
+    "|" : reduce with rule 63
+    rules : goto state 30
+    rule : goto state 31
+    ruleItems : goto state 32
+
+
+state 23
+    [ 57: arrow => ":" . ]*
+    <NAME> : reduce with rule 57
+    <STRING> : reduce with rule 57
+    "{" : reduce with rule 57
+    "<" : reduce with rule 57
+    "[" : reduce with rule 57
+    ";" : reduce with rule 57
+    "|" : reduce with rule 57
+
+
+state 24
+    [ 58: arrow => "=>" . ]*
+    <NAME> : reduce with rule 58
+    <STRING> : reduce with rule 58
+    "{" : reduce with rule 58
+    "<" : reduce with rule 58
+    "[" : reduce with rule 58
+    ";" : reduce with rule 58
+    "|" : reduce with rule 58
+
+
+state 25
+    [ 4: option => "%lex" states_ "{" . lexBody "}" ]*
+    [ 18: lexBody => . lexBody lexBodyItem ]
+    [ 19: lexBody => . ]
+    <NAME> : reduce with rule 19
+    "}" : reduce with rule 19
+    "<" : reduce with rule 19
+    lexBody : goto state 33
+
+
+state 26
+    [ 14: states_ => "<" states . ">" ]*
+    [ 17: states => states . "," <NAME> ]*
+    ">" : shift, and goto state 34
+    "," : shift, and goto state 35
+
+
+state 27
+    [ 16: states => <NAME> . ]*
+    ">" : reduce with rule 16
+    "," : reduce with rule 16
+
+
+state 28
+    [ 10: assocTokens => assocTokens tokenRef . ]*
+    <STRING> : reduce with rule 10
+    "%option" : reduce with rule 10
+    "%lex" : reduce with rule 10
+    "%left" : reduce with rule 10
+    "%right" : reduce with rule 10
+    "%nonassoc" : reduce with rule 10
+    "<" : reduce with rule 10
+    "%%" : reduce with rule 10
+
+
+state 29
+    [ 6: option => "%option" "{" optionBody . "}" ]*
+    [ 12: optionBody => optionBody . <NAME> "=" <STRING> ]*
+    <NAME> : shift, and goto state 37
+    "}" : shift, and goto state 36
+
+
+state 30
+    [ 56: compoundRule => <NAME> arrow rules . ";" ]*
+    [ 59: rules => rules . "|" rule ]*
+    ";" : shift, and goto state 38
+    "|" : shift, and goto state 39
+
+
+state 31
+    [ 60: rules => rule . ]*
+    ";" : reduce with rule 60
+    "|" : reduce with rule 60
+
+
+state 32
+    [ 61: rule => ruleItems . ]*
+    [ 62: ruleItems => ruleItems . ruleItem ]*
+    [ 64: ruleItem => . <NAME> ]
+    [ 65: ruleItem => . tokenRef ]
+    [ 66: ruleItem => . block ]
+    [ 67: ruleItem => . "[" lexActions "]" ]
+    [ 68: tokenRef => . "<" <NAME> ">" ]
+    [ 69: tokenRef => . <STRING> ]
+    [ 70: block => . @0 "{" innerBlock @1 "}" ]
+    [ 71: @0 => . ]
+    <NAME> : shift, and goto state 41
+    <STRING> : shift, and goto state 46
+    "<" : shift, and goto state 45
+    "[" : shift, and goto state 44
+    "{" : reduce with rule 71
+    ";" : reduce with rule 61
+    "|" : reduce with rule 61
+    ruleItem : goto state 40
+    tokenRef : goto state 42
+    block : goto state 43
+    @0 : goto state 74
+
+
+state 33
+    [ 4: option => "%lex" states_ "{" lexBody . "}" ]*
+    [ 18: lexBody => lexBody . lexBodyItem ]*
+    [ 20: lexBodyItem => . <NAME> "=" "<" regexp ">" ]
+    [ 21: lexBodyItem => . "<" regexp ">" lexActions_ ]
+    [ 22: lexBodyItem => . "<" <NAME> ":" regexp ">" lexActions_ ]
+    <NAME> : shift, and goto state 49
+    "}" : shift, and goto state 47
+    "<" : shift, and goto state 50
+    lexBodyItem : goto state 48
+
+
+state 34
+    [ 14: states_ => "<" states ">" . ]*
+    "{" : reduce with rule 14
+
+
+state 35
+    [ 17: states => states "," . <NAME> ]*
+    <NAME> : shift, and goto state 51
+
+
+state 36
+    [ 6: option => "%option" "{" optionBody "}" . ]*
+    "%option" : reduce with rule 6
+    "%lex" : reduce with rule 6
+    "%left" : reduce with rule 6
+    "%right" : reduce with rule 6
+    "%nonassoc" : reduce with rule 6
+    "%%" : reduce with rule 6
+
+
+state 37
+    [ 12: optionBody => optionBody <NAME> . "=" <STRING> ]*
+    "=" : shift, and goto state 52
+
+
+state 38
+    [ 56: compoundRule => <NAME> arrow rules ";" . ]*
+    <NAME> : reduce with rule 56
+    "%%" : reduce with rule 56
+
+
+state 39
+    [ 59: rules => rules "|" . rule ]*
+    [ 61: rule => . ruleItems ]
+    [ 62: ruleItems => . ruleItems ruleItem ]
+    [ 63: ruleItems => . ]
+    <NAME> : reduce with rule 63
+    <STRING> : reduce with rule 63
+    "{" : reduce with rule 63
+    "<" : reduce with rule 63
+    "[" : reduce with rule 63
+    ";" : reduce with rule 63
+    "|" : reduce with rule 63
+    rule : goto state 53
+    ruleItems : goto state 32
+
+
+state 40
+    [ 62: ruleItems => ruleItems ruleItem . ]*
+    <NAME> : reduce with rule 62
+    <STRING> : reduce with rule 62
+    "{" : reduce with rule 62
+    "<" : reduce with rule 62
+    "[" : reduce with rule 62
+    ";" : reduce with rule 62
+    "|" : reduce with rule 62
+
+
+state 41
+    [ 64: ruleItem => <NAME> . ]*
+    <NAME> : reduce with rule 64
+    <STRING> : reduce with rule 64
+    "{" : reduce with rule 64
+    "<" : reduce with rule 64
+    "[" : reduce with rule 64
+    ";" : reduce with rule 64
+    "|" : reduce with rule 64
+
+
+state 42
+    [ 65: ruleItem => tokenRef . ]*
+    <NAME> : reduce with rule 65
+    <STRING> : reduce with rule 65
+    "{" : reduce with rule 65
+    "<" : reduce with rule 65
+    "[" : reduce with rule 65
+    ";" : reduce with rule 65
+    "|" : reduce with rule 65
+
+
+state 43
+    [ 66: ruleItem => block . ]*
+    <NAME> : reduce with rule 66
+    <STRING> : reduce with rule 66
+    "{" : reduce with rule 66
+    "<" : reduce with rule 66
+    "[" : reduce with rule 66
+    ";" : reduce with rule 66
+    "|" : reduce with rule 66
+
+
+state 44
+    [ 67: ruleItem => "[" . lexActions "]" ]*
+    [ 26: lexActions => . lexActions "," lexAction ]
+    [ 27: lexActions => . lexAction ]
+    [ 28: lexAction => . "+" <NAME> ]
+    [ 29: lexAction => . "-" ]
+    [ 30: lexAction => . block ]
+    [ 31: lexAction => . "=" <STRING> ]
+    [ 70: block => . @0 "{" innerBlock @1 "}" ]
+    [ 71: @0 => . ]
+    "=" : shift, and goto state 59
+    "+" : shift, and goto state 56
+    "-" : shift, and goto state 57
+    "{" : reduce with rule 71
+    lexActions : goto state 54
+    lexAction : goto state 55
+    block : goto state 58
+    @0 : goto state 74
+
+
+state 45
+    [ 68: tokenRef => "<" . <NAME> ">" ]*
+    <NAME> : shift, and goto state 60
+
+
+state 46
+    [ 69: tokenRef => <STRING> . ]*
+    <NAME> : reduce with rule 69
+    <STRING> : reduce with rule 69
+    "{" : reduce with rule 69
+    "%option" : reduce with rule 69
+    "%lex" : reduce with rule 69
+    "%left" : reduce with rule 69
+    "%right" : reduce with rule 69
+    "%nonassoc" : reduce with rule 69
+    "<" : reduce with rule 69
+    "[" : reduce with rule 69
+    ";" : reduce with rule 69
+    "%%" : reduce with rule 69
+    "|" : reduce with rule 69
+
+
+state 47
+    [ 4: option => "%lex" states_ "{" lexBody "}" . ]*
+    "%option" : reduce with rule 4
+    "%lex" : reduce with rule 4
+    "%left" : reduce with rule 4
+    "%right" : reduce with rule 4
+    "%nonassoc" : reduce with rule 4
+    "%%" : reduce with rule 4
+
+
+state 48
+    [ 18: lexBody => lexBody lexBodyItem . ]*
+    <NAME> : reduce with rule 18
+    "}" : reduce with rule 18
+    "<" : reduce with rule 18
+
+
+state 49
+    [ 20: lexBodyItem => <NAME> . "=" "<" regexp ">" ]*
+    "=" : shift, and goto state 61
+
+
+state 50
+    [ 21: lexBodyItem => "<" . regexp ">" lexActions_ ]*
+    [ 22: lexBodyItem => "<" . <NAME> ":" regexp ">" lexActions_ ]*
+    [ 32: regexp => . regexp "|" simpleRE ]
+    [ 33: regexp => . simpleRE ]
+    [ 34: simpleRE => . simpleRE basicRE ]
+    [ 35: simpleRE => . basicRE ]
+    [ 36: basicRE => . primitiveRE rePostfix ]
+    [ 41: primitiveRE => . "(" regexp ")" ]
+    [ 42: primitiveRE => . "[" inverse_ setRE_ "]" ]
+    [ 43: primitiveRE => . <STRING> ]
+    [ 44: primitiveRE => . "<" <NAME> ">" ]
+    <NAME> : shift, and goto state 63
+    <STRING> : shift, and goto state 65
+    "<" : shift, and goto state 66
+    "(" : shift, and goto state 81
+    "[" : shift, and goto state 64
+    regexp : goto state 62
+    simpleRE : goto state 78
+    basicRE : goto state 79
+    primitiveRE : goto state 80
+
+
+state 51
+    [ 17: states => states "," <NAME> . ]*
+    ">" : reduce with rule 17
+    "," : reduce with rule 17
+
+
+state 52
+    [ 12: optionBody => optionBody <NAME> "=" . <STRING> ]*
+    <STRING> : shift, and goto state 67
+
+
+state 53
+    [ 59: rules => rules "|" rule . ]*
+    ";" : reduce with rule 59
+    "|" : reduce with rule 59
+
+
+state 54
+    [ 67: ruleItem => "[" lexActions . "]" ]*
+    [ 26: lexActions => lexActions . "," lexAction ]*
+    "]" : shift, and goto state 68
+    "," : shift, and goto state 69
+
+
+state 55
+    [ 27: lexActions => lexAction . ]*
+    "]" : reduce with rule 27
+    "," : reduce with rule 27
+
+
+state 56
+    [ 28: lexAction => "+" . <NAME> ]*
+    <NAME> : shift, and goto state 70
+
+
+state 57
+    [ 29: lexAction => "-" . ]*
+    "]" : reduce with rule 29
+    "," : reduce with rule 29
+
+
+state 58
+    [ 30: lexAction => block . ]*
+    "]" : reduce with rule 30
+    "," : reduce with rule 30
+
+
+state 59
+    [ 31: lexAction => "=" . <STRING> ]*
+    <STRING> : shift, and goto state 71
+
+
+state 60
+    [ 68: tokenRef => "<" <NAME> . ">" ]*
+    ">" : shift, and goto state 72
+
+
+state 61
+    [ 20: lexBodyItem => <NAME> "=" . "<" regexp ">" ]*
+    "<" : shift, and goto state 75
+
+
+state 62
+    [ 21: lexBodyItem => "<" regexp . ">" lexActions_ ]*
+    [ 32: regexp => regexp . "|" simpleRE ]*
+    ">" : shift, and goto state 76
+    "|" : shift, and goto state 92
+
+
+state 63
+    [ 22: lexBodyItem => "<" <NAME> . ":" regexp ">" lexActions_ ]*
+    ":" : shift, and goto state 77
+
+
+state 64
+    [ 42: primitiveRE => "[" . inverse_ setRE_ "]" ]*
+    [ 45: inverse_ => . "^" ]
+    [ 46: inverse_ => . ]
+    "^" : shift, and goto state 83
+    <STRING> : reduce with rule 46
+    "]" : reduce with rule 46
+    inverse_ : goto state 82
+
+
+state 65
+    [ 43: primitiveRE => <STRING> . ]*
+    <STRING> : reduce with rule 43
+    ">" : reduce with rule 43
+    "<" : reduce with rule 43
+    "(" : reduce with rule 43
+    ")" : reduce with rule 43
+    "[" : reduce with rule 43
+    "?" : reduce with rule 43
+    "*" : reduce with rule 43
+    "+" : reduce with rule 43
+    "|" : reduce with rule 43
+
+
+state 66
+    [ 44: primitiveRE => "<" . <NAME> ">" ]*
+    <NAME> : shift, and goto state 84
+
+
+state 67
+    [ 12: optionBody => optionBody <NAME> "=" <STRING> . ]*
+    <NAME> : reduce with rule 12
+    "}" : reduce with rule 12
+
+
+state 68
+    [ 67: ruleItem => "[" lexActions "]" . ]*
+    <NAME> : reduce with rule 67
+    <STRING> : reduce with rule 67
+    "{" : reduce with rule 67
+    "<" : reduce with rule 67
+    "[" : reduce with rule 67
+    ";" : reduce with rule 67
+    "|" : reduce with rule 67
+
+
+state 69
+    [ 26: lexActions => lexActions "," . lexAction ]*
+    [ 28: lexAction => . "+" <NAME> ]
+    [ 29: lexAction => . "-" ]
+    [ 30: lexAction => . block ]
+    [ 31: lexAction => . "=" <STRING> ]
+    [ 70: block => . @0 "{" innerBlock @1 "}" ]
+    [ 71: @0 => . ]
+    "=" : shift, and goto state 59
+    "+" : shift, and goto state 56
+    "-" : shift, and goto state 57
+    "{" : reduce with rule 71
+    lexAction : goto state 85
+    block : goto state 58
+    @0 : goto state 74
+
+
+state 70
+    [ 28: lexAction => "+" <NAME> . ]*
+    "]" : reduce with rule 28
+    "," : reduce with rule 28
+
+
+state 71
+    [ 31: lexAction => "=" <STRING> . ]*
+    "]" : reduce with rule 31
+    "," : reduce with rule 31
+
+
+state 72
+    [ 68: tokenRef => "<" <NAME> ">" . ]*
+    <NAME> : reduce with rule 68
+    <STRING> : reduce with rule 68
+    "{" : reduce with rule 68
+    "%option" : reduce with rule 68
+    "%lex" : reduce with rule 68
+    "%left" : reduce with rule 68
+    "%right" : reduce with rule 68
+    "%nonassoc" : reduce with rule 68
+    "<" : reduce with rule 68
+    "[" : reduce with rule 68
+    ";" : reduce with rule 68
+    "%%" : reduce with rule 68
+    "|" : reduce with rule 68
+
+
+state 73
+    [ 73: innerBlock => block . ]*
+    "}" : reduce with rule 73
+    <ANY_CODE> : reduce with rule 73
+
+
+state 74
+    [ 70: block => @0 . "{" innerBlock @1 "}" ]*
+    "{" : shift, and goto state 87
+
+
+state 75
+    [ 20: lexBodyItem => <NAME> "=" "<" . regexp ">" ]*
+    [ 32: regexp => . regexp "|" simpleRE ]
+    [ 33: regexp => . simpleRE ]
+    [ 34: simpleRE => . simpleRE basicRE ]
+    [ 35: simpleRE => . basicRE ]
+    [ 36: basicRE => . primitiveRE rePostfix ]
+    [ 41: primitiveRE => . "(" regexp ")" ]
+    [ 42: primitiveRE => . "[" inverse_ setRE_ "]" ]
+    [ 43: primitiveRE => . <STRING> ]
+    [ 44: primitiveRE => . "<" <NAME> ">" ]
+    <STRING> : shift, and goto state 65
+    "<" : shift, and goto state 66
+    "(" : shift, and goto state 81
+    "[" : shift, and goto state 64
+    regexp : goto state 88
+    simpleRE : goto state 78
+    basicRE : goto state 79
+    primitiveRE : goto state 80
+
+
+state 76
+    [ 21: lexBodyItem => "<" regexp ">" . lexActions_ ]*
+    [ 23: lexActions_ => . ":" "[" lexActions "]" ]
+    [ 24: lexActions_ => . ":" block ]
+    [ 25: lexActions_ => . ]
+    ":" : shift, and goto state 90
+    <NAME> : reduce with rule 25
+    "}" : reduce with rule 25
+    "<" : reduce with rule 25
+    lexActions_ : goto state 89
+
+
+state 77
+    [ 22: lexBodyItem => "<" <NAME> ":" . regexp ">" lexActions_ ]*
+    [ 32: regexp => . regexp "|" simpleRE ]
+    [ 33: regexp => . simpleRE ]
+    [ 34: simpleRE => . simpleRE basicRE ]
+    [ 35: simpleRE => . basicRE ]
+    [ 36: basicRE => . primitiveRE rePostfix ]
+    [ 41: primitiveRE => . "(" regexp ")" ]
+    [ 42: primitiveRE => . "[" inverse_ setRE_ "]" ]
+    [ 43: primitiveRE => . <STRING> ]
+    [ 44: primitiveRE => . "<" <NAME> ">" ]
+    <STRING> : shift, and goto state 65
+    "<" : shift, and goto state 66
+    "(" : shift, and goto state 81
+    "[" : shift, and goto state 64
+    regexp : goto state 91
+    simpleRE : goto state 78
+    basicRE : goto state 79
+    primitiveRE : goto state 80
+
+
+state 78
+    [ 33: regexp => simpleRE . ]*
+    [ 34: simpleRE => simpleRE . basicRE ]*
+    [ 36: basicRE => . primitiveRE rePostfix ]
+    [ 41: primitiveRE => . "(" regexp ")" ]
+    [ 42: primitiveRE => . "[" inverse_ setRE_ "]" ]
+    [ 43: primitiveRE => . <STRING> ]
+    [ 44: primitiveRE => . "<" <NAME> ">" ]
+    <STRING> : shift, and goto state 65
+    "<" : shift, and goto state 66
+    "(" : shift, and goto state 81
+    "[" : shift, and goto state 64
+    ">" : reduce with rule 33
+    ")" : reduce with rule 33
+    "|" : reduce with rule 33
+    basicRE : goto state 93
+    primitiveRE : goto state 80
+
+
+state 79
+    [ 35: simpleRE => basicRE . ]*
+    <STRING> : reduce with rule 35
+    ">" : reduce with rule 35
+    "<" : reduce with rule 35
+    "(" : reduce with rule 35
+    ")" : reduce with rule 35
+    "[" : reduce with rule 35
+    "|" : reduce with rule 35
+
+
+state 80
+    [ 36: basicRE => primitiveRE . rePostfix ]*
+    [ 37: rePostfix => . "+" ]
+    [ 38: rePostfix => . "?" ]
+    [ 39: rePostfix => . "*" ]
+    [ 40: rePostfix => . ]
+    "?" : shift, and goto state 96
+    "*" : shift, and goto state 97
+    "+" : shift, and goto state 95
+    <STRING> : reduce with rule 40
+    ">" : reduce with rule 40
+    "<" : reduce with rule 40
+    "(" : reduce with rule 40
+    ")" : reduce with rule 40
+    "[" : reduce with rule 40
+    "|" : reduce with rule 40
+    rePostfix : goto state 94
+
+
+state 81
+    [ 41: primitiveRE => "(" . regexp ")" ]*
+    [ 32: regexp => . regexp "|" simpleRE ]
+    [ 33: regexp => . simpleRE ]
+    [ 34: simpleRE => . simpleRE basicRE ]
+    [ 35: simpleRE => . basicRE ]
+    [ 36: basicRE => . primitiveRE rePostfix ]
+    [ 41: primitiveRE => . "(" regexp ")" ]
+    [ 42: primitiveRE => . "[" inverse_ setRE_ "]" ]
+    [ 43: primitiveRE => . <STRING> ]
+    [ 44: primitiveRE => . "<" <NAME> ">" ]
+    <STRING> : shift, and goto state 65
+    "<" : shift, and goto state 66
+    "(" : shift, and goto state 81
+    "[" : shift, and goto state 64
+    regexp : goto state 98
+    simpleRE : goto state 78
+    basicRE : goto state 79
+    primitiveRE : goto state 80
+
+
+state 82
+    [ 42: primitiveRE => "[" inverse_ . setRE_ "]" ]*
+    [ 47: setRE_ => . setRE ]
+    [ 48: setRE_ => . ]
+    [ 49: setRE => . setRE "," setREItem ]
+    [ 50: setRE => . setREItem ]
+    [ 51: setREItem => . <STRING> ]
+    [ 52: setREItem => . <STRING> "-" <STRING> ]
+    <STRING> : shift, and goto state 102
+    "]" : reduce with rule 48
+    setRE_ : goto state 99
+    setRE : goto state 100
+    setREItem : goto state 101
+
+
+state 83
+    [ 45: inverse_ => "^" . ]*
+    <STRING> : reduce with rule 45
+    "]" : reduce with rule 45
+
+
+state 84
+    [ 44: primitiveRE => "<" <NAME> . ">" ]*
+    ">" : shift, and goto state 103
+
+
+state 85
+    [ 26: lexActions => lexActions "," lexAction . ]*
+    "]" : reduce with rule 26
+    "," : reduce with rule 26
+
+
+state 86
+    [ 74: innerBlock => innerBlock <ANY_CODE> . ]*
+    "}" : reduce with rule 74
+    <ANY_CODE> : reduce with rule 74
+
+
+state 87
+    [ 70: block => @0 "{" . innerBlock @1 "}" ]*
+    [ 73: innerBlock => . block ]
+    [ 74: innerBlock => . innerBlock <ANY_CODE> ]
+    [ 70: block => . @0 "{" innerBlock @1 "}" ]
+    [ 71: @0 => . ]
+    "{" : reduce with rule 71
+    block : goto state 73
+    @0 : goto state 74
+    innerBlock : goto state 104
+
+
+state 88
+    [ 20: lexBodyItem => <NAME> "=" "<" regexp . ">" ]*
+    [ 32: regexp => regexp . "|" simpleRE ]*
+    ">" : shift, and goto state 105
+    "|" : shift, and goto state 92
+
+
+state 89
+    [ 21: lexBodyItem => "<" regexp ">" lexActions_ . ]*
+    <NAME> : reduce with rule 21
+    "}" : reduce with rule 21
+    "<" : reduce with rule 21
+
+
+state 90
+    [ 23: lexActions_ => ":" . "[" lexActions "]" ]*
+    [ 24: lexActions_ => ":" . block ]*
+    [ 70: block => . @0 "{" innerBlock @1 "}" ]
+    [ 71: @0 => . ]
+    "[" : shift, and goto state 106
+    "{" : reduce with rule 71
+    block : goto state 107
+    @0 : goto state 74
+
+
+state 91
+    [ 22: lexBodyItem => "<" <NAME> ":" regexp . ">" lexActions_ ]*
+    [ 32: regexp => regexp . "|" simpleRE ]*
+    ">" : shift, and goto state 108
+    "|" : shift, and goto state 92
+
+
+state 92
+    [ 32: regexp => regexp "|" . simpleRE ]*
+    [ 34: simpleRE => . simpleRE basicRE ]
+    [ 35: simpleRE => . basicRE ]
+    [ 36: basicRE => . primitiveRE rePostfix ]
+    [ 41: primitiveRE => . "(" regexp ")" ]
+    [ 42: primitiveRE => . "[" inverse_ setRE_ "]" ]
+    [ 43: primitiveRE => . <STRING> ]
+    [ 44: primitiveRE => . "<" <NAME> ">" ]
+    <STRING> : shift, and goto state 65
+    "<" : shift, and goto state 66
+    "(" : shift, and goto state 81
+    "[" : shift, and goto state 64
+    simpleRE : goto state 109
+    basicRE : goto state 79
+    primitiveRE : goto state 80
+
+
+state 93
+    [ 34: simpleRE => simpleRE basicRE . ]*
+    <STRING> : reduce with rule 34
+    ">" : reduce with rule 34
+    "<" : reduce with rule 34
+    "(" : reduce with rule 34
+    ")" : reduce with rule 34
+    "[" : reduce with rule 34
+    "|" : reduce with rule 34
+
+
+state 94
+    [ 36: basicRE => primitiveRE rePostfix . ]*
+    <STRING> : reduce with rule 36
+    ">" : reduce with rule 36
+    "<" : reduce with rule 36
+    "(" : reduce with rule 36
+    ")" : reduce with rule 36
+    "[" : reduce with rule 36
+    "|" : reduce with rule 36
+
+
+state 95
+    [ 37: rePostfix => "+" . ]*
+    <STRING> : reduce with rule 37
+    ">" : reduce with rule 37
+    "<" : reduce with rule 37
+    "(" : reduce with rule 37
+    ")" : reduce with rule 37
+    "[" : reduce with rule 37
+    "|" : reduce with rule 37
+
+
+state 96
+    [ 38: rePostfix => "?" . ]*
+    <STRING> : reduce with rule 38
+    ">" : reduce with rule 38
+    "<" : reduce with rule 38
+    "(" : reduce with rule 38
+    ")" : reduce with rule 38
+    "[" : reduce with rule 38
+    "|" : reduce with rule 38
+
+
+state 97
+    [ 39: rePostfix => "*" . ]*
+    <STRING> : reduce with rule 39
+    ">" : reduce with rule 39
+    "<" : reduce with rule 39
+    "(" : reduce with rule 39
+    ")" : reduce with rule 39
+    "[" : reduce with rule 39
+    "|" : reduce with rule 39
+
+
+state 98
+    [ 41: primitiveRE => "(" regexp . ")" ]*
+    [ 32: regexp => regexp . "|" simpleRE ]*
+    ")" : shift, and goto state 110
+    "|" : shift, and goto state 92
+
+
+state 99
+    [ 42: primitiveRE => "[" inverse_ setRE_ . "]" ]*
+    "]" : shift, and goto state 111
+
+
+state 100
+    [ 47: setRE_ => setRE . ]*
+    [ 49: setRE => setRE . "," setREItem ]*
+    "," : shift, and goto state 112
+    "]" : reduce with rule 47
+
+
+state 101
+    [ 50: setRE => setREItem . ]*
+    "]" : reduce with rule 50
+    "," : reduce with rule 50
+
+
+state 102
+    [ 51: setREItem => <STRING> . ]*
+    [ 52: setREItem => <STRING> . "-" <STRING> ]*
+    "-" : shift, and goto state 113
+    "]" : reduce with rule 51
+    "," : reduce with rule 51
+
+
+state 103
+    [ 44: primitiveRE => "<" <NAME> ">" . ]*
+    <STRING> : reduce with rule 44
+    ">" : reduce with rule 44
+    "<" : reduce with rule 44
+    "(" : reduce with rule 44
+    ")" : reduce with rule 44
+    "[" : reduce with rule 44
+    "?" : reduce with rule 44
+    "*" : reduce with rule 44
+    "+" : reduce with rule 44
+    "|" : reduce with rule 44
+
+
+state 104
+    [ 70: block => @0 "{" innerBlock . @1 "}" ]*
+    [ 74: innerBlock => innerBlock . <ANY_CODE> ]*
+    [ 72: @1 => . ]
+    <ANY_CODE> : shift, and goto state 86
+    "}" : reduce with rule 72
+    @1 : goto state 114
+
+
+state 105
+    [ 20: lexBodyItem => <NAME> "=" "<" regexp ">" . ]*
+    <NAME> : reduce with rule 20
+    "}" : reduce with rule 20
+    "<" : reduce with rule 20
+
+
+state 106
+    [ 23: lexActions_ => ":" "[" . lexActions "]" ]*
+    [ 26: lexActions => . lexActions "," lexAction ]
+    [ 27: lexActions => . lexAction ]
+    [ 28: lexAction => . "+" <NAME> ]
+    [ 29: lexAction => . "-" ]
+    [ 30: lexAction => . block ]
+    [ 31: lexAction => . "=" <STRING> ]
+    [ 70: block => . @0 "{" innerBlock @1 "}" ]
+    [ 71: @0 => . ]
+    "=" : shift, and goto state 59
+    "+" : shift, and goto state 56
+    "-" : shift, and goto state 57
+    "{" : reduce with rule 71
+    lexActions : goto state 115
+    lexAction : goto state 55
+    block : goto state 58
+    @0 : goto state 74
+
+
+state 107
+    [ 24: lexActions_ => ":" block . ]*
+    <NAME> : reduce with rule 24
+    "}" : reduce with rule 24
+    "<" : reduce with rule 24
+
+
+state 108
+    [ 22: lexBodyItem => "<" <NAME> ":" regexp ">" . lexActions_ ]*
+    [ 23: lexActions_ => . ":" "[" lexActions "]" ]
+    [ 24: lexActions_ => . ":" block ]
+    [ 25: lexActions_ => . ]
+    ":" : shift, and goto state 90
+    <NAME> : reduce with rule 25
+    "}" : reduce with rule 25
+    "<" : reduce with rule 25
+    lexActions_ : goto state 116
+
+
+state 109
+    [ 32: regexp => regexp "|" simpleRE . ]*
+    [ 34: simpleRE => simpleRE . basicRE ]*
+    [ 36: basicRE => . primitiveRE rePostfix ]
+    [ 41: primitiveRE => . "(" regexp ")" ]
+    [ 42: primitiveRE => . "[" inverse_ setRE_ "]" ]
+    [ 43: primitiveRE => . <STRING> ]
+    [ 44: primitiveRE => . "<" <NAME> ">" ]
+    <STRING> : shift, and goto state 65
+    "<" : shift, and goto state 66
+    "(" : shift, and goto state 81
+    "[" : shift, and goto state 64
+    ">" : reduce with rule 32
+    ")" : reduce with rule 32
+    "|" : reduce with rule 32
+    basicRE : goto state 93
+    primitiveRE : goto state 80
+
+
+state 110
+    [ 41: primitiveRE => "(" regexp ")" . ]*
+    <STRING> : reduce with rule 41
+    ">" : reduce with rule 41
+    "<" : reduce with rule 41
+    "(" : reduce with rule 41
+    ")" : reduce with rule 41
+    "[" : reduce with rule 41
+    "?" : reduce with rule 41
+    "*" : reduce with rule 41
+    "+" : reduce with rule 41
+    "|" : reduce with rule 41
+
+
+state 111
+    [ 42: primitiveRE => "[" inverse_ setRE_ "]" . ]*
+    <STRING> : reduce with rule 42
+    ">" : reduce with rule 42
+    "<" : reduce with rule 42
+    "(" : reduce with rule 42
+    ")" : reduce with rule 42
+    "[" : reduce with rule 42
+    "?" : reduce with rule 42
+    "*" : reduce with rule 42
+    "+" : reduce with rule 42
+    "|" : reduce with rule 42
+
+
+state 112
+    [ 49: setRE => setRE "," . setREItem ]*
+    [ 51: setREItem => . <STRING> ]
+    [ 52: setREItem => . <STRING> "-" <STRING> ]
+    <STRING> : shift, and goto state 102
+    setREItem : goto state 117
+
+
+state 113
+    [ 52: setREItem => <STRING> "-" . <STRING> ]*
+    <STRING> : shift, and goto state 118
+
+
+state 114
+    [ 70: block => @0 "{" innerBlock @1 . "}" ]*
+    "}" : shift, and goto state 119
+
+
+state 115
+    [ 23: lexActions_ => ":" "[" lexActions . "]" ]*
+    [ 26: lexActions => lexActions . "," lexAction ]*
+    "]" : shift, and goto state 120
+    "," : shift, and goto state 69
+
+
+state 116
+    [ 22: lexBodyItem => "<" <NAME> ":" regexp ">" lexActions_ . ]*
+    <NAME> : reduce with rule 22
+    "}" : reduce with rule 22
+    "<" : reduce with rule 22
+
+
+state 117
+    [ 49: setRE => setRE "," setREItem . ]*
+    "]" : reduce with rule 49
+    "," : reduce with rule 49
+
+
+state 118
+    [ 52: setREItem => <STRING> "-" <STRING> . ]*
+    "]" : reduce with rule 52
+    "," : reduce with rule 52
+
+
+state 119
+    [ 70: block => @0 "{" innerBlock @1 "}" . ]*
+    <NAME> : reduce with rule 70
+    <STRING> : reduce with rule 70
+    "{" : reduce with rule 70
+    "}" : reduce with rule 70
+    "<" : reduce with rule 70
+    "[" : reduce with rule 70
+    "]" : reduce with rule 70
+    ";" : reduce with rule 70
+    "|" : reduce with rule 70
+    "," : reduce with rule 70
+    <ANY_CODE> : reduce with rule 70
+
+
+state 120
+    [ 23: lexActions_ => ":" "[" lexActions "]" . ]*
+    <NAME> : reduce with rule 23
+    "}" : reduce with rule 23
+    "<" : reduce with rule 23
+
+

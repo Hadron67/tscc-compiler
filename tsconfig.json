@@ -3,11 +3,7 @@
         "module": "es2015",
         "target": "es3",
         "removeComments": true,
-        "outDir": "./build/",
         "moduleResolution": "node",
         "sourceMap": true
-    },
-    "files": [
-        "src/main.ts"
-    ]
+    }
 }

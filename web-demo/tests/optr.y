@@ -27,7 +27,7 @@
 
 
 
-e:
+e: 
   ae aoptr e %prec '='
 | e '?' e ':' e
 | e '||' e

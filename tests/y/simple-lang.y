@@ -1,13 +1,63 @@
-%token 
-'+' '-' '*' '/' '**' '?' ':' '%'
-'>' '<' '>=' '<=' '==' '!='
-'=' '+=' '-=' '*=' '/=' '&=' '|=' '^=' '>>=' '<<=' '%='
-'|' '&' '^' '~'
-'++' '--'
-'&&' '||' '!'
-'>>' '<<' '>>>'
-'(' ')' '[' ']' ',' '{' '}'
-'else'
+%lex [
+    < (["\n", "\r", " ", "\t"] | "\r\n")+ >
+
+    < PLUS: '+' >
+    < MINUS: '-' >
+    < TIMES: '*' >
+    < DIVIDE: '/' >
+    < EXP: '**' >
+    < QUESTION: '?' >
+    < COLON: ':' >
+    < PERCENT: '%' >
+    < GT: '>' >
+    < LT: '<' >
+    < GTOE: '>=' >
+    < LTOE: '<=' >
+    < EQU: '==' >
+    < NEQ: '!=' >
+    < ASSIGN: '=' >
+    < PLUS_ASSIGN: '+=' >
+    < MINUS_ASSIGN: '-=' >
+    < TIMES_ASSIGN: '*=' >
+    < DIVIDE_ASSIGN: '/=' >
+    < BIT_AND_ASSIGN: '&=' >
+    < BIT_OR_ASSIGN: '|=' > 
+    < BIT_XOR_ASSIGN: '^=' >
+    < RIGHT_SHIFT_ASSIGN: '>>=' >
+    < LEFT_SHIFT_ASSIGN: '<<=' >
+    < MOD_ASSIGN: '%=' >
+    < BIT_AND: '&' >
+    < BIT_OR: '|' >
+    < BIT_XOR: '^' >
+    < BIT_NOT: '~' >
+    < INC: '++' >
+    < DEC: '--' >
+    < LEFT_SHIFT: '<<' >
+    < RIGHT_SHIFT: '>>' >
+    < RIGHT_SHIFT2: '>>>' >
+    < BRA: '(' >
+    < KET: ')' >
+    < CBRA: '[' >
+    < CKET: ']' >
+    < COMMA: ',' >
+    < BBRA: '{' >
+    < BKET: '}' >
+    < EOL: ';' >
+    < AND: '&&' >
+    < OR: '||' >
+    < NOT: '!' >
+    < IF: 'if' >
+    < ELSE: 'else' >
+    < WHILE: 'while' >
+    < DO: 'do' >
+    < FOR: 'for' >
+    < FUNCTION: 'function' >
+
+    DIGIT = < ['0'-'9'] >
+    LETTER = < ['a'-'z', 'A'-'Z', '_', '$'] >
+    < NAME: <LETTER> (<LETTER>|<DIGIT>)* >
+    < NUM: <DIGIT>+ >
+]
 
 %right 'else'
 
@@ -29,9 +79,6 @@
 %right '['
 %right '('
 
-%token 'id' 'num'
-%token ';' 'if' 'while' 'do' 'for' 'function'
-
 %%
 
 topstmtlist: topstmtlist topstmt | /* empty */;
@@ -42,7 +89,7 @@ topstmt:
 ;
 
 argdeflist: neargdeflist | /* empty */;
-neargdeflist: neargdeflist ',' 'id' | 'id';
+neargdeflist: neargdeflist ',' <NAME> | <NAME>;
 
 stmtlist: stmtlist stmt | /* empty */;
 
@@ -98,8 +145,8 @@ coptr: '>' | '<' | '>=' | '<=' | '==' | '!=' ;
 arglist: narglist | /* empty */;
 narglist: narglist ',' expr | expr;
 
-const: 'num';
+const: <NUM>;
 
-var: 'id' | expr '[' exprlist ']';
+var: <NAME> | expr '[' exprlist ']';
 
 %%

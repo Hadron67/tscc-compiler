@@ -1,31 +1,108 @@
+state 0(start)
+    [\x9,\xa],\xd,' ' -> state 1
+    '"' -> state 2
+    '/' -> state 3
+
+state 1(end 0)
+    [\x9,\xa],\xd,' ' -> state 1
+
+state 2
+    [\x0,\x9],[\xb,'!'],['#','['],[']',oo) -> state 4
+    '"' -> state 5
+    '\' -> state 6
+
+state 3
+    '*' -> state 7
+    '/' -> state 8
+
+state 4
+    [\x0,\x9],[\xb,'!'],['#','['],[']',oo) -> state 4
+    '"' -> state 5
+    '\' -> state 6
+
+state 5(end 3)
+
+state 6
+    '"',''','\','n','t' -> state 9
+    'u','x' -> state 10
+
+state 7
+    [\x0,')'],['+','.'],['0',oo) -> state 11
+    '*' -> state 12
+    '/' -> state 13
+
+state 8(end 2)
+    [\x0,\x9],[\xb,oo) -> state 14
+
+state 9
+    [\x0,\x9],[\xb,'!'],['#','['],[']',oo) -> state 4
+    '"' -> state 5
+    '\' -> state 6
+
+state 10
+    ['0','9'],['A','F'],['a','f'] -> state 15
+
+state 11
+    [\x0,')'],['+','.'],['0',oo) -> state 11
+    '*' -> state 12
+    '/' -> state 16
+
+state 12
+    [\x0,'.'],['0',oo) -> state 17
+    '/' -> state 18
+
+state 13
+    '/' -> state 19
+
+state 14(end 2)
+    [\x0,\x9],[\xb,oo) -> state 14
+
+state 15
+    [\x0,\x9],[\xb,'!'],['#','/'],[':','@'],['G','['],[']','`'],['g',oo) -> state 4
+    '"' -> state 5
+    ['0','9'],['A','F'],['a','f'] -> state 20
+    '\' -> state 6
+
+state 16
+    [\x0,')'],['+','.'],['0',oo) -> state 11
+    '*' -> state 12
+    '/' -> state 16
+
+state 17
+    [\x0,')'],['+','.'],['0',oo) -> state 11
+    '*' -> state 12
+    '/' -> state 13
+
+state 18(end 1)
+
+state 19
+    [\x0,')'],['+','.'],['0',oo) -> state 11
+    '*' -> state 12
+    '/' -> state 13
+
+state 20
+    [\x0,\x9],[\xb,'!'],['#','['],[']',oo) -> state 4
+    '"' -> state 5
+    '\' -> state 6
+
+
+
 state 0
     [ 0: (accept) => . start ]*
-    [ 1: start => . E ]
-    [ 2: E => . "a" ]
-    [ 3: E => . "b" ]
-    "a" : shift,and goto state 3
-    "b" : shift,and goto state 4
+    [ 1: start => . block ]
+    [ 2: block => . ]
+    <eof> : reduce with rule 2
     start : goto state 1
-    E : goto state 2
+    block : goto state 2
 
 
 state 1
     [ 0: (accept) => start . ]*
-    "eof" : reduce with rule 0
+    <eof> : reduce with rule 0
 
 
 state 2
-    [ 1: start => E . ]*
-    "eof" : reduce with rule 1
-
-
-state 3
-    [ 2: E => "a" . ]*
-    "eof" : reduce with rule 2
-
-
-state 4
-    [ 3: E => "b" . ]*
-    "eof" : reduce with rule 3
+    [ 1: start => block . ]*
+    <eof> : reduce with rule 1
 
 

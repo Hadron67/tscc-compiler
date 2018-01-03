@@ -1,10 +1,16 @@
-import { InputStream,biss } from '../util/io.js';
+import { InputStream,biss, OutputStream } from '../util/io.js';
 import { State, EndAction } from './state';
 
 export class DFA<T>{
     start: State<T>;
-    constructor(public states: State<T>[], public actions: EndAction<T>[]){
+    constructor(public states: State<T>[]){
         this.start = states[0];
+    }
+    print(os: OutputStream){
+        for(let s of this.states){
+            s.print(os, false);
+            os.writeln();
+        }
     }
     toString(): string{
         var ret = '';

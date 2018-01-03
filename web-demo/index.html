@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>JS parser generator</title>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <link href="style.css" rel="stylesheet" media="screen">
+        <link rel="stylesheet" href="lib/codemirror.css">
+    </head>
+    <body>
+        <div class="code-editor-container">
+            <div class="code-editor-titlebar">
+                <button class="btn-titlebar" id="btn-load">load from file</button>
+            </div>
+            <div class="code-editor-outter-frame">
+                <textarea id="text1" class="code-editor" spellcheck="false"></textarea>
+            </div>
+        </div>
+        <div style="margin-top: 5px;">
+            <input type="file" id="source" />                
+        </div>
+        <div>
+            <button id="btn-parse" class="parse-btn">parse</button>
+            <button id="btn-item-sets" class="parse-btn">item sets</button>
+            <button id="btn-parse-table" class="parse-btn">parse table</button>
+        </div>
+        <div id="result" class="result-panel"></div>
+        <div>
+            <input type="text" id="test-input" class="demo-input"/>
+            <button id="btn-test" class="parse-btn">run test</button>
+        </div>
+    </body>
+    <script src="src/jscc.js"></script>
+    <script src="lib/codemirror.js"></script>
+    <script src="src/jscc-highlight-codemirror.js"></script>
+    <script src="app.js"></script>
+</html>

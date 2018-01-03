@@ -24,6 +24,7 @@ class Result implements Context{
 
     errors: JsccError[] = [];
     warnings: JsccError[] = [];
+    terminated = false;
 
     warn(w: JsccWarning){
         this.warnings.push(w);
@@ -40,6 +41,13 @@ class Result implements Context{
     printTable (stream: OutputStream){
         this.parseTable.summary(this.itemSets,stream);
     }
+    printDFA(os: OutputStream){
+        for(let s of this.file.lexDFA){
+            s.print(os);
+            os.writeln();
+            os.writeln();
+        }
+    }
     testParse(tokens: string[]){
         return testParse(this.file.grammar,this.parseTable,tokens);
     }
@@ -47,11 +55,13 @@ class Result implements Context{
         for(let e of this.errors){
             os.writeln(e.toString(opt));
         }
+        os.writeln();
     }
     printWarning(os: OutputStream, opt: Option){
         for(let w of this.warnings){
             os.writeln(w.toString(opt));
         }
+        os.writeln();
     }
     hasWarning(){
         return this.warnings.length > 0;
@@ -62,25 +72,6 @@ class Result implements Context{
     warningSummary(){
         return `${this.warnings.length} warning(s), ${this.errors.length} error(s)`;
     }
-    // warningMsg(): string{
-    //     var ret = '';
-    //     if(this.unusedTokens.length > 0){
-    //         ret += 'unused tokens:\n';
-    //         for(var t of this.unusedTokens){
-    //             ret += YYTAB + '"' + t.sym + '" (defined at line ' + t.line + ')\n';
-    //         }
-    //     }
-    //     if(this.unusedNts.length > 0){
-    //         ret += 'unused non terminals:\n';
-    //         for(var t2 of this.unusedNts){
-    //             ret += YYTAB + t2.sym + '\n';
-    //         }
-    //     }
-    //     for(var cf of this.conflicts){
-    //         ret += cf.toString() + '\n';
-    //     }
-    //     return ret;
-    // }
 }
 
 function genResult(stream: InputStream){
@@ -89,14 +80,30 @@ function genResult(stream: InputStream){
         var f = parseSource(stream, result);
     }
     catch(e){
+        result.terminated = true;
         result.err(e as JsccError);
-    }
-    if(result.hasError()){
         return result;
     }
     var g = f.grammar;
-    g.genFirstSets();
     result.file = f;
+    // we still could have error here
+    for(var s of g.tokens){
+        if(!s.used){
+            result.warn(new JsccWarning(`token <${s.sym}> is never used (defined at line ${s.line})`));
+        }
+    }
+    for(var s2 of g.nts){
+        if(!s2.used){
+            result.warn(new JsccWarning(`non terminal "${s2.sym}" is unreachable`));
+        }
+    }
+
+    if(result.hasError()){
+        result.terminated = true;
+        return result;
+    }
+    // don't proceed if any error has been detected
+    g.genFirstSets();
 
     var temp = genItemSets(g);
     result.itemSets = temp.result;
@@ -104,21 +111,10 @@ function genResult(stream: InputStream){
     var temp2 = genParseTable(g,result.itemSets);
     result.parseTable = temp2.result;
 
-    // var conflicts = temp2.conflicts;
     for(let cf of temp2.conflicts){
         result.warn(new JsccWarning(cf.toString()));
     }
-    for(var s of g.tokens){
-        if(!s.used){
-            result.warn(new JsccWarning(`unused token "${s.sym}" (defined at line ${s.line})`));
-        }
-    }
-    for(var s2 of g.nts){
-        if(!s2.used){
-            result.warn(new JsccWarning(`unused non terminal "${s2.sym}"`));
-        }
-    }
-
+    
     return result;
 }
 

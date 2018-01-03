@@ -1,0 +1,29 @@
+{
+  "name": "jscc-compiler",
+  "version": "1.0.0",
+  "description": "An LALR(1) compiler compiler written in Typescript",
+  "main": "index.js",
+  "bin": "./bin/jscc",
+  "directories": {
+    "test": "tests",
+    "bin": "bin",
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup -c"
+  },
+  "keywords": [
+    "LALR(1)",
+    "compiler compiler",
+    "Hanolee algorithm"
+  ],
+  "author": "hadroncfy",
+  "license": "MIT",
+  "devDependencies": {
+    "rollup": "^0.50.3",
+    "typescript": "^2.6",
+    "rollup-plugin-typescript2": "^0.8.4",
+    "rollup-plugin-sourcemaps": "^0.4.2"
+  }
+}

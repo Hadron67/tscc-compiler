@@ -4,6 +4,7 @@ import { CharSet } from './char-set';
 import { console } from '../util/common';
 import { DFA } from './dfa.js';
 import { DataSet } from '../util/interval-set';
+import { OutputStream, StringOS } from '../util/io';
 
 export enum Action{
     START = 0,
@@ -14,7 +15,7 @@ var maxlen = 0;
 class StateArray<T> extends Array<State<T>> implements DataSet<State<T>>{
     constructor(){
         super(0);
-        // XXX: fix prototype chain?
+        // XXX: a better way to fix prototype chain?
         (Object as any).setPrototypeOf(this, StateArray.prototype);
     }
     add(s: State<T>){
@@ -62,7 +63,7 @@ export class State<T>{
     isStart: boolean = false;
     isEnd: boolean = false;
     marker: boolean = false;
-    endAction: EndAction<T>;
+    endAction: EndAction<T> = null;
     constructor(endAction?: EndAction<T>){
         this.endAction = endAction || null;
     }
@@ -135,43 +136,52 @@ export class State<T>{
             state.index = i++;
         });
     }
-    toString(recursive?: boolean): string{
-        recursive = !!recursive;
-        function single(){
-            var ret = 'state ' + this.index;
-            if(this.isStart){
-                ret += '(start)';
+    print(os: OutputStream, recursive: boolean = true){
+        function single(cela: State<T>, os: OutputStream){
+            os.write(`state ${cela.index}`);
+            if(cela.isStart){
+                os.write('(start)');
             }
-            if(this.endAction){
-                ret += '(end: ' + this.endAction.id + ')';
+            if(cela.endAction){
+                os.write(`(end ${cela.endAction.id})`);
+                //ret += '(end: ' + cela.endAction.id + ')';
             }
-            ret += '\n';
-            for(var i = 0;i < this.arcs.length;i++){
-                var arc = this.arcs[i];
-                ret += YYTAB + arc.chars.toString() + ' -> state ' + arc.to.index + '\n';
+            // ret += '\n';
+            os.writeln();
+            for(var i = 0;i < cela.arcs.length;i++){
+                var arc = cela.arcs[i];
+                os.writeln(`${YYTAB}${arc.chars.toString()} -> state ${arc.to.index}`);
+                // ret += YYTAB + arc.chars.toString() + ' -> state ' + arc.to.index + '\n';
             }
-            if(this.epsilons.length > 0){
-                ret += YYTAB + 'epsilon: ';
-                for(var i = 0;i < this.epsilons.length;i++){
+            if(cela.epsilons.length > 0){
+                // ret += YYTAB + 'epsilon: ';
+                os.write(`${YYTAB}epsilon: `);
+                for(var i = 0;i < cela.epsilons.length;i++){
                     if(i > 0){
-                        ret += ',';
+                        // ret += ',';
+                        os.write(',');
                     }
-                    ret += this.epsilons[i].index;
+                    // ret += cela.epsilons[i].index;
+                    os.write(cela.epsilons[i].index.toString());
                 }
-                ret += '\n';
+                // ret += '\n';
+                os.writeln();
             }
-            return ret;
         }
         if(!recursive){
-            return single.call(this);
+            single(this, os);
         }
         else {
             var ret = '';
             this.forEach(function(state){
-                ret += single.call(state) + '\n';
+                single(state, os);
             });
-            return ret;
         }
+    }
+    toString(recursive: boolean = true): string{
+        let ss = new StringOS();
+        this.print(ss, recursive);
+        return ss.s;
     }
     /**
      * @param {State} state
@@ -259,25 +269,16 @@ export class State<T>{
     hasArc(): boolean{
         return this.arcs.length > 0;
     }
+    clone(){
+
+    }
     toDFA(): { head: State<T>, states: State<T>[] }{
-        /**
-         * the resulting dfa states
-         * @type {Object.<string,CompoundState>}
-         */
+
         var dfaStates: { [s: string]: CompoundState<T> } = {};
-        /**
-         * an array containing all the dfa states
-         * @type {State[]}
-         */
         var states: State<T>[] = [];
         var dfaCount = 0;
         var stateCount = this.count();
     
-        /**
-         * set that used to all the characters,in order not to create
-         * a new object everytime.
-         * @type {CharSet}
-         */
         var set = new CharSet<State<T>>(() => new StateArray<T>());
 
         var cela = this;
@@ -288,10 +289,7 @@ export class State<T>{
         states.push(initState);
         var lastState = initState;
         dfaStates[initState.hash()] = initState;
-        /**
-         * queue of dfastates to be processed
-         * @type {CompoundState[]}
-         */
+
         var queue: CompoundState<T>[] = [initState];
     
         while(queue.length > 0){

@@ -5,7 +5,7 @@ import { OutputStream,endl } from '../util/io';
 import { Item,Action,ItemSet } from './item-set';
 import { List } from '../util/list';
 import { ParseTable } from './ptable';
-import { TokenDef, Assoc } from './token-entry';
+import { TokenDef, Assoc, convertTokenToString } from './token-entry';
 import { TokenSet } from './token-set';
 
 enum ConflictType {
@@ -19,11 +19,10 @@ export class Conflict{
     discarded: Item;
     static cNames: string[] = ['reduce/reduce','shift/reduce'];
     toString(): string{
-        var ret = 'state ' + this.set.stateIndex + ',' + Conflict.cNames[this.type] + ' conflict:\n';
-        ret += YYTAB + 'token: "' + this.token.sym + '"\n';
-        ret += YYTAB + 'used rule: ' + this.used.toString() + '\n';
-        ret += YYTAB + 'discarded rule: ' + this.discarded.toString() + '\n';
-        return ret;
+        return `state ${this.set.stateIndex}, ${Conflict.cNames[this.type]} conflict:${endl}` +
+        `${YYTAB}token: ${convertTokenToString(this.token)}${endl}` +
+        `${YYTAB}used rule: ${this.used.toString()}${endl}` +
+        `${YYTAB}discarded rule: ${this.discarded.toString()}`;
     }
 }
 

@@ -1,5 +1,6 @@
 import { TokenSet } from './token-set';
-import { TokenDef, TokenEntry, Assoc } from './token-entry'
+import { TokenDef, TokenEntry, Assoc, convertTokenToString } from './token-entry'
+import { LexAction } from '../lexer/action';
 
 
 //@type{{sym: string,alias: string,line: number,pr: number,assoc: Assoc,used: boolean}}
@@ -19,7 +20,7 @@ export class Rule {
     constructor(
         public g: Grammar, 
         public lhs: number,
-        public action: string,
+        public action: LexAction[],
         public rhs: number[],
         public index: number,
         public line: number 
@@ -44,7 +45,8 @@ export class Rule {
                 ret += ' .';
             }
             if(r >= 0){
-                ret += ' "' + this.g.tokens[r].sym + '"';
+                // ret += ' <' + this.g.tokens[r].sym + '>';
+                ret += ' ' + convertTokenToString(this.g.tokens[r]);
             }
             else {
                 ret += ' ' + this.g.nts[-r - 1].sym;
@@ -56,6 +58,7 @@ export class Rule {
         return ret;
     }
 }
+
 export class Grammar implements TokenEntry{
     public tokens: TokenDef[] = [];
     public tokenCount: number = 0;
@@ -117,18 +120,17 @@ export class Grammar implements TokenEntry{
     }
     toString(opt: { endl?: string, escape?: boolean, firstSets?: boolean } = {}){
         opt = opt || {};
-        var endl = opt.endl || '\n';
+        var endl = opt.endl || endl;
         var escape = opt.escape || false;
         var ret = '';
         this.forEachRule((lhs, rule) => {
             var s = rule.toString();
-            ret += s + '\n';
+            ret += s + endl;
         });
         if(opt.firstSets){
             for(var i = 0;i < this.nts.length;i++){
                 var s = this.nts[i];
-                ret += 'First(' + s.sym + ') = { ' + s.firstSet.toString(this) + ' }';
-                ret += '\n';
+                ret += `First(${s.sym}) = { ${s.firstSet.toString(this)} }${endl}`;
             }
         }
         if(escape){
@@ -136,13 +138,19 @@ export class Grammar implements TokenEntry{
         }
         return ret.replace(/\n/g,endl);
     }
-    findToken(t: string): number{
-        for(var i = 0;i < this.tokenCount;i++){
-            if(this.tokens[i].sym === t){
-                return i;
+    findTokenByName(t: string): TokenDef{
+        for(let tk of this.tokens){
+            if(tk.sym === t){
+                return tk;
             }
         }
-        return -1;
+        return null;
     }
-    
+    findTokensByAlias(t: string): TokenDef[]{
+        let ret: TokenDef[] = [];
+        for(let tk of this.tokens){
+            tk.alias === t && ret.push(tk);
+        }
+        return ret;
+    }
 }

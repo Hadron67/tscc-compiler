@@ -5,6 +5,7 @@ export enum Assoc {
     NON
 };
 export interface TokenDef{
+    index: number,
     sym: string,
     alias: string,
     line: number,
@@ -16,4 +17,7 @@ export interface TokenEntry{
     tokenCount: number;
     tokens: TokenDef[];
     isToken(t: number): boolean;
+}
+export function convertTokenToString(t: TokenDef): string{
+    return t.alias === null ? `<${t.sym}>` : `"${t.alias}"`;
 }

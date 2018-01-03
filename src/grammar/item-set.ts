@@ -1,6 +1,7 @@
 import { TokenSet } from './token-set';
 import { Rule, Grammar } from './grammar';
 import { ListNode } from '../util/list';
+import { endl } from '../util/io';
 
 export enum Action {
     NONE = 1,
@@ -160,9 +161,9 @@ export class ItemSet implements ListNode<ItemSet>{
                 ret += 'i' + this.merges[i];
             }
         }
-        ret += ')\n';
+        ret += ')' + endl;
         for(var hash in this.it){
-            ret += this.it[hash].toString(opt2) + '\n';
+            ret += this.it[hash].toString(opt2) + endl;
         }
         return ret;
     }

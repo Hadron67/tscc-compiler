@@ -5,6 +5,9 @@ import { TokenSet } from '../grammar/token-set';
 import { Assoc, TokenDef } from '../grammar/token-entry';
 import { CompilationError as E, JsccError } from '../util/E';
 import { Context } from '../util/context';
+import { StateBuilder } from '../lexer/builder';
+import { LexAction } from '../lexer/action';
+import { Coroutine } from '../util/coroutine';
 
 interface NtPlaceHolder{
     nt: number;
@@ -17,7 +20,7 @@ interface RuleLoc{
     line: number;
 };
 
-export enum RuleItemType {
+export enum TokenRefType {
     TOKEN = 0,
     STRING = 1,
     NAME = 2
@@ -34,32 +37,23 @@ export class GBuilder{
     f: File = new File();
     g: Grammar = new Grammar();
 
-    //tokens: { [s: string]: TokenRawDef } = {};
-    tokenNameTable: { [s: string]: number } = {};
-    tokenAliasTable: { [s: string]: number } = {};
+    tokenNameTable: { [s: string]: TokenDef } = {};
+    tokenAliasTable: { [s: string]: TokenDef[] } = {};
 
-    //rules: RawRule[] = [];
     ruleStack: Rule[] = [];
 
-    //ntCount = 0;
-    //nts: {[s: string]: number} = {};
     ruleCount = 0;
     ntTable: {[s: string]: number} = {};
-    ntPlaceHolders: {[s: string]: RuleLoc[]} = {};
+    // ntPlaceHolders: {[s: string]: RuleLoc[]} = {};
+    requiringNt: {[s: string]: Coroutine<number>[]} = {};
 
     genIndex = 0;
     first = true;
     pr = 1;
 
-    states: {[s: string]: number} = { DEFAULT: 0 };
-    stateCount = 1;
-    stateNum = 0;
-
-    selectedStates: number[] = [];
+    lexBuilder: StateBuilder<LexAction[]>;
     
     pseudoTokens: { [tname: string]: PseudoToken } = {};
-
-    errors: JsccError[] = [];
 
     private _top(){
         return this.ruleStack[this.ruleStack.length - 1];
@@ -71,20 +65,20 @@ export class GBuilder{
         this.addAction(t.action);
         this.commitRule();
         t.action = null;
-        this.addRuleItem(s,RuleItemType.NAME,line);
+        this.addRuleItem(s,TokenRefType.NAME,line);
     }
     err(msg: string, line: number){
         this.ctx.err(new E(msg, line));
     }
-    defToken(name: string, alias: string, line: number){
-        var tkIndex = this.tokenNameTable[name];
-        if(tkIndex !== undefined){
-            //throw new E('token "' + name + '"' + ' was already defined at line ' + tk.line,line);
-            this.err(`token "${name}" was already defined at line ${this.g.tokens[tkIndex].line}`, line);
-            return this;
+    defToken(name: string, alias: string, line: number): TokenDef{
+        var tkdef = this.tokenNameTable[name];
+        if(tkdef !== undefined){
+            // this.err(`token "${name}" was already defined at line ${this.g.tokens[tkIndex].line}`, line);
+            return tkdef;
         }
         else {
-            var tk: TokenDef = { 
+            tkdef = { 
+                index: this.g.tokens.length,
                 sym: name,
                 alias: alias,
                 line: line,
@@ -92,34 +86,63 @@ export class GBuilder{
                 assoc: Assoc.UNDEFINED,
                 used: false
             };
-            this.tokenNameTable[name] = this.g.tokens.length;
-            this.g.tokens.push(tk);
-        }
-        return this;
-    }
-
-    addRegExp(){
-
-    }
-    defineTokenPrec(tid: string, assoc: Assoc, pseudo: boolean, line: number): this{
-        if(!pseudo){
-            var t = this.tokenNameTable[tid];
-            if(t === undefined){
-                this.err(`use of undefined token "${tid}" in associativity defination`,line);
-                return this;
+            if(alias !== null){
+                this.tokenAliasTable[alias] || (this.tokenAliasTable[alias] = []);
+                this.tokenAliasTable[alias].push(tkdef);
             }
-            var tk = this.g.tokens[t];
-            tk.assoc = assoc;
-            tk.pr = this.pr;
+            this.tokenNameTable[name] = tkdef;
+            this.g.tokens.push(tkdef);
+            return tkdef;
         }
-        else {
-            var t2 = this.pseudoTokens[tid] = this.pseudoTokens[tid] || {
+        // return this;
+    }
+    getTokenByAlias(a: string, line: number): TokenDef{
+        let aa = this.tokenAliasTable[a];
+        if(aa === undefined){
+            this.err(`cannot identify "${a}" as a token`, line);
+            return null;
+        }
+        else if(aa.length > 1){
+            let ret = '';
+            for(let i = 0;i < aa.length;i++){
+                i > 0 && (ret += ',');
+                ret += `<${aa[i].sym}>`;
+            }
+            this.err(`cannot identify ${a} as a token, since it could be ${ret}`, line);
+            return null;
+        }
+        return aa[0];
+    }
+    getTokenByName(t: string, line: number): TokenDef{
+        let ret = this.tokenNameTable[t];
+        if(ret === undefined){
+            this.err(`cannot identify <${t}> as a token`, line);
+            return null;
+        }
+        return ret;
+    }
+    defineTokenPrec(tid: string, assoc: Assoc, type: TokenRefType, line: number){
+        if(type === TokenRefType.TOKEN){
+            let tk = this.getTokenByName(tid, line);
+            if(tk !== null){
+                tk.assoc = assoc;
+                tk.pr = this.pr;
+            }
+        }
+        else if(type === TokenRefType.STRING){
+            let tk = this.getTokenByAlias(tid, line);
+            if(tk !== null){
+                tk.assoc = assoc;
+                tk.pr = this.pr;
+            }
+        }
+        else if(type === TokenRefType.NAME){
+            let t2 = this.pseudoTokens[tid] = this.pseudoTokens[tid] || {
                 assoc: assoc,
                 pr: this.pr,
                 line: line
             };
         }
-        return this;
     }
     setOpt(name: string, value: string): this{
         this.f.opt[name] = value;
@@ -129,19 +152,21 @@ export class GBuilder{
         this.pr++;
         return this;
     }
-    changeState(s: string){
-        var sn = this.states[s];
-        if(!sn){
-            sn = this.states[s] = this.stateCount++;
+    requireNt(ntname: string, cr: Coroutine<number>){
+        let nt = this.ntTable[ntname];
+        if(nt !== undefined){
+            cr.run(nt);
         }
-        this.stateNum = sn;
-        return this;
+        else {
+            this.requiringNt[ntname] || (this.requiringNt[ntname] = []);
+            this.requiringNt[ntname].push(cr);
+        }
     }
     prepareRule(lhs: string, line: number){
         if(this.first){
             this.first = false;
             this.prepareRule('(accept)',line);
-            this.addRuleItem(lhs,RuleItemType.NAME,line);
+            this.addRuleItem(lhs,TokenRefType.NAME,line);
             this.commitRule();
         }
         
@@ -154,56 +179,57 @@ export class GBuilder{
                 used: false,
                 rules: []
             });
-            var holders = this.ntPlaceHolders[lhs];
-            if(holders){
-                for(var holder of holders){
-                    holder.rule.rhs[holder.pos] = -lhsn - 1;
+            let crs = this.requiringNt[lhs];
+            if(crs !== undefined){
+                for(let cr of crs){
+                    cr.run(lhsn);
                 }
-                delete this.ntPlaceHolders[lhs];
-                this.g.nts[lhsn].used = true;
+                delete this.requiringNt[lhs];
             }
         }
-        var nr = new Rule(this.g, lhsn, null, [], this.ruleCount++, line);
-        //this.g.nts[lhsn].rules.push(nr);
+        let nr = new Rule(this.g, lhsn, null, [], this.ruleCount++, line);
         this.ruleStack.push(nr);
 
         return this;
     }
-    addRuleItem(id: string, type: RuleItemType, line: number){
-        var t = this._top();
+    addRuleItem(id: string, type: TokenRefType, line: number){
+        let t = this._top();
         if(t.action !== null){
             this._splitAction(line);
         }
 
-        if(type === RuleItemType.NAME){
-            let ntsIndex = this.ntTable[id];
-            if(ntsIndex !== undefined){
-                t.rhs.push(-ntsIndex - 1);
-                this.g.nts[ntsIndex].used = true;
-            }
-            else {
-                this.ntPlaceHolders[id] || (this.ntPlaceHolders[id] = []);
-                this.ntPlaceHolders[id].push({
-                    rule: t,
-                    pos: t.rhs.length,
-                    line: line
-                });
-                t.rhs.push(0);
-            }
+        if(type === TokenRefType.NAME){
+            let cela = this;
+            let pos = t.rhs.length;
+            t.rhs.push(0);
+            this.requireNt(id, {
+                run(ntsIndex){
+                    t.rhs[pos] = -ntsIndex - 1;
+                    cela.g.nts[ntsIndex].used = true;
+                },
+                fail(){
+                    cela.err(`use of undefined non terminal ${id}`, line);
+                }
+            });
         }
-        else if(type === RuleItemType.STRING){
+        else if(type === TokenRefType.TOKEN){
             let tl = this.tokenNameTable[id];
             if(tl === undefined){
-                this.err(`cannot recognize "${id}" as a token`, line);
-                return this;
+                this.err(`cannot recognize <${id}> as a token`, line);
+                return;
             }
-            t.rhs.push(tl);
-            this.g.tokens[tl].used = true;
+            t.rhs.push(tl.index);
+            tl.used = true;
         }
-
-        return this;
+        else if(type === TokenRefType.STRING){
+            let td = this.getTokenByAlias(id, line);
+            if(td !== null){
+                t.rhs.push(td.index);
+                td.used = true;
+            }
+        }
     }
-    addAction(b: string){
+    addAction(b: LexAction[]){
         var t = this._top();
         if(t.action !== null){
             this._splitAction(t.line);
@@ -211,30 +237,26 @@ export class GBuilder{
         t.action = b;
         return this;
     }
-    defineRulePr(token: string, pseudo: boolean, line: number){
-        if(!pseudo){
-            var t = this.tokenNameTable[token];
-            if(!t){
-                this.err(`use of undefined token "${token}" in rule priority defination`,line);
-                return this;
+    defineRulePr(token: string, type: TokenRefType, line: number){
+        if(type === TokenRefType.STRING || type === TokenRefType.TOKEN){
+            let tk: TokenDef = type === TokenRefType.STRING ? 
+                this.getTokenByAlias(token, line) : 
+                this.getTokenByName(token, line);
+            if(tk !== null){
+                if(tk.assoc === Assoc.UNDEFINED){
+                    this.err(`precedence of token "${token}" has not been defined`,line);
+                    return;
+                }
+                this._top().pr = tk.pr;
             }
-            var tk = this.g.tokens[t];
-            if(tk.assoc === Assoc.UNDEFINED){
-                this.err(`precedence of token "${token}" has not been defined`,line);
-                return this;
-            }
-            this._top().pr = tk.pr;
         }
         else {
             var pt = this.pseudoTokens[token];
             if(!pt){
                 this.err(`pseudo token "${token}" is not defined`,line);
-                return this;
             }
             this._top().pr = pt.pr;
         }
-        
-        return this;
     }
     commitRule(){
         var t = this.ruleStack.pop();
@@ -254,23 +276,23 @@ export class GBuilder{
         }
 
         var ruleCount = 0;
-        for(let nnt in this.ntPlaceHolders){
-            let holders = this.ntPlaceHolders[nnt];
-            for(let holder of holders){
-                this.err(`use of undefined non terminal "${nnt}"`, holder.line);
+        for(let nnt in this.requiringNt){
+            let crs = this.requiringNt[nnt];
+            for(let cr of crs){
+                cr.fail();
             }
-            // return this;
         }
 
+        this.f.lexDFA = this.lexBuilder.build();
+
         return this.f;
-    }
-    hasError(){
-        return this.errors.length > 0;
     }
 
     constructor(ctx: Context){
         this.f.grammar = this.g;
         this.ctx = ctx;
-        this.defToken('eof', '', 0);
+        this.lexBuilder = new StateBuilder<LexAction[]>(ctx);
+
+        this.defToken('EOF', 'eof', 0);
     }
 }

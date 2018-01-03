@@ -1,8 +1,9 @@
-import { GBuilder, RuleItemType } from './gbuilder';
+import { GBuilder, TokenRefType } from './gbuilder';
 import { Assoc } from '../grammar/token-entry';
-import { CompilationError as E } from '../util/E';
+import { CompilationError as E, CompilationError } from '../util/E';
 import { InputStream } from '../util/io';
 import { Context } from '../util/context';
+import { LexAction, blockAction, pushState, popState, returnToken, setImg } from '../lexer/action';
 
 enum T  {
     EOF = 0,
@@ -19,28 +20,30 @@ enum T  {
     LEFT_DIR,
     RIGHT_DIR,
     NONASSOC_DIR,
+    LEX_DIR,
     PREC_DIR,
     REGEXP,
-    STATE_DIR,
+    // STATE_DIR,
     LINE_COMMENT,
     BLOCK_COMMENT,
     GT,
     LT,
     DASH,
+    BRA,
+    KET,
     CBRA,
     CKET,
     COMMA,
     PLUS,
+    EQU,
+    STAR,
+    QUESTION,
+    WEDGE,
     
     // highlight only
     OPEN_CURLY_BRA,
     CLOSE_CURLY_BRA
 };
-
-var tokenNames = [];
-for(var tname in T){
-    tokenNames[T[tname]] = tname;
-}
 
 class Token {
     id: T;
@@ -82,10 +85,10 @@ function scan(opt: { isHighlight?: boolean } = {}){
             s1 = 'unexpected end of file';
         }
         else {
-            s1 = 'unexpected character "' + c + '"';
+            s1 = `unexpected character "${c}"`;
         }
         if(c1){
-            throw new E(s1 + ' after "' + c1 + '"',line);
+            throw new E(`${s1} after "${c1}"`,line);
         }
         else{
             throw new E(s1,line);                
@@ -103,7 +106,8 @@ function scan(opt: { isHighlight?: boolean } = {}){
     }
     var escapes = {
         'n': '\n',
-        't': '\t'
+        't': '\t',
+        'r': '\r'
     };
     function escapeChar(regexp: boolean){
         var tc = c;
@@ -189,9 +193,15 @@ function scan(opt: { isHighlight?: boolean } = {}){
                     token.id = T.OPT;
                     break lex;
                 }
-                else if(iss('left')){
-                    token.id = T.LEFT_DIR;
-                    break lex;
+                else if(iss('le')){
+                    if(iss('ft')){
+                        token.id = T.LEFT_DIR;
+                        break lex;
+                    }
+                    else if(iss('x')){
+                        token.id = T.LEX_DIR;
+                        break lex;
+                    }
                 }
                 else if(iss('right')){
                     token.id = T.RIGHT_DIR;
@@ -205,10 +215,10 @@ function scan(opt: { isHighlight?: boolean } = {}){
                     token.id = T.PREC_DIR;
                     break lex;
                 }
-                else if(iss('state')){
-                    token.id = T.STATE_DIR;
-                    break lex;
-                }
+                // else if(iss('state')){
+                //     token.id = T.STATE_DIR;
+                //     break lex;
+                // }
                 else if(c == '%'){
                     nc();
                     token.id = T.SEPERATOR;
@@ -226,6 +236,8 @@ function scan(opt: { isHighlight?: boolean } = {}){
                     token.val = '';
                     var st = 1;
                     while(st > 0){
+                        // XXX: disable CFA
+                        c += '';
                         if(eof()){
                             throw new E('unclosed block',line);
                         }
@@ -295,6 +307,10 @@ function scan(opt: { isHighlight?: boolean } = {}){
                 nc();
                 token.id = T.ARROW;
                 break lex;
+            case '=':
+                nc();
+                token.id = T.EQU;
+                break lex;
             case '-':
                 nc();
                 if(c as string == '>'){
@@ -326,6 +342,34 @@ function scan(opt: { isHighlight?: boolean } = {}){
             case '+':
                 nc();
                 token.id = T.PLUS;
+                break lex;
+            case '?':
+                nc();
+                token.id = T.QUESTION;
+                break lex;
+            case '*':
+                nc();
+                token.id = T.STAR;
+                break lex;
+            case '[':
+                nc();
+                token.id = T.CBRA;
+                break lex;
+            case ']':
+                nc();
+                token.id = T.CKET;
+                break lex;
+            case '(':
+                nc();
+                token.id = T.BRA;
+                break lex;
+            case ')':
+                nc();
+                token.id = T.KET;
+                break lex;
+            case '^':
+                nc();
+                token.id = T.WEDGE;
                 break lex;
             default:
                 if(/[A-Za-z_$]/.test(c)){
@@ -362,16 +406,13 @@ function parse(scanner, ctx: Context){
 
     function expect(id){
         if(token.id !== id){
-            throw new E('unexpected token "' + tokenNames[token.id] + '",expecting "' + tokenNames[id] + '"',token.line);
+            throw new E(`unexpected token "${T[token.id]}", expecting "${T[id]}"`,token.line);
         }
         nt();
     }
 
     /**
-     * file() ->
-     * 
      * options() <SEPERATOR> rules() <EOF>
-     * 
      */
     function file(){
         options();
@@ -383,26 +424,32 @@ function parse(scanner, ctx: Context){
     function prTokens(assoc: Assoc){
         do{
             if(token.id === T.STRING){
-                gb.defineTokenPrec(token.val,assoc,false,token.line);
+                gb.defineTokenPrec(token.val,assoc,TokenRefType.STRING,token.line);
             }
             else if(token.id === T.NAME){
-                gb.defineTokenPrec(token.val,assoc,true,token.line);
+                gb.defineTokenPrec(token.val,assoc,TokenRefType.NAME,token.line);
+            }
+            else if(token.id === T.LT){
+                nt();
+                let tname = token.val;
+                let tline = token.line;
+                expect(T.NAME);
+                expect(T.GT);
+                gb.defineTokenPrec(tname, assoc, TokenRefType.TOKEN, tline);
             }
             else {
-                throw new E('unexpected token "' + tokenNames[token.id] + '",expecting string or name',token.line);
+                throw new E(`unexpected token "${T[token.id]}", expecting string or name or "<"`,token.line);
             }
             nt();
-        }while(token.id === T.STRING || token.id === T.NAME);
+        }while(token.id === T.STRING || token.id === T.NAME || token.id === T.LT);
         gb.incPr();
     }
 
     /**
-     * options() ->
-     * 
      * '%token' (tokenDef())+
      * | ('%left'|'%right'|'%nonassoc') [<TOKEN>]+
      * | '%opt' <NAME> <STRING>
-     * | '%state' <NAME>
+     * | '%lex' lexRule()
      * 
      */
     function options(){
@@ -434,11 +481,15 @@ function parse(scanner, ctx: Context){
                     expect(T.STRING);
                     gb.setOpt(name,s);
                     break;
-                case T.STATE_DIR:
+                // case T.STATE_DIR:
+                //     nt();
+                //     var n = token.val;
+                //     expect(T.NAME);
+                //     gb.changeState(n);
+                //     break;
+                case T.LEX_DIR:
                     nt();
-                    var n = token.val;
-                    expect(T.NAME);
-                    gb.changeState(n);
+                    lexRule();
                     break;
                 default:return;
             }
@@ -446,8 +497,6 @@ function parse(scanner, ctx: Context){
     }
 
     /**
-     * tokenDef() ->
-     * 
      * <STRING> [<NAME>]
      */
     function tokenDef(){
@@ -464,10 +513,276 @@ function parse(scanner, ctx: Context){
     }
 
     /**
-     * rules() ->
-     * 
+     * ['<' states() '>'] '[' (lexItem())* ']'
+     */
+    function lexRule(){
+        gb.lexBuilder.prepareLex();        
+        if(token.id === T.LT){
+            nt();
+            states();
+            expect(T.GT);
+        }
+        else {
+            gb.lexBuilder.selectState('DEFAULT');
+        }
+        expect(T.CBRA);
+        while(token.id !== T.CKET){
+            lexItem();
+        }
+        expect(T.CKET);
+    }
+
+    /**
+     * <NAME> '=' '<' regexp() '>'
+     * | '<' <NAME> ':' regexp() '>' [ ':' lexActions() ]
+     * | '<' regexp() '>' [ ':' lexActions() ]
+     */
+    function lexItem(){
+        if(token.id + 0 === T.NAME){
+            let vname = token.val;
+            let line = token.line;
+            nt();
+            expect(T.EQU);
+            expect(T.LT);
+            gb.lexBuilder.prepareVar(vname, line);
+            regexp();
+            gb.lexBuilder.endVar();
+            expect(T.GT);
+        }
+        else if(token.id +0=== T.LT){
+            nt();
+            gb.lexBuilder.newState();
+            let label = 'untitled';
+            let acts: LexAction[] = [];
+            if(token.id === T.NAME){
+                let tname = token.val;
+                let tline = token.line;
+                label = tname;
+                // gb.defToken(tname, '', token.line);
+                nt();
+                expect(T.ARROW);
+                regexp();
+                acts.push(returnToken(gb.defToken(tname, gb.lexBuilder.possibleAlias, tline)));
+            }
+            else {
+                regexp();
+            }
+            expect(T.GT);
+            if(token.id === T.ARROW){
+                nt();
+                lexActions(acts);
+            }
+            gb.lexBuilder.end(acts, label);
+        }
+    }
+
+    /**
+     * '[' lexAction() (',' lexAction())* ']'
+     * | <BLOCK>
+     */
+    function lexActions(acts: LexAction[]){
+        if(token.id === T.CBRA){
+            // XXX: disable CFA
+            token.id += 0;
+            nt();
+            lexAction(acts);
+            while(token.id === T.COMMA){
+                nt();
+                lexAction(acts);
+            }
+            expect(T.CKET);
+        }
+        else if(token.id === T.BLOCK){
+            acts.push(blockAction(token.val));
+            nt();
+        }
+        else {
+            throw new E(`unexpected token "${T[token.id]}"`, token.line);
+        }
+    }
+
+    /**
+     * '+' <NAME>
+     * | '-'
+     * | <BLOCK>
+     * | '=' <STRING>
+     */
+    function lexAction(acts: LexAction[]): void{
+        if(token.id === T.PLUS){
+            nt();
+            let vn = token.val;
+            let line = token.line;
+            expect(T.NAME);
+            // let n = gb.lexBuilder.stateMap[vn];
+            gb.lexBuilder.requireState(vn, {
+                run(sn){
+                    acts.push(pushState(sn));
+                },
+                fail(){
+                    ctx.err(new CompilationError(`state "${vn}" is undefined`, line));
+                }
+            });
+        }
+        else if(token.id === T.DASH){
+            nt();
+            acts.push(popState());
+        }
+        else if(token.id === T.BLOCK){
+            let b = token.val;
+            nt();
+            acts.push(blockAction(b));
+        }
+        else if(token.id === T.EQU){
+            nt();
+            let s = token.val;
+            expect(T.STRING);
+            acts.push(setImg(s));
+        }
+        else {
+            throw new E(`unexpected token "${T[token.id]}"`, token.line);
+        }
+    }
+
+    /**
+     * <NAME> (',' <NAME>)*
+     */
+    function states(){
+        let tname = token.val;
+        let tline = token.line;
+        expect(T.NAME);
+        gb.lexBuilder.selectState(tname);
+        while(token.id === T.COMMA){
+            nt();
+            tname = token.val;
+            tline = token.line;
+            expect(T.NAME);
+            gb.lexBuilder.selectState(tname);
+        }
+    }
+
+    /**
+     * simpleRE() ('|' simpleRE())*
+     */
+    function regexp(){
+        gb.lexBuilder.enterUnion();
+        simpleRE();
+        gb.lexBuilder.endUnionItem();
+        while(token.id === T.OR){
+            nt();
+            simpleRE();
+            gb.lexBuilder.endUnionItem();
+        }
+        gb.lexBuilder.leaveUnion();
+    }
+
+    /**
+     * (basicRE())+
+     */
+    function simpleRE(){
+        do{
+            basicRE();
+        }while(token.id !== T.GT && token.id !== T.OR && token.id !== T.KET);
+    }
+
+    /**
+     * primitiveRE() ['+'|'*'|'?']
+     */
+    function basicRE(){
+        gb.lexBuilder.enterSimple();
+        primitiveRE();
+        switch(token.id){
+            case T.PLUS:
+                nt();
+                gb.lexBuilder.simplePostfix('+');
+                break;
+            case T.STAR:
+                nt();
+                gb.lexBuilder.simplePostfix('*');
+                break;
+            case T.QUESTION:
+                nt();
+                gb.lexBuilder.simplePostfix('?');
+                break;
+            default:
+                gb.lexBuilder.simplePostfix('');
+        }
+    }
+
+    /**
+     * '(' regexp() ')'
+     * | '[' setRE() ']'
+     * | <STRING>
+     * | '<' <NAME> '>'
+     */
+    function primitiveRE(){
+        if(token.id === T.BRA){
+            nt();
+            regexp();
+            expect(T.KET);
+        }
+        else if(token.id === T.CBRA){
+            nt();
+            setRE();
+            expect(T.CKET);
+        }
+        else if(token.id === T.STRING){
+            let s = token.val;
+            nt();
+            gb.lexBuilder.addString(s);
+        }
+        else if(token.id === T.LT){
+            nt();
+            let vname = token.val;
+            let line = token.line;
+            expect(T.NAME);
+            expect(T.GT);
+            gb.lexBuilder.addVar(vname, line);
+        }
+        else {
+            throw new E(`unexpected token "${T[token.id]}"`, token.line);
+        }
+    }
+
+    /**
+     * ['^'] [ setREItem() (',' setREItem())* ]
+     */
+    function setRE(){
+        if(token.id === T.WEDGE){
+            nt();
+            gb.lexBuilder.beginSet(true);
+        }
+        else {
+            gb.lexBuilder.beginSet(false);
+        }
+        if(token.id !== T.CKET){
+            setREItem();
+            while(token.id === T.COMMA){
+                nt();
+                setREItem();
+            }
+        }
+    }
+
+    /**
+     * <STRING> [ '-' <STRING> ] 
+     */
+    function setREItem(){
+        let from = token.val;
+        let line1 = token.line;
+        let to = from;
+        let line2 = line1;
+        expect(T.STRING);
+        if(token.id === T.DASH){
+            nt();
+            to = token.val;
+            line2 = token.line;
+            expect(T.STRING);
+        }
+        gb.lexBuilder.addSetItem(from, to, line1, line2);
+    }
+
+    /**
      * rule() ( rule() )* <SEPERATOR>
-     * 
      */
     function rules(){
         rule();
@@ -478,10 +793,7 @@ function parse(scanner, ctx: Context){
     }
 
     /**
-     * rule() ->
-     * 
      * <NAME> <ARROW> ruleItems() ( <OR> ruleItems() )* <EOL>
-     * 
      */
     function rule(){
         var lhs = token.clone();
@@ -500,53 +812,69 @@ function parse(scanner, ctx: Context){
     }
 
     /**
-     * ruleItems() ->
-     * 
-     * ( <NAME> | (<STRING>|"<" <NAME> ">") | <BLOCK> )* [ '%prec' (<STRING>|<NAME>) [ <BLOCK> ] ]
-     * 
+     * ( <NAME> | (<STRING>|"<" <NAME> ">") | lexAction() )* [ '%prec' (<STRING>|<NAME>) [ <BLOCK> ] ]
      */
     function ruleItems(){
-        while(token.id === T.NAME || token.id === T.LT || token.id === T.STRING || token.id === T.BLOCK){
+        while(token.id === T.NAME 
+            || token.id === T.LT 
+            || token.id === T.STRING 
+            || token.id === T.BLOCK 
+            || token.id === T.CBRA){
             let t = token.clone();
             if(token.id === T.NAME){
                 nt();
-                gb.addRuleItem(t.val,RuleItemType.NAME,t.line);
+                gb.addRuleItem(t.val,TokenRefType.NAME,t.line);
             }
             else if(token.id === T.STRING){
                 nt();
-                gb.addRuleItem(t.val,RuleItemType.STRING,t.line);
+                gb.addRuleItem(t.val,TokenRefType.STRING,t.line);
             }
             else if(token.id === T.LT){
                 nt();
                 t = token.clone();
                 expect(T.NAME);
                 expect(T.GT);
-                gb.addRuleItem(t.val,RuleItemType.TOKEN,t.line);
+                gb.addRuleItem(t.val,TokenRefType.TOKEN,t.line);
             }
-            if(token.id === T.BLOCK){
-                gb.addAction(token.val);
-                nt();
+            if(token.id === T.BLOCK || token.id === T.CBRA){
+                let acts: LexAction[] = [];
+                lexActions(acts);
+                gb.addAction(acts);
+                // nt();
             }
         }
         if(token.id === T.PREC_DIR){
             nt();
             let t = token.val;
-            var line = token.line;
+            let line = token.line;
+            // XXX: disable CFA
             if(token.id as T === T.STRING){
-                gb.defineRulePr(t,false,line);
+                gb.defineRulePr(t,TokenRefType.STRING,line);
                 nt();
             }
+            // XXX: disable CFA
+            else if(token.id as T === T.LT){
+                nt();
+                t = token.val;
+                line = token.line;
+                expect(T.NAME);
+                expect(T.GT);
+                gb.defineRulePr(t, TokenRefType.TOKEN, line);
+            }
+            // XXX: disable CFA
             else if(token.id as T === T.NAME){
-                gb.defineRulePr(t,true,line);
+                gb.defineRulePr(t,TokenRefType.NAME,line);
                 nt();
             }
             else {
-                throw new E('unexpected token "' + tokenNames[token.id] + '",expecting string or name',token.line);
+                throw new E(`unexpected token "${T[token.id]}",expecting string or name`,token.line);
             }
-            
-            if(token.id as T === T.BLOCK){
-                gb.addAction(token.val);
-                nt();
+            // XXX: disable CFA
+            if(token.id as T === T.BLOCK || token.id as T === T.CBRA){
+                let acts: LexAction[] = [];
+                lexActions(acts);
+                gb.addAction(acts);
+                // nt();
             }
         }
     }

@@ -17,10 +17,17 @@ module.exports = function (args){
     var ret = {
         input: null,
         output: null,
-        test: null
+        test: null,
+        help: false
     };
+    out:
     while(args.length > 0){
         switch(args[0]){
+            case '-h':
+            case '--help':
+                args.shift();
+                ret.help = true;
+                break;
             case '-o':
             case '--output':
                 args.shift();
@@ -40,9 +47,11 @@ module.exports = function (args){
                 }
         }
     }
-    if(ret.input === null){
-        throw new Error('no input file given');
+    if(!ret.help) {
+        if(ret.input === null){
+            throw new Error('no input file given');
+        }
+        ret.output = ret.output || changeSuffix(ret.input,'.output');
     }
-    ret.output = ret.output || changeSuffix(ret.input,'.output');
     return ret;
 }

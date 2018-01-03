@@ -1,24 +1,310 @@
+state 0(start)
+    [\x9,\xa],' ' -> state 1
+    \xd -> state 2
+    '!' -> state 3
+    '$',['A','Z'],'_',['a','c'],['g','h'],['j','v'],['x','z'] -> state 4
+    '%' -> state 5
+    '&' -> state 6
+    '(' -> state 7
+    ')' -> state 8
+    '*' -> state 9
+    '+' -> state 10
+    ',' -> state 11
+    '-' -> state 12
+    '/' -> state 13
+    ['0','9'] -> state 14
+    ':' -> state 15
+    ';' -> state 16
+    '<' -> state 17
+    '=' -> state 18
+    '>' -> state 19
+    '?' -> state 20
+    '[' -> state 21
+    ']' -> state 22
+    '^' -> state 23
+    'd' -> state 24
+    'e' -> state 25
+    'f' -> state 26
+    'i' -> state 27
+    'w' -> state 28
+    '{' -> state 29
+    '|' -> state 30
+    '}' -> state 31
+    '~' -> state 32
+
+state 1(end 0)
+    [\x9,\xa],' ' -> state 1
+    \xd -> state 2
+
+state 2(end 0)
+    \x9,' ' -> state 1
+    \xa -> state 33
+    \xd -> state 2
+
+state 3(end 45)
+    '=' -> state 34
+
+state 4(end 52)
+    '$',['A','Z'],'_',['a','z'] -> state 35
+    ['0','9'] -> state 36
+
+state 5(end 8)
+    '=' -> state 37
+
+state 6(end 26)
+    '&' -> state 38
+    '=' -> state 39
+
+state 7(end 35)
+
+state 8(end 36)
+
+state 9(end 3)
+    '*' -> state 40
+    '=' -> state 41
+
+state 10(end 1)
+    '+' -> state 42
+    '=' -> state 43
+
+state 11(end 39)
+
+state 12(end 2)
+    '-' -> state 44
+    '=' -> state 45
+
+state 13(end 4)
+    '=' -> state 46
+
+state 14(end 53)
+    ['0','9'] -> state 14
+
+state 15(end 7)
+
+state 16(end 42)
+
+state 17(end 10)
+    '<' -> state 47
+    '=' -> state 48
+
+state 18(end 15)
+    '=' -> state 49
+
+state 19(end 9)
+    '=' -> state 50
+    '>' -> state 51
+
+state 20(end 6)
+
+state 21(end 37)
+
+state 22(end 38)
+
+state 23(end 28)
+    '=' -> state 52
+
+state 24(end 52)
+    '$',['A','Z'],'_',['a','n'],['p','z'] -> state 35
+    ['0','9'] -> state 36
+    'o' -> state 53
+
+state 25(end 52)
+    '$',['A','Z'],'_',['a','k'],['m','z'] -> state 35
+    ['0','9'] -> state 36
+    'l' -> state 54
+
+state 26(end 52)
+    '$',['A','Z'],'_',['a','n'],['p','t'],['v','z'] -> state 35
+    ['0','9'] -> state 36
+    'o' -> state 55
+    'u' -> state 56
+
+state 27(end 52)
+    '$',['A','Z'],'_',['a','e'],['g','z'] -> state 35
+    ['0','9'] -> state 36
+    'f' -> state 57
+
+state 28(end 52)
+    '$',['A','Z'],'_',['a','g'],['i','z'] -> state 35
+    ['0','9'] -> state 36
+    'h' -> state 58
+
+state 29(end 40)
+
+state 30(end 27)
+    '=' -> state 59
+    '|' -> state 60
+
+state 31(end 41)
+
+state 32(end 29)
+
+state 33(end 0)
+    [\x9,\xa],' ' -> state 1
+    \xd -> state 2
+
+state 34(end 14)
+
+state 35(end 52)
+    '$',['A','Z'],'_',['a','z'] -> state 35
+    ['0','9'] -> state 36
+
+state 36(end 52)
+    '$',['A','Z'],'_',['a','z'] -> state 35
+    ['0','9'] -> state 36
+
+state 37(end 25)
+
+state 38(end 43)
+
+state 39(end 20)
+
+state 40(end 5)
+
+state 41(end 18)
+
+state 42(end 30)
+
+state 43(end 16)
+
+state 44(end 31)
+
+state 45(end 17)
+
+state 46(end 19)
+
+state 47(end 32)
+    '=' -> state 61
+
+state 48(end 12)
+
+state 49(end 13)
+
+state 50(end 11)
+
+state 51(end 33)
+    '=' -> state 62
+    '>' -> state 63
+
+state 52(end 22)
+
+state 53(end 52)
+    '$',['A','Z'],'_',['a','z'] -> state 35
+    ['0','9'] -> state 36
+
+state 54(end 52)
+    '$',['A','Z'],'_',['a','r'],['t','z'] -> state 35
+    ['0','9'] -> state 36
+    's' -> state 64
+
+state 55(end 52)
+    '$',['A','Z'],'_',['a','q'],['s','z'] -> state 35
+    ['0','9'] -> state 36
+    'r' -> state 65
+
+state 56(end 52)
+    '$',['A','Z'],'_',['a','m'],['o','z'] -> state 35
+    ['0','9'] -> state 36
+    'n' -> state 66
+
+state 57(end 52)
+    '$',['A','Z'],'_',['a','z'] -> state 35
+    ['0','9'] -> state 36
+
+state 58(end 52)
+    '$',['A','Z'],'_',['a','h'],['j','z'] -> state 35
+    ['0','9'] -> state 36
+    'i' -> state 67
+
+state 59(end 21)
+
+state 60(end 44)
+
+state 61(end 24)
+
+state 62(end 23)
+
+state 63(end 34)
+
+state 64(end 52)
+    '$',['A','Z'],'_',['a','d'],['f','z'] -> state 35
+    ['0','9'] -> state 36
+    'e' -> state 68
+
+state 65(end 52)
+    '$',['A','Z'],'_',['a','z'] -> state 35
+    ['0','9'] -> state 36
+
+state 66(end 52)
+    '$',['A','Z'],'_',['a','b'],['d','z'] -> state 35
+    ['0','9'] -> state 36
+    'c' -> state 69
+
+state 67(end 52)
+    '$',['A','Z'],'_',['a','k'],['m','z'] -> state 35
+    ['0','9'] -> state 36
+    'l' -> state 70
+
+state 68(end 52)
+    '$',['A','Z'],'_',['a','z'] -> state 35
+    ['0','9'] -> state 36
+
+state 69(end 52)
+    '$',['A','Z'],'_',['a','s'],['u','z'] -> state 35
+    ['0','9'] -> state 36
+    't' -> state 71
+
+state 70(end 52)
+    '$',['A','Z'],'_',['a','d'],['f','z'] -> state 35
+    ['0','9'] -> state 36
+    'e' -> state 72
+
+state 71(end 52)
+    '$',['A','Z'],'_',['a','h'],['j','z'] -> state 35
+    ['0','9'] -> state 36
+    'i' -> state 73
+
+state 72(end 52)
+    '$',['A','Z'],'_',['a','z'] -> state 35
+    ['0','9'] -> state 36
+
+state 73(end 52)
+    '$',['A','Z'],'_',['a','n'],['p','z'] -> state 35
+    ['0','9'] -> state 36
+    'o' -> state 74
+
+state 74(end 52)
+    '$',['A','Z'],'_',['a','m'],['o','z'] -> state 35
+    ['0','9'] -> state 36
+    'n' -> state 75
+
+state 75(end 52)
+    '$',['A','Z'],'_',['a','z'] -> state 35
+    ['0','9'] -> state 36
+
+
+
 state 0
     [ 0: (accept) => . topstmtlist ]*
     [ 1: topstmtlist => . topstmtlist topstmt ]
     [ 2: topstmtlist => . ]
-    "eof" : reduce with rule 2
-    "+" : reduce with rule 2
-    "-" : reduce with rule 2
-    "~" : reduce with rule 2
-    "++" : reduce with rule 2
-    "--" : reduce with rule 2
-    "!" : reduce with rule 2
-    "(" : reduce with rule 2
-    "{" : reduce with rule 2
-    "id" : reduce with rule 2
-    "num" : reduce with rule 2
-    ";" : reduce with rule 2
-    "if" : reduce with rule 2
-    "while" : reduce with rule 2
-    "do" : reduce with rule 2
-    "for" : reduce with rule 2
-    "function" : reduce with rule 2
+    <"eof"> : reduce with rule 2
+    <"+"> : reduce with rule 2
+    <"-"> : reduce with rule 2
+    <"~"> : reduce with rule 2
+    <"++"> : reduce with rule 2
+    <"--"> : reduce with rule 2
+    <"("> : reduce with rule 2
+    <"{"> : reduce with rule 2
+    <";"> : reduce with rule 2
+    <"!"> : reduce with rule 2
+    <"if"> : reduce with rule 2
+    <"while"> : reduce with rule 2
+    <"do"> : reduce with rule 2
+    <"for"> : reduce with rule 2
+    <"function"> : reduce with rule 2
+    <<NAME>> : reduce with rule 2
+    <<NUM>> : reduce with rule 2
     topstmtlist : goto state 1
 
 
@@ -65,26 +351,26 @@ state 1
     [ 50: expr => . var "--" ]
     [ 51: expr => . "++" var ]
     [ 52: expr => . "--" var ]
-    [ 75: var => . "id" ]
+    [ 75: var => . <NAME> ]
     [ 76: var => . expr "[" exprlist "]" ]
-    [ 74: const => . "num" ]
-    "+" : shift,and goto state 24
-    "-" : shift,and goto state 25
-    "~" : shift,and goto state 26
-    "++" : shift,and goto state 37
-    "--" : shift,and goto state 38
-    "!" : shift,and goto state 27
-    "(" : shift,and goto state 29
-    "{" : shift,and goto state 99
-    "id" : shift,and goto state 39
-    "num" : shift,and goto state 40
-    ";" : shift,and goto state 98
-    "if" : shift,and goto state 101
-    "while" : shift,and goto state 102
-    "do" : shift,and goto state 103
-    "for" : shift,and goto state 104
-    "function" : shift,and goto state 4
-    "eof" : reduce with rule 0
+    [ 74: const => . <NUM> ]
+    <"+"> : shift, and goto state 24
+    <"-"> : shift, and goto state 25
+    <"~"> : shift, and goto state 26
+    <"++"> : shift, and goto state 37
+    <"--"> : shift, and goto state 38
+    <"("> : shift, and goto state 29
+    <"{"> : shift, and goto state 99
+    <";"> : shift, and goto state 98
+    <"!"> : shift, and goto state 27
+    <"if"> : shift, and goto state 101
+    <"while"> : shift, and goto state 102
+    <"do"> : shift, and goto state 103
+    <"for"> : shift, and goto state 104
+    <"function"> : shift, and goto state 4
+    <<NAME>> : shift, and goto state 39
+    <<NUM>> : shift, and goto state 40
+    <"eof"> : reduce with rule 0
     topstmt : goto state 2
     stmt : goto state 3
     exprlist : goto state 100
@@ -95,282 +381,282 @@ state 1
 
 state 2
     [ 1: topstmtlist => topstmtlist topstmt . ]*
-    "eof" : reduce with rule 1
-    "+" : reduce with rule 1
-    "-" : reduce with rule 1
-    "~" : reduce with rule 1
-    "++" : reduce with rule 1
-    "--" : reduce with rule 1
-    "!" : reduce with rule 1
-    "(" : reduce with rule 1
-    "{" : reduce with rule 1
-    "id" : reduce with rule 1
-    "num" : reduce with rule 1
-    ";" : reduce with rule 1
-    "if" : reduce with rule 1
-    "while" : reduce with rule 1
-    "do" : reduce with rule 1
-    "for" : reduce with rule 1
-    "function" : reduce with rule 1
+    <"eof"> : reduce with rule 1
+    <"+"> : reduce with rule 1
+    <"-"> : reduce with rule 1
+    <"~"> : reduce with rule 1
+    <"++"> : reduce with rule 1
+    <"--"> : reduce with rule 1
+    <"("> : reduce with rule 1
+    <"{"> : reduce with rule 1
+    <";"> : reduce with rule 1
+    <"!"> : reduce with rule 1
+    <"if"> : reduce with rule 1
+    <"while"> : reduce with rule 1
+    <"do"> : reduce with rule 1
+    <"for"> : reduce with rule 1
+    <"function"> : reduce with rule 1
+    <<NAME>> : reduce with rule 1
+    <<NUM>> : reduce with rule 1
 
 
 state 3
     [ 3: topstmt => stmt . ]*
-    "eof" : reduce with rule 3
-    "+" : reduce with rule 3
-    "-" : reduce with rule 3
-    "~" : reduce with rule 3
-    "++" : reduce with rule 3
-    "--" : reduce with rule 3
-    "!" : reduce with rule 3
-    "(" : reduce with rule 3
-    "{" : reduce with rule 3
-    "id" : reduce with rule 3
-    "num" : reduce with rule 3
-    ";" : reduce with rule 3
-    "if" : reduce with rule 3
-    "while" : reduce with rule 3
-    "do" : reduce with rule 3
-    "for" : reduce with rule 3
-    "function" : reduce with rule 3
+    <"eof"> : reduce with rule 3
+    <"+"> : reduce with rule 3
+    <"-"> : reduce with rule 3
+    <"~"> : reduce with rule 3
+    <"++"> : reduce with rule 3
+    <"--"> : reduce with rule 3
+    <"("> : reduce with rule 3
+    <"{"> : reduce with rule 3
+    <";"> : reduce with rule 3
+    <"!"> : reduce with rule 3
+    <"if"> : reduce with rule 3
+    <"while"> : reduce with rule 3
+    <"do"> : reduce with rule 3
+    <"for"> : reduce with rule 3
+    <"function"> : reduce with rule 3
+    <<NAME>> : reduce with rule 3
+    <<NUM>> : reduce with rule 3
 
 
 state 4
     [ 4: topstmt => "function" . "(" argdeflist ")" "{" stmtlist "}" ]*
-    "(" : shift,and goto state 5
+    <"("> : shift, and goto state 5
 
 
 state 5
     [ 4: topstmt => "function" "(" . argdeflist ")" "{" stmtlist "}" ]*
     [ 5: argdeflist => . neargdeflist ]
     [ 6: argdeflist => . ]
-    [ 7: neargdeflist => . neargdeflist "," "id" ]
-    [ 8: neargdeflist => . "id" ]
-    "id" : shift,and goto state 34
-    ")" : reduce with rule 6
+    [ 7: neargdeflist => . neargdeflist "," <NAME> ]
+    [ 8: neargdeflist => . <NAME> ]
+    <<NAME>> : shift, and goto state 34
+    <")"> : reduce with rule 6
     argdeflist : goto state 32
     neargdeflist : goto state 33
 
 
 state 6
     [ 64: coptr => ">" . ]*
-    "+" : reduce with rule 64
-    "-" : reduce with rule 64
-    "~" : reduce with rule 64
-    "++" : reduce with rule 64
-    "--" : reduce with rule 64
-    "!" : reduce with rule 64
-    "(" : reduce with rule 64
-    "id" : reduce with rule 64
-    "num" : reduce with rule 64
+    <"+"> : reduce with rule 64
+    <"-"> : reduce with rule 64
+    <"~"> : reduce with rule 64
+    <"++"> : reduce with rule 64
+    <"--"> : reduce with rule 64
+    <"("> : reduce with rule 64
+    <"!"> : reduce with rule 64
+    <<NAME>> : reduce with rule 64
+    <<NUM>> : reduce with rule 64
 
 
 state 7
     [ 65: coptr => "<" . ]*
-    "+" : reduce with rule 65
-    "-" : reduce with rule 65
-    "~" : reduce with rule 65
-    "++" : reduce with rule 65
-    "--" : reduce with rule 65
-    "!" : reduce with rule 65
-    "(" : reduce with rule 65
-    "id" : reduce with rule 65
-    "num" : reduce with rule 65
+    <"+"> : reduce with rule 65
+    <"-"> : reduce with rule 65
+    <"~"> : reduce with rule 65
+    <"++"> : reduce with rule 65
+    <"--"> : reduce with rule 65
+    <"("> : reduce with rule 65
+    <"!"> : reduce with rule 65
+    <<NAME>> : reduce with rule 65
+    <<NUM>> : reduce with rule 65
 
 
 state 8
     [ 66: coptr => ">=" . ]*
-    "+" : reduce with rule 66
-    "-" : reduce with rule 66
-    "~" : reduce with rule 66
-    "++" : reduce with rule 66
-    "--" : reduce with rule 66
-    "!" : reduce with rule 66
-    "(" : reduce with rule 66
-    "id" : reduce with rule 66
-    "num" : reduce with rule 66
+    <"+"> : reduce with rule 66
+    <"-"> : reduce with rule 66
+    <"~"> : reduce with rule 66
+    <"++"> : reduce with rule 66
+    <"--"> : reduce with rule 66
+    <"("> : reduce with rule 66
+    <"!"> : reduce with rule 66
+    <<NAME>> : reduce with rule 66
+    <<NUM>> : reduce with rule 66
 
 
 state 9
     [ 67: coptr => "<=" . ]*
-    "+" : reduce with rule 67
-    "-" : reduce with rule 67
-    "~" : reduce with rule 67
-    "++" : reduce with rule 67
-    "--" : reduce with rule 67
-    "!" : reduce with rule 67
-    "(" : reduce with rule 67
-    "id" : reduce with rule 67
-    "num" : reduce with rule 67
+    <"+"> : reduce with rule 67
+    <"-"> : reduce with rule 67
+    <"~"> : reduce with rule 67
+    <"++"> : reduce with rule 67
+    <"--"> : reduce with rule 67
+    <"("> : reduce with rule 67
+    <"!"> : reduce with rule 67
+    <<NAME>> : reduce with rule 67
+    <<NUM>> : reduce with rule 67
 
 
 state 10
     [ 68: coptr => "==" . ]*
-    "+" : reduce with rule 68
-    "-" : reduce with rule 68
-    "~" : reduce with rule 68
-    "++" : reduce with rule 68
-    "--" : reduce with rule 68
-    "!" : reduce with rule 68
-    "(" : reduce with rule 68
-    "id" : reduce with rule 68
-    "num" : reduce with rule 68
+    <"+"> : reduce with rule 68
+    <"-"> : reduce with rule 68
+    <"~"> : reduce with rule 68
+    <"++"> : reduce with rule 68
+    <"--"> : reduce with rule 68
+    <"("> : reduce with rule 68
+    <"!"> : reduce with rule 68
+    <<NAME>> : reduce with rule 68
+    <<NUM>> : reduce with rule 68
 
 
 state 11
     [ 69: coptr => "!=" . ]*
-    "+" : reduce with rule 69
-    "-" : reduce with rule 69
-    "~" : reduce with rule 69
-    "++" : reduce with rule 69
-    "--" : reduce with rule 69
-    "!" : reduce with rule 69
-    "(" : reduce with rule 69
-    "id" : reduce with rule 69
-    "num" : reduce with rule 69
+    <"+"> : reduce with rule 69
+    <"-"> : reduce with rule 69
+    <"~"> : reduce with rule 69
+    <"++"> : reduce with rule 69
+    <"--"> : reduce with rule 69
+    <"("> : reduce with rule 69
+    <"!"> : reduce with rule 69
+    <<NAME>> : reduce with rule 69
+    <<NUM>> : reduce with rule 69
 
 
 state 12
     [ 53: aoptr => "=" . ]*
-    "+" : reduce with rule 53
-    "-" : reduce with rule 53
-    "~" : reduce with rule 53
-    "++" : reduce with rule 53
-    "--" : reduce with rule 53
-    "!" : reduce with rule 53
-    "(" : reduce with rule 53
-    "id" : reduce with rule 53
-    "num" : reduce with rule 53
+    <"+"> : reduce with rule 53
+    <"-"> : reduce with rule 53
+    <"~"> : reduce with rule 53
+    <"++"> : reduce with rule 53
+    <"--"> : reduce with rule 53
+    <"("> : reduce with rule 53
+    <"!"> : reduce with rule 53
+    <<NAME>> : reduce with rule 53
+    <<NUM>> : reduce with rule 53
 
 
 state 13
     [ 54: aoptr => "+=" . ]*
-    "+" : reduce with rule 54
-    "-" : reduce with rule 54
-    "~" : reduce with rule 54
-    "++" : reduce with rule 54
-    "--" : reduce with rule 54
-    "!" : reduce with rule 54
-    "(" : reduce with rule 54
-    "id" : reduce with rule 54
-    "num" : reduce with rule 54
+    <"+"> : reduce with rule 54
+    <"-"> : reduce with rule 54
+    <"~"> : reduce with rule 54
+    <"++"> : reduce with rule 54
+    <"--"> : reduce with rule 54
+    <"("> : reduce with rule 54
+    <"!"> : reduce with rule 54
+    <<NAME>> : reduce with rule 54
+    <<NUM>> : reduce with rule 54
 
 
 state 14
     [ 55: aoptr => "-=" . ]*
-    "+" : reduce with rule 55
-    "-" : reduce with rule 55
-    "~" : reduce with rule 55
-    "++" : reduce with rule 55
-    "--" : reduce with rule 55
-    "!" : reduce with rule 55
-    "(" : reduce with rule 55
-    "id" : reduce with rule 55
-    "num" : reduce with rule 55
+    <"+"> : reduce with rule 55
+    <"-"> : reduce with rule 55
+    <"~"> : reduce with rule 55
+    <"++"> : reduce with rule 55
+    <"--"> : reduce with rule 55
+    <"("> : reduce with rule 55
+    <"!"> : reduce with rule 55
+    <<NAME>> : reduce with rule 55
+    <<NUM>> : reduce with rule 55
 
 
 state 15
     [ 56: aoptr => "*=" . ]*
-    "+" : reduce with rule 56
-    "-" : reduce with rule 56
-    "~" : reduce with rule 56
-    "++" : reduce with rule 56
-    "--" : reduce with rule 56
-    "!" : reduce with rule 56
-    "(" : reduce with rule 56
-    "id" : reduce with rule 56
-    "num" : reduce with rule 56
+    <"+"> : reduce with rule 56
+    <"-"> : reduce with rule 56
+    <"~"> : reduce with rule 56
+    <"++"> : reduce with rule 56
+    <"--"> : reduce with rule 56
+    <"("> : reduce with rule 56
+    <"!"> : reduce with rule 56
+    <<NAME>> : reduce with rule 56
+    <<NUM>> : reduce with rule 56
 
 
 state 16
     [ 57: aoptr => "/=" . ]*
-    "+" : reduce with rule 57
-    "-" : reduce with rule 57
-    "~" : reduce with rule 57
-    "++" : reduce with rule 57
-    "--" : reduce with rule 57
-    "!" : reduce with rule 57
-    "(" : reduce with rule 57
-    "id" : reduce with rule 57
-    "num" : reduce with rule 57
+    <"+"> : reduce with rule 57
+    <"-"> : reduce with rule 57
+    <"~"> : reduce with rule 57
+    <"++"> : reduce with rule 57
+    <"--"> : reduce with rule 57
+    <"("> : reduce with rule 57
+    <"!"> : reduce with rule 57
+    <<NAME>> : reduce with rule 57
+    <<NUM>> : reduce with rule 57
 
 
 state 17
     [ 58: aoptr => "&=" . ]*
-    "+" : reduce with rule 58
-    "-" : reduce with rule 58
-    "~" : reduce with rule 58
-    "++" : reduce with rule 58
-    "--" : reduce with rule 58
-    "!" : reduce with rule 58
-    "(" : reduce with rule 58
-    "id" : reduce with rule 58
-    "num" : reduce with rule 58
+    <"+"> : reduce with rule 58
+    <"-"> : reduce with rule 58
+    <"~"> : reduce with rule 58
+    <"++"> : reduce with rule 58
+    <"--"> : reduce with rule 58
+    <"("> : reduce with rule 58
+    <"!"> : reduce with rule 58
+    <<NAME>> : reduce with rule 58
+    <<NUM>> : reduce with rule 58
 
 
 state 18
     [ 59: aoptr => "|=" . ]*
-    "+" : reduce with rule 59
-    "-" : reduce with rule 59
-    "~" : reduce with rule 59
-    "++" : reduce with rule 59
-    "--" : reduce with rule 59
-    "!" : reduce with rule 59
-    "(" : reduce with rule 59
-    "id" : reduce with rule 59
-    "num" : reduce with rule 59
+    <"+"> : reduce with rule 59
+    <"-"> : reduce with rule 59
+    <"~"> : reduce with rule 59
+    <"++"> : reduce with rule 59
+    <"--"> : reduce with rule 59
+    <"("> : reduce with rule 59
+    <"!"> : reduce with rule 59
+    <<NAME>> : reduce with rule 59
+    <<NUM>> : reduce with rule 59
 
 
 state 19
     [ 60: aoptr => "^=" . ]*
-    "+" : reduce with rule 60
-    "-" : reduce with rule 60
-    "~" : reduce with rule 60
-    "++" : reduce with rule 60
-    "--" : reduce with rule 60
-    "!" : reduce with rule 60
-    "(" : reduce with rule 60
-    "id" : reduce with rule 60
-    "num" : reduce with rule 60
+    <"+"> : reduce with rule 60
+    <"-"> : reduce with rule 60
+    <"~"> : reduce with rule 60
+    <"++"> : reduce with rule 60
+    <"--"> : reduce with rule 60
+    <"("> : reduce with rule 60
+    <"!"> : reduce with rule 60
+    <<NAME>> : reduce with rule 60
+    <<NUM>> : reduce with rule 60
 
 
 state 20
     [ 61: aoptr => ">>=" . ]*
-    "+" : reduce with rule 61
-    "-" : reduce with rule 61
-    "~" : reduce with rule 61
-    "++" : reduce with rule 61
-    "--" : reduce with rule 61
-    "!" : reduce with rule 61
-    "(" : reduce with rule 61
-    "id" : reduce with rule 61
-    "num" : reduce with rule 61
+    <"+"> : reduce with rule 61
+    <"-"> : reduce with rule 61
+    <"~"> : reduce with rule 61
+    <"++"> : reduce with rule 61
+    <"--"> : reduce with rule 61
+    <"("> : reduce with rule 61
+    <"!"> : reduce with rule 61
+    <<NAME>> : reduce with rule 61
+    <<NUM>> : reduce with rule 61
 
 
 state 21
     [ 62: aoptr => "<<=" . ]*
-    "+" : reduce with rule 62
-    "-" : reduce with rule 62
-    "~" : reduce with rule 62
-    "++" : reduce with rule 62
-    "--" : reduce with rule 62
-    "!" : reduce with rule 62
-    "(" : reduce with rule 62
-    "id" : reduce with rule 62
-    "num" : reduce with rule 62
+    <"+"> : reduce with rule 62
+    <"-"> : reduce with rule 62
+    <"~"> : reduce with rule 62
+    <"++"> : reduce with rule 62
+    <"--"> : reduce with rule 62
+    <"("> : reduce with rule 62
+    <"!"> : reduce with rule 62
+    <<NAME>> : reduce with rule 62
+    <<NUM>> : reduce with rule 62
 
 
 state 22
     [ 63: aoptr => "%=" . ]*
-    "+" : reduce with rule 63
-    "-" : reduce with rule 63
-    "~" : reduce with rule 63
-    "++" : reduce with rule 63
-    "--" : reduce with rule 63
-    "!" : reduce with rule 63
-    "(" : reduce with rule 63
-    "id" : reduce with rule 63
-    "num" : reduce with rule 63
+    <"+"> : reduce with rule 63
+    <"-"> : reduce with rule 63
+    <"~"> : reduce with rule 63
+    <"++"> : reduce with rule 63
+    <"--"> : reduce with rule 63
+    <"("> : reduce with rule 63
+    <"!"> : reduce with rule 63
+    <<NAME>> : reduce with rule 63
+    <<NUM>> : reduce with rule 63
 
 
 state 23
@@ -389,47 +675,47 @@ state 23
     [ 61: aoptr => . ">>=" ]
     [ 62: aoptr => . "<<=" ]
     [ 63: aoptr => . "%=" ]
-    "=" : shift,and goto state 12
-    "+=" : shift,and goto state 13
-    "-=" : shift,and goto state 14
-    "*=" : shift,and goto state 15
-    "/=" : shift,and goto state 16
-    "&=" : shift,and goto state 17
-    "|=" : shift,and goto state 18
-    "^=" : shift,and goto state 19
-    ">>=" : shift,and goto state 20
-    "<<=" : shift,and goto state 21
-    "%=" : shift,and goto state 22
-    "++" : shift,and goto state 62
-    "--" : shift,and goto state 63
-    "+" : reduce with rule 48
-    "-" : reduce with rule 48
-    "*" : reduce with rule 48
-    "/" : reduce with rule 48
-    "**" : reduce with rule 48
-    "?" : reduce with rule 48
-    ":" : reduce with rule 48
-    "%" : reduce with rule 48
-    ">" : reduce with rule 48
-    "<" : reduce with rule 48
-    ">=" : reduce with rule 48
-    "<=" : reduce with rule 48
-    "==" : reduce with rule 48
-    "!=" : reduce with rule 48
-    "|" : reduce with rule 48
-    "&" : reduce with rule 48
-    "^" : reduce with rule 48
-    "&&" : reduce with rule 48
-    "||" : reduce with rule 48
-    ">>" : reduce with rule 48
-    "<<" : reduce with rule 48
-    ">>>" : reduce with rule 48
-    "(" : reduce with rule 48
-    ")" : reduce with rule 48
-    "[" : reduce with rule 48
-    "]" : reduce with rule 48
-    "," : reduce with rule 48
-    ";" : reduce with rule 48
+    <"="> : shift, and goto state 12
+    <"+="> : shift, and goto state 13
+    <"-="> : shift, and goto state 14
+    <"*="> : shift, and goto state 15
+    <"/="> : shift, and goto state 16
+    <"&="> : shift, and goto state 17
+    <"|="> : shift, and goto state 18
+    <"^="> : shift, and goto state 19
+    <">>="> : shift, and goto state 20
+    <"<<="> : shift, and goto state 21
+    <"%="> : shift, and goto state 22
+    <"++"> : shift, and goto state 62
+    <"--"> : shift, and goto state 63
+    <"+"> : reduce with rule 48
+    <"-"> : reduce with rule 48
+    <"*"> : reduce with rule 48
+    <"/"> : reduce with rule 48
+    <"**"> : reduce with rule 48
+    <"?"> : reduce with rule 48
+    <":"> : reduce with rule 48
+    <"%"> : reduce with rule 48
+    <">"> : reduce with rule 48
+    <"<"> : reduce with rule 48
+    <">="> : reduce with rule 48
+    <"<="> : reduce with rule 48
+    <"=="> : reduce with rule 48
+    <"!="> : reduce with rule 48
+    <"&"> : reduce with rule 48
+    <"|"> : reduce with rule 48
+    <"^"> : reduce with rule 48
+    <"<<"> : reduce with rule 48
+    <">>"> : reduce with rule 48
+    <">>>"> : reduce with rule 48
+    <"("> : reduce with rule 48
+    <")"> : reduce with rule 48
+    <"["> : reduce with rule 48
+    <"]"> : reduce with rule 48
+    <","> : reduce with rule 48
+    <";"> : reduce with rule 48
+    <"&&"> : reduce with rule 48
+    <"||"> : reduce with rule 48
     aoptr : goto state 61
 
 
@@ -464,18 +750,18 @@ state 24
     [ 50: expr => . var "--" ]
     [ 51: expr => . "++" var ]
     [ 52: expr => . "--" var ]
-    [ 75: var => . "id" ]
+    [ 75: var => . <NAME> ]
     [ 76: var => . expr "[" exprlist "]" ]
-    [ 74: const => . "num" ]
-    "+" : shift,and goto state 24
-    "-" : shift,and goto state 25
-    "~" : shift,and goto state 26
-    "++" : shift,and goto state 37
-    "--" : shift,and goto state 38
-    "!" : shift,and goto state 27
-    "(" : shift,and goto state 29
-    "id" : shift,and goto state 39
-    "num" : shift,and goto state 40
+    [ 74: const => . <NUM> ]
+    <"+"> : shift, and goto state 24
+    <"-"> : shift, and goto state 25
+    <"~"> : shift, and goto state 26
+    <"++"> : shift, and goto state 37
+    <"--"> : shift, and goto state 38
+    <"("> : shift, and goto state 29
+    <"!"> : shift, and goto state 27
+    <<NAME>> : shift, and goto state 39
+    <<NUM>> : shift, and goto state 40
     expr : goto state 64
     const : goto state 28
     var : goto state 23
@@ -512,18 +798,18 @@ state 25
     [ 50: expr => . var "--" ]
     [ 51: expr => . "++" var ]
     [ 52: expr => . "--" var ]
-    [ 75: var => . "id" ]
+    [ 75: var => . <NAME> ]
     [ 76: var => . expr "[" exprlist "]" ]
-    [ 74: const => . "num" ]
-    "+" : shift,and goto state 24
-    "-" : shift,and goto state 25
-    "~" : shift,and goto state 26
-    "++" : shift,and goto state 37
-    "--" : shift,and goto state 38
-    "!" : shift,and goto state 27
-    "(" : shift,and goto state 29
-    "id" : shift,and goto state 39
-    "num" : shift,and goto state 40
+    [ 74: const => . <NUM> ]
+    <"+"> : shift, and goto state 24
+    <"-"> : shift, and goto state 25
+    <"~"> : shift, and goto state 26
+    <"++"> : shift, and goto state 37
+    <"--"> : shift, and goto state 38
+    <"("> : shift, and goto state 29
+    <"!"> : shift, and goto state 27
+    <<NAME>> : shift, and goto state 39
+    <<NUM>> : shift, and goto state 40
     expr : goto state 65
     const : goto state 28
     var : goto state 23
@@ -537,1298 +823,3 @@ state 26
     [ 27: expr => . expr "&&" expr ]
     [ 28: expr => . expr "|" expr ]
     [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 51: expr => . "++" var ]
-    [ 52: expr => . "--" var ]
-    [ 75: var => . "id" ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 74: const => . "num" ]
-    "+" : shift,and goto state 24
-    "-" : shift,and goto state 25
-    "~" : shift,and goto state 26
-    "++" : shift,and goto state 37
-    "--" : shift,and goto state 38
-    "!" : shift,and goto state 27
-    "(" : shift,and goto state 29
-    "id" : shift,and goto state 39
-    "num" : shift,and goto state 40
-    expr : goto state 66
-    const : goto state 28
-    var : goto state 23
-
-
-state 27
-    [ 44: expr => "!" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 51: expr => . "++" var ]
-    [ 52: expr => . "--" var ]
-    [ 75: var => . "id" ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 74: const => . "num" ]
-    "+" : shift,and goto state 24
-    "-" : shift,and goto state 25
-    "~" : shift,and goto state 26
-    "++" : shift,and goto state 37
-    "--" : shift,and goto state 38
-    "!" : shift,and goto state 27
-    "(" : shift,and goto state 29
-    "id" : shift,and goto state 39
-    "num" : shift,and goto state 40
-    expr : goto state 67
-    const : goto state 28
-    var : goto state 23
-
-
-state 28
-    [ 45: expr => const . ]*
-    "+" : reduce with rule 45
-    "-" : reduce with rule 45
-    "*" : reduce with rule 45
-    "/" : reduce with rule 45
-    "**" : reduce with rule 45
-    "?" : reduce with rule 45
-    ":" : reduce with rule 45
-    "%" : reduce with rule 45
-    ">" : reduce with rule 45
-    "<" : reduce with rule 45
-    ">=" : reduce with rule 45
-    "<=" : reduce with rule 45
-    "==" : reduce with rule 45
-    "!=" : reduce with rule 45
-    "|" : reduce with rule 45
-    "&" : reduce with rule 45
-    "^" : reduce with rule 45
-    "&&" : reduce with rule 45
-    "||" : reduce with rule 45
-    ">>" : reduce with rule 45
-    "<<" : reduce with rule 45
-    ">>>" : reduce with rule 45
-    "(" : reduce with rule 45
-    ")" : reduce with rule 45
-    "[" : reduce with rule 45
-    "]" : reduce with rule 45
-    "," : reduce with rule 45
-    ";" : reduce with rule 45
-
-
-state 29
-    [ 46: expr => "(" . expr ")" ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 51: expr => . "++" var ]
-    [ 52: expr => . "--" var ]
-    [ 75: var => . "id" ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 74: const => . "num" ]
-    "+" : shift,and goto state 24
-    "-" : shift,and goto state 25
-    "~" : shift,and goto state 26
-    "++" : shift,and goto state 37
-    "--" : shift,and goto state 38
-    "!" : shift,and goto state 27
-    "(" : shift,and goto state 29
-    "id" : shift,and goto state 39
-    "num" : shift,and goto state 40
-    expr : goto state 68
-    const : goto state 28
-    var : goto state 23
-
-
-state 30
-    [ 51: expr => "++" var . ]*
-    [ 24: expr => var . aoptr expr ]*
-    [ 48: expr => var . ]*
-    [ 49: expr => var . "++" ]*
-    [ 50: expr => var . "--" ]*
-    [ 53: aoptr => . "=" ]
-    [ 54: aoptr => . "+=" ]
-    [ 55: aoptr => . "-=" ]
-    [ 56: aoptr => . "*=" ]
-    [ 57: aoptr => . "/=" ]
-    [ 58: aoptr => . "&=" ]
-    [ 59: aoptr => . "|=" ]
-    [ 60: aoptr => . "^=" ]
-    [ 61: aoptr => . ">>=" ]
-    [ 62: aoptr => . "<<=" ]
-    [ 63: aoptr => . "%=" ]
-    "=" : shift,and goto state 12
-    "+=" : shift,and goto state 13
-    "-=" : shift,and goto state 14
-    "*=" : shift,and goto state 15
-    "/=" : shift,and goto state 16
-    "&=" : shift,and goto state 17
-    "|=" : shift,and goto state 18
-    "^=" : shift,and goto state 19
-    ">>=" : shift,and goto state 20
-    "<<=" : shift,and goto state 21
-    "%=" : shift,and goto state 22
-    "++" : shift,and goto state 62
-    "--" : shift,and goto state 63
-    "+" : reduce with rule 48
-    "-" : reduce with rule 48
-    "*" : reduce with rule 48
-    "/" : reduce with rule 48
-    "**" : reduce with rule 48
-    "?" : reduce with rule 48
-    "%" : reduce with rule 48
-    ">" : reduce with rule 48
-    "<" : reduce with rule 48
-    ">=" : reduce with rule 48
-    "<=" : reduce with rule 48
-    "==" : reduce with rule 48
-    "!=" : reduce with rule 48
-    "|" : reduce with rule 48
-    "&" : reduce with rule 48
-    "^" : reduce with rule 48
-    "&&" : reduce with rule 48
-    "||" : reduce with rule 48
-    ">>" : reduce with rule 48
-    "<<" : reduce with rule 48
-    ">>>" : reduce with rule 48
-    "(" : reduce with rule 48
-    ")" : reduce with rule 51
-    "[" : reduce with rule 48
-    "," : reduce with rule 51
-    ";" : reduce with rule 51
-    aoptr : goto state 61
-
-
-state 31
-    [ 52: expr => "--" var . ]*
-    [ 24: expr => var . aoptr expr ]*
-    [ 48: expr => var . ]*
-    [ 49: expr => var . "++" ]*
-    [ 50: expr => var . "--" ]*
-    [ 53: aoptr => . "=" ]
-    [ 54: aoptr => . "+=" ]
-    [ 55: aoptr => . "-=" ]
-    [ 56: aoptr => . "*=" ]
-    [ 57: aoptr => . "/=" ]
-    [ 58: aoptr => . "&=" ]
-    [ 59: aoptr => . "|=" ]
-    [ 60: aoptr => . "^=" ]
-    [ 61: aoptr => . ">>=" ]
-    [ 62: aoptr => . "<<=" ]
-    [ 63: aoptr => . "%=" ]
-    "=" : shift,and goto state 12
-    "+=" : shift,and goto state 13
-    "-=" : shift,and goto state 14
-    "*=" : shift,and goto state 15
-    "/=" : shift,and goto state 16
-    "&=" : shift,and goto state 17
-    "|=" : shift,and goto state 18
-    "^=" : shift,and goto state 19
-    ">>=" : shift,and goto state 20
-    "<<=" : shift,and goto state 21
-    "%=" : shift,and goto state 22
-    "++" : shift,and goto state 62
-    "--" : shift,and goto state 63
-    "+" : reduce with rule 48
-    "-" : reduce with rule 48
-    "*" : reduce with rule 48
-    "/" : reduce with rule 48
-    "**" : reduce with rule 48
-    "?" : reduce with rule 48
-    "%" : reduce with rule 48
-    ">" : reduce with rule 48
-    "<" : reduce with rule 48
-    ">=" : reduce with rule 48
-    "<=" : reduce with rule 48
-    "==" : reduce with rule 48
-    "!=" : reduce with rule 48
-    "|" : reduce with rule 48
-    "&" : reduce with rule 48
-    "^" : reduce with rule 48
-    "&&" : reduce with rule 48
-    "||" : reduce with rule 48
-    ">>" : reduce with rule 48
-    "<<" : reduce with rule 48
-    ">>>" : reduce with rule 48
-    "(" : reduce with rule 48
-    ")" : reduce with rule 52
-    "[" : reduce with rule 48
-    "," : reduce with rule 52
-    ";" : reduce with rule 52
-    aoptr : goto state 61
-
-
-state 32
-    [ 4: topstmt => "function" "(" argdeflist . ")" "{" stmtlist "}" ]*
-    ")" : shift,and goto state 69
-
-
-state 33
-    [ 5: argdeflist => neargdeflist . ]*
-    [ 7: neargdeflist => neargdeflist . "," "id" ]*
-    "," : shift,and goto state 70
-    ")" : reduce with rule 5
-
-
-state 34
-    [ 8: neargdeflist => "id" . ]*
-    ")" : reduce with rule 8
-    "," : reduce with rule 8
-
-
-state 35
-    [ 9: stmtlist => stmtlist stmt . ]*
-    "+" : reduce with rule 9
-    "-" : reduce with rule 9
-    "~" : reduce with rule 9
-    "++" : reduce with rule 9
-    "--" : reduce with rule 9
-    "!" : reduce with rule 9
-    "(" : reduce with rule 9
-    "{" : reduce with rule 9
-    "}" : reduce with rule 9
-    "id" : reduce with rule 9
-    "num" : reduce with rule 9
-    ";" : reduce with rule 9
-    "if" : reduce with rule 9
-    "while" : reduce with rule 9
-    "do" : reduce with rule 9
-    "for" : reduce with rule 9
-
-
-state 36
-    [ 23: exprlist => expr . ]*
-    [ 25: expr => expr . "?" expr ":" expr ]*
-    [ 26: expr => expr . "||" expr ]*
-    [ 27: expr => expr . "&&" expr ]*
-    [ 28: expr => expr . "|" expr ]*
-    [ 29: expr => expr . "^" expr ]*
-    [ 30: expr => expr . "&" expr ]*
-    [ 31: expr => expr . coptr expr ]*
-    [ 32: expr => expr . ">>" expr ]*
-    [ 33: expr => expr . "<<" expr ]*
-    [ 34: expr => expr . ">>>" expr ]*
-    [ 35: expr => expr . "+" expr ]*
-    [ 36: expr => expr . "-" expr ]*
-    [ 37: expr => expr . "*" expr ]*
-    [ 38: expr => expr . "/" expr ]*
-    [ 39: expr => expr . "%" expr ]*
-    [ 40: expr => expr . "**" expr ]*
-    [ 47: expr => expr . "(" arglist ")" ]*
-    [ 76: var => expr . "[" exprlist "]" ]*
-    [ 64: coptr => . ">" ]
-    [ 65: coptr => . "<" ]
-    [ 66: coptr => . ">=" ]
-    [ 67: coptr => . "<=" ]
-    [ 68: coptr => . "==" ]
-    [ 69: coptr => . "!=" ]
-    "+" : shift,and goto state 53
-    "-" : shift,and goto state 54
-    "*" : shift,and goto state 55
-    "/" : shift,and goto state 56
-    "**" : shift,and goto state 58
-    "?" : shift,and goto state 43
-    "%" : shift,and goto state 57
-    ">" : shift,and goto state 6
-    "<" : shift,and goto state 7
-    ">=" : shift,and goto state 8
-    "<=" : shift,and goto state 9
-    "==" : shift,and goto state 10
-    "!=" : shift,and goto state 11
-    "|" : shift,and goto state 46
-    "&" : shift,and goto state 48
-    "^" : shift,and goto state 47
-    "&&" : shift,and goto state 45
-    "||" : shift,and goto state 44
-    ">>" : shift,and goto state 50
-    "<<" : shift,and goto state 51
-    ">>>" : shift,and goto state 52
-    "(" : shift,and goto state 59
-    "[" : shift,and goto state 60
-    ")" : reduce with rule 23
-    "]" : reduce with rule 23
-    "," : reduce with rule 23
-    ";" : reduce with rule 23
-    coptr : goto state 49
-
-
-state 37
-    [ 51: expr => "++" . var ]*
-    [ 75: var => . "id" ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 51: expr => . "++" var ]
-    [ 52: expr => . "--" var ]
-    [ 74: const => . "num" ]
-    "+" : shift,and goto state 24
-    "-" : shift,and goto state 25
-    "~" : shift,and goto state 26
-    "++" : shift,and goto state 37
-    "--" : shift,and goto state 38
-    "!" : shift,and goto state 27
-    "(" : shift,and goto state 29
-    "id" : shift,and goto state 39
-    "num" : shift,and goto state 40
-    expr : goto state 73
-    const : goto state 28
-    var : goto state 72
-
-
-state 38
-    [ 52: expr => "--" . var ]*
-    [ 75: var => . "id" ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 51: expr => . "++" var ]
-    [ 52: expr => . "--" var ]
-    [ 74: const => . "num" ]
-    "+" : shift,and goto state 24
-    "-" : shift,and goto state 25
-    "~" : shift,and goto state 26
-    "++" : shift,and goto state 37
-    "--" : shift,and goto state 38
-    "!" : shift,and goto state 27
-    "(" : shift,and goto state 29
-    "id" : shift,and goto state 39
-    "num" : shift,and goto state 40
-    expr : goto state 73
-    const : goto state 28
-    var : goto state 74
-
-
-state 39
-    [ 75: var => "id" . ]*
-    "+" : reduce with rule 75
-    "-" : reduce with rule 75
-    "*" : reduce with rule 75
-    "/" : reduce with rule 75
-    "**" : reduce with rule 75
-    "?" : reduce with rule 75
-    ":" : reduce with rule 75
-    "%" : reduce with rule 75
-    ">" : reduce with rule 75
-    "<" : reduce with rule 75
-    ">=" : reduce with rule 75
-    "<=" : reduce with rule 75
-    "==" : reduce with rule 75
-    "!=" : reduce with rule 75
-    "=" : reduce with rule 75
-    "+=" : reduce with rule 75
-    "-=" : reduce with rule 75
-    "*=" : reduce with rule 75
-    "/=" : reduce with rule 75
-    "&=" : reduce with rule 75
-    "|=" : reduce with rule 75
-    "^=" : reduce with rule 75
-    ">>=" : reduce with rule 75
-    "<<=" : reduce with rule 75
-    "%=" : reduce with rule 75
-    "|" : reduce with rule 75
-    "&" : reduce with rule 75
-    "^" : reduce with rule 75
-    "++" : reduce with rule 75
-    "--" : reduce with rule 75
-    "&&" : reduce with rule 75
-    "||" : reduce with rule 75
-    ">>" : reduce with rule 75
-    "<<" : reduce with rule 75
-    ">>>" : reduce with rule 75
-    "(" : reduce with rule 75
-    ")" : reduce with rule 75
-    "[" : reduce with rule 75
-    "]" : reduce with rule 75
-    "," : reduce with rule 75
-    ";" : reduce with rule 75
-
-
-state 40
-    [ 74: const => "num" . ]*
-    "+" : reduce with rule 74
-    "-" : reduce with rule 74
-    "*" : reduce with rule 74
-    "/" : reduce with rule 74
-    "**" : reduce with rule 74
-    "?" : reduce with rule 74
-    ":" : reduce with rule 74
-    "%" : reduce with rule 74
-    ">" : reduce with rule 74
-    "<" : reduce with rule 74
-    ">=" : reduce with rule 74
-    "<=" : reduce with rule 74
-    "==" : reduce with rule 74
-    "!=" : reduce with rule 74
-    "|" : reduce with rule 74
-    "&" : reduce with rule 74
-    "^" : reduce with rule 74
-    "&&" : reduce with rule 74
-    "||" : reduce with rule 74
-    ">>" : reduce with rule 74
-    "<<" : reduce with rule 74
-    ">>>" : reduce with rule 74
-    "(" : reduce with rule 74
-    ")" : reduce with rule 74
-    "[" : reduce with rule 74
-    "]" : reduce with rule 74
-    "," : reduce with rule 74
-    ";" : reduce with rule 74
-
-
-state 41
-    [ 70: arglist => narglist . ]*
-    [ 72: narglist => narglist . "," expr ]*
-    "," : shift,and goto state 75
-    ")" : reduce with rule 70
-
-
-state 42
-    [ 73: narglist => expr . ]*
-    [ 25: expr => expr . "?" expr ":" expr ]*
-    [ 26: expr => expr . "||" expr ]*
-    [ 27: expr => expr . "&&" expr ]*
-    [ 28: expr => expr . "|" expr ]*
-    [ 29: expr => expr . "^" expr ]*
-    [ 30: expr => expr . "&" expr ]*
-    [ 31: expr => expr . coptr expr ]*
-    [ 32: expr => expr . ">>" expr ]*
-    [ 33: expr => expr . "<<" expr ]*
-    [ 34: expr => expr . ">>>" expr ]*
-    [ 35: expr => expr . "+" expr ]*
-    [ 36: expr => expr . "-" expr ]*
-    [ 37: expr => expr . "*" expr ]*
-    [ 38: expr => expr . "/" expr ]*
-    [ 39: expr => expr . "%" expr ]*
-    [ 40: expr => expr . "**" expr ]*
-    [ 47: expr => expr . "(" arglist ")" ]*
-    [ 76: var => expr . "[" exprlist "]" ]*
-    [ 64: coptr => . ">" ]
-    [ 65: coptr => . "<" ]
-    [ 66: coptr => . ">=" ]
-    [ 67: coptr => . "<=" ]
-    [ 68: coptr => . "==" ]
-    [ 69: coptr => . "!=" ]
-    "+" : shift,and goto state 53
-    "-" : shift,and goto state 54
-    "*" : shift,and goto state 55
-    "/" : shift,and goto state 56
-    "**" : shift,and goto state 58
-    "?" : shift,and goto state 43
-    "%" : shift,and goto state 57
-    ">" : shift,and goto state 6
-    "<" : shift,and goto state 7
-    ">=" : shift,and goto state 8
-    "<=" : shift,and goto state 9
-    "==" : shift,and goto state 10
-    "!=" : shift,and goto state 11
-    "|" : shift,and goto state 46
-    "&" : shift,and goto state 48
-    "^" : shift,and goto state 47
-    "&&" : shift,and goto state 45
-    "||" : shift,and goto state 44
-    ">>" : shift,and goto state 50
-    "<<" : shift,and goto state 51
-    ">>>" : shift,and goto state 52
-    "(" : shift,and goto state 59
-    "[" : shift,and goto state 60
-    ")" : reduce with rule 73
-    "," : reduce with rule 73
-    coptr : goto state 49
-
-
-state 43
-    [ 25: expr => expr "?" . expr ":" expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 51: expr => . "++" var ]
-    [ 52: expr => . "--" var ]
-    [ 75: var => . "id" ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 74: const => . "num" ]
-    "+" : shift,and goto state 24
-    "-" : shift,and goto state 25
-    "~" : shift,and goto state 26
-    "++" : shift,and goto state 37
-    "--" : shift,and goto state 38
-    "!" : shift,and goto state 27
-    "(" : shift,and goto state 29
-    "id" : shift,and goto state 39
-    "num" : shift,and goto state 40
-    expr : goto state 76
-    const : goto state 28
-    var : goto state 23
-
-
-state 44
-    [ 26: expr => expr "||" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 51: expr => . "++" var ]
-    [ 52: expr => . "--" var ]
-    [ 75: var => . "id" ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 74: const => . "num" ]
-    "+" : shift,and goto state 24
-    "-" : shift,and goto state 25
-    "~" : shift,and goto state 26
-    "++" : shift,and goto state 37
-    "--" : shift,and goto state 38
-    "!" : shift,and goto state 27
-    "(" : shift,and goto state 29
-    "id" : shift,and goto state 39
-    "num" : shift,and goto state 40
-    expr : goto state 77
-    const : goto state 28
-    var : goto state 23
-
-
-state 45
-    [ 27: expr => expr "&&" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 51: expr => . "++" var ]
-    [ 52: expr => . "--" var ]
-    [ 75: var => . "id" ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 74: const => . "num" ]
-    "+" : shift,and goto state 24
-    "-" : shift,and goto state 25
-    "~" : shift,and goto state 26
-    "++" : shift,and goto state 37
-    "--" : shift,and goto state 38
-    "!" : shift,and goto state 27
-    "(" : shift,and goto state 29
-    "id" : shift,and goto state 39
-    "num" : shift,and goto state 40
-    expr : goto state 78
-    const : goto state 28
-    var : goto state 23
-
-
-state 46
-    [ 28: expr => expr "|" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 51: expr => . "++" var ]
-    [ 52: expr => . "--" var ]
-    [ 75: var => . "id" ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 74: const => . "num" ]
-    "+" : shift,and goto state 24
-    "-" : shift,and goto state 25
-    "~" : shift,and goto state 26
-    "++" : shift,and goto state 37
-    "--" : shift,and goto state 38
-    "!" : shift,and goto state 27
-    "(" : shift,and goto state 29
-    "id" : shift,and goto state 39
-    "num" : shift,and goto state 40
-    expr : goto state 79
-    const : goto state 28
-    var : goto state 23
-
-
-state 47
-    [ 29: expr => expr "^" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 51: expr => . "++" var ]
-    [ 52: expr => . "--" var ]
-    [ 75: var => . "id" ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 74: const => . "num" ]
-    "+" : shift,and goto state 24
-    "-" : shift,and goto state 25
-    "~" : shift,and goto state 26
-    "++" : shift,and goto state 37
-    "--" : shift,and goto state 38
-    "!" : shift,and goto state 27
-    "(" : shift,and goto state 29
-    "id" : shift,and goto state 39
-    "num" : shift,and goto state 40
-    expr : goto state 80
-    const : goto state 28
-    var : goto state 23
-
-
-state 48
-    [ 30: expr => expr "&" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 51: expr => . "++" var ]
-    [ 52: expr => . "--" var ]
-    [ 75: var => . "id" ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 74: const => . "num" ]
-    "+" : shift,and goto state 24
-    "-" : shift,and goto state 25
-    "~" : shift,and goto state 26
-    "++" : shift,and goto state 37
-    "--" : shift,and goto state 38
-    "!" : shift,and goto state 27
-    "(" : shift,and goto state 29
-    "id" : shift,and goto state 39
-    "num" : shift,and goto state 40
-    expr : goto state 81
-    const : goto state 28
-    var : goto state 23
-
-
-state 49
-    [ 31: expr => expr coptr . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 51: expr => . "++" var ]
-    [ 52: expr => . "--" var ]
-    [ 75: var => . "id" ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 74: const => . "num" ]
-    "+" : shift,and goto state 24
-    "-" : shift,and goto state 25
-    "~" : shift,and goto state 26
-    "++" : shift,and goto state 37
-    "--" : shift,and goto state 38
-    "!" : shift,and goto state 27
-    "(" : shift,and goto state 29
-    "id" : shift,and goto state 39
-    "num" : shift,and goto state 40
-    expr : goto state 82
-    const : goto state 28
-    var : goto state 23
-
-
-state 50
-    [ 32: expr => expr ">>" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 51: expr => . "++" var ]
-    [ 52: expr => . "--" var ]
-    [ 75: var => . "id" ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 74: const => . "num" ]
-    "+" : shift,and goto state 24
-    "-" : shift,and goto state 25
-    "~" : shift,and goto state 26
-    "++" : shift,and goto state 37
-    "--" : shift,and goto state 38
-    "!" : shift,and goto state 27
-    "(" : shift,and goto state 29
-    "id" : shift,and goto state 39
-    "num" : shift,and goto state 40
-    expr : goto state 83
-    const : goto state 28
-    var : goto state 23
-
-
-state 51
-    [ 33: expr => expr "<<" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 51: expr => . "++" var ]
-    [ 52: expr => . "--" var ]
-    [ 75: var => . "id" ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 74: const => . "num" ]
-    "+" : shift,and goto state 24
-    "-" : shift,and goto state 25
-    "~" : shift,and goto state 26
-    "++" : shift,and goto state 37
-    "--" : shift,and goto state 38
-    "!" : shift,and goto state 27
-    "(" : shift,and goto state 29
-    "id" : shift,and goto state 39
-    "num" : shift,and goto state 40
-    expr : goto state 84
-    const : goto state 28
-    var : goto state 23
-
-
-state 52
-    [ 34: expr => expr ">>>" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 51: expr => . "++" var ]
-    [ 52: expr => . "--" var ]
-    [ 75: var => . "id" ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 74: const => . "num" ]
-    "+" : shift,and goto state 24
-    "-" : shift,and goto state 25
-    "~" : shift,and goto state 26
-    "++" : shift,and goto state 37
-    "--" : shift,and goto state 38
-    "!" : shift,and goto state 27
-    "(" : shift,and goto state 29
-    "id" : shift,and goto state 39
-    "num" : shift,and goto state 40
-    expr : goto state 85
-    const : goto state 28
-    var : goto state 23
-
-
-state 53
-    [ 35: expr => expr "+" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 51: expr => . "++" var ]
-    [ 52: expr => . "--" var ]
-    [ 75: var => . "id" ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 74: const => . "num" ]
-    "+" : shift,and goto state 24
-    "-" : shift,and goto state 25
-    "~" : shift,and goto state 26
-    "++" : shift,and goto state 37
-    "--" : shift,and goto state 38
-    "!" : shift,and goto state 27
-    "(" : shift,and goto state 29
-    "id" : shift,and goto state 39
-    "num" : shift,and goto state 40
-    expr : goto state 86
-    const : goto state 28
-    var : goto state 23
-
-
-state 54
-    [ 36: expr => expr "-" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 51: expr => . "++" var ]
-    [ 52: expr => . "--" var ]
-    [ 75: var => . "id" ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 74: const => . "num" ]
-    "+" : shift,and goto state 24
-    "-" : shift,and goto state 25
-    "~" : shift,and goto state 26
-    "++" : shift,and goto state 37
-    "--" : shift,and goto state 38
-    "!" : shift,and goto state 27
-    "(" : shift,and goto state 29
-    "id" : shift,and goto state 39
-    "num" : shift,and goto state 40
-    expr : goto state 87
-    const : goto state 28
-    var : goto state 23
-
-
-state 55
-    [ 37: expr => expr "*" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 51: expr => . "++" var ]
-    [ 52: expr => . "--" var ]
-    [ 75: var => . "id" ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 74: const => . "num" ]
-    "+" : shift,and goto state 24
-    "-" : shift,and goto state 25
-    "~" : shift,and goto state 26
-    "++" : shift,and goto state 37
-    "--" : shift,and goto state 38
-    "!" : shift,and goto state 27
-    "(" : shift,and goto state 29
-    "id" : shift,and goto state 39
-    "num" : shift,and goto state 40
-    expr : goto state 88
-    const : goto state 28
-    var : goto state 23
-
-
-state 56
-    [ 38: expr => expr "/" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 51: expr => . "++" var ]
-    [ 52: expr => . "--" var ]
-    [ 75: var => . "id" ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 74: const => . "num" ]
-    "+" : shift,and goto state 24
-    "-" : shift,and goto state 25
-    "~" : shift,and goto state 26
-    "++" : shift,and goto state 37
-    "--" : shift,and goto state 38
-    "!" : shift,and goto state 27
-    "(" : shift,and goto state 29
-    "id" : shift,and goto state 39
-    "num" : shift,and goto state 40
-    expr : goto state 89
-    const : goto state 28
-    var : goto state 23
-
-
-state 57
-    [ 39: expr => expr "%" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]

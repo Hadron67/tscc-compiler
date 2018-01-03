@@ -1,5 +1,6 @@
 import ts from 'rollup-plugin-typescript2';
 import sourcemaps from 'rollup-plugin-sourcemaps';
+import typescript from 'typescript';
 
 export default {
     input: './src/main.ts',
@@ -15,7 +16,7 @@ export default {
     plugins:[
         sourcemaps(),
         ts({
-            typescript: require('typescript')
+            typescript: typescript
         })
     ]
 }

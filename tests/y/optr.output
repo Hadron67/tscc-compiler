@@ -22,10 +22,10 @@ state 0
     [ 20: e => . "id" ]
     [ 21: e => . "num" ]
     [ 22: ae => . "id" ]
-    "~" : shift,and goto state 20
-    "!" : shift,and goto state 21
-    "id" : shift,and goto state 22
-    "num" : shift,and goto state 23
+    "~" : shift, and goto state 20
+    "!" : shift, and goto state 21
+    "id" : shift, and goto state 22
+    "num" : shift, and goto state 23
     e : goto state 1
     ae : goto state 19
 
@@ -54,27 +54,27 @@ state 1
     [ 37: coptr => . "<=" ]
     [ 38: coptr => . "==" ]
     [ 39: coptr => . "!=" ]
-    "+" : shift,and goto state 34
-    "-" : shift,and goto state 35
-    "*" : shift,and goto state 36
-    "/" : shift,and goto state 37
-    "**" : shift,and goto state 39
-    "?" : shift,and goto state 24
-    "%" : shift,and goto state 38
-    ">" : shift,and goto state 2
-    "<" : shift,and goto state 3
-    ">=" : shift,and goto state 4
-    "<=" : shift,and goto state 5
-    "==" : shift,and goto state 6
-    "!=" : shift,and goto state 7
-    "|" : shift,and goto state 27
-    "&" : shift,and goto state 29
-    "^" : shift,and goto state 28
-    "&&" : shift,and goto state 26
-    "||" : shift,and goto state 25
-    ">>" : shift,and goto state 31
-    "<<" : shift,and goto state 32
-    ">>>" : shift,and goto state 33
+    "+" : shift, and goto state 34
+    "-" : shift, and goto state 35
+    "*" : shift, and goto state 36
+    "/" : shift, and goto state 37
+    "**" : shift, and goto state 39
+    "?" : shift, and goto state 24
+    "%" : shift, and goto state 38
+    ">" : shift, and goto state 2
+    "<" : shift, and goto state 3
+    ">=" : shift, and goto state 4
+    "<=" : shift, and goto state 5
+    "==" : shift, and goto state 6
+    "!=" : shift, and goto state 7
+    "|" : shift, and goto state 27
+    "&" : shift, and goto state 29
+    "^" : shift, and goto state 28
+    "&&" : shift, and goto state 26
+    "||" : shift, and goto state 25
+    ">>" : shift, and goto state 31
+    "<<" : shift, and goto state 32
+    ">>>" : shift, and goto state 33
     "eof" : reduce with rule 0
     coptr : goto state 30
 
@@ -228,17 +228,17 @@ state 19
     [ 31: aoptr => . ">>=" ]
     [ 32: aoptr => . "<<=" ]
     [ 33: aoptr => . "%=" ]
-    "=" : shift,and goto state 8
-    "+=" : shift,and goto state 9
-    "-=" : shift,and goto state 10
-    "*=" : shift,and goto state 11
-    "/=" : shift,and goto state 12
-    "&=" : shift,and goto state 13
-    "|=" : shift,and goto state 14
-    "^=" : shift,and goto state 15
-    ">>=" : shift,and goto state 16
-    "<<=" : shift,and goto state 17
-    "%=" : shift,and goto state 18
+    "=" : shift, and goto state 8
+    "+=" : shift, and goto state 9
+    "-=" : shift, and goto state 10
+    "*=" : shift, and goto state 11
+    "/=" : shift, and goto state 12
+    "&=" : shift, and goto state 13
+    "|=" : shift, and goto state 14
+    "^=" : shift, and goto state 15
+    ">>=" : shift, and goto state 16
+    "<<=" : shift, and goto state 17
+    "%=" : shift, and goto state 18
     aoptr : goto state 40
 
 
@@ -266,10 +266,10 @@ state 20
     [ 20: e => . "id" ]
     [ 21: e => . "num" ]
     [ 22: ae => . "id" ]
-    "~" : shift,and goto state 20
-    "!" : shift,and goto state 21
-    "id" : shift,and goto state 22
-    "num" : shift,and goto state 23
+    "~" : shift, and goto state 20
+    "!" : shift, and goto state 21
+    "id" : shift, and goto state 22
+    "num" : shift, and goto state 23
     e : goto state 41
     ae : goto state 19
 
@@ -298,10 +298,10 @@ state 21
     [ 20: e => . "id" ]
     [ 21: e => . "num" ]
     [ 22: ae => . "id" ]
-    "~" : shift,and goto state 20
-    "!" : shift,and goto state 21
-    "id" : shift,and goto state 22
-    "num" : shift,and goto state 23
+    "~" : shift, and goto state 20
+    "!" : shift, and goto state 21
+    "id" : shift, and goto state 22
+    "num" : shift, and goto state 23
     e : goto state 42
     ae : goto state 19
 
@@ -396,10 +396,10 @@ state 24
     [ 20: e => . "id" ]
     [ 21: e => . "num" ]
     [ 22: ae => . "id" ]
-    "~" : shift,and goto state 20
-    "!" : shift,and goto state 21
-    "id" : shift,and goto state 22
-    "num" : shift,and goto state 23
+    "~" : shift, and goto state 20
+    "!" : shift, and goto state 21
+    "id" : shift, and goto state 22
+    "num" : shift, and goto state 23
     e : goto state 43
     ae : goto state 19
 
@@ -428,10 +428,10 @@ state 25
     [ 20: e => . "id" ]
     [ 21: e => . "num" ]
     [ 22: ae => . "id" ]
-    "~" : shift,and goto state 20
-    "!" : shift,and goto state 21
-    "id" : shift,and goto state 22
-    "num" : shift,and goto state 23
+    "~" : shift, and goto state 20
+    "!" : shift, and goto state 21
+    "id" : shift, and goto state 22
+    "num" : shift, and goto state 23
     e : goto state 44
     ae : goto state 19
 
@@ -460,10 +460,10 @@ state 26
     [ 20: e => . "id" ]
     [ 21: e => . "num" ]
     [ 22: ae => . "id" ]
-    "~" : shift,and goto state 20
-    "!" : shift,and goto state 21
-    "id" : shift,and goto state 22
-    "num" : shift,and goto state 23
+    "~" : shift, and goto state 20
+    "!" : shift, and goto state 21
+    "id" : shift, and goto state 22
+    "num" : shift, and goto state 23
     e : goto state 45
     ae : goto state 19
 
@@ -492,10 +492,10 @@ state 27
     [ 20: e => . "id" ]
     [ 21: e => . "num" ]
     [ 22: ae => . "id" ]
-    "~" : shift,and goto state 20
-    "!" : shift,and goto state 21
-    "id" : shift,and goto state 22
-    "num" : shift,and goto state 23
+    "~" : shift, and goto state 20
+    "!" : shift, and goto state 21
+    "id" : shift, and goto state 22
+    "num" : shift, and goto state 23
     e : goto state 46
     ae : goto state 19
 
@@ -524,10 +524,10 @@ state 28
     [ 20: e => . "id" ]
     [ 21: e => . "num" ]
     [ 22: ae => . "id" ]
-    "~" : shift,and goto state 20
-    "!" : shift,and goto state 21
-    "id" : shift,and goto state 22
-    "num" : shift,and goto state 23
+    "~" : shift, and goto state 20
+    "!" : shift, and goto state 21
+    "id" : shift, and goto state 22
+    "num" : shift, and goto state 23
     e : goto state 47
     ae : goto state 19
 
@@ -556,10 +556,10 @@ state 29
     [ 20: e => . "id" ]
     [ 21: e => . "num" ]
     [ 22: ae => . "id" ]
-    "~" : shift,and goto state 20
-    "!" : shift,and goto state 21
-    "id" : shift,and goto state 22
-    "num" : shift,and goto state 23
+    "~" : shift, and goto state 20
+    "!" : shift, and goto state 21
+    "id" : shift, and goto state 22
+    "num" : shift, and goto state 23
     e : goto state 48
     ae : goto state 19
 
@@ -588,10 +588,10 @@ state 30
     [ 20: e => . "id" ]
     [ 21: e => . "num" ]
     [ 22: ae => . "id" ]
-    "~" : shift,and goto state 20
-    "!" : shift,and goto state 21
-    "id" : shift,and goto state 22
-    "num" : shift,and goto state 23
+    "~" : shift, and goto state 20
+    "!" : shift, and goto state 21
+    "id" : shift, and goto state 22
+    "num" : shift, and goto state 23
     e : goto state 49
     ae : goto state 19
 
@@ -620,10 +620,10 @@ state 31
     [ 20: e => . "id" ]
     [ 21: e => . "num" ]
     [ 22: ae => . "id" ]
-    "~" : shift,and goto state 20
-    "!" : shift,and goto state 21
-    "id" : shift,and goto state 22
-    "num" : shift,and goto state 23
+    "~" : shift, and goto state 20
+    "!" : shift, and goto state 21
+    "id" : shift, and goto state 22
+    "num" : shift, and goto state 23
     e : goto state 50
     ae : goto state 19
 
@@ -652,10 +652,10 @@ state 32
     [ 20: e => . "id" ]
     [ 21: e => . "num" ]
     [ 22: ae => . "id" ]
-    "~" : shift,and goto state 20
-    "!" : shift,and goto state 21
-    "id" : shift,and goto state 22
-    "num" : shift,and goto state 23
+    "~" : shift, and goto state 20
+    "!" : shift, and goto state 21
+    "id" : shift, and goto state 22
+    "num" : shift, and goto state 23
     e : goto state 51
     ae : goto state 19
 
@@ -684,10 +684,10 @@ state 33
     [ 20: e => . "id" ]
     [ 21: e => . "num" ]
     [ 22: ae => . "id" ]
-    "~" : shift,and goto state 20
-    "!" : shift,and goto state 21
-    "id" : shift,and goto state 22
-    "num" : shift,and goto state 23
+    "~" : shift, and goto state 20
+    "!" : shift, and goto state 21
+    "id" : shift, and goto state 22
+    "num" : shift, and goto state 23
     e : goto state 52
     ae : goto state 19
 
@@ -716,10 +716,10 @@ state 34
     [ 20: e => . "id" ]
     [ 21: e => . "num" ]
     [ 22: ae => . "id" ]
-    "~" : shift,and goto state 20
-    "!" : shift,and goto state 21
-    "id" : shift,and goto state 22
-    "num" : shift,and goto state 23
+    "~" : shift, and goto state 20
+    "!" : shift, and goto state 21
+    "id" : shift, and goto state 22
+    "num" : shift, and goto state 23
     e : goto state 53
     ae : goto state 19
 
@@ -748,10 +748,10 @@ state 35
     [ 20: e => . "id" ]
     [ 21: e => . "num" ]
     [ 22: ae => . "id" ]
-    "~" : shift,and goto state 20
-    "!" : shift,and goto state 21
-    "id" : shift,and goto state 22
-    "num" : shift,and goto state 23
+    "~" : shift, and goto state 20
+    "!" : shift, and goto state 21
+    "id" : shift, and goto state 22
+    "num" : shift, and goto state 23
     e : goto state 54
     ae : goto state 19
 
@@ -780,10 +780,10 @@ state 36
     [ 20: e => . "id" ]
     [ 21: e => . "num" ]
     [ 22: ae => . "id" ]
-    "~" : shift,and goto state 20
-    "!" : shift,and goto state 21
-    "id" : shift,and goto state 22
-    "num" : shift,and goto state 23
+    "~" : shift, and goto state 20
+    "!" : shift, and goto state 21
+    "id" : shift, and goto state 22
+    "num" : shift, and goto state 23
     e : goto state 55
     ae : goto state 19
 
@@ -812,10 +812,10 @@ state 37
     [ 20: e => . "id" ]
     [ 21: e => . "num" ]
     [ 22: ae => . "id" ]
-    "~" : shift,and goto state 20
-    "!" : shift,and goto state 21
-    "id" : shift,and goto state 22
-    "num" : shift,and goto state 23
+    "~" : shift, and goto state 20
+    "!" : shift, and goto state 21
+    "id" : shift, and goto state 22
+    "num" : shift, and goto state 23
     e : goto state 56
     ae : goto state 19
 
@@ -844,10 +844,10 @@ state 38
     [ 20: e => . "id" ]
     [ 21: e => . "num" ]
     [ 22: ae => . "id" ]
-    "~" : shift,and goto state 20
-    "!" : shift,and goto state 21
-    "id" : shift,and goto state 22
-    "num" : shift,and goto state 23
+    "~" : shift, and goto state 20
+    "!" : shift, and goto state 21
+    "id" : shift, and goto state 22
+    "num" : shift, and goto state 23
     e : goto state 57
     ae : goto state 19
 
@@ -876,10 +876,10 @@ state 39
     [ 20: e => . "id" ]
     [ 21: e => . "num" ]
     [ 22: ae => . "id" ]
-    "~" : shift,and goto state 20
-    "!" : shift,and goto state 21
-    "id" : shift,and goto state 22
-    "num" : shift,and goto state 23
+    "~" : shift, and goto state 20
+    "!" : shift, and goto state 21
+    "id" : shift, and goto state 22
+    "num" : shift, and goto state 23
     e : goto state 58
     ae : goto state 19
 
@@ -908,10 +908,10 @@ state 40
     [ 20: e => . "id" ]
     [ 21: e => . "num" ]
     [ 22: ae => . "id" ]
-    "~" : shift,and goto state 20
-    "!" : shift,and goto state 21
-    "id" : shift,and goto state 22
-    "num" : shift,and goto state 23
+    "~" : shift, and goto state 20
+    "!" : shift, and goto state 21
+    "id" : shift, and goto state 22
+    "num" : shift, and goto state 23
     e : goto state 59
     ae : goto state 19
 
@@ -940,21 +940,21 @@ state 41
     [ 37: coptr => . "<=" ]
     [ 38: coptr => . "==" ]
     [ 39: coptr => . "!=" ]
-    "+" : shift,and goto state 34
-    "-" : shift,and goto state 35
-    "*" : shift,and goto state 36
-    "/" : shift,and goto state 37
-    "**" : shift,and goto state 39
-    "%" : shift,and goto state 38
-    ">" : shift,and goto state 2
-    "<" : shift,and goto state 3
-    ">=" : shift,and goto state 4
-    "<=" : shift,and goto state 5
-    "==" : shift,and goto state 6
-    "!=" : shift,and goto state 7
-    ">>" : shift,and goto state 31
-    "<<" : shift,and goto state 32
-    ">>>" : shift,and goto state 33
+    "+" : shift, and goto state 34
+    "-" : shift, and goto state 35
+    "*" : shift, and goto state 36
+    "/" : shift, and goto state 37
+    "**" : shift, and goto state 39
+    "%" : shift, and goto state 38
+    ">" : shift, and goto state 2
+    "<" : shift, and goto state 3
+    ">=" : shift, and goto state 4
+    "<=" : shift, and goto state 5
+    "==" : shift, and goto state 6
+    "!=" : shift, and goto state 7
+    ">>" : shift, and goto state 31
+    "<<" : shift, and goto state 32
+    ">>>" : shift, and goto state 33
     "eof" : reduce with rule 18
     "?" : reduce with rule 18
     ":" : reduce with rule 18
@@ -990,24 +990,24 @@ state 42
     [ 37: coptr => . "<=" ]
     [ 38: coptr => . "==" ]
     [ 39: coptr => . "!=" ]
-    "+" : shift,and goto state 34
-    "-" : shift,and goto state 35
-    "*" : shift,and goto state 36
-    "/" : shift,and goto state 37
-    "**" : shift,and goto state 39
-    "%" : shift,and goto state 38
-    ">" : shift,and goto state 2
-    "<" : shift,and goto state 3
-    ">=" : shift,and goto state 4
-    "<=" : shift,and goto state 5
-    "==" : shift,and goto state 6
-    "!=" : shift,and goto state 7
-    "|" : shift,and goto state 27
-    "&" : shift,and goto state 29
-    "^" : shift,and goto state 28
-    ">>" : shift,and goto state 31
-    "<<" : shift,and goto state 32
-    ">>>" : shift,and goto state 33
+    "+" : shift, and goto state 34
+    "-" : shift, and goto state 35
+    "*" : shift, and goto state 36
+    "/" : shift, and goto state 37
+    "**" : shift, and goto state 39
+    "%" : shift, and goto state 38
+    ">" : shift, and goto state 2
+    "<" : shift, and goto state 3
+    ">=" : shift, and goto state 4
+    "<=" : shift, and goto state 5
+    "==" : shift, and goto state 6
+    "!=" : shift, and goto state 7
+    "|" : shift, and goto state 27
+    "&" : shift, and goto state 29
+    "^" : shift, and goto state 28
+    ">>" : shift, and goto state 31
+    "<<" : shift, and goto state 32
+    ">>>" : shift, and goto state 33
     "eof" : reduce with rule 19
     "?" : reduce with rule 19
     ":" : reduce with rule 19
@@ -1040,28 +1040,28 @@ state 43
     [ 37: coptr => . "<=" ]
     [ 38: coptr => . "==" ]
     [ 39: coptr => . "!=" ]
-    "+" : shift,and goto state 34
-    "-" : shift,and goto state 35
-    "*" : shift,and goto state 36
-    "/" : shift,and goto state 37
-    "**" : shift,and goto state 39
-    "?" : shift,and goto state 24
-    ":" : shift,and goto state 60
-    "%" : shift,and goto state 38
-    ">" : shift,and goto state 2
-    "<" : shift,and goto state 3
-    ">=" : shift,and goto state 4
-    "<=" : shift,and goto state 5
-    "==" : shift,and goto state 6
-    "!=" : shift,and goto state 7
-    "|" : shift,and goto state 27
-    "&" : shift,and goto state 29
-    "^" : shift,and goto state 28
-    "&&" : shift,and goto state 26
-    "||" : shift,and goto state 25
-    ">>" : shift,and goto state 31
-    "<<" : shift,and goto state 32
-    ">>>" : shift,and goto state 33
+    "+" : shift, and goto state 34
+    "-" : shift, and goto state 35
+    "*" : shift, and goto state 36
+    "/" : shift, and goto state 37
+    "**" : shift, and goto state 39
+    "?" : shift, and goto state 24
+    ":" : shift, and goto state 60
+    "%" : shift, and goto state 38
+    ">" : shift, and goto state 2
+    "<" : shift, and goto state 3
+    ">=" : shift, and goto state 4
+    "<=" : shift, and goto state 5
+    "==" : shift, and goto state 6
+    "!=" : shift, and goto state 7
+    "|" : shift, and goto state 27
+    "&" : shift, and goto state 29
+    "^" : shift, and goto state 28
+    "&&" : shift, and goto state 26
+    "||" : shift, and goto state 25
+    ">>" : shift, and goto state 31
+    "<<" : shift, and goto state 32
+    ">>>" : shift, and goto state 33
     coptr : goto state 30
 
 
@@ -1089,25 +1089,25 @@ state 44
     [ 37: coptr => . "<=" ]
     [ 38: coptr => . "==" ]
     [ 39: coptr => . "!=" ]
-    "+" : shift,and goto state 34
-    "-" : shift,and goto state 35
-    "*" : shift,and goto state 36
-    "/" : shift,and goto state 37
-    "**" : shift,and goto state 39
-    "%" : shift,and goto state 38
-    ">" : shift,and goto state 2
-    "<" : shift,and goto state 3
-    ">=" : shift,and goto state 4
-    "<=" : shift,and goto state 5
-    "==" : shift,and goto state 6
-    "!=" : shift,and goto state 7
-    "|" : shift,and goto state 27
-    "&" : shift,and goto state 29
-    "^" : shift,and goto state 28
-    "&&" : shift,and goto state 26
-    ">>" : shift,and goto state 31
-    "<<" : shift,and goto state 32
-    ">>>" : shift,and goto state 33
+    "+" : shift, and goto state 34
+    "-" : shift, and goto state 35
+    "*" : shift, and goto state 36
+    "/" : shift, and goto state 37
+    "**" : shift, and goto state 39
+    "%" : shift, and goto state 38
+    ">" : shift, and goto state 2
+    "<" : shift, and goto state 3
+    ">=" : shift, and goto state 4
+    "<=" : shift, and goto state 5
+    "==" : shift, and goto state 6
+    "!=" : shift, and goto state 7
+    "|" : shift, and goto state 27
+    "&" : shift, and goto state 29
+    "^" : shift, and goto state 28
+    "&&" : shift, and goto state 26
+    ">>" : shift, and goto state 31
+    "<<" : shift, and goto state 32
+    ">>>" : shift, and goto state 33
     "eof" : reduce with rule 3
     "?" : reduce with rule 3
     ":" : reduce with rule 3
@@ -1139,24 +1139,24 @@ state 45
     [ 37: coptr => . "<=" ]
     [ 38: coptr => . "==" ]
     [ 39: coptr => . "!=" ]
-    "+" : shift,and goto state 34
-    "-" : shift,and goto state 35
-    "*" : shift,and goto state 36
-    "/" : shift,and goto state 37
-    "**" : shift,and goto state 39
-    "%" : shift,and goto state 38
-    ">" : shift,and goto state 2
-    "<" : shift,and goto state 3
-    ">=" : shift,and goto state 4
-    "<=" : shift,and goto state 5
-    "==" : shift,and goto state 6
-    "!=" : shift,and goto state 7
-    "|" : shift,and goto state 27
-    "&" : shift,and goto state 29
-    "^" : shift,and goto state 28
-    ">>" : shift,and goto state 31
-    "<<" : shift,and goto state 32
-    ">>>" : shift,and goto state 33
+    "+" : shift, and goto state 34
+    "-" : shift, and goto state 35
+    "*" : shift, and goto state 36
+    "/" : shift, and goto state 37
+    "**" : shift, and goto state 39
+    "%" : shift, and goto state 38
+    ">" : shift, and goto state 2
+    "<" : shift, and goto state 3
+    ">=" : shift, and goto state 4
+    "<=" : shift, and goto state 5
+    "==" : shift, and goto state 6
+    "!=" : shift, and goto state 7
+    "|" : shift, and goto state 27
+    "&" : shift, and goto state 29
+    "^" : shift, and goto state 28
+    ">>" : shift, and goto state 31
+    "<<" : shift, and goto state 32
+    ">>>" : shift, and goto state 33
     "eof" : reduce with rule 4
     "?" : reduce with rule 4
     ":" : reduce with rule 4
@@ -1189,23 +1189,23 @@ state 46
     [ 37: coptr => . "<=" ]
     [ 38: coptr => . "==" ]
     [ 39: coptr => . "!=" ]
-    "+" : shift,and goto state 34
-    "-" : shift,and goto state 35
-    "*" : shift,and goto state 36
-    "/" : shift,and goto state 37
-    "**" : shift,and goto state 39
-    "%" : shift,and goto state 38
-    ">" : shift,and goto state 2
-    "<" : shift,and goto state 3
-    ">=" : shift,and goto state 4
-    "<=" : shift,and goto state 5
-    "==" : shift,and goto state 6
-    "!=" : shift,and goto state 7
-    "&" : shift,and goto state 29
-    "^" : shift,and goto state 28
-    ">>" : shift,and goto state 31
-    "<<" : shift,and goto state 32
-    ">>>" : shift,and goto state 33
+    "+" : shift, and goto state 34
+    "-" : shift, and goto state 35
+    "*" : shift, and goto state 36
+    "/" : shift, and goto state 37
+    "**" : shift, and goto state 39
+    "%" : shift, and goto state 38
+    ">" : shift, and goto state 2
+    "<" : shift, and goto state 3
+    ">=" : shift, and goto state 4
+    "<=" : shift, and goto state 5
+    "==" : shift, and goto state 6
+    "!=" : shift, and goto state 7
+    "&" : shift, and goto state 29
+    "^" : shift, and goto state 28
+    ">>" : shift, and goto state 31
+    "<<" : shift, and goto state 32
+    ">>>" : shift, and goto state 33
     "eof" : reduce with rule 5
     "?" : reduce with rule 5
     ":" : reduce with rule 5
@@ -1239,22 +1239,22 @@ state 47
     [ 37: coptr => . "<=" ]
     [ 38: coptr => . "==" ]
     [ 39: coptr => . "!=" ]
-    "+" : shift,and goto state 34
-    "-" : shift,and goto state 35
-    "*" : shift,and goto state 36
-    "/" : shift,and goto state 37
-    "**" : shift,and goto state 39
-    "%" : shift,and goto state 38
-    ">" : shift,and goto state 2
-    "<" : shift,and goto state 3
-    ">=" : shift,and goto state 4
-    "<=" : shift,and goto state 5
-    "==" : shift,and goto state 6
-    "!=" : shift,and goto state 7
-    "&" : shift,and goto state 29
-    ">>" : shift,and goto state 31
-    "<<" : shift,and goto state 32
-    ">>>" : shift,and goto state 33
+    "+" : shift, and goto state 34
+    "-" : shift, and goto state 35
+    "*" : shift, and goto state 36
+    "/" : shift, and goto state 37
+    "**" : shift, and goto state 39
+    "%" : shift, and goto state 38
+    ">" : shift, and goto state 2
+    "<" : shift, and goto state 3
+    ">=" : shift, and goto state 4
+    "<=" : shift, and goto state 5
+    "==" : shift, and goto state 6
+    "!=" : shift, and goto state 7
+    "&" : shift, and goto state 29
+    ">>" : shift, and goto state 31
+    "<<" : shift, and goto state 32
+    ">>>" : shift, and goto state 33
     "eof" : reduce with rule 6
     "?" : reduce with rule 6
     ":" : reduce with rule 6
@@ -1289,21 +1289,21 @@ state 48
     [ 37: coptr => . "<=" ]
     [ 38: coptr => . "==" ]
     [ 39: coptr => . "!=" ]
-    "+" : shift,and goto state 34
-    "-" : shift,and goto state 35
-    "*" : shift,and goto state 36
-    "/" : shift,and goto state 37
-    "**" : shift,and goto state 39
-    "%" : shift,and goto state 38
-    ">" : shift,and goto state 2
-    "<" : shift,and goto state 3
-    ">=" : shift,and goto state 4
-    "<=" : shift,and goto state 5
-    "==" : shift,and goto state 6
-    "!=" : shift,and goto state 7
-    ">>" : shift,and goto state 31
-    "<<" : shift,and goto state 32
-    ">>>" : shift,and goto state 33
+    "+" : shift, and goto state 34
+    "-" : shift, and goto state 35
+    "*" : shift, and goto state 36
+    "/" : shift, and goto state 37
+    "**" : shift, and goto state 39
+    "%" : shift, and goto state 38
+    ">" : shift, and goto state 2
+    "<" : shift, and goto state 3
+    ">=" : shift, and goto state 4
+    "<=" : shift, and goto state 5
+    "==" : shift, and goto state 6
+    "!=" : shift, and goto state 7
+    ">>" : shift, and goto state 31
+    "<<" : shift, and goto state 32
+    ">>>" : shift, and goto state 33
     "eof" : reduce with rule 7
     "?" : reduce with rule 7
     ":" : reduce with rule 7
@@ -1339,15 +1339,15 @@ state 49
     [ 37: coptr => . "<=" ]
     [ 38: coptr => . "==" ]
     [ 39: coptr => . "!=" ]
-    "+" : shift,and goto state 34
-    "-" : shift,and goto state 35
-    "*" : shift,and goto state 36
-    "/" : shift,and goto state 37
-    "**" : shift,and goto state 39
-    "%" : shift,and goto state 38
-    ">>" : shift,and goto state 31
-    "<<" : shift,and goto state 32
-    ">>>" : shift,and goto state 33
+    "+" : shift, and goto state 34
+    "-" : shift, and goto state 35
+    "*" : shift, and goto state 36
+    "/" : shift, and goto state 37
+    "**" : shift, and goto state 39
+    "%" : shift, and goto state 38
+    ">>" : shift, and goto state 31
+    "<<" : shift, and goto state 32
+    ">>>" : shift, and goto state 33
     "eof" : reduce with rule 8
     "?" : reduce with rule 8
     ":" : reduce with rule 8
@@ -1389,12 +1389,12 @@ state 50
     [ 37: coptr => . "<=" ]
     [ 38: coptr => . "==" ]
     [ 39: coptr => . "!=" ]
-    "+" : shift,and goto state 34
-    "-" : shift,and goto state 35
-    "*" : shift,and goto state 36
-    "/" : shift,and goto state 37
-    "**" : shift,and goto state 39
-    "%" : shift,and goto state 38
+    "+" : shift, and goto state 34
+    "-" : shift, and goto state 35
+    "*" : shift, and goto state 36
+    "/" : shift, and goto state 37
+    "**" : shift, and goto state 39
+    "%" : shift, and goto state 38
     "eof" : reduce with rule 9
     "?" : reduce with rule 9
     ":" : reduce with rule 9
@@ -1439,12 +1439,12 @@ state 51
     [ 37: coptr => . "<=" ]
     [ 38: coptr => . "==" ]
     [ 39: coptr => . "!=" ]
-    "+" : shift,and goto state 34
-    "-" : shift,and goto state 35
-    "*" : shift,and goto state 36
-    "/" : shift,and goto state 37
-    "**" : shift,and goto state 39
-    "%" : shift,and goto state 38
+    "+" : shift, and goto state 34
+    "-" : shift, and goto state 35
+    "*" : shift, and goto state 36
+    "/" : shift, and goto state 37
+    "**" : shift, and goto state 39
+    "%" : shift, and goto state 38
     "eof" : reduce with rule 10
     "?" : reduce with rule 10
     ":" : reduce with rule 10
@@ -1489,12 +1489,12 @@ state 52
     [ 37: coptr => . "<=" ]
     [ 38: coptr => . "==" ]
     [ 39: coptr => . "!=" ]
-    "+" : shift,and goto state 34
-    "-" : shift,and goto state 35
-    "*" : shift,and goto state 36
-    "/" : shift,and goto state 37
-    "**" : shift,and goto state 39
-    "%" : shift,and goto state 38
+    "+" : shift, and goto state 34
+    "-" : shift, and goto state 35
+    "*" : shift, and goto state 36
+    "/" : shift, and goto state 37
+    "**" : shift, and goto state 39
+    "%" : shift, and goto state 38
     "eof" : reduce with rule 11
     "?" : reduce with rule 11
     ":" : reduce with rule 11
@@ -1539,10 +1539,10 @@ state 53
     [ 37: coptr => . "<=" ]
     [ 38: coptr => . "==" ]
     [ 39: coptr => . "!=" ]
-    "*" : shift,and goto state 36
-    "/" : shift,and goto state 37
-    "**" : shift,and goto state 39
-    "%" : shift,and goto state 38
+    "*" : shift, and goto state 36
+    "/" : shift, and goto state 37
+    "**" : shift, and goto state 39
+    "%" : shift, and goto state 38
     "eof" : reduce with rule 12
     "+" : reduce with rule 12
     "-" : reduce with rule 12
@@ -1589,10 +1589,10 @@ state 54
     [ 37: coptr => . "<=" ]
     [ 38: coptr => . "==" ]
     [ 39: coptr => . "!=" ]
-    "*" : shift,and goto state 36
-    "/" : shift,and goto state 37
-    "**" : shift,and goto state 39
-    "%" : shift,and goto state 38
+    "*" : shift, and goto state 36
+    "/" : shift, and goto state 37
+    "**" : shift, and goto state 39
+    "%" : shift, and goto state 38
     "eof" : reduce with rule 13
     "+" : reduce with rule 13
     "-" : reduce with rule 13
@@ -1639,7 +1639,7 @@ state 55
     [ 37: coptr => . "<=" ]
     [ 38: coptr => . "==" ]
     [ 39: coptr => . "!=" ]
-    "**" : shift,and goto state 39
+    "**" : shift, and goto state 39
     "eof" : reduce with rule 14
     "+" : reduce with rule 14
     "-" : reduce with rule 14
@@ -1689,7 +1689,7 @@ state 56
     [ 37: coptr => . "<=" ]
     [ 38: coptr => . "==" ]
     [ 39: coptr => . "!=" ]
-    "**" : shift,and goto state 39
+    "**" : shift, and goto state 39
     "eof" : reduce with rule 15
     "+" : reduce with rule 15
     "-" : reduce with rule 15
@@ -1739,7 +1739,7 @@ state 57
     [ 37: coptr => . "<=" ]
     [ 38: coptr => . "==" ]
     [ 39: coptr => . "!=" ]
-    "**" : shift,and goto state 39
+    "**" : shift, and goto state 39
     "eof" : reduce with rule 16
     "+" : reduce with rule 16
     "-" : reduce with rule 16
@@ -1789,7 +1789,7 @@ state 58
     [ 37: coptr => . "<=" ]
     [ 38: coptr => . "==" ]
     [ 39: coptr => . "!=" ]
-    "**" : shift,and goto state 39
+    "**" : shift, and goto state 39
     "eof" : reduce with rule 17
     "+" : reduce with rule 17
     "-" : reduce with rule 17
@@ -1839,27 +1839,27 @@ state 59
     [ 37: coptr => . "<=" ]
     [ 38: coptr => . "==" ]
     [ 39: coptr => . "!=" ]
-    "+" : shift,and goto state 34
-    "-" : shift,and goto state 35
-    "*" : shift,and goto state 36
-    "/" : shift,and goto state 37
-    "**" : shift,and goto state 39
-    "?" : shift,and goto state 24
-    "%" : shift,and goto state 38
-    ">" : shift,and goto state 2
-    "<" : shift,and goto state 3
-    ">=" : shift,and goto state 4
-    "<=" : shift,and goto state 5
-    "==" : shift,and goto state 6
-    "!=" : shift,and goto state 7
-    "|" : shift,and goto state 27
-    "&" : shift,and goto state 29
-    "^" : shift,and goto state 28
-    "&&" : shift,and goto state 26
-    "||" : shift,and goto state 25
-    ">>" : shift,and goto state 31
-    "<<" : shift,and goto state 32
-    ">>>" : shift,and goto state 33
+    "+" : shift, and goto state 34
+    "-" : shift, and goto state 35
+    "*" : shift, and goto state 36
+    "/" : shift, and goto state 37
+    "**" : shift, and goto state 39
+    "?" : shift, and goto state 24
+    "%" : shift, and goto state 38
+    ">" : shift, and goto state 2
+    "<" : shift, and goto state 3
+    ">=" : shift, and goto state 4
+    "<=" : shift, and goto state 5
+    "==" : shift, and goto state 6
+    "!=" : shift, and goto state 7
+    "|" : shift, and goto state 27
+    "&" : shift, and goto state 29
+    "^" : shift, and goto state 28
+    "&&" : shift, and goto state 26
+    "||" : shift, and goto state 25
+    ">>" : shift, and goto state 31
+    "<<" : shift, and goto state 32
+    ">>>" : shift, and goto state 33
     "eof" : reduce with rule 1
     ":" : reduce with rule 1
     coptr : goto state 30
@@ -1889,10 +1889,10 @@ state 60
     [ 20: e => . "id" ]
     [ 21: e => . "num" ]
     [ 22: ae => . "id" ]
-    "~" : shift,and goto state 20
-    "!" : shift,and goto state 21
-    "id" : shift,and goto state 22
-    "num" : shift,and goto state 23
+    "~" : shift, and goto state 20
+    "!" : shift, and goto state 21
+    "id" : shift, and goto state 22
+    "num" : shift, and goto state 23
     e : goto state 61
     ae : goto state 19
 
@@ -1921,26 +1921,26 @@ state 61
     [ 37: coptr => . "<=" ]
     [ 38: coptr => . "==" ]
     [ 39: coptr => . "!=" ]
-    "+" : shift,and goto state 34
-    "-" : shift,and goto state 35
-    "*" : shift,and goto state 36
-    "/" : shift,and goto state 37
-    "**" : shift,and goto state 39
-    "%" : shift,and goto state 38
-    ">" : shift,and goto state 2
-    "<" : shift,and goto state 3
-    ">=" : shift,and goto state 4
-    "<=" : shift,and goto state 5
-    "==" : shift,and goto state 6
-    "!=" : shift,and goto state 7
-    "|" : shift,and goto state 27
-    "&" : shift,and goto state 29
-    "^" : shift,and goto state 28
-    "&&" : shift,and goto state 26
-    "||" : shift,and goto state 25
-    ">>" : shift,and goto state 31
-    "<<" : shift,and goto state 32
-    ">>>" : shift,and goto state 33
+    "+" : shift, and goto state 34
+    "-" : shift, and goto state 35
+    "*" : shift, and goto state 36
+    "/" : shift, and goto state 37
+    "**" : shift, and goto state 39
+    "%" : shift, and goto state 38
+    ">" : shift, and goto state 2
+    "<" : shift, and goto state 3
+    ">=" : shift, and goto state 4
+    "<=" : shift, and goto state 5
+    "==" : shift, and goto state 6
+    "!=" : shift, and goto state 7
+    "|" : shift, and goto state 27
+    "&" : shift, and goto state 29
+    "^" : shift, and goto state 28
+    "&&" : shift, and goto state 26
+    "||" : shift, and goto state 25
+    ">>" : shift, and goto state 31
+    "<<" : shift, and goto state 32
+    ">>>" : shift, and goto state 33
     "eof" : reduce with rule 2
     "?" : reduce with rule 2
     ":" : reduce with rule 2
