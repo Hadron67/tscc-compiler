@@ -1,5 +1,5 @@
 %lex [
-    < (["\n", "\r", " ", "\t"] | "\r\n")+ >
+    < (["\n", "\r", " ", "\t"] | "\r\n")+ >: [='']
 
     < PLUS: '+' >
     < MINUS: '-' >
@@ -115,7 +115,7 @@ exprlist: exprlist ',' expr | expr;
 expr: 
     var aoptr expr %prec '='
 |   expr '?' expr ':' expr
-|   expr '||' expr
+|   expr '||' expr { $$ = $1 + $3; }
 |   expr '&&' expr
 |   expr '|' expr
 |   expr '^' expr
@@ -135,8 +135,6 @@ expr:
 |   var
 |   var '++'
 |   var '--'
-|   '++' var
-|   '--' var
 ;
 
 aoptr: '=' | '+=' | '-=' | '*=' | '/=' | '&=' | '|=' | '^=' | '>>=' | '<<=' | '%=' ;
@@ -147,6 +145,6 @@ narglist: narglist ',' expr | expr;
 
 const: <NUM>;
 
-var: <NAME> | expr '[' exprlist ']';
+var: <NAME> | expr '[' exprlist ']' | '++' var | '--' var;
 
 %%

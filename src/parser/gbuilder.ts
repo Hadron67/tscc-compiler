@@ -1,13 +1,13 @@
-import { Grammar,Rule } from '../grammar/grammar';
+import { Grammar,Rule, NtDef } from '../grammar/grammar';
 import { File } from './file';
 import { BitSet } from '../util/bitset';
 import { TokenSet } from '../grammar/token-set';
 import { Assoc, TokenDef } from '../grammar/token-entry';
-import { CompilationError as E, JsccError } from '../util/E';
+import { CompilationError as E, JsccError, JsccWarning } from '../util/E';
 import { Context } from '../util/context';
 import { StateBuilder } from '../lexer/builder';
 import { LexAction } from '../lexer/action';
-import { Coroutine } from '../util/coroutine';
+import { Coroutine, CoroutineMgr } from '../util/coroutine';
 
 interface NtPlaceHolder{
     nt: number;
@@ -33,52 +33,55 @@ interface PseudoToken{
 }
 
 export class GBuilder{
-    ctx: Context = null;
-    f: File = new File();
-    g: Grammar = new Grammar();
+    private _ctx: Context = null;
+    private _f: File = new File();
+    private _g: Grammar = new Grammar();
 
-    tokenNameTable: { [s: string]: TokenDef } = {};
-    tokenAliasTable: { [s: string]: TokenDef[] } = {};
+    private _tokenNameTable: { [s: string]: TokenDef } = {};
+    private _tokenAliasTable: { [s: string]: TokenDef[] } = {};
 
-    ruleStack: Rule[] = [];
+    private _ruleStack: Rule[] = [];
+    private _sematicVar: string = null;
 
-    ruleCount = 0;
-    ntTable: {[s: string]: number} = {};
+    private _ntTable: {[s: string]: NtDef} = {};
     // ntPlaceHolders: {[s: string]: RuleLoc[]} = {};
-    requiringNt: {[s: string]: Coroutine<number>[]} = {};
+    private _requiringNt: CoroutineMgr<NtDef> = null;
 
-    genIndex = 0;
-    first = true;
-    pr = 1;
+    private _genIndex = 0;
+    private _first = true;
+    private _pr = 1;
+
+    private _onCommit: (() => any)[] = [];
+    private _onDone: (() => any)[] = [];
 
     lexBuilder: StateBuilder<LexAction[]>;
     
-    pseudoTokens: { [tname: string]: PseudoToken } = {};
+    private _pseudoTokens: { [tname: string]: PseudoToken } = {};
 
     private _top(){
-        return this.ruleStack[this.ruleStack.length - 1];
+        return this._ruleStack[this._ruleStack.length - 1];
     }
     private _splitAction(line: number){
         var t = this._top();
-        var s = '@' + this.genIndex++;
+        var s = '@' + this._genIndex++;
         this.prepareRule(s, line);
         this.addAction(t.action);
         this.commitRule();
         t.action = null;
-        this.addRuleItem(s,TokenRefType.NAME,line);
+        this.addRuleItem(s, TokenRefType.NAME, line);
     }
     err(msg: string, line: number){
-        this.ctx.err(new E(msg, line));
+        this._ctx.err(new E(msg, line));
     }
     defToken(name: string, alias: string, line: number): TokenDef{
-        var tkdef = this.tokenNameTable[name];
+        var tkdef = this._tokenNameTable[name];
         if(tkdef !== undefined){
             // this.err(`token "${name}" was already defined at line ${this.g.tokens[tkIndex].line}`, line);
             return tkdef;
         }
         else {
             tkdef = { 
-                index: this.g.tokens.length,
+                index: this._g.tokens.length,
                 sym: name,
                 alias: alias,
                 line: line,
@@ -87,17 +90,16 @@ export class GBuilder{
                 used: false
             };
             if(alias !== null){
-                this.tokenAliasTable[alias] || (this.tokenAliasTable[alias] = []);
-                this.tokenAliasTable[alias].push(tkdef);
+                this._tokenAliasTable[alias] || (this._tokenAliasTable[alias] = []);
+                this._tokenAliasTable[alias].push(tkdef);
             }
-            this.tokenNameTable[name] = tkdef;
-            this.g.tokens.push(tkdef);
+            this._tokenNameTable[name] = tkdef;
+            this._g.tokens.push(tkdef);
             return tkdef;
         }
-        // return this;
     }
     getTokenByAlias(a: string, line: number): TokenDef{
-        let aa = this.tokenAliasTable[a];
+        let aa = this._tokenAliasTable[a];
         if(aa === undefined){
             this.err(`cannot identify "${a}" as a token`, line);
             return null;
@@ -114,7 +116,7 @@ export class GBuilder{
         return aa[0];
     }
     getTokenByName(t: string, line: number): TokenDef{
-        let ret = this.tokenNameTable[t];
+        let ret = this._tokenNameTable[t];
         if(ret === undefined){
             this.err(`cannot identify <${t}> as a token`, line);
             return null;
@@ -126,94 +128,111 @@ export class GBuilder{
             let tk = this.getTokenByName(tid, line);
             if(tk !== null){
                 tk.assoc = assoc;
-                tk.pr = this.pr;
+                tk.pr = this._pr;
             }
         }
         else if(type === TokenRefType.STRING){
             let tk = this.getTokenByAlias(tid, line);
             if(tk !== null){
                 tk.assoc = assoc;
-                tk.pr = this.pr;
+                tk.pr = this._pr;
             }
         }
         else if(type === TokenRefType.NAME){
-            let t2 = this.pseudoTokens[tid] = this.pseudoTokens[tid] || {
+            let t2 = this._pseudoTokens[tid] = this._pseudoTokens[tid] || {
                 assoc: assoc,
-                pr: this.pr,
+                pr: this._pr,
                 line: line
             };
         }
     }
     setOpt(name: string, value: string): this{
-        this.f.opt[name] = value;
+        this._f.opt[name] = value;
         return this;
     }
     incPr(){
-        this.pr++;
+        this._pr++;
         return this;
     }
-    requireNt(ntname: string, cr: Coroutine<number>){
-        let nt = this.ntTable[ntname];
-        if(nt !== undefined){
-            cr.run(nt);
-        }
-        else {
-            this.requiringNt[ntname] || (this.requiringNt[ntname] = []);
-            this.requiringNt[ntname].push(cr);
-        }
-    }
+    // requireNt(ntname: string, cr: Coroutine<NtDef>){
+    //     let nt = this.ntTable[ntname];
+    //     if(nt !== undefined){
+    //         cr.run(nt);
+    //     }
+    //     else {
+    //         this.requiringNt[ntname] || (this.requiringNt[ntname] = []);
+    //         this.requiringNt[ntname].push(cr);
+    //     }
+    // }
     prepareRule(lhs: string, line: number){
-        if(this.first){
-            this.first = false;
-            this.prepareRule('(accept)',line);
-            this.addRuleItem(lhs,TokenRefType.NAME,line);
+        if(this._first){
+            this._first = false;
+            this.prepareRule('(accept)', line);
+            this.addRuleItem(lhs, TokenRefType.NAME, line);
+            this.addRuleItem('EOF', TokenRefType.TOKEN, line);
             this.commitRule();
         }
         
-        var lhsn = this.ntTable[lhs];
-        if(lhsn === undefined){
-            lhsn = this.ntTable[lhs] = this.g.nts.length;
-            this.g.nts.push({
+        var nt = this._ntTable[lhs];
+        if(nt === undefined){
+            nt = this._ntTable[lhs] = {
+                index: this._g.nts.length,
                 sym: lhs,
                 firstSet: null,
                 used: false,
-                rules: []
-            });
-            let crs = this.requiringNt[lhs];
-            if(crs !== undefined){
-                for(let cr of crs){
-                    cr.run(lhsn);
-                }
-                delete this.requiringNt[lhs];
+                rules: [],
+                parents: []
             }
+            this._g.nts.push(nt);
+            this._requiringNt.signal(lhs, nt);
         }
-        let nr = new Rule(this.g, lhsn, null, [], this.ruleCount++, line);
-        this.ruleStack.push(nr);
+        let nr = new Rule(this._g, nt, line);
+        this._ruleStack.push(nr);
 
         return this;
+    }
+    addRuleUseVar(vname: string, line: number){
+        let t = this._top();
+        t.usedVars.push(vname);
+    }
+    addRuleSematicVar(vname: string, line: number){
+        let t = this._top();
+        if(t.vars[vname]){
+            this._ctx.warn(new JsccWarning(`sematic variable "${vname}" is already defined (at line ${line})`));
+        }
+        else {
+            this._sematicVar = vname;
+        }
     }
     addRuleItem(id: string, type: TokenRefType, line: number){
         let t = this._top();
         if(t.action !== null){
             this._splitAction(line);
         }
-
+        if(this._sematicVar !== null){
+            t.vars[this._sematicVar] = t.rhs.length;
+            this._sematicVar = null;
+        }
         if(type === TokenRefType.NAME){
             let cela = this;
             let pos = t.rhs.length;
             t.rhs.push(0);
-            this.requireNt(id, {
-                run(ntsIndex){
-                    t.rhs[pos] = -ntsIndex - 1;
-                    cela.g.nts[ntsIndex].used = true;
-                },
-                fail(){
-                    cela.err(`use of undefined non terminal ${id}`, line);
+            this._requiringNt.wait(id, (su, nt) => {
+                if(su){
+                    t.rhs[pos] = -nt.index - 1;
+                    nt.parents.push({
+                        rule: t,
+                        pos: pos
+                    });
+                    nt.used = true;
+                }
+                else {
+                    cela.err(`use of undefined non terminal ${id}`, line);                    
                 }
             });
         }
         else if(type === TokenRefType.TOKEN){
-            let tl = this.tokenNameTable[id];
+            let tl = this._tokenNameTable[id];
             if(tl === undefined){
                 this.err(`cannot recognize <${id}> as a token`, line);
                 return;
@@ -235,6 +254,11 @@ export class GBuilder{
             this._splitAction(t.line);
         }
         t.action = b;
+        if(this._sematicVar !== null){
+            t.vars[this._sematicVar] = t.rhs.length;
+            this._sematicVar = null;
+            this._splitAction(t.line);
+        }
         return this;
     }
     defineRulePr(token: string, type: TokenRefType, line: number){
@@ -251,7 +275,7 @@ export class GBuilder{
             }
         }
         else {
-            var pt = this.pseudoTokens[token];
+            var pt = this._pseudoTokens[token];
             if(!pt){
                 this.err(`pseudo token "${token}" is not defined`,line);
             }
@@ -259,40 +283,45 @@ export class GBuilder{
         }
     }
     commitRule(){
-        var t = this.ruleStack.pop();
-        this.g.nts[t.lhs].rules.push(t);
+        var t = this._ruleStack.pop();
+        t.index = this._g.rules.length;
+        t.lhs.rules.push(t);
+        this._g.rules.push(t);
+        for(let cb of this._onCommit){
+            cb();
+        }
+        this._onCommit.length = 0;
         return this;
     }
     build(){
-        this.g.tokenCount = this.g.tokens.length;
-        this.g.tokens[0].used = true;
-        this.g.nts[0].used = true;
+        this._g.tokenCount = this._g.tokens.length;
+        this._g.tokens[0].used = true;// end of file
+        this._g.nts[0].used = true;// (accept)
 
-        for(let nt of this.g.nts){
-            nt.firstSet = new TokenSet(this.g.tokenCount);
+        for(let nt of this._g.nts){
+            nt.firstSet = new TokenSet(this._g.tokenCount);
             for(let rule of nt.rules){
                 rule.calcPr();
             }
         }
+        this._f.lexDFA = this.lexBuilder.build();
 
-        var ruleCount = 0;
-        for(let nnt in this.requiringNt){
-            let crs = this.requiringNt[nnt];
-            for(let cr of crs){
-                cr.fail();
-            }
+        for(let cb of this._onDone){
+            cb();
         }
-
-        this.f.lexDFA = this.lexBuilder.build();
-
-        return this.f;
+        this._requiringNt.fail();
+        return this._f;
     }
 
     constructor(ctx: Context){
-        this.f.grammar = this.g;
-        this.ctx = ctx;
+        let cela = this;
+        this._f.grammar = this._g;
+        this._ctx = ctx;
         this.lexBuilder = new StateBuilder<LexAction[]>(ctx);
+        this._requiringNt = new CoroutineMgr<NtDef>(s => {
+            return cela._ntTable[s];
+        });
 
-        this.defToken('EOF', 'eof', 0);
+        this.defToken('EOF', null, 0);
     }
 }

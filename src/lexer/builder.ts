@@ -2,7 +2,7 @@ import { State, Arc, EndAction } from './state';
 import { Context } from '../util/context';
 import { CompilationError } from '../util/E';
 import { DFA } from './dfa';
-import { Coroutine } from '../util/coroutine';
+import { Coroutine, CoroutineMgr } from '../util/coroutine';
 
 class CmdArray{
     opcodes: ((s: StateBuilder<any>) => void)[] = [];
@@ -16,158 +16,138 @@ interface varDef{
 };
 
 export class StateBuilder<T>{
-    head: State<T> = new State<T>();
-    currentState: State<T> = null;
-    unionStack: { head: State<T>, tail: State<T> }[] = [];
+    private _head: State<T> = new State<T>();
+    private _currentState: State<T> = null;
+    private _unionStack: { head: State<T>, tail: State<T> }[] = [];
     // naive stack    +1s
-    simpleStack: State<T>[] = [];
-    currentArc: Arc<T> = null;
-    isInverse: boolean = false;
+    private _simpleStack: State<T>[] = [];
+    private _currentArc: Arc<T> = null;
+    private _isInverse: boolean = false;
     possibleAlias: string = null;
-    first = false;
+    private _first = false;
 
-    scount = 0;
-    regexpVars: {[s: string]: varDef} = {};
-    states: CmdArray[] = [new CmdArray('')];
+    private _scount = 0;
+    private _regexpVars: {[s: string]: varDef} = {};
+    private _states: CmdArray[] = [new CmdArray('')];
 
-    stateMap: {[s: string]: number} = { DEFAULT: 0 };
-    requiringState: {[s: string]: Coroutine<number>[]} = {};
-    selectedStates: CmdArray[] = [];
-    selectedVar: CmdArray = null;
+    private _stateMap: {[s: string]: number} = { DEFAULT: 0 };
+    requiringState: CoroutineMgr<number>;
+    private _selectedStates: CmdArray[] = [];
+    private _selectedVar: CmdArray = null;
 
     // exec
-    ar: { pc: number, cmds: CmdArray }[] = [];
-    jmp = false;
+    private _ar: { pc: number, cmds: CmdArray }[] = [];
 
     constructor(public ctx: Context){
-
+        let cela = this;
+        this.requiringState = new CoroutineMgr<number>(s => {
+            return cela._stateMap[s];
+        });
     }
 
     private _emit(func: (s: StateBuilder<T>) => void){
-        if(this.selectedVar !== null){
-            this.selectedVar.opcodes.push(func);
+        if(this._selectedVar !== null){
+            this._selectedVar.opcodes.push(func);
         }
         else {
-            for(let sn of this.selectedStates){
+            for(let sn of this._selectedStates){
                 sn.opcodes.push(func);
             }
         }
     }
     private _exec(a: CmdArray): DFA<T>{
-        this.head = this.currentState = new State<T>();
-        this.head.isStart = true;
-        this.unionStack.length = 0;
-        this.simpleStack.length = 0;
-        this.currentArc = null;
-        this.isInverse = false;
+        this._head = this._currentState = new State<T>();
+        this._head.isStart = true;
+        this._unionStack.length = 0;
+        this._simpleStack.length = 0;
+        this._currentArc = null;
+        this._isInverse = false;
 
-        this.ar.length = 0;
-        this.ar.push({
+        this._ar.length = 0;
+        this._ar.push({
             pc: 0,
             cmds: a
         });
-        while(this.ar.length > 0){
-            let top = this.ar[this.ar.length - 1];
+        while(this._ar.length > 0){
+            let top = this._ar[this._ar.length - 1];
             top.cmds.opcodes[top.pc++](this);
-            top = this.ar[this.ar.length - 1];
-            top.pc >= top.cmds.opcodes.length && this.ar.pop();
+            top = this._ar[this._ar.length - 1];
+            top.pc >= top.cmds.opcodes.length && this._ar.pop();
         }
-        this.head.removeEpsilons();
-        var dhead = this.head.toDFA();
+        this._head.removeEpsilons();
+        var dhead = this._head.toDFA();
         var ret = new DFA<T>(dhead.states);
         return ret;
         //return null;
     }
 
     prepareVar(vname: string, line: number){
-        let vdef = this.regexpVars[vname];
+        let vdef = this._regexpVars[vname];
         if(vdef !== undefined){
             this.ctx.err(new CompilationError(`variable "${vname}" was already defined at line ${vdef.line}`, line));
         }
-        vdef = this.regexpVars[vname] = {
+        vdef = this._regexpVars[vname] = {
             line: line,
             cmds: new CmdArray(vname)
         };
-        this.selectedVar = vdef.cmds;
+        this._selectedVar = vdef.cmds;
     }
     endVar(){
-        this.selectedVar = null;
+        this._selectedVar = null;
     }
 
     prepareLex(){
-        this.selectedStates.length = 0;
+        this._selectedStates.length = 0;
     }
     selectState(s: string){
-        var sn = this.stateMap[s];
+        var sn = this._stateMap[s];
         if(sn === undefined){
-            sn = this.stateMap[s] = this.states.length;
-            this.states.push(new CmdArray(''));
-            let crs = this.requiringState[s];
-            if(crs !== undefined){
-                for(let cr of crs){
-                    cr.run(sn);
-                }
-                delete this.requiringState[s];
-            }
+            sn = this._stateMap[s] = this._states.length;
+            this._states.push(new CmdArray(''));
+            this.requiringState.signal(s, sn);
         }
-        // this.stateMap[s] || (this.stateMap[s] = this.states.length, this.states.push(new CmdArray('')));
-        this.selectedStates.push(this.states[this.stateMap[s]]);
-    }
-
-    requireState(sname: string, cr: Coroutine<number>){
-        let sn = this.stateMap[sname];
-        if(sn !== undefined){
-            cr.run(sn);
-        }
-        else {
-            this.requiringState[sname] || (this.requiringState[sname] = []);
-            this.requiringState[sname].push(cr);
-        }
+        this._selectedStates.push(this._states[this._stateMap[s]]);
     }
 
     newState(){
-        this.first = true;
+        this._first = true;
         this.possibleAlias = null;
         this._emit(cela => {
-            cela.currentState = new State<T>();
-            cela.head.epsilonTo(cela.currentState);
+            cela._currentState = new State<T>();
+            cela._head.epsilonTo(cela._currentState);
         });
     }
     end(action: T, label: string = '(untitled)'){
-        for(let sn of this.selectedStates){
+        for(let sn of this._selectedStates){
             sn.label = `<${label}>`;
         }
         this._emit(cela => {
             let ac = new EndAction<T>();
-            ac.id = ac.priority = cela.scount++;
+            ac.id = ac.priority = cela._scount++;
             ac.data = action;
-            cela.currentState.endAction = ac;
+            cela._currentState.endAction = ac;
         });
     }
 
     //#region union
     enterUnion(){
         this._emit(s => {
-            s.unionStack.push({
-                head: s.currentState,
+            s._unionStack.push({
+                head: s._currentState,
                 tail: new State<T>()
             });
         });
-        // this.unionStack.push({
-        //     head: this.currentState,
-        //     tail: new State<T>()
-        // });
     }
     endUnionItem(){
         this._emit(s => {
-            let top = s.unionStack[s.unionStack.length - 1];
-            s.currentState.epsilonTo(top.tail);
-            s.currentState = top.head;
+            let top = s._unionStack[s._unionStack.length - 1];
+            s._currentState.epsilonTo(top.tail);
+            s._currentState = top.head;
         });
     }
     leaveUnion(){
         this._emit(s => {
-            s.currentState = s.unionStack.pop().tail;
+            s._currentState = s._unionStack.pop().tail;
         });
     }
     //#endregion
@@ -175,31 +155,31 @@ export class StateBuilder<T>{
     //#region simple
     enterSimple(){
         this._emit(s => {
-            s.simpleStack.push(s.currentState);
+            s._simpleStack.push(s._currentState);
         });
     }
     simplePostfix(postfix: '' | '?' | '+' | '*'){
-        postfix === '' || (this.possibleAlias = null, this.first = false);
+        postfix === '' || (this.possibleAlias = null, this._first = false);
         this._emit(s => {
-            let top = s.simpleStack.pop();
+            let top = s._simpleStack.pop();
             if(postfix === '?'){
-                top.epsilonTo(s.currentState);
+                top.epsilonTo(s._currentState);
             }
             else if(postfix === '+'){
-                s.currentState.epsilonTo(top);
+                s._currentState.epsilonTo(top);
             }
             else if(postfix === '*'){
-                s.currentState.epsilonTo(top);
-                s.currentState = top;
+                s._currentState.epsilonTo(top);
+                s._currentState = top;
             }
         });
     }
 
     //#region primitive
     addString(s: string){
-        if(this.first){
+        if(this._first){
             this.possibleAlias = s;
-            this.first = false;
+            this._first = false;
         }
         else {
             this.possibleAlias = null;
@@ -207,27 +187,27 @@ export class StateBuilder<T>{
         this._emit(cela => {
             for(let i = 0;i < s.length;i++){
                 let ns = new State<T>();
-                cela.currentState.to(ns).chars.add(s.charCodeAt(i));
-                cela.currentState = ns;
+                cela._currentState.to(ns).chars.add(s.charCodeAt(i));
+                cela._currentState = ns;
             }
         });
     }
     addVar(vname: string, line: number){
-        this.first = false;
+        this._first = false;
         this.possibleAlias = null;
         this._emit(cela => {
-            let vdef = cela.regexpVars[vname];
+            let vdef = cela._regexpVars[vname];
             if(vdef === undefined){
                 cela.ctx.err(new CompilationError(`use of undefined variable "${vname}"`, line));
             }
             let cmds = vdef.cmds;
             // check for circular dependence
-            for(let i = 0;i < cela.ar.length;i++){
-                let aitem = cela.ar[i];
+            for(let i = 0;i < cela._ar.length;i++){
+                let aitem = cela._ar[i];
                 if(aitem.cmds === cmds){
                     let msg = `circular dependence in lexical variable detected: ${cmds.label}`;
-                    for(i++;i < cela.ar.length;i++){
-                        msg += ` -> ${cela.ar[i].cmds.label}`;
+                    for(i++;i < cela._ar.length;i++){
+                        msg += ` -> ${cela._ar[i].cmds.label}`;
                     }
                     msg += ` -> ${cmds.label}`;
                     cela.ctx.err(new CompilationError(msg, line));
@@ -235,22 +215,21 @@ export class StateBuilder<T>{
                     return;
                 }
             }
-            cela.ar.push({
+            cela._ar.push({
                 pc: 0,
                 cmds: cmds
             });
-            cela.jmp = true;
         });
     }
     beginSet(inverse: boolean){
-        this.first = false;
+        this._first = false;
         this.possibleAlias = null;
         this._emit(cela => {
-            cela.isInverse = inverse;
+            cela._isInverse = inverse;
             let ns = new State<T>();
-            cela.currentArc = cela.currentState.to(ns);
-            cela.currentState = ns;
-            inverse && cela.currentArc.chars.addAll();
+            cela._currentArc = cela._currentState.to(ns);
+            cela._currentState = ns;
+            inverse && cela._currentArc.chars.addAll();
         });
     }
     addSetItem(from: string, to: string, line1: number, line2: number){
@@ -268,26 +247,22 @@ export class StateBuilder<T>{
             , line1));
         }
         this._emit(cela => {
-            cela.isInverse ? 
-            cela.currentArc.chars.remove(from.charCodeAt(0), to.charCodeAt(0)) : 
-            cela.currentArc.chars.add   (from.charCodeAt(0), to.charCodeAt(0));
+            cela._isInverse ? 
+            cela._currentArc.chars.remove(from.charCodeAt(0), to.charCodeAt(0)) : 
+            cela._currentArc.chars.add   (from.charCodeAt(0), to.charCodeAt(0));
         });
     }
     endSet(){
         this._emit(cela => {
-            cela.currentArc = null;
+            cela._currentArc = null;
         });
     }
     build(): DFA<T>[]{
         let dfas: DFA<T>[] = [];
-        for(let state of this.states){
+        for(let state of this._states){
             dfas.push(this._exec(state));
         }
-        for(let sname in this.requiringState){
-            for(let cr of this.requiringState[sname]){
-                cr.fail();
-            }
-        }
+        this.requiringState.fail();
         return dfas;
     }
 

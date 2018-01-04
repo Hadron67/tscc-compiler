@@ -1,10 +1,10 @@
 import { JsccError as E } from '../util/E';
-import { Action } from '../grammar/item-set';
-import { Grammar } from '../grammar/grammar';
-import { ParseTable } from '../grammar/ptable';
+import { Action, Item } from '../grammar/item-set';
+import { Grammar, Rule } from '../grammar/grammar';
+import { ParseTable, IParseTable } from '../grammar/ptable';
 import { TokenDef, convertTokenToString } from '../grammar/token-entry';
 
-function testParse(g: Grammar, pt: ParseTable, tokens: string[]): string[]{
+function testParse(g: Grammar, pt: IParseTable, tokens: string[]): string[]{
     var tk: TokenDef[] = [];
     for(let tname of tokens){
         let tdef: TokenDef;
@@ -43,8 +43,12 @@ function testParse(g: Grammar, pt: ParseTable, tokens: string[]): string[]{
         stack.push(convertTokenToString(tdef));
         // stack.push(g.tokens[tk.shift()].sym);
     }
-    function reduce(rule){
-        
+    function reduce(rule: Rule){
+        state.length -= rule.rhs.length;
+        stack.length -= rule.rhs.length;
+        stack.push(rule.lhs.sym);
+        var gotot = pt.lookupGoto(s(),rule.lhs.index).shift.stateIndex;
+        state.push(gotot);
     }
     function dump(){
         var ret = '';
@@ -60,26 +64,22 @@ function testParse(g: Grammar, pt: ParseTable, tokens: string[]): string[]{
     }
     ret.push(dump());
     do{
-        var item = pt.lookupShift(s(),tk[0] ? tk[0].index : 0);
+        let item = pt.lookupShift(s(),tk[0] ? tk[0].index : 0);
         if(item !== null){
-            if(item.actionType === Action.SHIFT){
-                shift(item.shift.stateIndex);
+            if(item === Item.NULL){
+                ret.push('syntax error!');
+                break;
             }
-            else if(item.actionType === Action.REDUCE){
-                var rule = item.rule;
-                var rlen = rule.rhs.length;
-                while(rlen --> 0){
-                    state.pop();
-                    stack.pop();
-                }
-                stack.push(g.nts[rule.lhs].sym);
-                if(item.rule.index === 0){
+            else if(item.actionType === Action.SHIFT){
+                if(tk.length === 0){
                     ret.push('accepted!');
                     break;
                 }
-                else {
-                    var gotot = pt.lookupGoto(s(),rule.lhs).shift.stateIndex;
-                    state.push(gotot);
+                shift(item.shift.stateIndex);
+            }
+            else if(item.actionType === Action.REDUCE){
+                if(reduce(item.rule)){
+                    break;
                 }
             }
             else {
@@ -87,8 +87,14 @@ function testParse(g: Grammar, pt: ParseTable, tokens: string[]): string[]{
             }
         }
         else {
-            ret.push('syntax error!');
-            break;
+            let ri = pt.defred[s()];
+            if(ri !== -1){
+                reduce(g.rules[ri]);
+            }
+            else {
+                ret.push('syntax error!');
+                break;
+            }
         }
         ret.push(dump());
     }while(true);

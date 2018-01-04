@@ -1,3 +1,3 @@
 'use strict';
 
-require('./js/lex-test.js')();
+require('./js/compress-test.js')();

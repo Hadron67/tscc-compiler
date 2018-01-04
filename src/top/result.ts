@@ -5,19 +5,20 @@ import { testParse } from './parse-test';
 import { YYTAB } from '../util/common';
 import { File } from '../parser/file';
 import { ItemSet } from '../grammar/item-set';
-import { ParseTable } from '../grammar/ptable';
+import { ParseTable, IParseTable, printParseTable } from '../grammar/ptable';
 import { TokenDef } from '../grammar/token-entry';
 import { NtDef } from '../grammar/grammar';
 import { List } from '../util/list';
 import { OutputStream, InputStream } from '../util/io';
 import { Context } from '../util/context';
 import { JsccError, JsccWarning, Option } from '../util/E';
+import { CompressedPTable } from '../grammar/ptable-compress';
 
 class Result implements Context{
     file: File;
     itemSets: List<ItemSet>;
     iterationCount: number;
-    parseTable: ParseTable;
+    parseTable: CompressedPTable;
     // conflicts: Conflict[];
     // unusedTokens: TokenDef[] = [];
     // unusedNts: NtDef[] = [];
@@ -38,8 +39,9 @@ class Result implements Context{
             stream.writeln(s.toString({ showTrailer: true }));
         });
     }
-    printTable (stream: OutputStream){
-        this.parseTable.summary(this.itemSets,stream);
+    printTable (os: OutputStream){
+        // this.parseTable.summary(this.itemSets,stream);
+        printParseTable(os, this.parseTable, this.itemSets);
     }
     printDFA(os: OutputStream){
         for(let s of this.file.lexDFA){
@@ -109,7 +111,9 @@ function genResult(stream: InputStream){
     result.itemSets = temp.result;
     result.iterationCount = temp.iterations;
     var temp2 = genParseTable(g,result.itemSets);
-    result.parseTable = temp2.result;
+    temp2.result.findDefAct();
+    // result.parseTable = temp2.result;
+    result.parseTable = new CompressedPTable(temp2.result);
 
     for(let cf of temp2.conflicts){
         result.warn(new JsccWarning(cf.toString()));

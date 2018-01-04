@@ -1,6 +1,7 @@
 'use strict';
 
 var fs = require('fs');
+var Promise = require('bluebird');
 var jscc = require('../lib/jscc.js');
 var parseArgs = require('./arg.js');
 var pkg = require('../package.json');
@@ -21,7 +22,7 @@ function stream(st){
             st.write(s);
         },
         writeln: function(s){
-            s && st.write(s);
+            s && (st.write(s) || console.assert(false));
             st.write('\n');
         }
     }
@@ -37,6 +38,14 @@ function readFile(fname){
     return new Promise(function(accept, reject){
         fs.readFile(fname, function(err, data){
             err ? reject(err) : accept(data.toString('utf-8'));
+        });
+    });
+}
+
+function writeFile(fname, data){
+    return new Promise(function(accept, reject){
+        fs.writeFile(fname, data, function(err){
+            err ? reject(err) : accept();
         });
     });
 }
@@ -64,17 +73,24 @@ function generate(arg){
         }
     
         // no console output from now on
-        var output = fs.createWriteStream(arg.output);
-        output.cork();
-        var os = stream(output);
-        result.printDFA(os);
-        result.printTable(os);
-        output.uncork();
-        output.close();
-        return new Promise(function(acc, rej){
-            output.on('close', function(){
-                acc(result);
-            });
+        var out = new jscc.io.StringOS();
+        // var output = fs.createWriteStream(arg.output);
+        // output.cork();
+        // var os = stream(output);
+        // result.printDFA(out);
+        // result.printTable(out);
+        // output.uncork();
+        // output.close();
+        // return new Promise(function(acc, rej){
+        //     output.on('close', function(){
+        //         acc(result);
+        //     });
+        // });
+        result.printDFA(out);
+        result.printTable(out);
+        return writeFile(arg.output, out.s)
+        .then(function(){
+            return result;
         });
     });
 }
@@ -101,7 +117,7 @@ module.exports = function(options){
     }
     catch(e){
         console.log(e.toString());
-        console.log(`try ${pkg.name} --help for help`);
+        console.log(`try "${pkg.name} --help" for help`);
         return pass(-1);
     }
     return main(arg)

@@ -105,7 +105,7 @@ var $ = function(){
     $('btn-parse').click(function(){
         clear();
         try{
-            parsed = jscc.genResult(jscc.io.iss(editor.getValue()));
+            parsed = jscc.genResult(new jscc.io.StringIS(editor.getValue()));
             echo('grammar accepted.');
         }
         catch(e){

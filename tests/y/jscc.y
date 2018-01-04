@@ -4,14 +4,14 @@
     DIGIT = < ['0'-'9'] >
     HEX = < ['0'-'9', 'a'-'f', 'A'-'F'] >
     ESCAPE_CHAR = < "\\" (['n', 't', 'b', 'r', 'f', '"', "'", "\\"] | <UNICODE>) >
-    UNICODE = < ['x', 'u'] <HEX> ( <HEX> ( <HEX> ( <HEX> )? )? )? >
+    UNICODE = < ['x', 'u'] <HEX>+ >
     
     < ["\n", "\t", " ", "\r"]+ >: [='']
     < "/*" ([^"*", "/"]|[^"*"]"/"|"*"[^"/"])* "*/" >: [='']
     < "//" [^"\n"]* >: [='']
 
     < NAME: <LETTER> (<LETTER>|<DIGIT>)* >
-    < NUM: <DIGIT>+ >: [+IN_BLOCK]
+    < NUM: <DIGIT>+ >
     < STRING: 
         '"' ( [^'"', '\n', '\\'] | <ESCAPE_CHAR> )* '"' 
     |   "'" ( [^"'", '\n', '\\'] | <ESCAPE_CHAR> )* "'"
@@ -23,6 +23,7 @@
     < LEFT_DIR: "%left" >
     < RIGHT_DIR: "%right" >
     < NONASSOC_DIR: "%nonassoc" >
+    < USE_DIR: "%use" >
     < GT: ">" >
     < LT: "<" >
     < BRA: "(" >
@@ -68,12 +69,13 @@ states: <NAME> | states ',' <NAME>;
 lexBody: lexBody lexBodyItem | ;
 lexBodyItem: 
     <NAME> '=' '<' regexp '>'
-|   '<' regexp '>' lexActions_
-|   '<' <NAME> ':' regexp '>' lexActions_
+|   '<' regexp '>' lexAction_
+|   '<' <NAME> ':' regexp '>' lexAction_
 ;
-lexActions_: ':' '[' lexActions ']' | ':' block |;
-lexActions: lexActions ',' lexAction | lexAction;
-lexAction: 
+lexAction_: ':' lexAction | ;
+lexAction: '[' lexActions ']' | block;
+lexActions: lexActions ',' lexActionItem | lexActionItem;
+lexActionItem: 
     '+' <NAME>
 |   '-'
 |   block
@@ -87,8 +89,8 @@ rePostfix: '+' | '?' | '*' |;
 primitiveRE: 
     '(' regexp ')'
 |   '[' inverse_ setRE_ ']'
-|   <STRING>
 |   '<' <NAME> '>'
+|   <STRING>
 ;
 inverse_: '^' |;
 setRE_: setRE |;
@@ -102,12 +104,15 @@ bodyItem:
 compoundRule: <NAME> arrow rules ';';
 arrow: ':' | '=>';
 rules: rules '|' rule | rule;
-rule: ruleItems;
+rule: ruleHead ruleItems;
+ruleHead: '%use' '(' varUseList ')' | ;
+varUseList: varUseList ',' <NAME> | <NAME>;
 ruleItems: ruleItems ruleItem |;
-ruleItem: <NAME> | tokenRef | block | '[' lexActions ']';
+ruleItem: <NAME> | tokenRef | lexAction;
 tokenRef: '<' <NAME> '>' | <STRING>;
 
 block: [+IN_BLOCK] "{" innerBlock [-] "}";
-innerBlock: block | innerBlock <ANY_CODE>;
+innerBlock: innerBlock innerBlockItem |;
+innerBlockItem: <ANY_CODE> | block;
 
 %%

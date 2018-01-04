@@ -2,27 +2,25 @@ import { TokenSet } from './token-set';
 import { TokenDef, TokenEntry, Assoc, convertTokenToString } from './token-entry'
 import { LexAction } from '../lexer/action';
 
-
-//@type{{sym: string,alias: string,line: number,pr: number,assoc: Assoc,used: boolean}}
-
-//{sym: string,firstSet: TokenSet,used: boolean}
 export interface NtDef{
+    index: number,
     sym: string,
     firstSet: TokenSet,
     used: boolean,
-    rules: Rule[]
+    rules: Rule[],
+    parents: { rule: Rule, pos: number }[];
 }
 
 export class Rule {
     public pr: number = -1;
-    public vars: { [s: string]: string } = null;
-    public parent: Rule = null;
+    public rhs: number[] = [];
+    public action: LexAction[] = null;
+    public index = 0;
+    public vars: { [s: string]: number } = null;
+    public usedVars: string[] = [];
     constructor(
         public g: Grammar, 
-        public lhs: number,
-        public action: LexAction[],
-        public rhs: number[],
-        public index: number,
+        public lhs: NtDef,
         public line: number 
     ){}
 
@@ -38,7 +36,7 @@ export class Rule {
         }
     }
     public toString(marker?: number){
-        var ret = this.index + ': ' + this.g.nts[this.lhs].sym + ' =>';
+        var ret = this.index + ': ' + this.lhs.sym + ' =>';
         for(var i = 0;i < this.rhs.length;i++){
             var r = this.rhs[i];
             if(marker === i){
@@ -63,6 +61,7 @@ export class Grammar implements TokenEntry{
     public tokens: TokenDef[] = [];
     public tokenCount: number = 0;
     public nts: NtDef[] = [];
+    public rules: Rule[] = [];
 
     isToken(t: number): boolean{
         return t >= 0;

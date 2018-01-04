@@ -9,7 +9,7 @@ enum T  {
     EOF = 0,
     NAME,
     STRING,
-    TOKEN_DIR,
+    // TOKEN_DIR,
     OPT,
     BLOCK,
     ARROW,
@@ -22,7 +22,8 @@ enum T  {
     NONASSOC_DIR,
     LEX_DIR,
     PREC_DIR,
-    REGEXP,
+    USE_DIR,
+    // REGEXP,
     // STATE_DIR,
     LINE_COMMENT,
     BLOCK_COMMENT,
@@ -185,11 +186,7 @@ function scan(opt: { isHighlight?: boolean } = {}){
         switch(c){
             case '%':
                 nc();
-                if(iss('token')){
-                    token.id = T.TOKEN_DIR;
-                    break lex;
-                }
-                else if(iss('opt')){
+                if(iss('opt')){
                     token.id = T.OPT;
                     break lex;
                 }
@@ -215,10 +212,10 @@ function scan(opt: { isHighlight?: boolean } = {}){
                     token.id = T.PREC_DIR;
                     break lex;
                 }
-                // else if(iss('state')){
-                //     token.id = T.STATE_DIR;
-                //     break lex;
-                // }
+                else if(iss('use')){
+                    token.id = T.USE_DIR;
+                    break lex;
+                }
                 else if(c == '%'){
                     nc();
                     token.id = T.SEPERATOR;
@@ -289,12 +286,7 @@ function scan(opt: { isHighlight?: boolean } = {}){
                     token.id = T.BLOCK_COMMENT;
                     break lex;
                 }
-                else {
-                    token.id = T.REGEXP;
-                    token.val = handleRegExp();
-                    break lex;
-                }
-                //err('/');
+                err('/');
             case '|':
                 nc();
                 token.id = T.OR;
@@ -455,12 +447,6 @@ function parse(scanner, ctx: Context){
     function options(){
         while(1){
             switch(token.id){
-                case T.TOKEN_DIR:
-                    nt();
-                    do{
-                        tokenDef();
-                    }while(token.id as T === T.STRING);
-                    break;
                 case T.LEFT_DIR: 
                     nt();
                     prTokens(Assoc.LEFT);
@@ -481,12 +467,6 @@ function parse(scanner, ctx: Context){
                     expect(T.STRING);
                     gb.setOpt(name,s);
                     break;
-                // case T.STATE_DIR:
-                //     nt();
-                //     var n = token.val;
-                //     expect(T.NAME);
-                //     gb.changeState(n);
-                //     break;
                 case T.LEX_DIR:
                     nt();
                     lexRule();
@@ -494,22 +474,6 @@ function parse(scanner, ctx: Context){
                 default:return;
             }
         }
-    }
-
-    /**
-     * <STRING> [<NAME>]
-     */
-    function tokenDef(){
-        var name = token.val;
-        var alias: string = '';
-        
-        var tline = token.line;
-        expect(T.STRING);
-        if(token.id as T === T.NAME){
-            alias = token.val;
-            nt();
-        }
-        gb.defToken(name,alias,tline);
     }
 
     /**
@@ -613,12 +577,11 @@ function parse(scanner, ctx: Context){
             let vn = token.val;
             let line = token.line;
             expect(T.NAME);
-            // let n = gb.lexBuilder.stateMap[vn];
-            gb.lexBuilder.requireState(vn, {
-                run(sn){
+            gb.lexBuilder.requiringState.wait(vn, (su, sn) => {
+                if(su){
                     acts.push(pushState(sn));
-                },
-                fail(){
+                }
+                else {
                     ctx.err(new CompilationError(`state "${vn}" is undefined`, line));
                 }
             });
@@ -812,7 +775,7 @@ function parse(scanner, ctx: Context){
     }
 
     /**
-     * ( <NAME> | (<STRING>|"<" <NAME> ">") | lexAction() )* [ '%prec' (<STRING>|<NAME>) [ <BLOCK> ] ]
+     * ( ruleItem() )* [ '%prec' (<STRING>|<NAME>) [ <BLOCK> ] ]
      */
     function ruleItems(){
         while(token.id === T.NAME 
@@ -820,28 +783,7 @@ function parse(scanner, ctx: Context){
             || token.id === T.STRING 
             || token.id === T.BLOCK 
             || token.id === T.CBRA){
-            let t = token.clone();
-            if(token.id === T.NAME){
-                nt();
-                gb.addRuleItem(t.val,TokenRefType.NAME,t.line);
-            }
-            else if(token.id === T.STRING){
-                nt();
-                gb.addRuleItem(t.val,TokenRefType.STRING,t.line);
-            }
-            else if(token.id === T.LT){
-                nt();
-                t = token.clone();
-                expect(T.NAME);
-                expect(T.GT);
-                gb.addRuleItem(t.val,TokenRefType.TOKEN,t.line);
-            }
-            if(token.id === T.BLOCK || token.id === T.CBRA){
-                let acts: LexAction[] = [];
-                lexActions(acts);
-                gb.addAction(acts);
-                // nt();
-            }
+            ruleItem();
         }
         if(token.id === T.PREC_DIR){
             nt();
@@ -876,6 +818,43 @@ function parse(scanner, ctx: Context){
                 gb.addAction(acts);
                 // nt();
             }
+        }
+    }
+
+    /**
+     * <NAME> | <STRING> | "<" <NAME> ">" | lexAction()
+     */
+    function ruleItem(){
+        let t = token.clone();
+        if(token.id === T.NAME){
+            nt();
+            gb.addRuleItem(t.val,TokenRefType.NAME,t.line);
+        }
+        else if(token.id === T.STRING){
+            nt();
+            gb.addRuleItem(t.val,TokenRefType.STRING,t.line);
+        }
+        else if(token.id === T.LT){
+            nt();
+            t = token.clone();
+            expect(T.NAME);
+            expect(T.GT);
+            gb.addRuleItem(t.val,TokenRefType.TOKEN,t.line);
+        }
+        if(token.id === T.BLOCK || token.id === T.CBRA){
+            let acts: LexAction[] = [];
+            lexActions(acts);
+            gb.addAction(acts);
+            // nt();
+        }
+    }
+
+    /**
+     * [ <NAME> '=' ]
+     */
+    function sematicVar(){
+        if(token.id = T.NAME){
+            
         }
     }
 

@@ -36,7 +36,10 @@ export function genInitialSet(g: Grammar): ItemSet{
 
     return iset;
 }
-
+/**
+ * implementation of the Hanolee algorithm
+ * @param g 
+ */
 export function genItemSets(g: Grammar): { result: List<ItemSet>, iterations: number }{
     var htable = {}; 
     var iterations = 0;
@@ -184,18 +187,23 @@ export function genParseTable(g: Grammar, doneList: List<ItemSet>): { result: Pa
         conflicts.push(cf);
         return shift;
     }
-    function resolveRRConflict(set,r1,r2,token){
-        token = g.tokens[token];
-        var used = r1.rule.index > r2.rule.index ? r2 : r1;
-        var discarded = r1.rule.index > r2.rule.index ? r1 : r2;
-        var cf = new Conflict();
-        cf.type = ConflictType.RR;
-        cf.set = set;
-        cf.token = token;
-        cf.used = used;
-        cf.discarded = discarded;
-        conflicts.push(cf);
-        return used;
+    function resolveRRConflict(set: ItemSet, r1: Item, r2: Item, token: number){
+        let tdef = g.tokens[token];
+        if(r1.rule.pr !== -1 && r2.rule.pr !== -1 && r1.rule.pr !== r2.rule.pr){
+            return r1.rule.pr > r2.rule.pr ? r1 : r2;
+        }
+        else {
+            var used = r1.rule.index > r2.rule.index ? r2 : r1;
+            var discarded = r1.rule.index > r2.rule.index ? r1 : r2;
+            var cf = new Conflict();
+            cf.type = ConflictType.RR;
+            cf.set = set;
+            cf.token = tdef;
+            cf.used = used;
+            cf.discarded = discarded;
+            conflicts.push(cf);
+            return used;
+        }
     }
     var ptable = new ParseTable(g,doneList.size);
     doneList.forEach(function(set){
