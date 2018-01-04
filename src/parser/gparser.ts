@@ -775,9 +775,16 @@ function parse(scanner, ctx: Context){
     }
 
     /**
+     * [ '%use' '(' useList() ')' ] 
      * ( ruleItem() )* [ '%prec' (<STRING>|<NAME>) [ <BLOCK> ] ]
      */
     function ruleItems(){
+        if(token.id === T.USE_DIR){
+            nt();
+            expect(T.BRA);
+            useList();
+            expect(T.KET);
+        }
         while(token.id === T.NAME 
             || token.id === T.LT 
             || token.id === T.STRING 
@@ -816,16 +823,45 @@ function parse(scanner, ctx: Context){
                 let acts: LexAction[] = [];
                 lexActions(acts);
                 gb.addAction(acts);
-                // nt();
             }
         }
     }
 
     /**
-     * <NAME> | <STRING> | "<" <NAME> ">" | lexAction()
+     * <NAME> (',' <NAME>)*
+     */
+    function useList(){
+        let tname = token.val;
+        let tline = token.line;
+        expect(T.NAME);
+        gb.addRuleUseVar(tname, tline);
+        while(token.id === T.COMMA){
+            nt();
+            tname = token.val;
+            tline = token.line;
+            expect(T.NAME);
+            gb.addRuleUseVar(tname, tline);
+        }
+    }
+
+    /**
+     * <NAME> '=' (<NAME> | <STRING> | "<" <NAME> ">" | lexAction())
      */
     function ruleItem(){
         let t = token.clone();
+        if(token.id === T.NAME){
+            nt();
+            // XXX: disable CFA
+            if(token.id as T === T.EQU){
+                nt();
+                gb.addRuleSematicVar(t.val, t.line);
+                t = token.clone();
+            }
+            else {
+                gb.addRuleItem(t.val,TokenRefType.NAME,t.line);
+                return;
+            }
+        }
         if(token.id === T.NAME){
             nt();
             gb.addRuleItem(t.val,TokenRefType.NAME,t.line);

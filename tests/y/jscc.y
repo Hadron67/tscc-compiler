@@ -109,10 +109,10 @@ ruleHead: '%use' '(' varUseList ')' | ;
 varUseList: varUseList ',' <NAME> | <NAME>;
 ruleItems: ruleItems ruleItem |;
 ruleItem: <NAME> | tokenRef | lexAction;
-tokenRef: '<' <NAME> '>' | <STRING>;
+tokenRef: '<' t = <NAME> '>' | <STRING>;
 
-block: [+IN_BLOCK] "{" innerBlock [-] "}";
+block: [+IN_BLOCK] "{" bl = innerBlock [-] "}" { $$.img = '{' + bl.img + '}'; };
 innerBlock: innerBlock innerBlockItem |;
-innerBlockItem: <ANY_CODE> | block;
+innerBlockItem: t = <ANY_CODE> { $$.img = t.img; } | block;
 
 %%

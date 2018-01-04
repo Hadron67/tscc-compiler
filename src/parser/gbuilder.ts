@@ -8,6 +8,7 @@ import { Context } from '../util/context';
 import { StateBuilder } from '../lexer/builder';
 import { LexAction } from '../lexer/action';
 import { Coroutine, CoroutineMgr } from '../util/coroutine';
+import { Located } from '../util/located';
 
 interface NtPlaceHolder{
     nt: number;
@@ -41,7 +42,7 @@ export class GBuilder{
     private _tokenAliasTable: { [s: string]: TokenDef[] } = {};
 
     private _ruleStack: Rule[] = [];
-    private _sematicVar: string = null;
+    private _sematicVar: Located<string> = null;
 
     private _ntTable: {[s: string]: NtDef} = {};
     // ntPlaceHolders: {[s: string]: RuleLoc[]} = {};
@@ -62,13 +63,24 @@ export class GBuilder{
         return this._ruleStack[this._ruleStack.length - 1];
     }
     private _splitAction(line: number){
-        var t = this._top();
-        var s = '@' + this._genIndex++;
+        let saved = this._sematicVar;
+        this._sematicVar = null;
+
+        let t = this._top();
+        let s = '@' + this._genIndex++;
         this.prepareRule(s, line);
+        let gen = this._top();
         this.addAction(t.action);
         this.commitRule();
         t.action = null;
         this.addRuleItem(s, TokenRefType.NAME, line);
+        let cela = this;
+
+        this._sematicVar = saved;
+
+        for(let vname in t.vars){
+            gen.usedVars[vname] = { line: 0, val: 0 };
+        }
     }
     err(msg: string, line: number){
         this._ctx.err(new E(msg, line));
@@ -154,16 +166,6 @@ export class GBuilder{
         this._pr++;
         return this;
     }
-    // requireNt(ntname: string, cr: Coroutine<NtDef>){
-    //     let nt = this.ntTable[ntname];
-    //     if(nt !== undefined){
-    //         cr.run(nt);
-    //     }
-    //     else {
-    //         this.requiringNt[ntname] || (this.requiringNt[ntname] = []);
-    //         this.requiringNt[ntname].push(cr);
-    //     }
-    // }
     prepareRule(lhs: string, line: number){
         if(this._first){
             this._first = false;
@@ -193,15 +195,23 @@ export class GBuilder{
     }
     addRuleUseVar(vname: string, line: number){
         let t = this._top();
-        t.usedVars.push(vname);
+        if(t.usedVars[vname] !== undefined){
+            this.err(`re-use of sematic variable "${vname}"`, line);
+        }
+        else {
+            t.usedVars[vname] = { line: line, val: 0 };
+        }
     }
     addRuleSematicVar(vname: string, line: number){
         let t = this._top();
-        if(t.vars[vname]){
-            this._ctx.warn(new JsccWarning(`sematic variable "${vname}" is already defined (at line ${line})`));
+        if(t.usedVars[vname] !== undefined){
+            this.err(`variable "${vname}" conflicts with imported variable defined at line ${t.usedVars[vname].line}`, line);
+        }
+        else if(t.vars[vname] !== undefined){
+            this.err(`sematic variable "${vname}" is already defined at line ${t.vars[vname].line}`, line);
         }
         else {
-            this._sematicVar = vname;
+            this._sematicVar = { line: line, val: vname };
         }
     }
     addRuleItem(id: string, type: TokenRefType, line: number){
@@ -210,7 +220,7 @@ export class GBuilder{
             this._splitAction(line);
         }
         if(this._sematicVar !== null){
-            t.vars[this._sematicVar] = t.rhs.length;
+            t.vars[this._sematicVar.val] = { val: t.rhs.length, line: this._sematicVar.line };
             this._sematicVar = null;
         }
         if(type === TokenRefType.NAME){
@@ -255,7 +265,7 @@ export class GBuilder{
         }
         t.action = b;
         if(this._sematicVar !== null){
-            t.vars[this._sematicVar] = t.rhs.length;
+            t.vars[this._sematicVar.val] = { val: t.rhs.length, line: this._sematicVar.line };
             this._sematicVar = null;
             this._splitAction(t.line);
         }
@@ -297,11 +307,18 @@ export class GBuilder{
         this._g.tokenCount = this._g.tokens.length;
         this._g.tokens[0].used = true;// end of file
         this._g.nts[0].used = true;// (accept)
+        let cela = this;
 
         for(let nt of this._g.nts){
             nt.firstSet = new TokenSet(this._g.tokenCount);
             for(let rule of nt.rules){
                 rule.calcPr();
+                for(let vname in rule.usedVars){
+                    let v = rule.usedVars[vname];
+                    v.val = rule.getVarSp(vname, msg => {
+                        cela.err(`cannot find variable "${vname}": ${msg}`, v.line);
+                    });
+                }
             }
         }
         this._f.lexDFA = this.lexBuilder.build();

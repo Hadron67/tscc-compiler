@@ -1234,10 +1234,11 @@ var Rule = (function () {
         this.lhs = lhs;
         this.line = line;
         this.pr = -1;
-        this.vars = null;
         this.rhs = [];
         this.action = null;
         this.index = 0;
+        this.vars = {};
+        this.usedVars = {};
     }
     Rule.prototype.calcPr = function () {
         if (this.pr === -1) {
@@ -1248,6 +1249,39 @@ var Rule = (function () {
                         (this.pr = this.g.tokens[item].pr);
                 }
             }
+        }
+    };
+    Rule.prototype.getVarSp = function (v, ecb) {
+        if (this.lhs.parents.length !== 1) {
+            if (this.lhs.parents.length > 1) {
+                ecb("LHS of the rule is referenced by more than one rule");
+            }
+            else {
+                ecb("this rule is unreachable");
+            }
+            return null;
+        }
+        var ret = this.rhs.length;
+        var pos = this.lhs.parents[0].pos;
+        var rule = this.lhs.parents[0].rule;
+        while (true) {
+            var vdef = rule.vars[v];
+            if (vdef !== undefined && vdef.val < pos) {
+                ret += pos - vdef.val;
+                return ret;
+            }
+            if (rule.lhs.parents.length !== 1) {
+                if (rule.lhs.parents.length > 1) {
+                    ecb("\"" + rule.lhs.sym + "\" is referenced by more than one rule or unreachable");
+                }
+                else {
+                    ecb("variable is undefined");
+                }
+                return null;
+            }
+            ret += pos;
+            pos = rule.lhs.parents[0].pos;
+            rule = rule.lhs.parents[0].rule;
         }
     };
     Rule.prototype.toString = function (marker) {
@@ -1699,11 +1733,14 @@ var GBuilder = (function () {
         this._tokenNameTable = {};
         this._tokenAliasTable = {};
         this._ruleStack = [];
+        this._sematicVar = null;
         this._ntTable = {};
         this._requiringNt = null;
         this._genIndex = 0;
         this._first = true;
         this._pr = 1;
+        this._onCommit = [];
+        this._onDone = [];
         this._pseudoTokens = {};
         var cela = this;
         this._f.grammar = this._g;
@@ -1718,13 +1755,20 @@ var GBuilder = (function () {
         return this._ruleStack[this._ruleStack.length - 1];
     };
     GBuilder.prototype._splitAction = function (line) {
+        var saved = this._sematicVar;
+        this._sematicVar = null;
         var t = this._top();
         var s = '@' + this._genIndex++;
         this.prepareRule(s, line);
+        var gen = this._top();
         this.addAction(t.action);
         this.commitRule();
         t.action = null;
         this.addRuleItem(s, TokenRefType.NAME, line);
+        this._sematicVar = saved;
+        for (var vname in t.vars) {
+            gen.usedVars[vname] = { line: 0, val: 0 };
+        }
     };
     GBuilder.prototype.err = function (msg, line) {
         this._ctx.err(new CompilationError(msg, line));
@@ -1834,10 +1878,35 @@ var GBuilder = (function () {
         this._ruleStack.push(nr);
         return this;
     };
+    GBuilder.prototype.addRuleUseVar = function (vname, line) {
+        var t = this._top();
+        if (t.usedVars[vname] !== undefined) {
+            this.err("re-use of sematic variable \"" + vname + "\"", line);
+        }
+        else {
+            t.usedVars[vname] = { line: line, val: 0 };
+        }
+    };
+    GBuilder.prototype.addRuleSematicVar = function (vname, line) {
+        var t = this._top();
+        if (t.usedVars[vname] !== undefined) {
+            this.err("variable \"" + vname + "\" conflicts with imported variable defined at line " + t.usedVars[vname].line, line);
+        }
+        else if (t.vars[vname] !== undefined) {
+            this.err("sematic variable \"" + vname + "\" is already defined at line " + t.vars[vname].line, line);
+        }
+        else {
+            this._sematicVar = { line: line, val: vname };
+        }
+    };
     GBuilder.prototype.addRuleItem = function (id, type, line) {
         var t = this._top();
         if (t.action !== null) {
             this._splitAction(line);
+        }
+        if (this._sematicVar !== null) {
+            t.vars[this._sematicVar.val] = { val: t.rhs.length, line: this._sematicVar.line };
+            this._sematicVar = null;
         }
         if (type === TokenRefType.NAME) {
             var cela_1 = this;
@@ -1880,6 +1949,11 @@ var GBuilder = (function () {
             this._splitAction(t.line);
         }
         t.action = b;
+        if (this._sematicVar !== null) {
+            t.vars[this._sematicVar.val] = { val: t.rhs.length, line: this._sematicVar.line };
+            this._sematicVar = null;
+            this._splitAction(t.line);
+        }
         return this;
     };
     GBuilder.prototype.defineRulePr = function (token, type, line) {
@@ -1908,22 +1982,41 @@ var GBuilder = (function () {
         t.index = this._g.rules.length;
         t.lhs.rules.push(t);
         this._g.rules.push(t);
+        for (var _i = 0, _a = this._onCommit; _i < _a.length; _i++) {
+            var cb = _a[_i];
+            cb();
+        }
+        this._onCommit.length = 0;
         return this;
     };
     GBuilder.prototype.build = function () {
         this._g.tokenCount = this._g.tokens.length;
         this._g.tokens[0].used = true;
         this._g.nts[0].used = true;
+        var cela = this;
         for (var _i = 0, _a = this._g.nts; _i < _a.length; _i++) {
             var nt = _a[_i];
             nt.firstSet = new TokenSet(this._g.tokenCount);
             for (var _b = 0, _c = nt.rules; _b < _c.length; _b++) {
                 var rule = _c[_b];
                 rule.calcPr();
+                var _loop_1 = function (vname) {
+                    var v = rule.usedVars[vname];
+                    v.val = rule.getVarSp(vname, function (msg) {
+                        cela.err("cannot find variable \"" + vname + "\": " + msg, v.line);
+                    });
+                };
+                for (var vname in rule.usedVars) {
+                    _loop_1(vname);
+                }
             }
         }
-        this._requiringNt.fail();
         this._f.lexDFA = this.lexBuilder.build();
+        for (var _d = 0, _e = this._onDone; _d < _e.length; _d++) {
+            var cb = _e[_d];
+            cb();
+        }
+        this._requiringNt.fail();
         return this._f;
     };
     return GBuilder;
@@ -2627,6 +2720,12 @@ function parse(scanner, ctx) {
         expect(T.EOL);
     }
     function ruleItems() {
+        if (token.id === T.USE_DIR) {
+            nt();
+            expect(T.BRA);
+            useList();
+            expect(T.KET);
+        }
         while (token.id === T.NAME
             || token.id === T.LT
             || token.id === T.STRING
@@ -2664,8 +2763,33 @@ function parse(scanner, ctx) {
             }
         }
     }
+    function useList() {
+        var tname = token.val;
+        var tline = token.line;
+        expect(T.NAME);
+        gb.addRuleUseVar(tname, tline);
+        while (token.id === T.COMMA) {
+            nt();
+            tname = token.val;
+            tline = token.line;
+            expect(T.NAME);
+            gb.addRuleUseVar(tname, tline);
+        }
+    }
     function ruleItem() {
         var t = token.clone();
+        if (token.id === T.NAME) {
+            nt();
+            if (token.id === T.EQU) {
+                nt();
+                gb.addRuleSematicVar(t.val, t.line);
+                t = token.clone();
+            }
+            else {
+                gb.addRuleItem(t.val, TokenRefType.NAME, t.line);
+                return;
+            }
+        }
         if (token.id === T.NAME) {
             nt();
             gb.addRuleItem(t.val, TokenRefType.NAME, t.line);

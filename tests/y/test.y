@@ -9,13 +9,14 @@
     < "//" [^"\n"]* >
 
     < TEST: '"' ([^"\n", '"', '\\'] | <ESCAPE_CHAR>)* '"' >
+    < HKM: 'hkm' >
 ]
 
 
 %%
 
-start: block;
-block: ;
+start: t = <TEST> m = <TEST> block;
+block: %use(t, m) a = 'hkm' [-] b = <TEST>;
 
 
 %%

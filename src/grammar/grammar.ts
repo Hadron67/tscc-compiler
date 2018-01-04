@@ -1,6 +1,9 @@
 import { TokenSet } from './token-set';
 import { TokenDef, TokenEntry, Assoc, convertTokenToString } from './token-entry'
 import { LexAction } from '../lexer/action';
+import { Located, Locatable } from '../util/located';
+import { Context } from '../util/context';
+import { CompilationError } from '../util/E';
 
 export interface NtDef{
     index: number,
@@ -11,13 +14,13 @@ export interface NtDef{
     parents: { rule: Rule, pos: number }[];
 }
 
-export class Rule {
+export class Rule implements Locatable{
     public pr: number = -1;
     public rhs: number[] = [];
     public action: LexAction[] = null;
     public index = 0;
-    public vars: { [s: string]: number } = null;
-    public usedVars: string[] = [];
+    public vars: { [s: string]: Located<number> } = {};
+    public usedVars: { [s: string]: Located<number> } = {};
     constructor(
         public g: Grammar, 
         public lhs: NtDef,
@@ -33,6 +36,39 @@ export class Rule {
                     (this.pr = this.g.tokens[item].pr);
                 }
             }
+        }
+    }
+    getVarSp(v: string, ecb: (msg: string) => any): number{
+        if(this.lhs.parents.length !== 1){
+            if(this.lhs.parents.length > 1){
+                ecb("LHS of the rule is referenced by more than one rule");
+            }
+            else {
+                ecb("this rule is unreachable");
+            }
+            return null;
+        }
+        let ret = this.rhs.length;
+        let pos = this.lhs.parents[0].pos;
+        let rule: Rule = this.lhs.parents[0].rule;
+        while(true){
+            let vdef = rule.vars[v];
+            if(vdef !== undefined && vdef.val < pos){
+                ret += pos - vdef.val;
+                return ret;
+            }
+            if(rule.lhs.parents.length !== 1){
+                if(rule.lhs.parents.length > 1){
+                    ecb(`"${rule.lhs.sym}" is referenced by more than one rule or unreachable`);
+                }
+                else {
+                    ecb("variable is undefined");
+                }
+                return null;
+            }
+            ret += pos;
+            pos = rule.lhs.parents[0].pos;
+            rule = rule.lhs.parents[0].rule;
         }
     }
     public toString(marker?: number){

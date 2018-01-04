@@ -1,14 +1,15 @@
+import { Locatable } from "../util/located";
+
 export enum Assoc {
     UNDEFINED = 0,
     LEFT,
     RIGHT,
     NON
 };
-export interface TokenDef{
+export interface TokenDef extends Locatable{
     index: number,
     sym: string,
     alias: string,
-    line: number,
     pr: number,
     assoc: Assoc,
     used: boolean,
