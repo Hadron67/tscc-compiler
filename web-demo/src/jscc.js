@@ -565,6 +565,44 @@ var State = (function () {
     State.prototype.epsilonTo = function (s) {
         this.epsilons.push(s);
     };
+    State.prototype.iterator = function (epOnly) {
+        if (epOnly === void 0) { epOnly = false; }
+        var queue = [this];
+        var states = [this];
+        this.marker = true;
+        return function () {
+            if (queue.length > 0) {
+                var s = queue.pop();
+                if (!epOnly) {
+                    for (var _i = 0, _a = s.arcs; _i < _a.length; _i++) {
+                        var arc = _a[_i];
+                        var to = arc.to;
+                        if (!to.marker) {
+                            queue.push(to);
+                            states.push(to);
+                            to.marker = true;
+                        }
+                    }
+                }
+                for (var _b = 0, _c = s.epsilons; _b < _c.length; _b++) {
+                    var to_1 = _c[_b];
+                    if (!to_1.marker) {
+                        queue.push(to_1);
+                        states.push(to_1);
+                        to_1.marker = true;
+                    }
+                }
+                return s;
+            }
+            else {
+                for (var _d = 0, states_1 = states; _d < states_1.length; _d++) {
+                    var state = states_1[_d];
+                    state.marker = false;
+                }
+                return null;
+            }
+        };
+    };
     State.prototype.forEach = function (cb, epOnly) {
         if (epOnly === void 0) { epOnly = false; }
         var queue = [this];
@@ -585,16 +623,16 @@ var State = (function () {
                 }
             }
             for (var _b = 0, _c = s.epsilons; _b < _c.length; _b++) {
-                var to_1 = _c[_b];
-                if (!to_1.marker) {
-                    queue.push(to_1);
-                    states.push(to_1);
-                    to_1.marker = true;
+                var to_2 = _c[_b];
+                if (!to_2.marker) {
+                    queue.push(to_2);
+                    states.push(to_2);
+                    to_2.marker = true;
                 }
             }
         }
-        for (var _d = 0, states_1 = states; _d < states_1.length; _d++) {
-            var state = states_1[_d];
+        for (var _d = 0, states_2 = states; _d < states_2.length; _d++) {
+            var state = states_2[_d];
             state.marker = false;
         }
     };
@@ -606,36 +644,38 @@ var State = (function () {
     };
     State.prototype.print = function (os, recursive) {
         if (recursive === void 0) { recursive = true; }
-        function single(cela, os) {
-            os.write("state " + cela.index);
+        function single(cela) {
+            var ret = '';
+            ret += "state " + cela.index;
             if (cela.isStart) {
-                os.write('(start)');
+                ret += '(start)';
             }
             if (cela.endAction) {
-                os.write("(end " + cela.endAction.id + ")");
+                ret += "(end " + cela.endAction.id + ")";
             }
-            os.writeln();
+            ret += endl;
             for (var i = 0; i < cela.arcs.length; i++) {
                 var arc = cela.arcs[i];
-                os.writeln("" + YYTAB + arc.chars.toString() + " -> state " + arc.to.index);
+                ret += ("" + YYTAB + arc.chars.toString() + " -> state " + arc.to.index + endl);
             }
             if (cela.epsilons.length > 0) {
-                os.write(YYTAB + "epsilon: ");
+                ret += YYTAB + "epsilon: ";
                 for (var i = 0; i < cela.epsilons.length; i++) {
                     if (i > 0) {
-                        os.write(',');
+                        ret += ',';
                     }
-                    os.write(cela.epsilons[i].index.toString());
+                    ret += cela.epsilons[i].index.toString();
                 }
-                os.writeln();
+                ret += endl;
             }
+            return ret;
         }
         if (!recursive) {
-            single(this, os);
+            os.write(single(this));
         }
         else {
             this.forEach(function (state) {
-                single(state, os);
+                os.write(single(state));
             });
         }
     };
@@ -2022,42 +2062,6 @@ var GBuilder = (function () {
     return GBuilder;
 }());
 
-function returnToken(tk) {
-    return {
-        toCode: function () {
-            return '';
-        }
-    };
-}
-function pushState(n) {
-    return {
-        toCode: function () {
-            return '';
-        }
-    };
-}
-function popState() {
-    return {
-        toCode: function () {
-            return '';
-        }
-    };
-}
-function blockAction(b) {
-    return {
-        toCode: function () {
-            return '';
-        }
-    };
-}
-function setImg(img) {
-    return {
-        toCode: function () {
-            return '';
-        }
-    };
-}
-
 var T;
 (function (T) {
     T[T["EOF"] = 0] = "EOF";
@@ -2526,7 +2530,8 @@ function parse(scanner, ctx) {
                 nt();
                 expect(T.ARROW);
                 regexp();
-                acts.push(returnToken(gb.defToken(tname, gb.lexBuilder.possibleAlias, tline)));
+                var tdef_1 = gb.defToken(tname, gb.lexBuilder.possibleAlias, tline);
+                acts.push(function (c) { return c.returnToken(tdef_1); });
             }
             else {
                 regexp();
@@ -2551,7 +2556,7 @@ function parse(scanner, ctx) {
             expect(T.CKET);
         }
         else if (token.id === T.BLOCK) {
-            acts.push(blockAction(token.val));
+            acts.push(function (c) { return c.addBlock(token.val, token.line); });
             nt();
         }
         else {
@@ -2566,7 +2571,7 @@ function parse(scanner, ctx) {
             expect(T.NAME);
             gb.lexBuilder.requiringState.wait(vn_1, function (su, sn) {
                 if (su) {
-                    acts.push(pushState(sn));
+                    acts.push(function (c) { return c.pushLexState(sn); });
                 }
                 else {
                     ctx.err(new CompilationError("state \"" + vn_1 + "\" is undefined", line_1));
@@ -2575,18 +2580,17 @@ function parse(scanner, ctx) {
         }
         else if (token.id === T.DASH) {
             nt();
-            acts.push(popState());
+            acts.push(function (c) { return c.popLexState(); });
         }
         else if (token.id === T.BLOCK) {
-            var b = token.val;
             nt();
-            acts.push(blockAction(b));
+            acts.push(function (c) { return c.addBlock(token.val, token.line); });
         }
         else if (token.id === T.EQU) {
             nt();
-            var s = token.val;
+            var s_1 = token.val;
             expect(T.STRING);
-            acts.push(setImg(s));
+            acts.push(function (c) { return c.setImg(s_1); });
         }
         else {
             throw new CompilationError("unexpected token \"" + T[token.id] + "\"", token.line);
@@ -3079,6 +3083,13 @@ var List = (function () {
         n.prev.next = n.next;
         this.size--;
     };
+    List.prototype.iterator = function () {
+        var p = this.head;
+        var cela = this;
+        return function () {
+            return p !== cela.tail ? (p = p.next, p.data) : null;
+        };
+    };
     return List;
 }());
 
@@ -3119,7 +3130,7 @@ function printParseTable(os, cela, doneList) {
             }
         }
         os.writeln(shift + reduce + gotot);
-        os.writeln();
+        os.writeln('');
     });
 }
 var ParseTable = (function () {
@@ -3579,7 +3590,7 @@ function compress(source) {
     }
     function getFitdp(i) {
         var dp = 0;
-        while (source.isEmpty(sorted[i].row, -dp)) {
+        while (-dp < source.columns && source.isEmpty(sorted[i].row, -dp)) {
             dp--;
         }
         while (!fit(i, dp)) {
@@ -3605,12 +3616,9 @@ function compress(source) {
         dp > maxdp && (maxdp = dp);
         dp < mindp && (mindp = dp);
     }
-    for (var i = 0; i < dps.length; i++) {
-        dps[i] -= mindp;
-    }
     return {
         dps: dps,
-        len: maxdp + source.columns - mindp
+        len: maxdp + source.columns
     };
 }
 
@@ -3757,6 +3765,17 @@ var Result = (function () {
     Result.prototype.warningSummary = function () {
         return this.warnings.length + " warning(s), " + this.errors.length + " error(s)";
     };
+    Result.prototype.getTemplateInput = function () {
+        return {
+            prefix: 'jj',
+            endl: '\n',
+            opt: this.file.opt,
+            g: this.file.grammar,
+            pt: this.parseTable,
+            sematicType: 'any',
+            dfas: this.file.lexDFA
+        };
+    };
     return Result;
 }());
 function genResult(stream) {
@@ -3801,6 +3820,260 @@ function genResult(stream) {
     return result;
 }
 
+var tsRender = function (input, output) {
+    echo("/*\n    generated by jscc, an LALR(1) parser generator made by hadroncfy\n*/\n");
+    var prefix = input.prefix;
+    var tab = input.opt.tab || '    ';
+    function echo(s) {
+        output.write(s);
+    }
+    function leftAlign(s, al) {
+        function repeat(s, t) {
+            var ret = '';
+            while (t-- > 0)
+                ret += s;
+            return ret;
+        }
+        return (s.length < al ? repeat(' ', al - s.length) : '') + s;
+    }
+    function printTable(tname, t, nl, mapper) {
+        var count = 0;
+        echo("\nlet ");
+        echo(prefix + tname);
+        echo(" = [ \n    ");
+        for (var _i = 0, t_1 = t; _i < t_1.length; _i++) {
+            var i = t_1[_i];
+            echo(leftAlign(mapper(i), nl));
+            echo(',');
+            count++ > 6 && (count = 0, echo(input.endl + tab));
+        }
+        echo("\n]; \n");
+    }
+    echo("\n\n");
+    function printState(state) {
+        function arcToString(arc) {
+            var ret = [];
+            arc.chars.forEach(function (from, to) {
+                var s = [];
+                from !== Inf._oo && s.push("c >= " + from);
+                to !== Inf.oo && s.push("c <= " + to);
+                ret.push(s.join(' && '));
+            });
+            return ret.join(' || ');
+        }
+        var first = true;
+        echo("\n    case ");
+        echo(state.index.toString());
+        echo(":\n        ret.nfa = ");
+        echo(state.arcs.length > 0 && state.endAction !== null ? 'true' : 'false');
+        echo(";\n        ret.isEnd = ");
+        echo(state.endAction === null ? 'false' : 'true');
+        echo(";\n    ");
+        for (var _i = 0, _b = state.arcs; _i < _b.length; _i++) {
+            var arc = _b[_i];
+            if (first) {
+                echo("\n        if(");
+                echo(arcToString(arc));
+                echo("){\n            ret.state = ");
+                echo(arc.to.index.toString());
+                echo(";\n        }\n        ");
+                first = false;
+            }
+            else {
+                echo("\n        else if(");
+                echo(arcToString(arc));
+                echo("){\n            ret.state = ");
+                echo(arc.to.index.toString());
+                echo(";\n        }\n        ");
+            }
+        }
+        if (state.arcs.length === 0) {
+            echo("\n        ret.state = -1;\n    ");
+        }
+        else {
+            echo("\n        else {\n            ret.state = -1;\n        }\n    ");
+        }
+        echo("\n        break;\n");
+    }
+    echo("\n\n");
+    function printDFA(dfa, n) {
+        echo("\nfunction moveDFA");
+        echo(n.toString());
+        echo("(c: number, ret: { state: number, nfa: boolean, isEnd: boolean }){\n    switch(ret.state){\n        ");
+        for (var _i = 0, _b = dfa.states; _i < _b.length; _i++) {
+            var state = _b[_i];
+            printState(state);
+        }
+        echo("\n        default:\n            ret.state = -1;\n            ret.nfa = false;\n    }\n}\n");
+    }
+    echo("\n\n/*\n    find the next state to go in the dfa\n*/\n");
+    for (var i = 0, _a = input.dfas; i < _a.length; i++) {
+        printDFA(_a[i], i);
+    }
+    echo("\n\n/*\n    all the lexer data goes here.\n*/\nlet ");
+    echo(prefix);
+    echo("lexers = [\n    ");
+    for (var i = 0; i < input.dfas.length; i++) {
+        echo("\n    moveDFA");
+        echo(i.toString());
+        echo(",\n    ");
+    }
+    echo("\n];\n\n");
+    var pt = input.pt;
+    echo("\nlet ");
+    echo(prefix);
+    echo("stateCount = ");
+    echo(pt.stateCount.toString());
+    echo(";\n/*\n    compressed action table: action = ");
+    echo(prefix);
+    echo("pact[");
+    echo(prefix);
+    echo("disact[STATE-NUM] + TOKEN]\n    when action > 0, shift the token and goto state (action - 1);\n    when action < 0, reduce with rule (1-action);\n    when action = 0, do default action.\n*/\n");
+    printTable('pact', pt.pact, 6, function (t) {
+        if (t === null || t === Item.NULL) {
+            return '0';
+        }
+        else if (t.actionType === Action$1.SHIFT) {
+            return (t.shift.stateIndex + 1).toString();
+        }
+        else if (t.actionType === Action$1.REDUCE) {
+            return (-t.rule.index - 1).toString();
+        }
+    });
+    echo("\n/*\n    displacement of action table.\n*/\n");
+    printTable('disact', pt.disact, 6, function (t) { return t.toString(); });
+    echo("\n/*\n    used to check if a position in ");
+    echo(prefix);
+    echo("pact is out of bouds.\n    if ");
+    echo(prefix);
+    echo("checkact[");
+    echo(prefix);
+    echo("disact[STATE-NUM] + TOKEN] = STATE-NUM, this position is not out of bounds.\n*/\n");
+    printTable('checkact', pt.checkact, 6, function (t) { return t === undefined ? '0' : t.toString(); });
+    echo("\n/*\n    default action table. action = ");
+    echo(prefix);
+    echo("defred[STATE-NUM],\n    where action is the number of the rule to reduce with.\n*/\n");
+    printTable('defred', pt.defred, 6, function (t) { return t.toString(); });
+    echo("\n/*\n    compressed goto table: goto = ");
+    echo(prefix);
+    echo("pgoto[");
+    echo(prefix);
+    echo("disgoto[STATE-NUM] + NON_TERMINAL]\n*/\n");
+    printTable('pgoto', pt.pgoto, 6, function (t) {
+        if (t === null) {
+            return '-1';
+        }
+        else {
+            return t.shift.stateIndex.toString();
+        }
+    });
+    echo("\n/*\n    displacement of the goto table\n*/\n");
+    printTable('disgoto', pt.disgoto, 6, function (t) { return t.toString(); });
+    echo("\n/*\n    length of each rule: rule length = ");
+    echo(prefix);
+    echo("ruleLen[RULE-NUM]\n*/\n");
+    printTable('ruleLen', pt.g.rules, 6, function (r) { return r.rhs.length.toString(); });
+    echo("\n/*\n    index of the LHS of each rule\n*/\n");
+    printTable('lhs', pt.g.rules, 6, function (r) { return r.lhs.index.toString(); });
+    echo("\n/*\n    token names\n*/\n");
+    printTable('tokenNames', pt.g.tokens, 6, function (t) { return "\"" + t.sym + "\""; });
+    echo("\n/*\n    token alias\n*/\n");
+    printTable('tokenAlias', pt.g.tokens, 6, function (t) { return "\"" + t.alias + "\"" || '""'; });
+    echo("\n");
+    var className = input.opt.className || 'Parser';
+    echo("\n\n");
+    function printLexActionsFunc(dfa, n) {
+        var codegen = {
+            addBlock: function (b, line) {
+                echo("\n                ");
+                echo(b);
+                echo("\n        ");
+            },
+            pushLexState: function (n) {
+                echo("\n                this._lexState.push(");
+                echo(n.toString());
+                echo(");\n        ");
+            },
+            popLexState: function () {
+                echo("\n                this._lexState.pop();\n        ");
+            },
+            setImg: function (n) {
+                echo("\n                this._setImg(\"");
+                echo(n);
+                echo("\");\n        ");
+            },
+            returnToken: function (t) {
+                echo("\n                this._token = {\n                    id: ");
+                echo(t.index.toString());
+                echo(",\n                    val: this._matched.join('')\n                };\n        ");
+            }
+        };
+        var statevn = prefix + 'staten';
+        echo("\n    private _doLexAction");
+        echo(n.toString());
+        echo("(");
+        echo(statevn);
+        echo(": number){\n        switch(");
+        echo(statevn);
+        echo("){\n            ");
+        for (var i = 0, _a = dfa.states; i < _a.length; i++) {
+            if (_a[i].endAction !== null) {
+                echo("\n            case ");
+                echo(i.toString());
+                echo(":\n                    ");
+                for (var _i = 0, _b = _a[i].endAction.data; _i < _b.length; _i++) {
+                    var act = _b[_i];
+                    act(codegen);
+                }
+                echo("\n                break;\n                ");
+            }
+            echo("\n            ");
+        }
+        echo("\n            default:;\n        }\n    }\n");
+    }
+    echo("\n\ninterface Token{\n    id: number;\n    val: string;\n};\n\nexport class ");
+    echo(className);
+    echo(" {\n    // members for lexer\n    private _lexState: number[] = [];\n    private _state: number = 0;\n    private _matched: string[] = [];\n    private _token: Token = null;\n    private _marker: number = -1;\n    private _backup: string[] = [];\n\n    // members for parser\n    private _lrState: number[] = [];\n    private _sematicS: ");
+    echo(input.sematicType);
+    echo("[] = [];\n\n    private _setImg(s: string){\n        this._matched.length = 0;\n        for(let i = 0;i < s.length;i++){\n            this._matched.push(s.charAt(i));\n        }\n    }\n    ");
+    for (var i = 0, _a = input.dfas; i < _a.length; i++) {
+        printLexActionsFunc(_a[i], i);
+    }
+    echo("\n    ");
+    var lexstatevn = prefix + 'lexstate';
+    echo("\n    private _doLexAction(");
+    echo(lexstatevn);
+    echo(": number, ");
+    echo(prefix);
+    echo("state: number){\n        switch(");
+    echo(lexstatevn);
+    echo("){\n            ");
+    for (var i = 0; i < input.dfas.length; i++) {
+        echo("\n            case ");
+        echo(i.toString());
+        echo(":\n                this._doLexAction");
+        echo(i.toString());
+        echo("(");
+        echo(prefix);
+        echo("state);\n                break;\n            ");
+    }
+    echo("\n            default:;\n        }\n    }\n    private _acceptChar(c: number){\n        let lexstate = this._lexState[this._lexState.length - 1];\n        this._marker && this._backup.push(c);\n        let retn = { state: this._state, nfa: false, isEnd: false };\n        ");
+    echo(prefix);
+    echo("lexers[lexstate](c, retn);\n        if(retn.isEnd){\n\n        }\n    }\n}\n");
+};
+
+var templates = {};
+function defineTemplate(name, render) {
+    templates[name] = render;
+}
+function generateCode(lang, input, fc) {
+    templates[lang](input, fc);
+}
+defineTemplate('typescript', function (input, fc) {
+    tsRender(input, fc);
+    fc.save('.ts');
+});
+
 
 
 var debug = Object.freeze({
@@ -3815,6 +4088,7 @@ exports.highlightUtil = highlightUtil;
 exports.setDebugger = setDebugger;
 exports.setTab = setTab;
 exports.genResult = genResult;
+exports.generateCode = generateCode;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 

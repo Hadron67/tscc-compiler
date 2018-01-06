@@ -13,6 +13,7 @@ import { OutputStream, InputStream } from '../util/io';
 import { Context } from '../util/context';
 import { JsccError, JsccWarning, Option } from '../util/E';
 import { CompressedPTable } from '../grammar/ptable-compress';
+import { TemplateInput } from '../codegen/def';
 
 class Result implements Context{
     file: File;
@@ -73,6 +74,17 @@ class Result implements Context{
     }
     warningSummary(){
         return `${this.warnings.length} warning(s), ${this.errors.length} error(s)`;
+    }
+    getTemplateInput(): TemplateInput{
+        return {
+            prefix: 'jj',
+            endl: '\n',
+            opt: this.file.opt,
+            g: this.file.grammar,
+            pt: this.parseTable,
+            sematicType: 'any',
+            dfas: this.file.lexDFA
+        };
     }
 }
 

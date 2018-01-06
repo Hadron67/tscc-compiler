@@ -15,6 +15,10 @@ options:
     -t, --test    Run test on the given input string;
     -h, --help    Print this help message and exit.
 `;
+function changeSuffix(s,suf){
+    var i = s.lastIndexOf('.');
+    return (i === -1 ? s : s.substr(0,i)) + suf;
+}
 
 function stream(st){
     return {
@@ -50,6 +54,25 @@ function writeFile(fname, data){
     });
 }
 
+function genCode(result, arg){
+    var tempIn = result.getTemplateInput();
+    var files = [];
+    var current = new jscc.io.StringOS();
+    jscc.generateCode('typescript', tempIn, {
+        save: function(ext){
+            files.push(writeFile(changeSuffix(arg.input, ext), current.s));
+            current.reset();
+        },
+        write: function(s){
+            current.write(s);
+        },
+        writeln: function(s){
+            current.writeln(s);
+        }
+    });
+    return Promise.all(files);
+}
+
 function generate(arg){
     jscc.setDebugger(console);
     var consoleStream = stream(process.stdout);
@@ -74,21 +97,12 @@ function generate(arg){
     
         // no console output from now on
         var out = new jscc.io.StringOS();
-        // var output = fs.createWriteStream(arg.output);
-        // output.cork();
-        // var os = stream(output);
-        // result.printDFA(out);
-        // result.printTable(out);
-        // output.uncork();
-        // output.close();
-        // return new Promise(function(acc, rej){
-        //     output.on('close', function(){
-        //         acc(result);
-        //     });
-        // });
         result.printDFA(out);
         result.printTable(out);
         return writeFile(arg.output, out.s)
+        .then(function(){
+            return genCode(result, arg);
+        })
         .then(function(){
             return result;
         });

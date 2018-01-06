@@ -17,6 +17,51 @@ export function printParseTable(os: OutputStream, cela: IParseTable, doneList: L
     var g = cela.g;
     var tokenCount = g.tokenCount;
     var ntCount = g.nts.length;
+    // function printSet(set: ItemSet, lines: string[]){
+    //     var i = set.stateIndex;
+
+    //     lines.push(`state ${i}`);        
+    //     set.forEach(function(item){
+    //         lines.push(YYTAB + item.toString({ showTrailer: false }));
+    //     });
+    //     if(cela.defred[i] !== -1){
+    //         lines.push(`${YYTAB}default action: reduce with rule ${cela.defred[i]}`);
+    //     }
+    //     else {
+    //         lines.push(YYTAB + 'no default action');
+    //     }
+    //     for(var j = 0;j < tokenCount;j++){
+    //         var item = cela.lookupShift(i,j);
+    //         if(item !== null && item !== Item.NULL){
+    //             if(item.actionType === Action.SHIFT){
+    //                 lines.push(`${YYTAB}${convertTokenToString(g.tokens[j])} : shift, and goto state ${item.shift.stateIndex}`);
+    //             }
+    //             else {
+    //                 lines.push(`${YYTAB}${convertTokenToString(g.tokens[j])} : reduce with rule ${item.rule.index}`);
+    //             }
+    //         }
+    //     }
+    //     for(var j = 0;j < ntCount;j++){
+    //         var item = cela.lookupGoto(i,j);
+    //         if(item !== null){
+    //             lines.push(`${YYTAB}${g.nts[j].sym} : goto state ${item.shift.stateIndex}`);
+    //         }
+    //     }
+    //     lines.push('');
+    // }
+    // let it = doneList.iterator();
+    // let lines: string[] = [];
+    // function writeOne(){
+    //     let set = it();
+    //     if(set !== null){
+    //         lines.length = 0;
+    //         printSet(set, lines);
+    //         os.write(lines.join(endl), writeOne);
+    //     }
+    //     else {
+    //         done && done
+    //     }
+    // }
     doneList.forEach(function(set){
         var i = set.stateIndex;
         var shift = '';
@@ -51,7 +96,7 @@ export function printParseTable(os: OutputStream, cela: IParseTable, doneList: L
             }
         }
         os.writeln(shift + reduce + gotot);
-        os.writeln();
+        os.writeln('');
     });
 }
 

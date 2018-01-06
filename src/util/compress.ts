@@ -58,7 +58,7 @@ export function compress(source: Table): { dps: number[], len: number }{
     }
     function getFitdp(i: number): number{
         var dp = 0;
-        while(source.isEmpty(sorted[i].row,-dp)){ dp--; }
+        while(-dp < source.columns && source.isEmpty(sorted[i].row,-dp)){ dp--; }
         while(!fit(i,dp)){ dp++; }
         return dp;
     }
@@ -84,12 +84,12 @@ export function compress(source: Table): { dps: number[], len: number }{
         dp < mindp && (mindp = dp);
     }
 
-    for(var i = 0;i < dps.length;i++){
-        dps[i] -= mindp;
-    }
+    // for(var i = 0;i < dps.length;i++){
+    //     dps[i] -= mindp;
+    // }
 
     return {
         dps: dps,
-        len: maxdp + source.columns - mindp
+        len: maxdp + source.columns// - mindp
     };
 }

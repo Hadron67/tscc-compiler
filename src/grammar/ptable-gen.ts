@@ -33,7 +33,6 @@ export function genInitialSet(g: Grammar): ItemSet{
     var set1 = new TokenSet(g.tokenCount);
     set1.add(1);// eof
     iset.add(start,0,true,set1,false);
-
     return iset;
 }
 /**

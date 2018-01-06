@@ -4,7 +4,7 @@ import { CharSet } from './char-set';
 import { console } from '../util/common';
 import { DFA } from './dfa.js';
 import { DataSet } from '../util/interval-set';
-import { OutputStream, StringOS } from '../util/io';
+import { OutputStream, StringOS, endl } from '../util/io';
 
 export enum Action{
     START = 0,
@@ -93,17 +93,45 @@ export class State<T>{
     epsilonTo(s: State<T>): void{
         this.epsilons.push(s);
     }
-    /**
-     * iterate all the states that can be reached from the state.
-     * 
-     * 
-     */
+    iterator(epOnly: boolean = false): () => State<T>{
+        var queue: State<T>[] = [this];
+        var states: State<T>[] = [this];
+    
+        this.marker = true;
+        return () => {
+            if(queue.length > 0){
+                var s = queue.pop();
+                if(!epOnly){
+                    for(let arc of s.arcs){
+                        var to = arc.to;
+                        if(!to.marker){
+                            queue.push(to);
+                            states.push(to);
+                            to.marker = true;
+                        }
+                    }
+                }
+                for(let to of s.epsilons){
+                    if(!to.marker){
+                        queue.push(to);
+                        states.push(to);
+                        to.marker = true;
+                    }
+                }
+                return s;
+            }
+            else {
+                for(var state of states){
+                    state.marker = false;
+                }
+                return null;
+            }
+        };
+    }
     forEach(cb: (s: State<T>) => void, epOnly: boolean = false): void{
         var queue: State<T>[] = [this];
         var states: State<T>[] = [this];
-        //var deja: boolean[] = [];
     
-        //deja[this.index] = true;
         this.marker = true;
         while(queue.length > 0){
             var s = queue.pop();
@@ -137,44 +165,45 @@ export class State<T>{
         });
     }
     print(os: OutputStream, recursive: boolean = true){
-        function single(cela: State<T>, os: OutputStream){
-            os.write(`state ${cela.index}`);
+        function single(cela: State<T>): string{
+            let ret = '';
+            ret += `state ${cela.index}`;
             if(cela.isStart){
-                os.write('(start)');
+                ret += '(start)';
             }
             if(cela.endAction){
-                os.write(`(end ${cela.endAction.id})`);
+                ret += `(end ${cela.endAction.id})`;
                 //ret += '(end: ' + cela.endAction.id + ')';
             }
-            // ret += '\n';
-            os.writeln();
+            ret += endl;
             for(var i = 0;i < cela.arcs.length;i++){
                 var arc = cela.arcs[i];
-                os.writeln(`${YYTAB}${arc.chars.toString()} -> state ${arc.to.index}`);
+                ret += (`${YYTAB}${arc.chars.toString()} -> state ${arc.to.index}${endl}`);
                 // ret += YYTAB + arc.chars.toString() + ' -> state ' + arc.to.index + '\n';
             }
             if(cela.epsilons.length > 0){
                 // ret += YYTAB + 'epsilon: ';
-                os.write(`${YYTAB}epsilon: `);
+                ret += `${YYTAB}epsilon: `;
                 for(var i = 0;i < cela.epsilons.length;i++){
                     if(i > 0){
                         // ret += ',';
-                        os.write(',');
+                        ret += ',';
                     }
                     // ret += cela.epsilons[i].index;
-                    os.write(cela.epsilons[i].index.toString());
+                    ret += cela.epsilons[i].index.toString();
                 }
                 // ret += '\n';
-                os.writeln();
+                ret += endl;
             }
+            return ret;
         }
         if(!recursive){
-            single(this, os);
+            os.write(single(this));
         }
         else {
             var ret = '';
-            this.forEach(function(state){
-                single(state, os);
+            this.forEach(state => {
+                os.write(single(state));
             });
         }
     }

@@ -1,3 +1,4 @@
+
 export interface ListNode<T>{
     prev: ListNode<T>;
     next: ListNode<T>;
@@ -41,5 +42,12 @@ export class List<T>{
         n.next.prev = n.prev;
         n.prev.next = n.next;
         this.size--;
+    }
+    iterator(){
+        let p = this.head;
+        let cela = this;
+        return (): T => {
+            return p !== cela.tail ? (p = p.next, p.data) : null;
+        }
     }
 }

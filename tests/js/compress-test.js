@@ -59,5 +59,5 @@ module.exports = function(){
     );
     var comped = jsccd.compress(ar);
     console.log('len: %s',comped.len);
-    console.log(ar.dp(comped.dps));
+    console.log(ar.dp(disp(comped.dps)));
 }
