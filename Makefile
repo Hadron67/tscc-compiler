@@ -1,7 +1,11 @@
-all: jscc copy-jscc
+all: jscc jscc-min copy-jscc
 
 jscc: rollup.config.js src/** templates
 	@rollup -c
+
+jscc-min: jscc
+	@uglifyjs lib/jscc.js -cm --preamble > lib/jscc.min.js
+	@echo "created jscc.min.js"
 
 copy-jscc: jscc
 	@cp lib/jscc.js web-demo/src/jscc.js
@@ -9,6 +13,7 @@ copy-jscc: jscc
 
 templates: $(wildcard src/templates/*.ets)
 	@node scripts/etsc.js
+	@echo "templates created"
 
 .PHONY: sandwitch
 

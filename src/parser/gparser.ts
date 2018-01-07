@@ -3,7 +3,7 @@ import { Assoc } from '../grammar/token-entry';
 import { CompilationError as E, CompilationError } from '../util/E';
 import { InputStream } from '../util/io';
 import { Context } from '../util/context';
-import { LexAction } from '../lexer/action';
+import { LexAction, returnToken, blockAction, pushState, popState, setImg } from '../lexer/action';
 
 enum T  {
     EOF = 0,
@@ -527,7 +527,7 @@ function parse(scanner, ctx: Context){
                 expect(T.ARROW);
                 regexp();
                 let tdef = gb.defToken(tname, gb.lexBuilder.possibleAlias, tline);
-                acts.push(c => c.returnToken(tdef));
+                acts.push(returnToken(tdef));
             }
             else {
                 regexp();
@@ -558,7 +558,7 @@ function parse(scanner, ctx: Context){
             expect(T.CKET);
         }
         else if(token.id === T.BLOCK){
-            acts.push(c => c.addBlock(token.val, token.line));
+            acts.push(blockAction(token.val, token.line));
             nt();
         }
         else {
@@ -580,7 +580,7 @@ function parse(scanner, ctx: Context){
             expect(T.NAME);
             gb.lexBuilder.requiringState.wait(vn, (su, sn) => {
                 if(su){
-                    acts.push(c => c.pushLexState(sn));
+                    acts.push(pushState(sn));
                 }
                 else {
                     ctx.err(new CompilationError(`state "${vn}" is undefined`, line));
@@ -589,18 +589,18 @@ function parse(scanner, ctx: Context){
         }
         else if(token.id === T.DASH){
             nt();
-            acts.push(c => c.popLexState());
+            acts.push(popState());
         }
         else if(token.id === T.BLOCK){
             let b = token.val;
             nt();
-            acts.push(c => c.addBlock(token.val, token.line));
+            acts.push(blockAction(token.val, token.line));
         }
         else if(token.id === T.EQU){
             nt();
             let s = token.val;
             expect(T.STRING);
-            acts.push(c => c.setImg(s));
+            acts.push(setImg(s));
         }
         else {
             throw new E(`unexpected token "${T[token.id]}"`, token.line);

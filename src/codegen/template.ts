@@ -1,7 +1,7 @@
 import { TemplateInput, TemplateOutput } from './def';
 import { OutputStream } from '../util/io';
 
-import tsRender from './templates/ts';
+import tsRenderer from './templates/ts';
 
 interface FileCreator extends TemplateOutput{
     save(ext: string);
@@ -15,11 +15,17 @@ export function defineTemplate(name: string, render: (input: TemplateInput, fc: 
     templates[name] = render;
 }
 
-export function generateCode(lang: string, input: TemplateInput, fc: FileCreator){
-    templates[lang](input, fc);
+export function generateCode(lang: string, input: TemplateInput, fc: FileCreator, cb: (err: string) => any){
+    let g = templates[lang];
+    if(g === undefined){
+        throw (`template for language "${lang}" is not implemented yet`);
+    }
+    else {
+        templates[lang](input, fc);
+    }
 }
 
 defineTemplate('typescript', (input, fc) => {
-    tsRender(input, fc);
+    tsRenderer(input, fc);
     fc.save('.ts');
 });

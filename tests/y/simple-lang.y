@@ -1,6 +1,11 @@
 %lex [
     < (["\n", "\r", " ", "\t"] | "\r\n")+ >: [='']
 
+    DIGIT = < ['0'-'9'] >
+    LETTER = < ['a'-'z', 'A'-'Z', '_', '$'] >
+    < NAME: <LETTER> (<LETTER>|<DIGIT>)* >
+    < NUM: <DIGIT>+ >
+
     < PLUS: '+' >
     < MINUS: '-' >
     < TIMES: '*' >
@@ -52,11 +57,6 @@
     < DO: 'do' >
     < FOR: 'for' >
     < FUNCTION: 'function' >
-
-    DIGIT = < ['0'-'9'] >
-    LETTER = < ['a'-'z', 'A'-'Z', '_', '$'] >
-    < NAME: <LETTER> (<LETTER>|<DIGIT>)* >
-    < NUM: <DIGIT>+ >
 ]
 
 %right 'else'
@@ -140,8 +140,9 @@ expr:
 aoptr: '=' | '+=' | '-=' | '*=' | '/=' | '&=' | '|=' | '^=' | '>>=' | '<<=' | '%=' ;
 coptr: '>' | '<' | '>=' | '<=' | '==' | '!=' ;
 
-arglist: narglist | /* empty */;
+arglist: narglist possibleComma | /* empty */;
 narglist: narglist ',' expr | expr;
+possibleComma: ',' |;
 
 const: <NUM>;
 

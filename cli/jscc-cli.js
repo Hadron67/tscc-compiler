@@ -69,6 +69,8 @@ function genCode(result, arg){
         writeln: function(s){
             current.writeln(s);
         }
+    }, function(err){
+        err ? reject(err) : accept();
     });
     return Promise.all(files);
 }

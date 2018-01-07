@@ -15,7 +15,7 @@ function sorter(cmp: (a: RowEntry, b: RowEntry) => number){
         a[i] = obj;
     }
     return {
-        add: function(b: RowEntry): void{
+        add(b: RowEntry): void{
             var i: number;
             for(i = 0;i < a.length;i++){
                 if((i === 0 || cmp(b,a[i - 1]) >= 0) && cmp(b,a[i]) <= 0){
@@ -24,7 +24,7 @@ function sorter(cmp: (a: RowEntry, b: RowEntry) => number){
             }
             insert(i,b);
         },
-        done: function(): RowEntry[]{
+        done(): RowEntry[]{
             return a;
         }
     };
@@ -36,8 +36,6 @@ class RowEntry{
 
 /**
  * implementation of double displacement first-fit-decreasing method
- * @param {{rows: number,columns: number,isEmpty: function,emptyCount: function}} source - data to be compressed
- * @returns {{dps: number[],len: number}} - displacements for each row.
  */
 export function compress(source: Table): { dps: number[], len: number }{
     function empty(i: number, j: number): boolean{
@@ -74,11 +72,13 @@ export function compress(source: Table): { dps: number[], len: number }{
     //the row with least empty entries has displacement 0
     var maxdp = 0, mindp = 0;
     var dps = new Array(source.rows);
-    dps[sorted[0].row] = sorted[0].dp = 0;
+    let initDp = 0;
+    while(-initDp < source.columns && source.isEmpty(sorted[0].row, -initDp)){ initDp--; }
+    dps[sorted[0].row] = sorted[0].dp = initDp;
     
     for(var i = 1;i < sorted.length;i++){
-        var row = sorted[i].row;
-        var dp = getFitdp(i);
+        let row = sorted[i].row;
+        let dp = getFitdp(i);
         dps[row] = sorted[i].dp = dp;
         dp > maxdp && (maxdp = dp);
         dp < mindp && (mindp = dp);

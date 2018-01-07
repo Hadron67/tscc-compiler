@@ -7,7 +7,7 @@ let tab = input.opt.tab || '    ';
 function echo(s: string){
     output.write(s);
 }
-function writeln(s: string){
+function echoLine(s: string){
     output.writeln(s);
 }
 function leftAlign(s: string, al: number): string{
@@ -18,55 +18,67 @@ function leftAlign(s: string, al: number): string{
     }
     return (s.length < al ? repeat(' ', al - s.length) : '') + s;
 }
-function printTable<T>(tname: string, t: T[], nl: number, mapper: (d: T) => string){
-    let count = 0; %>
+function printTable<T>(tname: string, t: T[], align: number, lc: number, mapper: (d: T) => string){
+    let count = 1; %>
 let <%- prefix + tname %> = [ 
+
+    <% echo(tab); %>
     <% for(let i of t){
-        echo(leftAlign(mapper(i), nl));
+        echo(leftAlign(mapper(i), align));
         echo(',');
-        count++ > 6 && (count = 0, echo(input.endl + tab));
+        count++ >= lc && (count = 1, echo(input.endl + tab));
     } %>
 ]; 
-<% } %>
-
-<% function printState(state: State<LexAction[]>){ 
+<% } 
+function printState(state: State<LexAction[]>){ 
     function arcToString(arc: Arc<LexAction[]>): string{
         let ret: string[] = [];
         arc.chars.forEach((from, to) => {
-            let s: string[] = [];
-            from !== Inf._oo && s.push(`c >= ${from}`);
-            to !== Inf.oo && s.push(`c <= ${to}`);
-            ret.push(s.join(' && '));
+            if(from === to){
+                ret.push(`c === ${from}`);
+            }
+            else if(from === Inf._oo && to !== Inf.oo){
+                ret.push(`c <= ${to}`);
+            }
+            else if(from !== Inf._oo && to === Inf.oo){
+                ret.push(`c >= ${from}`);
+            }
+            else if(from !== Inf._oo && to !== Inf.oo){
+                ret.push(`c >= ${from} && c <= ${to}`);
+            }
+            else {
+                // this merely happens
+                ret.push('true');
+            }
         });
         return ret.join(' || ');
     } 
     let first = true; %>
-    case <%- state.index.toString() %>:
-        ret.nfa = <%- state.arcs.length > 0 && state.endAction !== null ? 'true' : 'false' %>;
-        ret.isEnd = <%- state.endAction === null ? 'false' : 'true' %>;
+        case <%- state.index.toString() %>:
+            ret.nfa = <%- state.arcs.length > 0 && state.endAction !== null ? 'true' : 'false' %>;
+            ret.isEnd = <%- state.endAction === null ? 'false' : 'true' %>;
     <% for(let arc of state.arcs){
         if(first) { %>
-        if(<%- arcToString(arc) %>){
-            ret.state = <%- arc.to.index.toString() %>;
-        }
+            if(<%- arcToString(arc) %>){
+                ret.state = <%- arc.to.index.toString() %>;
+            }
         <% first = false;
         } else { %>
-        else if(<%- arcToString(arc) %>){
-            ret.state = <%- arc.to.index.toString() %>;
-        }
+            else if(<%- arcToString(arc) %>){
+                ret.state = <%- arc.to.index.toString() %>;
+            }
         <% }
     } 
     if(state.arcs.length === 0) { %>
-        ret.state = -1;
-    <% } else { %>
-        else {
             ret.state = -1;
-        }
+    <% } else { %>
+            else {
+                ret.state = -1;
+            }
     <% } %>
-        break;
-<% } %>
-
-<% function printDFA(dfa: DFA<LexAction[]>, n: number){ %>
+            break;
+<% } 
+function printDFA(dfa: DFA<LexAction[]>, n: number){ %>
 function moveDFA<%- n.toString() %>(c: number, ret: { state: number, nfa: boolean, isEnd: boolean }){
     switch(ret.state){
         <% for(let state of dfa.states){
@@ -77,7 +89,20 @@ function moveDFA<%- n.toString() %>(c: number, ret: { state: number, nfa: boolea
             ret.nfa = false;
     }
 }
-<% } %>
+<% }
+function printLexTokens(dfa: DFA<LexAction[]>, n: number){
+    function getAction(act: LexAction[]): number{
+        for(let a of act){
+            if(a.token !== -1){
+                return a.token;
+            }
+        }
+        return -1;
+    }
+    printTable<State<LexAction[]>>('lexTokens' + n, dfa.states, 6, 10, (state) => {
+        return state.endAction ? getAction(state.endAction.data).toString() : '-1';
+    });
+} %>
 
 /*
     find the next state to go in the dfa
@@ -90,10 +115,17 @@ function moveDFA<%- n.toString() %>(c: number, ret: { state: number, nfa: boolea
     all the lexer data goes here.
 */
 let <%- prefix %>lexers = [
-    <% for(let i = 0;i < input.dfas.length;i++){ %>
+<% for(let i = 0;i < input.dfas.length;i++){ %>
     moveDFA<%- i.toString() %>,
-    <% } %>
+<% } %>
 ];
+
+/*
+    tokens that a lexical dfa state can return
+*/
+<% for(let i = 0, _a = input.dfas; i < _a.length; i++){
+    printLexTokens(_a[i], i);
+} %>
 
 <% let pt = input.pt; %>
 let <%- prefix %>stateCount = <%- pt.stateCount.toString() %>;
@@ -103,7 +135,7 @@ let <%- prefix %>stateCount = <%- pt.stateCount.toString() %>;
     when action < 0, reduce with rule (1-action);
     when action = 0, do default action.
 */
-<% printTable<Item>('pact', pt.pact, 6, t => {
+<% printTable<Item>('pact', pt.pact, 6, 10, t => {
     if(t === null || t === Item.NULL){
         return '0';
     }
@@ -117,21 +149,21 @@ let <%- prefix %>stateCount = <%- pt.stateCount.toString() %>;
 /*
     displacement of action table.
 */
-<% printTable<number>('disact', pt.disact, 6, t => t.toString()); %>
+<% printTable<number>('disact', pt.disact, 6, 10, t => t.toString()); %>
 /*
     used to check if a position in <%- prefix  %>pact is out of bouds.
     if <%- prefix  %>checkact[<%- prefix %>disact[STATE-NUM] + TOKEN] = STATE-NUM, this position is not out of bounds.
 */
-<% printTable<number>('checkact', pt.checkact, 6, t => t === undefined ? '0' : t.toString()); %>
+<% printTable<number>('checkact', pt.checkact, 6, 10, t => t === undefined ? '0' : t.toString()); %>
 /*
     default action table. action = <%- prefix %>defred[STATE-NUM],
     where action is the number of the rule to reduce with.
 */
-<% printTable<number>('defred', pt.defred, 6, t => t.toString()); %>
+<% printTable<number>('defred', pt.defred, 6, 10, t => t.toString()); %>
 /*
     compressed goto table: goto = <%- prefix  %>pgoto[<%- prefix %>disgoto[STATE-NUM] + NON_TERMINAL]
 */
-<% printTable<Item>('pgoto', pt.pgoto, 6, t => {
+<% printTable<Item>('pgoto', pt.pgoto, 6, 10, t => {
     if(t === null){
         return '-1';
     }
@@ -142,23 +174,23 @@ let <%- prefix %>stateCount = <%- pt.stateCount.toString() %>;
 /*
     displacement of the goto table
 */
-<% printTable<number>('disgoto', pt.disgoto, 6, t => t.toString()); %>
+<% printTable<number>('disgoto', pt.disgoto, 6, 10, t => t.toString()); %>
 /*
     length of each rule: rule length = <%- prefix %>ruleLen[RULE-NUM]
 */
-<% printTable<Rule>('ruleLen', pt.g.rules, 6, r => r.rhs.length.toString()); %>
+<% printTable<Rule>('ruleLen', pt.g.rules, 6, 10, r => r.rhs.length.toString()); %>
 /*
     index of the LHS of each rule
 */
-<% printTable<Rule>('lhs', pt.g.rules, 6, r => r.lhs.index.toString()); %>
+<% printTable<Rule>('lhs', pt.g.rules, 6, 10, r => r.lhs.index.toString()); %>
 /*
     token names
 */
-<% printTable<TokenDef>('tokenNames', pt.g.tokens, 6, t => `"${t.sym}"`); %>
+<% printTable<TokenDef>('tokenNames', pt.g.tokens, 20, 3, t => `"${t.sym}"`); %>
 /*
     token alias
 */
-<% printTable<TokenDef>('tokenAlias', pt.g.tokens, 6, t => `"${t.alias}"` || '""'); %>
+<% printTable<TokenDef>('tokenAlias', pt.g.tokens, 20, 3, t => `"${t.alias}"` || '""'); %>
 <% let className = input.opt.className || 'Parser'; %>
 
 <% function printLexActionsFunc(dfa: DFA<LexAction[]>, n: number){
@@ -182,19 +214,35 @@ let <%- prefix %>stateCount = <%- pt.stateCount.toString() %>;
                 };
         <% }
     }; 
+    function hasNormalAction(a: LexAction[]){
+        for(let act of a){
+            if(act.token === -1){
+                return true;
+            }
+        }
+        return false;
+    }
     let statevn = prefix + 'staten'; %>
     private _doLexAction<%- n.toString() %>(<%- statevn %>: number){
+        let <%- prefix %>tk = <%- prefix %>lexTokens<%- n.toString() %>[<%- statevn %>];
         switch(<%- statevn %>){
             <% for(let i = 0, _a = dfa.states; i < _a.length; i++){ 
-                if(_a[i].endAction !== null){ %>
+                if(_a[i].endAction !== null && hasNormalAction(_a[i].endAction.data)){ %>
             case <%- i.toString() %>:
                     <% for(let act of _a[i].endAction.data){
-                        act(codegen);
+                        act.token === -1 && act.toCode(codegen);
                     } %>
                 break;
                 <% } %>
             <% } %>
             default:;
+        }
+        if(<%- prefix %>tk !== -1){
+            this._token = {
+                id: <%- prefix %>tk,
+                val: this._matched.join('')
+            }
+            this._matched.length = 0;
         }
     }
 <% } %>
@@ -217,6 +265,9 @@ export class <%- className %> {
     private _lrState: number[] = [];
     private _sematicS: <%- input.sematicType %>[] = [];
 
+    /**
+     *  set 
+     */
     private _setImg(s: string){
         this._matched.length = 0;
         for(let i = 0;i < s.length;i++){
@@ -226,12 +277,16 @@ export class <%- className %> {
     <% for(let i = 0, _a = input.dfas; i < _a.length; i++){
         printLexActionsFunc(_a[i], i);
     } %>
-    <% let lexstatevn = prefix + 'lexstate'; %>
-    private _doLexAction(<%- lexstatevn %>: number, <%- prefix %>state: number){
-        switch(<%- lexstatevn %>){
+    /**
+     *  do a lexical action
+     *  @api private
+     *  @internal
+     */
+    private _doLexAction(lexstate: number, state: number){
+        switch(lexstate){
             <% for(let i = 0;i < input.dfas.length;i++){ %>
             case <%- i.toString() %>:
-                this._doLexAction<%- i.toString() %>(<%- prefix %>state);
+                this._doLexAction<%- i.toString() %>(state);
                 break;
             <% } %>
             default:;
@@ -239,11 +294,15 @@ export class <%- className %> {
     }
     private _acceptChar(c: number){
         let lexstate = this._lexState[this._lexState.length - 1];
-        this._marker && this._backup.push(c);
+        this._marker && this._backup.push(String.fromCharCode(c));
         let retn = { state: this._state, nfa: false, isEnd: false };
         <%- prefix %>lexers[lexstate](c, retn);
         if(retn.isEnd){
 
         }
+    }
+
+    private _acceptToken(t: Token){
+        
     }
 }

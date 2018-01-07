@@ -1,6 +1,6 @@
 'use strict';
 var fs = require('fs');
-var Promise = require('bluebird');
+// var Promise = require('bluebird');
 
 function changeSuffix(s, suf){
     var i = s.lastIndexOf('.');
@@ -60,16 +60,23 @@ function compile(input, opt){
     opt = opt || {};
     
     var header = opt.header || '';
-    var ret = ''
+    var ret = [];
     var echo = opt.echo || 'echo';
+    var echoLine = opt.echoLine || 'echoLine';
     var args = '';
     var tab = opt.tab || '    ';
     var endl = opt.endl || '\n';
+    var eatingLine = false;
+    var T = {
+        EXPR: 1,
+        CODE: 2,
+        TEXT: 3,
+        LINE: 4
+    };
     for(var i = 0, _a = opt.args || []; i < _a.length; i++){
         i > 0 && (args += ', ');
         args += _a[i].name + ': ' + _a[i].type;
     }
-
     function consume(s){
         var i = input.indexOf(s);
         var ret;
@@ -82,32 +89,85 @@ function compile(input, opt){
         input = input.substring(i + s.length, input.length);
         return ret;
     }
+    function emitLine(){
+        eatingLine ? (eatingLine = false) : ret.push({ s: '', type: T.LINE });
+    }
+    function emit(s, type){
+        if(type === T.TEXT){
+            if(s !== ''){
+                var _a = s.split(endl);
+                for(var i = 0; i < _a.length; i++){
+                    i > 0 && emitLine();
+                    _a[i] !== '' && ret.push({s: _a[i], type: T.TEXT});
+                }
+            }
+        }
+        else {
+            type === T.CODE && eatLine();
+            ret.push({ s: s, type: type });
+        }
+    }
     function eat(regexp){
         while(regexp.test(input[0])){
             input = input.substring(1, input.length);
         }
     }
-    function eatOne(regexp){
-        regexp.test(input[0]) && (input = input.substring(1, input.length));
+    function eatOne(s){
+        input.indexOf(s) === 0 && (input = input.substring(1, input.length));
+    }
+    function eatLine(){
+        var top = ret[ret.length - 1];
+        if(top !== undefined){
+            while(top.type === T.TEXT && /^[ ]*$/.test(top.s)){ 
+                ret.pop(); 
+                top = ret[ret.length - 1]; 
+            }
+            top.type === T.LINE && ret.pop();
+        }
+        else {
+            eatingLine = true;
+        }
+        // top ? top.type === T.LINE && ret.pop() : (eatingLine = true);
     }
     while(input.length > 0){
-        ret += echo + '("' + escape(consume('<%')) + '");' + endl;
+        emit(consume('<%'), T.TEXT);
         if(input.charAt(0) === '-'){
             input = input.substring(1, input.length);
             eat(/[ \n\t]/);
-            ret += echo + '(' + consume('%>').trim() + ');' + endl;
-            // eatOne(/[\n]/);
+            var s = consume('%>');
+            emit(s, T.EXPR);
         }
         else {
             eat(/[ \n\t]/);
-            ret += consume('%>') + endl;
-            // eatOne(/[\n]/);
+            var s = consume('%>');
+            if(s.charAt(s.length - 1) === '-'){
+                s = s.substr(0, s.length - 1);
+                eatOne(endl);
+            }
+            emit(s, T.CODE);
+        }
+    }
+    var genc = '';
+    for(var i = 0; i < ret.length; i++){
+        switch(ret[i].type){
+            case T.CODE: genc += tab + ret[i].s + endl; break;
+            case T.EXPR: genc += tab + echo + '(' + ret[i].s + ');' + endl; break;
+            case T.LINE: genc += tab + echoLine + '("");' + endl; break;
+            case T.TEXT: 
+                if(ret[i + 1] && ret[i + 1].type === T.LINE){
+                    genc += tab + echoLine + '("' + escape(ret[i].s) + '");' + endl; 
+                    i++;
+                }
+                else {
+                    genc += tab + echo + '("' + escape(ret[i].s) + '");' + endl; 
+                }
+                break;
         }
     }
     return [
         header,
         'export default function(' + args + '){',
-        ret,
+        genc,
         '}'
     ].join(endl);
 }

@@ -1,6 +1,6 @@
 import { ParseTable, IParseTable } from './ptable';
 import { compress, Table } from '../util/compress';
-import { Item } from './item-set.js';
+import { Item } from './item-set';
 import { Grammar } from './grammar';
 import { console } from '../util/common';
 
@@ -44,6 +44,14 @@ function gotot(pt: ParseTable): Table{
     };
 }
 
+function initArray<T>(len: number, cb: (i: number) => T){
+    let ret: T[] = new Array(len);
+    for(let i = 0; i < len; i++){
+        ret[i] = cb(i);
+    }
+    return ret;
+}
+
 export class CompressedPTable implements IParseTable{
     g: Grammar;
     stateCount: number;
@@ -70,11 +78,8 @@ export class CompressedPTable implements IParseTable{
         this.disact = actionCResult.dps;
         this.disgoto = gotoCResult.dps;
 
-        this.pact = new Array(actionCResult.len);
-        this.checkact = new Array(actionCResult.len);
-        for(let i = 0;i < actionCResult.len;i++){
-            this.pact[i] = null;
-        }
+        this.pact = initArray<Item>(actionCResult.len, () => null);
+        this.checkact = initArray<number>(actionCResult.len, () => 0);
         let cela = this;
         ptable.forEachShift((it, state, token) => {
             console.assert(cela.pact[cela.disact[state] + token] === null);
@@ -82,11 +87,8 @@ export class CompressedPTable implements IParseTable{
             cela.checkact[cela.disact[state] + token] = state;
         });
 
-        this.pgoto = new Array(gotoCResult.len);
-        this.checkgoto = new Array(gotoCResult.len);
-        for(let i = 0;i < gotoCResult.len;i++){
-            this.pgoto[i] = null;
-        }
+        this.pgoto = initArray<Item>(gotoCResult.len, () => null);
+        this.checkgoto = initArray<number>(gotoCResult.len, () => 0);
         ptable.forEachGoto((it, state, nt) => {
             console.assert(cela.pgoto[cela.disgoto[state] + nt] === null);
             cela.pgoto[cela.disgoto[state] + nt] = it;
@@ -94,7 +96,8 @@ export class CompressedPTable implements IParseTable{
         });
     }
     lookupShift(state: number, token: number){
-        if(this.checkact[this.disact[state] + token] === state){
+        let index = this.disact[state] + token;
+        if(index >= 0 && index < this.pact.length && this.checkact[index] === state){
             return this.pact[this.disact[state] + token];
         }
         else {
@@ -102,7 +105,8 @@ export class CompressedPTable implements IParseTable{
         }
     }
     lookupGoto(state: number, nt: number){
-        if(this.checkgoto[this.disgoto[state] + nt] === state){
+        let index = this.disgoto[state] + nt;
+        if(index >= 0 && index < this.pgoto.length && this.checkgoto[index] === state){
             return this.pgoto[this.disgoto[state] + nt];
         }
         else {

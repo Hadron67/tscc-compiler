@@ -12,7 +12,6 @@ export default {
             sourcemap: true
         }
     ],
-
     plugins:[
         sourcemaps(),
         ts({
