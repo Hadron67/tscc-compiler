@@ -1809,10 +1809,12 @@ var GBuilder = (function () {
         this.addRuleItem(s, TokenRefType.NAME, line);
         this._sematicVar = saved;
         for (var vname in t.vars) {
-            gen.usedVars[vname] = t.vars[vname];
+            var v = t.vars[vname];
+            gen.usedVars[vname] = { val: v.val, line: v.line };
         }
         for (var vname in t.usedVars) {
-            gen.usedVars[vname] = t.usedVars[vname];
+            var v = t.usedVars[vname];
+            gen.usedVars[vname] = { val: v.val, line: v.line };
         }
     };
     GBuilder.prototype.err = function (msg, line) {
@@ -3977,7 +3979,7 @@ var tsRenderer = function (input, output) {
         var first = true;
         echoLine("");
         echo("        case ");
-        echo(state.index.toString());
+        echo(state.index);
         echoLine(":");
         echo("            ret.hasArc = ");
         echo(state.arcs.length > 0 ? 'true' : 'false');
@@ -3993,7 +3995,7 @@ var tsRenderer = function (input, output) {
                 echo(arcToString(arc));
                 echoLine("){");
                 echo("                ret.state = ");
-                echo(arc.to.index.toString());
+                echo(arc.to.index);
                 echoLine(";");
                 echo("            }");
                 first = false;
@@ -4004,7 +4006,7 @@ var tsRenderer = function (input, output) {
                 echo(arcToString(arc));
                 echoLine("){");
                 echo("                ret.state = ");
-                echo(arc.to.index.toString());
+                echo(arc.to.index);
                 echoLine(";");
                 echo("            }");
             }
@@ -4025,7 +4027,7 @@ var tsRenderer = function (input, output) {
     function printDFA(dfa, n) {
         echoLine("");
         echo("function moveDFA");
-        echo(n.toString());
+        echo(n);
         echoLine("(c: number, ret: { state: number, hasArc: boolean, isEnd: boolean }){");
         echo("    switch(ret.state){");
         for (var _i = 0, _b = dfa.states; _i < _b.length; _i++) {
@@ -4072,7 +4074,7 @@ var tsRenderer = function (input, output) {
     for (var i = 0; i < input.dfas.length; i++) {
         echoLine("");
         echo("    moveDFA");
-        echo(i.toString());
+        echo(i);
         echo(",");
     }
     echoLine("");
@@ -4090,7 +4092,7 @@ var tsRenderer = function (input, output) {
     echo("let ");
     echo(prefix);
     echo("stateCount = ");
-    echo(pt.stateCount.toString());
+    echo(pt.stateCount);
     echoLine(";");
     echoLine("/*");
     echo("    compressed action table: action = ");
@@ -4193,7 +4195,7 @@ var tsRenderer = function (input, output) {
             pushLexState: function (n) {
                 echoLine("");
                 echo("                this._lexState.push(");
-                echo(n.toString());
+                echo(n);
                 echo(");");
             },
             popLexState: function () {
@@ -4210,7 +4212,7 @@ var tsRenderer = function (input, output) {
                 echoLine("");
                 echoLine("                this._token = {");
                 echo("                    id: ");
-                echo(t.index.toString());
+                echo(t.index);
                 echoLine(",");
                 echoLine("                    val: this._matched.join('')");
                 echo("                };");
@@ -4228,7 +4230,7 @@ var tsRenderer = function (input, output) {
         var statevn = prefix + 'staten';
         echoLine("");
         echo("    private _doLexAction");
-        echo(n.toString());
+        echo(n);
         echo("(");
         echo(statevn);
         echoLine(": number){");
@@ -4237,7 +4239,7 @@ var tsRenderer = function (input, output) {
         echo("tk = ");
         echo(prefix);
         echo("lexTokens");
-        echo(n.toString());
+        echo(n);
         echo("[");
         echo(statevn);
         echoLine("];");
@@ -4248,7 +4250,7 @@ var tsRenderer = function (input, output) {
             if (_a[i].endAction !== null && hasNormalAction(_a[i].endAction.data)) {
                 echoLine("");
                 echo("            case ");
-                echo(i.toString());
+                echo(i);
                 echo(":");
                 for (var _i = 0, _b = _a[i].endAction.data; _i < _b.length; _i++) {
                     var act = _b[_i];
@@ -4284,24 +4286,24 @@ var tsRenderer = function (input, output) {
     echo(className);
     echoLine(" {");
     echoLine("    // members for lexer");
-    echoLine("    private _lexState: number[] = [];");
-    echoLine("    private _state: number = 0;");
-    echoLine("    private _matched: string[] = [];");
-    echoLine("    private _token: Token = null;");
-    echoLine("    private _marker: number = -1;");
-    echoLine("    private _markerLine = 0;");
-    echoLine("    private _markerColumn = 0;");
-    echoLine("    private _backupCount: number = 0;");
+    echoLine("    private _lexState: number[];");
+    echoLine("    private _state: number;");
+    echoLine("    private _matched: string[];");
+    echoLine("    private _token: Token;");
+    echoLine("    private _marker: number;");
+    echoLine("    private _markerLine;");
+    echoLine("    private _markerColumn;");
+    echoLine("    private _backupCount: number;");
     echoLine("    private _inputBuf: string[] = [];");
-    echoLine("    private _line = 0;");
-    echoLine("    private _column = 0;");
-    echoLine("    private _tline = 0;");
-    echoLine("    private _tcolumn = 0;");
+    echoLine("    private _line: number;");
+    echoLine("    private _column: number;");
+    echoLine("    private _tline: number;");
+    echoLine("    private _tcolumn: number;");
     echoLine("");
     echoLine("    // members for parser");
     echoLine("    private _lrState: number[] = [];");
     echoLine("    private _sematicS: any[] = [];");
-    echoLine("    private _accepted = false;");
+    echoLine("    private _accepted: boolean;");
     echoLine("");
     echoLine("    private _handlers: {[s: string]: ((a1?, a2?, a3?) => any)[]} = {};");
     echoLine("");
@@ -4310,8 +4312,11 @@ var tsRenderer = function (input, output) {
     echo(input.extraArg);
     echoLine("");
     echoLine("");
+    echoLine("    constructor(){");
+    echoLine("        this.init();");
+    echoLine("    }");
     echoLine("    init(){");
-    echoLine("        this._lexState = [];");
+    echoLine("        this._lexState = [ 0 ];// DEFAULT");
     echoLine("        this._state = 0;");
     echoLine("        this._matched = [];");
     echoLine("        this._token = null;");
@@ -4322,11 +4327,9 @@ var tsRenderer = function (input, output) {
     echoLine("        this._line = this._tline = 0;");
     echoLine("        this._column = this._tcolumn = 0;");
     echoLine("        ");
-    echoLine("        this._lrState = [];");
+    echoLine("        this._lrState = [ 0 ];");
     echoLine("        this._sematicS = [];");
     echoLine("        this._accepted = false;");
-    echoLine("");
-    echoLine("        this._handlers = {};");
     echoLine("    }");
     echoLine("    /**");
     echoLine("     *  set ");
@@ -4351,7 +4354,9 @@ var tsRenderer = function (input, output) {
     echoLine("        this._matched.length = 0;");
     echoLine("        this._tline = this._line;");
     echoLine("        this._tcolumn = this._column;");
-    echoLine("        this._emit('token', this._token);");
+    echo("        this._emit('token', ");
+    echo(prefix);
+    echoLine("tokenNames[this._token.id], this._token.val);");
     echoLine("        while(!this._acceptToken(this._token));");
     echoLine("        this._token = null;");
     echoLine("    }");
@@ -4381,10 +4386,10 @@ var tsRenderer = function (input, output) {
     for (var i = 0; i < input.dfas.length; i++) {
         echoLine("");
         echo("            case ");
-        echo(i.toString());
+        echo(i);
         echoLine(":");
         echo("                this._doLexAction");
-        echo(i.toString());
+        echo(i);
         echoLine("(state);");
         echo("                break;");
     }
@@ -4393,6 +4398,12 @@ var tsRenderer = function (input, output) {
     echoLine("        }");
     echoLine("        this._token !== null && (this._acceptToken(this._token), (this._token = null));");
     echoLine("    }");
+    echoLine("    /**");
+    echoLine("     *  accept a character");
+    echoLine("     *  @return - true if the character is consumed, false if not consumed");
+    echoLine("     *  @api private");
+    echoLine("     *  @internal");
+    echoLine("     */");
     echoLine("    private _acceptChar(c: string){");
     echoLine("        let lexstate = this._lexState[this._lexState.length - 1];");
     echoLine("        let retn = { state: this._state, hasArc: false, isEnd: false };");
@@ -4460,7 +4471,7 @@ var tsRenderer = function (input, output) {
     echoLine("                }");
     echoLine("                else {");
     echoLine("                    // error occurs");
-    echoLine("                    this._emit('error', `unexpected character \"${c}\"`);");
+    echoLine("                    this._emit('lexicalerror', `unexpected character \"${c}\"`);");
     echoLine("                    // force consume");
     echoLine("                    return true;");
     echoLine("                }");
@@ -4473,6 +4484,10 @@ var tsRenderer = function (input, output) {
     echoLine("            }");
     echoLine("        }");
     echoLine("    }");
+    echoLine("    /**");
+    echoLine("     *  input a string");
+    echoLine("     *  @api public");
+    echoLine("     */");
     echoLine("    accept(s: string){");
     echoLine("        for(let i = s.length - 1; i >= 0; i--){");
     echoLine("            this._inputBuf.push(s.charAt(i));");
@@ -4480,18 +4495,26 @@ var tsRenderer = function (input, output) {
     echoLine("        while(this._inputBuf.length > 0){");
     echoLine("            this._acceptChar(this._inputBuf[this._inputBuf.length - 1]) && this._inputBuf.pop();");
     echoLine("        }");
+    echoLine("    }");
+    echoLine("    /**");
+    echoLine("     *  tell the compiler that end of file is reached");
+    echoLine("     *  @api public");
+    echoLine("     */");
+    echoLine("    end(){");
+    echoLine("        this._returnToken(0);");
     echo("    }");
     function printReduceActions() {
         var codegen = {
             addBlock: function (b, line) {
                 echoLine("");
-                echo("                ");
+                echo("                {");
                 echo(b.replace(/\$\$/g, prefix + 'top'));
+                echo("}");
             },
             pushLexState: function (n) {
                 echoLine("");
                 echo("                this._lexState.push(");
-                echo(n.toString());
+                echo(n);
                 echo(");");
             },
             popLexState: function () {
@@ -4508,7 +4531,7 @@ var tsRenderer = function (input, output) {
                 echoLine("");
                 echoLine("                this._token = {");
                 echo("                    id: ");
-                echo(t.index.toString());
+                echo(t.index);
                 echoLine(",");
                 echoLine("                    val: this._matched.join('')");
                 echo("                };");
@@ -4519,7 +4542,7 @@ var tsRenderer = function (input, output) {
             if (rule.action !== null) {
                 echoLine("");
                 echo("            case ");
-                echo(rule.index.toString());
+                echo(rule.index);
                 echoLine(":");
                 echo("                /* ");
                 echo(rule.toString());
@@ -4566,10 +4589,16 @@ var tsRenderer = function (input, output) {
     echoLine("rulenum];");
     echo("        let ");
     echo(prefix);
-    echoLine("top = null;");
+    echoLine("sp = this._sematicS.length;");
     echo("        let ");
     echo(prefix);
-    echoLine("sp = this._sematicS.length;");
+    echo("top = this._sematicS[");
+    echo(prefix);
+    echo("sp - ");
+    echo(prefix);
+    echo("ruleLen[");
+    echo(prefix);
+    echoLine("rulenum]];");
     echo("        switch(");
     echo(prefix);
     echo("rulenum){");
@@ -4615,10 +4644,10 @@ var tsRenderer = function (input, output) {
     echo(prefix);
     echo("pact.length || ");
     echo(prefix);
-    echoLine("checkact[ind] !== this._state){");
+    echoLine("checkact[ind] !== cstate){");
     echo("            act = -");
     echo(prefix);
-    echoLine("defred[this._state] - 1;");
+    echoLine("defred[cstate] - 1;");
     echoLine("        }");
     echoLine("        else {");
     echo("            act = ");
@@ -4627,8 +4656,10 @@ var tsRenderer = function (input, output) {
     echoLine("        }");
     echoLine("        if(act > 0){");
     echoLine("            // shift");
-    echoLine("            if(act === 1){");
+    echoLine("            if(t.id === 0){");
+    echoLine("                // end of file");
     echoLine("                this._accepted = true;");
+    echoLine("                this._emit('accept');");
     echoLine("                return false;");
     echoLine("            }");
     echoLine("            else {");

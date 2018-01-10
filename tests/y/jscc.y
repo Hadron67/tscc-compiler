@@ -72,7 +72,9 @@ option:
 associativeDir: '%left' | '%right' | '%nonassoc';
 assocTokens: assocTokens tokenRef | tokenRef;
 
-optionBody: optionBody <NAME> '=' <STRING> |;
+optionBody: 
+    optionBody name = <NAME> '=' val = <STRING> { this.gb.setOpt(name.val, val.val); }
+| /* empty */ ;
 
 states_: '<' states '>' | ;
 states: <NAME> | states ',' <NAME>;
@@ -119,7 +121,7 @@ ruleHead: '%use' '(' varUseList ')' | ;
 varUseList: varUseList ',' <NAME> | <NAME>;
 ruleItems: ruleItems ruleItem |;
 ruleItem: <NAME> | tokenRef | lexAction;
-tokenRef: '<' t = <NAME> '>' | <STRING>;
+tokenRef: '<' t = <NAME> '>' {} | <STRING>;
 
 block: [+IN_BLOCK] "{" bl = innerBlock [-] "}" { $$.img = '{' + bl.img + '}'; };
 innerBlock: innerBlock innerBlockItem |;

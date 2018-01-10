@@ -80,10 +80,12 @@ export class GBuilder{
 
         // copy imported variables from parent rule
         for(let vname in t.vars){
-            gen.usedVars[vname] = t.vars[vname];
+            let v = t.vars[vname];
+            gen.usedVars[vname] = { val: v.val, line: v.line };
         }
         for(let vname in t.usedVars){
-            gen.usedVars[vname] = t.usedVars[vname];
+            let v = t.usedVars[vname];
+            gen.usedVars[vname] = { val: v.val, line: v.line };
         }
     }
     err(msg: string, line: number){

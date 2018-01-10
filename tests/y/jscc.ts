@@ -1288,6 +1288,12 @@ export class Parser {
         }
         this._token !== null && (this._acceptToken(this._token), (this._token = null));
     }
+    /**
+     *  accept a character
+     *  @return - true if the character is consumed, false if not consumed
+     *  @api private
+     *  @internal
+     */
     private _acceptChar(c: string){
         let lexstate = this._lexState[this._lexState.length - 1];
         let retn = { state: this._state, hasArc: false, isEnd: false };
@@ -1353,7 +1359,7 @@ export class Parser {
                 }
                 else {
                     // error occurs
-                    this._emit('error', `unexpected character "${c}"`);
+                    this._emit('lexicalerror', `unexpected character "${c}"`);
                     // force consume
                     return true;
                 }
@@ -1366,6 +1372,10 @@ export class Parser {
             }
         }
     }
+    /**
+     *  input a string
+     *  @api public
+     */
     accept(s: string){
         for(let i = s.length - 1; i >= 0; i--){
             this._inputBuf.push(s.charAt(i));
@@ -1379,6 +1389,17 @@ export class Parser {
         let jjtop = null;
         let jjsp = this._sematicS.length;
         switch(jjrulenum){
+            case 12:
+                /* 12: optionBody => optionBody <NAME> "=" <STRING> */
+                var name = this._sematicS[jjsp - 3];
+                var val = this._sematicS[jjsp - 1];
+                { this.gb.setOpt(name.val, val.val); }
+                break;
+            case 72:
+                /* 72: tokenRef => "<" <NAME> ">" */
+                var t = this._sematicS[jjsp - 2];
+                {}
+                break;
             case 74:
                 /* 74: @0 => */
                 this._lexState.push(1);
@@ -1390,13 +1411,13 @@ export class Parser {
                 break;
             case 76:
                 /* 76: block => @0 "{" innerBlock @1 "}" */
-                var bl = this._sematicS[jjsp - 4];
-                 jjtop.img = '{' + bl.img + '}'; 
+                var bl = this._sematicS[jjsp - 3];
+                { jjtop.img = '{' + bl.img + '}'; }
                 break;
             case 79:
                 /* 79: innerBlockItem => <ANY_CODE> */
                 var t = this._sematicS[jjsp - 1];
-                 jjtop.img = t.img; 
+                { jjtop.img = t.img; }
                 break;
         }
         this._lrState.length -= jjruleLen[jjrulenum];
@@ -1412,7 +1433,7 @@ export class Parser {
         let cstate = this._lrState[this._lrState.length - 1];
         let ind = jjdisact[cstate] + t.id;
         let act = 0;
-        if(ind < 0 || ind >= jjpact.length || jjcheckact[ind] !== this._state){
+        if(ind < 0 || ind >= jjpact.length || jjcheckact[ind] !== cstate){
             act = -jjdefred[this._state] - 1;
         }
         else {

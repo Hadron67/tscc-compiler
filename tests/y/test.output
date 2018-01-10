@@ -3,165 +3,172 @@ state 0(start)
     '"' -> state 2
     '/' -> state 3
     'h' -> state 4
+    '{' -> state 5
+    '}' -> state 6
 
 state 1(end 0)
     [\x9,\xa],\xd,' ' -> state 1
 
 state 2
-    [\x0,\x9],[\xb,'!'],['#','['],[']',oo) -> state 5
-    '"' -> state 6
-    '\' -> state 7
+    [\x0,\x9],[\xb,'!'],['#','['],[']',oo) -> state 7
+    '"' -> state 8
+    '\' -> state 9
 
 state 3
-    '*' -> state 8
-    '/' -> state 9
+    '*' -> state 10
+    '/' -> state 11
 
 state 4
-    'k' -> state 10
+    'k' -> state 12
 
-state 5
-    [\x0,\x9],[\xb,'!'],['#','['],[']',oo) -> state 5
-    '"' -> state 6
-    '\' -> state 7
+state 5(end 5)
 
-state 6(end 3)
+state 6(end 6)
 
 state 7
-    '"',''','\','n','t' -> state 11
-    'u','x' -> state 12
+    [\x0,\x9],[\xb,'!'],['#','['],[']',oo) -> state 7
+    '"' -> state 8
+    '\' -> state 9
 
-state 8
-    [\x0,')'],['+','.'],['0',oo) -> state 13
-    '*' -> state 14
-    '/' -> state 15
+state 8(end 3)
 
-state 9(end 2)
-    [\x0,\x9],[\xb,oo) -> state 16
+state 9
+    '"',''','\','n','t' -> state 13
+    'u','x' -> state 14
 
 state 10
-    'm' -> state 17
+    [\x0,')'],['+','.'],['0',oo) -> state 15
+    '*' -> state 16
+    '/' -> state 17
 
-state 11
-    [\x0,\x9],[\xb,'!'],['#','['],[']',oo) -> state 5
-    '"' -> state 6
-    '\' -> state 7
+state 11(end 2)
+    [\x0,\x9],[\xb,oo) -> state 18
 
 state 12
-    ['0','9'],['A','F'],['a','f'] -> state 18
+    'm' -> state 19
 
 state 13
-    [\x0,')'],['+','.'],['0',oo) -> state 13
-    '*' -> state 14
-    '/' -> state 19
+    [\x0,\x9],[\xb,'!'],['#','['],[']',oo) -> state 7
+    '"' -> state 8
+    '\' -> state 9
 
 state 14
-    [\x0,'.'],['0',oo) -> state 20
-    '/' -> state 21
+    ['0','9'],['A','F'],['a','f'] -> state 20
 
 state 15
-    '/' -> state 22
+    [\x0,')'],['+','.'],['0',oo) -> state 15
+    '*' -> state 16
+    '/' -> state 21
 
-state 16(end 2)
-    [\x0,\x9],[\xb,oo) -> state 16
+state 16
+    [\x0,'.'],['0',oo) -> state 22
+    '/' -> state 23
 
-state 17(end 4)
+state 17
+    '/' -> state 24
 
-state 18
-    [\x0,\x9],[\xb,'!'],['#','/'],[':','@'],['G','['],[']','`'],['g',oo) -> state 5
-    '"' -> state 6
-    ['0','9'],['A','F'],['a','f'] -> state 23
-    '\' -> state 7
+state 18(end 2)
+    [\x0,\x9],[\xb,oo) -> state 18
 
-state 19
-    [\x0,')'],['+','.'],['0',oo) -> state 13
-    '*' -> state 14
-    '/' -> state 19
+state 19(end 4)
 
 state 20
-    [\x0,')'],['+','.'],['0',oo) -> state 13
-    '*' -> state 14
-    '/' -> state 15
+    [\x0,\x9],[\xb,'!'],['#','/'],[':','@'],['G','['],[']','`'],['g',oo) -> state 7
+    '"' -> state 8
+    ['0','9'],['A','F'],['a','f'] -> state 25
+    '\' -> state 9
 
-state 21(end 1)
+state 21
+    [\x0,')'],['+','.'],['0',oo) -> state 15
+    '*' -> state 16
+    '/' -> state 21
 
 state 22
-    [\x0,')'],['+','.'],['0',oo) -> state 13
-    '*' -> state 14
-    '/' -> state 15
+    [\x0,')'],['+','.'],['0',oo) -> state 15
+    '*' -> state 16
+    '/' -> state 17
 
-state 23
-    [\x0,\x9],[\xb,'!'],['#','['],[']',oo) -> state 5
-    '"' -> state 6
-    '\' -> state 7
+state 23(end 1)
+
+state 24
+    [\x0,')'],['+','.'],['0',oo) -> state 15
+    '*' -> state 16
+    '/' -> state 17
+
+state 25
+    [\x0,\x9],[\xb,'!'],['#','['],[']',oo) -> state 7
+    '"' -> state 8
+    '\' -> state 9
+
+
+
+state 0(start)(end 7)
+    [\x0,'z'],'|',['~',oo) -> state 1
+    '{' -> state 2
+    '}' -> state 3
+
+state 1(end 7)
+    [\x0,'z'],'|',['~',oo) -> state 1
+
+state 2(end 8)
+
+state 3(end 9)
 
 
 
 state 0
     [ 0: (accept) => . start <EOF> ]*
-    [ 1: start => . <TEST> <TEST> block ]
+    [ 1: start => . block ]
+    [ 3: block => . <TEST> <TEST> <TEST> @0 <TEST> ]
     no default action
-    <TEST> : shift, and goto state 2
+    <TEST> : shift, and goto state 3
     start : goto state 1
+    block : goto state 2
 
 
 state 1
     [ 0: (accept) => start . <EOF> ]*
     no default action
-    <EOF> : shift, and goto state 3
+    <EOF> : shift, and goto state 4
 
 
 state 2
-    [ 1: start => <TEST> . <TEST> block ]*
-    no default action
-    <TEST> : shift, and goto state 4
+    [ 1: start => block . ]*
+    default action: reduce with rule 1
 
 
 state 3
+    [ 3: block => <TEST> . <TEST> <TEST> @0 <TEST> ]*
+    no default action
+    <TEST> : shift, and goto state 5
+
+
+state 4
     [ 0: (accept) => start <EOF> . ]*
     default action: reduce with rule 0
 
 
-state 4
-    [ 1: start => <TEST> <TEST> . block ]*
-    [ 4: block => . "hkm" @0 <TEST> @1 <TEST> ]
-    no default action
-    "hkm" : shift, and goto state 6
-    block : goto state 5
-
-
 state 5
-    [ 1: start => <TEST> <TEST> block . ]*
-    default action: reduce with rule 1
+    [ 3: block => <TEST> <TEST> . <TEST> @0 <TEST> ]*
+    no default action
+    <TEST> : shift, and goto state 6
 
 
 state 6
-    [ 4: block => "hkm" . @0 <TEST> @1 <TEST> ]*
+    [ 3: block => <TEST> <TEST> <TEST> . @0 <TEST> ]*
     [ 2: @0 => . ]
     default action: reduce with rule 2
     @0 : goto state 7
 
 
 state 7
-    [ 4: block => "hkm" @0 . <TEST> @1 <TEST> ]*
+    [ 3: block => <TEST> <TEST> <TEST> @0 . <TEST> ]*
     no default action
     <TEST> : shift, and goto state 8
 
 
 state 8
-    [ 4: block => "hkm" @0 <TEST> . @1 <TEST> ]*
-    [ 3: @1 => . ]
+    [ 3: block => <TEST> <TEST> <TEST> @0 <TEST> . ]*
     default action: reduce with rule 3
-    @1 : goto state 9
-
-
-state 9
-    [ 4: block => "hkm" @0 <TEST> @1 . <TEST> ]*
-    no default action
-    <TEST> : shift, and goto state 10
-
-
-state 10
-    [ 4: block => "hkm" @0 <TEST> @1 <TEST> . ]*
-    default action: reduce with rule 4
 
 

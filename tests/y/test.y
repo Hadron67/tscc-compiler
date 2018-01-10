@@ -10,13 +10,21 @@
 
     < TEST: '"' ([^"\n", '"', '\\'] | <ESCAPE_CHAR>)* '"' >
     < HKM: 'hkm' >
+    < OPEN_BLOCK: '{' >
+    < CLOSE_BLOCK: '}' >
+]
+
+%lex <IN_BLOCK> [
+    < ANY_CODE: [^'{', '}']* >
+    < OPEN_BLOCK: '{' >
+    < CLOSE_BLOCK: '}' >
 ]
 
 
 %%
 
-start: t = <TEST> m = <TEST> block;
-block: %use(t, m) a = 'hkm' [-] b = <TEST> {} c = <TEST>;
+start: block;
+block: v1 = <TEST> v2 = <TEST> v3 = <TEST> {} <TEST>  {  };
 
 
 %%

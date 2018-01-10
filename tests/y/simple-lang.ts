@@ -1369,27 +1369,58 @@ let jjtokenAlias = [
 interface Token{
     id: number;
     val: string;
+
+    startLine: number;
+    startColumn: number;
+    endLine: number;
+    endColumn: number;
 };
 
 export class Parser {
     // members for lexer
-    private _lexState: number[] = [];
-    private _state: number = 0;
-    private _matched: string[] = [];
-    private _token: Token = null;
-    private _marker: number = -1;
-    private _backupCount: number = 0;
+    private _lexState: number[];
+    private _state: number;
+    private _matched: string[];
+    private _token: Token;
+    private _marker: number;
+    private _markerLine;
+    private _markerColumn;
+    private _backupCount: number;
     private _inputBuf: string[] = [];
+    private _line: number;
+    private _column: number;
+    private _tline: number;
+    private _tcolumn: number;
 
     // members for parser
     private _lrState: number[] = [];
     private _sematicS: any[] = [];
+    private _accepted: boolean;
 
     private _handlers: {[s: string]: ((a1?, a2?, a3?) => any)[]} = {};
 
     // extra members, defined by %extra_arg
     
 
+    constructor(){
+        this.init();
+    }
+    init(){
+        this._lexState = [ 0 ];// DEFAULT
+        this._state = 0;
+        this._matched = [];
+        this._token = null;
+        this._marker = -1;
+        this._markerLine = this._markerColumn = 0;
+        this._backupCount = 0;
+        this._inputBuf = [];
+        this._line = this._tline = 0;
+        this._column = this._tcolumn = 0;
+        
+        this._lrState = [ 0 ];
+        this._sematicS = [];
+        this._accepted = false;
+    }
     /**
      *  set 
      */
@@ -1398,6 +1429,24 @@ export class Parser {
         for(let i = 0;i < s.length;i++){
             this._matched.push(s.charAt(i));
         }
+        this._tline = this._line;
+        this._tcolumn = this._column;
+    }
+    private _returnToken(tid: number){
+        this._token = {
+            id: tid,
+            val: this._matched.join(''),
+            startLine: this._tline,
+            startColumn: this._tcolumn,
+            endLine: this._line,
+            endColumn: this._column
+        }
+        this._matched.length = 0;
+        this._tline = this._line;
+        this._tcolumn = this._column;
+        this._emit('token', jjtokenNames[this._token.id], this._token.val);
+        while(!this._acceptToken(this._token));
+        this._token = null;
     }
     private _emit(name: string, a1?, a2?, a3?){
         let cbs = this._handlers[name];
@@ -1425,13 +1474,7 @@ export class Parser {
                 break;
             default:;
         }
-        if(jjtk !== -1){
-            this._token = {
-                id: jjtk,
-                val: this._matched.join('')
-            }
-            this._matched.length = 0;
-        }
+        jjtk !== -1 && this._returnToken(jjtk);
     }
     /**
      *  do a lexical action
@@ -1447,6 +1490,12 @@ export class Parser {
         }
         this._token !== null && (this._acceptToken(this._token), (this._token = null));
     }
+    /**
+     *  accept a character
+     *  @return - true if the character is consumed, false if not consumed
+     *  @api private
+     *  @internal
+     */
     private _acceptChar(c: string){
         let lexstate = this._lexState[this._lexState.length - 1];
         let retn = { state: this._state, hasArc: false, isEnd: false };
@@ -1469,10 +1518,13 @@ export class Parser {
                     // it is prefered to move forward, but that could lead to errors,
                     // so we need to memorize this state before move on, in case if 
                     // an error occurs later, we could just return to this state.
-                    this._backupCount = 1;
                     this._marker = this._state;
+                    this._markerLine = this._line;
+                    this._markerColumn = this._column;
                     this._state = retn.state;
+                    this._backupCount = 1;
                     this._matched.push(c);
+                    c === '\n' ? (this._line++, this._column = 0) : (this._column++);
                     // character consumed
                     return true;
                 }
@@ -1497,6 +1549,8 @@ export class Parser {
                     // rollback
                     this._state = this._marker;
                     this._marker = -1;
+                    this._line = this._markerLine;
+                    this._column = this._markerColumn;
                     while(this._backupCount --> 0){
                         this._inputBuf.push(this._matched.pop());
                     }
@@ -1507,13 +1561,90 @@ export class Parser {
                 }
                 else {
                     // error occurs
-                    this._emit('error', `unexpected character "${c}"`);
+                    this._emit('lexicalerror', `unexpected character "${c}"`);
+                    // force consume
+                    return true;
                 }
+            }
+            else {
+                this._state = retn.state;
+                c === '\n' ? (this._line++, this._column = 0) : (this._column++);
+                // character consumed
+                return true;
             }
         }
     }
+    /**
+     *  input a string
+     *  @api public
+     */
+    accept(s: string){
+        for(let i = s.length - 1; i >= 0; i--){
+            this._inputBuf.push(s.charAt(i));
+        }
+        while(this._inputBuf.length > 0){
+            this._acceptChar(this._inputBuf[this._inputBuf.length - 1]) && this._inputBuf.pop();
+        }
+    }
+    /**
+     *  tell the compiler that end of file is reached
+     *  @api public
+     */
+    end(){
+        this._returnToken(0);
+    }
+    private _doReduction(jjrulenum: number){
+        let jjnt = jjlhs[jjrulenum];
+        let jjsp = this._sematicS.length;
+        let jjtop = this._sematicS[jjsp - jjruleLen[jjrulenum]];
+        switch(jjrulenum){
+            case 26:
+                /* 26: expr => expr "||" expr */
+                { jjtop = $1 + $3; }
+                break;
+        }
+        this._lrState.length -= jjruleLen[jjrulenum];
+        let jjcstate = this._lrState[this._lrState.length - 1];
+        this._lrState.push(jjpgoto[jjdisgoto[jjcstate] + jjnt]);
+
+        this._sematicS.length -= jjruleLen[jjrulenum];
+        this._sematicS.push(jjtop);
+    }
 
     private _acceptToken(t: Token){
-        
+        // look up action table
+        let cstate = this._lrState[this._lrState.length - 1];
+        let ind = jjdisact[cstate] + t.id;
+        let act = 0;
+        if(ind < 0 || ind >= jjpact.length || jjcheckact[ind] !== cstate){
+            act = -jjdefred[cstate] - 1;
+        }
+        else {
+            act = jjpact[ind];
+        }
+        if(act > 0){
+            // shift
+            if(t.id === 0){
+                // end of file
+                this._accepted = true;
+                this._emit('accept');
+                return false;
+            }
+            else {
+                this._lrState.push(act - 1);
+                this._sematicS.push(t);
+                // token consumed
+                return true;
+            }
+        }
+        else if(act < 0){
+            this._doReduction(-act - 1);
+        }
+        else {
+            // error
+            this._emit("syntaxerror", `unexpected token ${jjtokenNames[t.id]}`);
+            // force consume
+            return true;
+        }
     }
 }

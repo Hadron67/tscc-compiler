@@ -56,18 +56,18 @@ function printState(state: State<LexAction[]>){
         return ret.join(' || ');
     } 
     let first = true; %>
-        case <%- state.index.toString() %>:
+        case <%- state.index %>:
             ret.hasArc = <%- state.arcs.length > 0 ? 'true' : 'false' %>;
             ret.isEnd = <%- state.endAction === null ? 'false' : 'true' %>;
     <% for(let arc of state.arcs){
         if(first) { %>
             if(<%- arcToString(arc) %>){
-                ret.state = <%- arc.to.index.toString() %>;
+                ret.state = <%- arc.to.index %>;
             }
         <% first = false;
         } else { %>
             else if(<%- arcToString(arc) %>){
-                ret.state = <%- arc.to.index.toString() %>;
+                ret.state = <%- arc.to.index %>;
             }
         <% }
     } 
@@ -81,11 +81,11 @@ function printState(state: State<LexAction[]>){
             break;
 <% } 
 function printDFA(dfa: DFA<LexAction[]>, n: number){ %>
-function moveDFA<%- n.toString() %>(c: number, ret: { state: number, hasArc: boolean, isEnd: boolean }){
+function moveDFA<%- n %>(c: number, ret: { state: number, hasArc: boolean, isEnd: boolean }){
     switch(ret.state){
-        <% for(let state of dfa.states){
-            printState(state);
-        } %>
+    <% for(let state of dfa.states){
+        printState(state);
+    } %>
         default:
             ret.state = -1;
             ret.hasArc = false;
@@ -118,7 +118,7 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
 */
 let <%- prefix %>lexers = [
 <% for(let i = 0;i < input.dfas.length;i++){ %>
-    moveDFA<%- i.toString() %>,
+    moveDFA<%- i %>,
 <% } %>
 ];
 
@@ -130,7 +130,7 @@ let <%- prefix %>lexers = [
 } %>
 
 <% let pt = input.pt; %>
-let <%- prefix %>stateCount = <%- pt.stateCount.toString() %>;
+let <%- prefix %>stateCount = <%- pt.stateCount %>;
 /*
     compressed action table: action = <%- prefix %>pact[<%- prefix %>disact[STATE-NUM] + TOKEN]
     when action > 0, shift the token and goto state (action - 1);
@@ -201,7 +201,7 @@ let <%- prefix %>stateCount = <%- pt.stateCount.toString() %>;
                 <%- b %>
         <% },
         pushLexState(n: number){ %>
-                this._lexState.push(<%- n.toString() %>);
+                this._lexState.push(<%- n %>);
         <% },
         popLexState(){ %>
                 this._lexState.pop();
@@ -211,7 +211,7 @@ let <%- prefix %>stateCount = <%- pt.stateCount.toString() %>;
         <% },
         returnToken(t: TokenDef){ %>
                 this._token = {
-                    id: <%- t.index.toString() %>,
+                    id: <%- t.index %>,
                     val: this._matched.join('')
                 };
         <% }
@@ -225,18 +225,18 @@ let <%- prefix %>stateCount = <%- pt.stateCount.toString() %>;
         return false;
     }
     let statevn = prefix + 'staten'; %>
-    private _doLexAction<%- n.toString() %>(<%- statevn %>: number){
-        let <%- prefix %>tk = <%- prefix %>lexTokens<%- n.toString() %>[<%- statevn %>];
+    private _doLexAction<%- n %>(<%- statevn %>: number){
+        let <%- prefix %>tk = <%- prefix %>lexTokens<%- n %>[<%- statevn %>];
         switch(<%- statevn %>){
-            <% for(let i = 0, _a = dfa.states; i < _a.length; i++){ 
-                if(_a[i].endAction !== null && hasNormalAction(_a[i].endAction.data)){ %>
-            case <%- i.toString() %>:
-                    <% for(let act of _a[i].endAction.data){
-                        act.token === -1 && act.toCode(codegen);
-                    } %>
-                break;
-                <% }
+    <% for(let i = 0, _a = dfa.states; i < _a.length; i++){ 
+        if(_a[i].endAction !== null && hasNormalAction(_a[i].endAction.data)){ %>
+            case <%- i %>:
+            <% for(let act of _a[i].endAction.data){
+                act.token === -1 && act.toCode(codegen);
             } %>
+                break;
+        <% }
+    } %>
             default:;
         }
         <%- prefix %>tk !== -1 && this._returnToken(<%- prefix %>tk);
@@ -255,32 +255,35 @@ interface Token{
 
 export class <%- className %> {
     // members for lexer
-    private _lexState: number[] = [];
-    private _state: number = 0;
-    private _matched: string[] = [];
-    private _token: Token = null;
-    private _marker: number = -1;
-    private _markerLine = 0;
-    private _markerColumn = 0;
-    private _backupCount: number = 0;
+    private _lexState: number[];
+    private _state: number;
+    private _matched: string[];
+    private _token: Token;
+    private _marker: number;
+    private _markerLine;
+    private _markerColumn;
+    private _backupCount: number;
     private _inputBuf: string[] = [];
-    private _line = 0;
-    private _column = 0;
-    private _tline = 0;
-    private _tcolumn = 0;
+    private _line: number;
+    private _column: number;
+    private _tline: number;
+    private _tcolumn: number;
 
     // members for parser
     private _lrState: number[] = [];
     private _sematicS: any[] = [];
-    private _accepted = false;
+    private _accepted: boolean;
 
     private _handlers: {[s: string]: ((a1?, a2?, a3?) => any)[]} = {};
 
     // extra members, defined by %extra_arg
     <%- input.extraArg %>
 
+    constructor(){
+        this.init();
+    }
     init(){
-        this._lexState = [];
+        this._lexState = [ 0 ];// DEFAULT
         this._state = 0;
         this._matched = [];
         this._token = null;
@@ -291,11 +294,9 @@ export class <%- className %> {
         this._line = this._tline = 0;
         this._column = this._tcolumn = 0;
         
-        this._lrState = [];
+        this._lrState = [ 0 ];
         this._sematicS = [];
         this._accepted = false;
-
-        this._handlers = {};
     }
     /**
      *  set 
@@ -320,7 +321,7 @@ export class <%- className %> {
         this._matched.length = 0;
         this._tline = this._line;
         this._tcolumn = this._column;
-        this._emit('token', this._token);
+        this._emit('token', <%- prefix %>tokenNames[this._token.id], this._token.val);
         while(!this._acceptToken(this._token));
         this._token = null;
     }
@@ -347,14 +348,20 @@ export class <%- className %> {
     private _doLexAction(lexstate: number, state: number){
         switch(lexstate){
 <% for(let i = 0;i < input.dfas.length;i++){ %>
-            case <%- i.toString() %>:
-                this._doLexAction<%- i.toString() %>(state);
+            case <%- i %>:
+                this._doLexAction<%- i %>(state);
                 break;
 <% } %>
             default:;
         }
         this._token !== null && (this._acceptToken(this._token), (this._token = null));
     }
+    /**
+     *  accept a character
+     *  @return - true if the character is consumed, false if not consumed
+     *  @api private
+     *  @internal
+     */
     private _acceptChar(c: string){
         let lexstate = this._lexState[this._lexState.length - 1];
         let retn = { state: this._state, hasArc: false, isEnd: false };
@@ -420,7 +427,7 @@ export class <%- className %> {
                 }
                 else {
                     // error occurs
-                    this._emit('error', `unexpected character "${c}"`);
+                    this._emit('lexicalerror', `unexpected character "${c}"`);
                     // force consume
                     return true;
                 }
@@ -433,6 +440,19 @@ export class <%- className %> {
             }
         }
     }
+    private _acceptEOF(){
+        if(this._state === 0){
+            // recover
+            this._returnToken(0);
+        }
+        else if(this._marker !== -1){
+            
+        }
+    }
+    /**
+     *  input a string
+     *  @api public
+     */
     accept(s: string){
         for(let i = s.length - 1; i >= 0; i--){
             this._inputBuf.push(s.charAt(i));
@@ -441,13 +461,20 @@ export class <%- className %> {
             this._acceptChar(this._inputBuf[this._inputBuf.length - 1]) && this._inputBuf.pop();
         }
     }
+    /**
+     *  tell the compiler that end of file is reached
+     *  @api public
+     */
+    end(){
+        this._returnToken(0);
+    }
 <% function printReduceActions(){
     let codegen = {
         addBlock(b: string, line: number){ %>
-                <%- b.replace(/\$\$/g, prefix + 'top') %>
+                {<%- b.replace(/\$\$/g, prefix + 'top') %>}
         <% },
         pushLexState(n: number){ %>
-                this._lexState.push(<%- n.toString() %>);
+                this._lexState.push(<%- n %>);
         <% },
         popLexState(){ %>
                 this._lexState.pop();
@@ -457,14 +484,14 @@ export class <%- className %> {
         <% },
         returnToken(t: TokenDef){ %>
                 this._token = {
-                    id: <%- t.index.toString() %>,
+                    id: <%- t.index %>,
                     val: this._matched.join('')
                 };
         <% }
     };
     for(let rule of input.g.rules){
         if(rule.action !== null){ %>
-            case <%- rule.index.toString() %>:
+            case <%- rule.index %>:
                 /* <%- rule.toString() %> */
             <% for(let uvar in rule.vars){ %>
                 var <%- uvar %> = this._sematicS[<%- prefix %>sp - <%- rule.rhs.length - rule.vars[uvar].val %>];
@@ -481,8 +508,8 @@ export class <%- className %> {
 } %>
     private _doReduction(<%- prefix %>rulenum: number){
         let <%- prefix %>nt = <%- prefix %>lhs[<%- prefix %>rulenum];
-        let <%- prefix %>top = null;
         let <%- prefix %>sp = this._sematicS.length;
+        let <%- prefix %>top = this._sematicS[<%- prefix %>sp - <%- prefix %>ruleLen[<%- prefix %>rulenum]];
         switch(<%- prefix %>rulenum){
 <% printReduceActions(); %>
         }
@@ -499,16 +526,18 @@ export class <%- className %> {
         let cstate = this._lrState[this._lrState.length - 1];
         let ind = <%- prefix %>disact[cstate] + t.id;
         let act = 0;
-        if(ind < 0 || ind >= <%- prefix %>pact.length || <%- prefix %>checkact[ind] !== this._state){
-            act = -<%- prefix %>defred[this._state] - 1;
+        if(ind < 0 || ind >= <%- prefix %>pact.length || <%- prefix %>checkact[ind] !== cstate){
+            act = -<%- prefix %>defred[cstate] - 1;
         }
         else {
             act = <%- prefix %>pact[ind];
         }
         if(act > 0){
             // shift
-            if(act === 1){
+            if(t.id === 0){
+                // end of file
                 this._accepted = true;
+                this._emit('accept');
                 return false;
             }
             else {
