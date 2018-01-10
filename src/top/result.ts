@@ -80,6 +80,9 @@ class Result implements Context{
             prefix: 'jj',
             endl: '\n',
             opt: this.file.opt,
+            header: this.file.header,
+            extraArg: this.file.extraArgs,
+
             g: this.file.grammar,
             pt: this.parseTable,
             sematicType: 'any',

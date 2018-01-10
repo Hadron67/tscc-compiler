@@ -9,6 +9,8 @@ export interface TemplateInput{
     prefix: string;
     endl: string;
     opt: {[s: string]: string};
+    header: string;
+    extraArg: string;
     // grammar
     g: Grammar;
     pt: CompressedPTable;
@@ -18,6 +20,6 @@ export interface TemplateInput{
     dfas: DFA<LexAction[]>[];
 };
 export interface TemplateOutput{
-    write(s: string);
-    writeln(s: string);
+    write(s: string | number);
+    writeln(s: string | number);
 };

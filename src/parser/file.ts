@@ -6,4 +6,6 @@ export class File{
     grammar: Grammar = null;
     lexDFA: DFA<LexAction[]>[] = [];
     opt: {[s: string]: string} = {};
+    header: string = '';
+    extraArgs: string = '';
 }

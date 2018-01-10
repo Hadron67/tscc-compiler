@@ -78,8 +78,12 @@ export class GBuilder{
 
         this._sematicVar = saved;
 
+        // copy imported variables from parent rule
         for(let vname in t.vars){
-            gen.usedVars[vname] = { line: 0, val: 0 };
+            gen.usedVars[vname] = t.vars[vname];
+        }
+        for(let vname in t.usedVars){
+            gen.usedVars[vname] = t.usedVars[vname];
         }
     }
     err(msg: string, line: number){
@@ -161,6 +165,12 @@ export class GBuilder{
     setOpt(name: string, value: string): this{
         this._f.opt[name] = value;
         return this;
+    }
+    setHeader(h: string){
+        this._f.header = h;
+    }
+    setExtraArg(a: string){
+        this._f.extraArgs = a;
     }
     incPr(){
         this._pr++;

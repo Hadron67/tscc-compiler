@@ -23,6 +23,9 @@ enum T  {
     LEX_DIR,
     PREC_DIR,
     USE_DIR,
+    HEADER_DIR,
+    EXTRA_ARG_DIR,
+    INIT_DIR,
     // REGEXP,
     // STATE_DIR,
     LINE_COMMENT,
@@ -216,6 +219,18 @@ function scan(opt: { isHighlight?: boolean } = {}){
                     token.id = T.USE_DIR;
                     break lex;
                 }
+                else if(iss('header')){
+                    token.id = T.HEADER_DIR
+                    break lex;
+                }
+                else if(iss('extra_arg')){
+                    token.id = T.EXTRA_ARG_DIR;
+                    break lex;
+                }
+                else if(iss('init')){
+                    token.id = T.INIT_DIR;
+                    break lex;
+                }
                 else if(c == '%'){
                     nc();
                     token.id = T.SEPERATOR;
@@ -233,18 +248,21 @@ function scan(opt: { isHighlight?: boolean } = {}){
                     token.val = '';
                     var st = 1;
                     while(st > 0){
-                        // XXX: disable CFA
-                        c += '';
                         if(eof()){
-                            throw new E('unclosed block',line);
+                            throw new E('unclosed block', line);
                         }
                         if(c == '{'){
                             st++;
+                            token.val += c;
                         }
-                        else if(c == '}'){
+                        // XXX: disable CFA
+                        else if(c == '}' as string){
                             st--;
+                            st > 0 && (token.val += c);
                         }
-                        token.val += c;
+                        else {
+                            token.val += c;
+                        }
                         nc();
                     }
                     break lex;
@@ -396,11 +414,18 @@ function parse(scanner, ctx: Context){
         scanner.next(token);
     }
 
-    function expect(id){
+    function expect(id: T){
         if(token.id !== id){
             throw new E(`unexpected token "${T[token.id]}", expecting "${T[id]}"`,token.line);
         }
         nt();
+    }
+
+    function expectToken(id: T, cb: (val: string, line: number) => any){
+        let val = token.val;
+        let line = token.line;
+        expect(id);
+        cb(val, line);
     }
 
     /**
@@ -442,7 +467,8 @@ function parse(scanner, ctx: Context){
      * | ('%left'|'%right'|'%nonassoc') [<TOKEN>]+
      * | '%opt' <NAME> <STRING>
      * | '%lex' lexRule()
-     * 
+     * | '%header' <BLOCK>
+     * | '%extra_arg' <BLOCK>
      */
     function options(){
         while(1){
@@ -470,6 +496,14 @@ function parse(scanner, ctx: Context){
                 case T.LEX_DIR:
                     nt();
                     lexRule();
+                    break;
+                case T.HEADER_DIR:
+                    nt();
+                    expectToken(T.BLOCK, (val, line) => gb.setHeader(val));
+                    break;
+                case T.EXTRA_ARG_DIR:
+                    nt();
+                    expectToken(T.BLOCK, (val, line) => gb.setExtraArg(val));
                     break;
                 default:return;
             }

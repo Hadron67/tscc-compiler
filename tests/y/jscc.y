@@ -1,3 +1,13 @@
+%header{
+import { GBuilder } from '../../src/parser/gbuilder';
+import { Context } from '../../src/util/context';
+import { JsccError, JsccWarning } from '../../src/util/E';
+}
+
+%extra_arg{
+    gb: GBuilder;
+    ctx: Context;
+}
 
 %lex [
     LETTER = < ['a'-'z', 'A'-'Z', '$', '_'] >

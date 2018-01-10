@@ -269,22 +269,6 @@ export class IntervalSet<T>{
         }
         return false;
     }
-    // clone(){
-    //     if(this.noMerge){
-    //         throw new Error('cannot clone interval sets with data');
-    //     }
-    //     let ret = new IntervalSet<T>();
-    //     let it2 = ret.head;
-    //     for(let it = this.head.next;it !== this.tail;it = it.next){
-    //         let nit = ret.createInterval(it.a, it.b);
-    //         it2.next = nit;
-    //         nit.prev = it2;
-    //         it2 = nit;
-    //     }
-    //     it2.next = this.tail;
-    //     this.tail.prev = it2;
-    //     return ret;
-    // }
     toString(mapper: (a: Num) => string){
         var ret = '';
         var t = false;

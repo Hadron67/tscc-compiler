@@ -2,15 +2,15 @@
 export var endl = '\n';
 
 export abstract class OutputStream {
-    abstract write(s?: string): any;
-    writeln(s?: string): any{
+    abstract write(s?: string | number): any;
+    writeln(s?: string | number): any{
         s && this.write(s);
         this.write(endl);
     }
 }
 export class StringOS extends OutputStream {
     public s: string = '';
-    write(s: string): any{
+    write(s: string | number): any{
         this.s += s;
     }
     reset(): any{

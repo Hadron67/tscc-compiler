@@ -1450,6 +1450,8 @@ var File = (function () {
         this.grammar = null;
         this.lexDFA = [];
         this.opt = {};
+        this.header = '';
+        this.extraArgs = '';
     }
     return File;
 }());
@@ -1807,7 +1809,10 @@ var GBuilder = (function () {
         this.addRuleItem(s, TokenRefType.NAME, line);
         this._sematicVar = saved;
         for (var vname in t.vars) {
-            gen.usedVars[vname] = { line: 0, val: 0 };
+            gen.usedVars[vname] = t.vars[vname];
+        }
+        for (var vname in t.usedVars) {
+            gen.usedVars[vname] = t.usedVars[vname];
         }
     };
     GBuilder.prototype.err = function (msg, line) {
@@ -1888,6 +1893,12 @@ var GBuilder = (function () {
     GBuilder.prototype.setOpt = function (name, value) {
         this._f.opt[name] = value;
         return this;
+    };
+    GBuilder.prototype.setHeader = function (h) {
+        this._f.header = h;
+    };
+    GBuilder.prototype.setExtraArg = function (a) {
+        this._f.extraArgs = a;
     };
     GBuilder.prototype.incPr = function () {
         this._pr++;
@@ -2120,23 +2131,26 @@ var T;
     T[T["LEX_DIR"] = 12] = "LEX_DIR";
     T[T["PREC_DIR"] = 13] = "PREC_DIR";
     T[T["USE_DIR"] = 14] = "USE_DIR";
-    T[T["LINE_COMMENT"] = 15] = "LINE_COMMENT";
-    T[T["BLOCK_COMMENT"] = 16] = "BLOCK_COMMENT";
-    T[T["GT"] = 17] = "GT";
-    T[T["LT"] = 18] = "LT";
-    T[T["DASH"] = 19] = "DASH";
-    T[T["BRA"] = 20] = "BRA";
-    T[T["KET"] = 21] = "KET";
-    T[T["CBRA"] = 22] = "CBRA";
-    T[T["CKET"] = 23] = "CKET";
-    T[T["COMMA"] = 24] = "COMMA";
-    T[T["PLUS"] = 25] = "PLUS";
-    T[T["EQU"] = 26] = "EQU";
-    T[T["STAR"] = 27] = "STAR";
-    T[T["QUESTION"] = 28] = "QUESTION";
-    T[T["WEDGE"] = 29] = "WEDGE";
-    T[T["OPEN_CURLY_BRA"] = 30] = "OPEN_CURLY_BRA";
-    T[T["CLOSE_CURLY_BRA"] = 31] = "CLOSE_CURLY_BRA";
+    T[T["HEADER_DIR"] = 15] = "HEADER_DIR";
+    T[T["EXTRA_ARG_DIR"] = 16] = "EXTRA_ARG_DIR";
+    T[T["INIT_DIR"] = 17] = "INIT_DIR";
+    T[T["LINE_COMMENT"] = 18] = "LINE_COMMENT";
+    T[T["BLOCK_COMMENT"] = 19] = "BLOCK_COMMENT";
+    T[T["GT"] = 20] = "GT";
+    T[T["LT"] = 21] = "LT";
+    T[T["DASH"] = 22] = "DASH";
+    T[T["BRA"] = 23] = "BRA";
+    T[T["KET"] = 24] = "KET";
+    T[T["CBRA"] = 25] = "CBRA";
+    T[T["CKET"] = 26] = "CKET";
+    T[T["COMMA"] = 27] = "COMMA";
+    T[T["PLUS"] = 28] = "PLUS";
+    T[T["EQU"] = 29] = "EQU";
+    T[T["STAR"] = 30] = "STAR";
+    T[T["QUESTION"] = 31] = "QUESTION";
+    T[T["WEDGE"] = 32] = "WEDGE";
+    T[T["OPEN_CURLY_BRA"] = 33] = "OPEN_CURLY_BRA";
+    T[T["CLOSE_CURLY_BRA"] = 34] = "CLOSE_CURLY_BRA";
 })(T || (T = {}));
 
 var Token = (function () {
@@ -2288,6 +2302,18 @@ function scan(opt) {
                     token.id = T.USE_DIR;
                     break lex;
                 }
+                else if (iss('header')) {
+                    token.id = T.HEADER_DIR;
+                    break lex;
+                }
+                else if (iss('extra_arg')) {
+                    token.id = T.EXTRA_ARG_DIR;
+                    break lex;
+                }
+                else if (iss('init')) {
+                    token.id = T.INIT_DIR;
+                    break lex;
+                }
                 else if (c == '%') {
                     nc();
                     token.id = T.SEPERATOR;
@@ -2305,17 +2331,20 @@ function scan(opt) {
                     token.val = '';
                     var st = 1;
                     while (st > 0) {
-                        c += '';
                         if (eof()) {
                             throw new CompilationError('unclosed block', line);
                         }
                         if (c == '{') {
                             st++;
+                            token.val += c;
                         }
                         else if (c == '}') {
                             st--;
+                            st > 0 && (token.val += c);
                         }
-                        token.val += c;
+                        else {
+                            token.val += c;
+                        }
                         nc();
                     }
                     break lex;
@@ -2471,6 +2500,12 @@ function parse(scanner, ctx) {
         }
         nt();
     }
+    function expectToken(id, cb) {
+        var val = token.val;
+        var line = token.line;
+        expect(id);
+        cb(val, line);
+    }
     function file() {
         options();
         expect(T.SEPERATOR);
@@ -2526,6 +2561,14 @@ function parse(scanner, ctx) {
                 case T.LEX_DIR:
                     nt();
                     lexRule();
+                    break;
+                case T.HEADER_DIR:
+                    nt();
+                    expectToken(T.BLOCK, function (val, line) { return gb.setHeader(val); });
+                    break;
+                case T.EXTRA_ARG_DIR:
+                    nt();
+                    expectToken(T.BLOCK, function (val, line) { return gb.setExtraArg(val); });
                     break;
                 default: return;
             }
@@ -3818,6 +3861,8 @@ var Result = (function () {
             prefix: 'jj',
             endl: '\n',
             opt: this.file.opt,
+            header: this.file.header,
+            extraArg: this.file.extraArgs,
             g: this.file.grammar,
             pt: this.parseTable,
             sematicType: 'any',
@@ -3870,8 +3915,10 @@ function genResult(stream) {
 
 var tsRenderer = function (input, output) {
     echoLine("/*");
-    echoLine("    generated by jscc, an LALR(1) parser generator made by hadroncfy");
-    echo("*/");
+    echoLine("    generated by jscc, an LALR(1) parser generator made by hadroncfy.");
+    echoLine("    template for typescript, written by hadroncfy, aussi.");
+    echoLine("*/");
+    echo(input.header);
     var prefix = input.prefix;
     var tab = input.opt.tab || '    ';
     function echo(s) {
@@ -3912,14 +3959,14 @@ var tsRenderer = function (input, output) {
                 if (from === to) {
                     ret.push("c === " + from);
                 }
-                else if (from === Inf._oo && to !== Inf.oo) {
+                else if (from === 0 && to !== Inf.oo) {
                     ret.push("c <= " + to);
                 }
-                else if (from !== Inf._oo && to === Inf.oo) {
+                else if (from !== 0 && to === Inf.oo) {
                     ret.push("c >= " + from);
                 }
-                else if (from !== Inf._oo && to !== Inf.oo) {
-                    ret.push("c >= " + from + " && c <= " + to);
+                else if (from !== 0 && to !== Inf.oo) {
+                    ret.push("(c >= " + from + " && c <= " + to + ")");
                 }
                 else {
                     ret.push('true');
@@ -3932,8 +3979,8 @@ var tsRenderer = function (input, output) {
         echo("        case ");
         echo(state.index.toString());
         echoLine(":");
-        echo("            ret.nfa = ");
-        echo(state.arcs.length > 0 && state.endAction !== null ? 'true' : 'false');
+        echo("            ret.hasArc = ");
+        echo(state.arcs.length > 0 ? 'true' : 'false');
         echoLine(";");
         echo("            ret.isEnd = ");
         echo(state.endAction === null ? 'false' : 'true');
@@ -3979,7 +4026,7 @@ var tsRenderer = function (input, output) {
         echoLine("");
         echo("function moveDFA");
         echo(n.toString());
-        echoLine("(c: number, ret: { state: number, nfa: boolean, isEnd: boolean }){");
+        echoLine("(c: number, ret: { state: number, hasArc: boolean, isEnd: boolean }){");
         echo("    switch(ret.state){");
         for (var _i = 0, _b = dfa.states; _i < _b.length; _i++) {
             var state = _b[_i];
@@ -3988,7 +4035,7 @@ var tsRenderer = function (input, output) {
         echoLine("");
         echoLine("        default:");
         echoLine("            ret.state = -1;");
-        echoLine("            ret.nfa = false;");
+        echoLine("            ret.hasArc = false;");
         echoLine("    }");
         echo("}");
     }
@@ -4214,17 +4261,11 @@ var tsRenderer = function (input, output) {
         echoLine("");
         echoLine("            default:;");
         echoLine("        }");
-        echo("        if(");
+        echo("        ");
         echo(prefix);
-        echoLine("tk !== -1){");
-        echoLine("            this._token = {");
-        echo("                id: ");
+        echo("tk !== -1 && this._returnToken(");
         echo(prefix);
-        echoLine("tk,");
-        echoLine("                val: this._matched.join('')");
-        echoLine("            }");
-        echoLine("            this._matched.length = 0;");
-        echoLine("        }");
+        echoLine("tk);");
         echo("    }");
     }
     echoLine("");
@@ -4232,6 +4273,11 @@ var tsRenderer = function (input, output) {
     echoLine("interface Token{");
     echoLine("    id: number;");
     echoLine("    val: string;");
+    echoLine("");
+    echoLine("    startLine: number;");
+    echoLine("    startColumn: number;");
+    echoLine("    endLine: number;");
+    echoLine("    endColumn: number;");
     echoLine("};");
     echoLine("");
     echo("export class ");
@@ -4243,14 +4289,45 @@ var tsRenderer = function (input, output) {
     echoLine("    private _matched: string[] = [];");
     echoLine("    private _token: Token = null;");
     echoLine("    private _marker: number = -1;");
-    echoLine("    private _backup: string[] = [];");
+    echoLine("    private _markerLine = 0;");
+    echoLine("    private _markerColumn = 0;");
+    echoLine("    private _backupCount: number = 0;");
+    echoLine("    private _inputBuf: string[] = [];");
+    echoLine("    private _line = 0;");
+    echoLine("    private _column = 0;");
+    echoLine("    private _tline = 0;");
+    echoLine("    private _tcolumn = 0;");
     echoLine("");
     echoLine("    // members for parser");
     echoLine("    private _lrState: number[] = [];");
-    echo("    private _sematicS: ");
-    echo(input.sematicType);
-    echoLine("[] = [];");
+    echoLine("    private _sematicS: any[] = [];");
+    echoLine("    private _accepted = false;");
     echoLine("");
+    echoLine("    private _handlers: {[s: string]: ((a1?, a2?, a3?) => any)[]} = {};");
+    echoLine("");
+    echoLine("    // extra members, defined by %extra_arg");
+    echo("    ");
+    echo(input.extraArg);
+    echoLine("");
+    echoLine("");
+    echoLine("    init(){");
+    echoLine("        this._lexState = [];");
+    echoLine("        this._state = 0;");
+    echoLine("        this._matched = [];");
+    echoLine("        this._token = null;");
+    echoLine("        this._marker = -1;");
+    echoLine("        this._markerLine = this._markerColumn = 0;");
+    echoLine("        this._backupCount = 0;");
+    echoLine("        this._inputBuf = [];");
+    echoLine("        this._line = this._tline = 0;");
+    echoLine("        this._column = this._tcolumn = 0;");
+    echoLine("        ");
+    echoLine("        this._lrState = [];");
+    echoLine("        this._sematicS = [];");
+    echoLine("        this._accepted = false;");
+    echoLine("");
+    echoLine("        this._handlers = {};");
+    echoLine("    }");
     echoLine("    /**");
     echoLine("     *  set ");
     echoLine("     */");
@@ -4259,6 +4336,36 @@ var tsRenderer = function (input, output) {
     echoLine("        for(let i = 0;i < s.length;i++){");
     echoLine("            this._matched.push(s.charAt(i));");
     echoLine("        }");
+    echoLine("        this._tline = this._line;");
+    echoLine("        this._tcolumn = this._column;");
+    echoLine("    }");
+    echoLine("    private _returnToken(tid: number){");
+    echoLine("        this._token = {");
+    echoLine("            id: tid,");
+    echoLine("            val: this._matched.join(''),");
+    echoLine("            startLine: this._tline,");
+    echoLine("            startColumn: this._tcolumn,");
+    echoLine("            endLine: this._line,");
+    echoLine("            endColumn: this._column");
+    echoLine("        }");
+    echoLine("        this._matched.length = 0;");
+    echoLine("        this._tline = this._line;");
+    echoLine("        this._tcolumn = this._column;");
+    echoLine("        this._emit('token', this._token);");
+    echoLine("        while(!this._acceptToken(this._token));");
+    echoLine("        this._token = null;");
+    echoLine("    }");
+    echoLine("    private _emit(name: string, a1?, a2?, a3?){");
+    echoLine("        let cbs = this._handlers[name];");
+    echoLine("        if(cbs){");
+    echoLine("            for(let cb of cbs){");
+    echoLine("                cb(a1, a2, a3);");
+    echoLine("            }");
+    echoLine("        }");
+    echoLine("    }");
+    echoLine("    on(name: string, cb: (a1?, a2?, a3?) => any){");
+    echoLine("        this._handlers[name] || (this._handlers[name] = []);");
+    echoLine("        this._handlers[name].push(cb);");
     echo("    }");
     for (var i = 0, _a = input.dfas; i < _a.length; i++) {
         printLexActionsFunc(_a[i], i);
@@ -4284,21 +4391,264 @@ var tsRenderer = function (input, output) {
     echoLine("");
     echoLine("            default:;");
     echoLine("        }");
+    echoLine("        this._token !== null && (this._acceptToken(this._token), (this._token = null));");
     echoLine("    }");
-    echoLine("    private _acceptChar(c: number){");
+    echoLine("    private _acceptChar(c: string){");
     echoLine("        let lexstate = this._lexState[this._lexState.length - 1];");
-    echoLine("        this._marker && this._backup.push(String.fromCharCode(c));");
-    echoLine("        let retn = { state: this._state, nfa: false, isEnd: false };");
+    echoLine("        let retn = { state: this._state, hasArc: false, isEnd: false };");
     echo("        ");
     echo(prefix);
-    echoLine("lexers[lexstate](c, retn);");
+    echoLine("lexers[lexstate](c.charCodeAt(0), retn);");
     echoLine("        if(retn.isEnd){");
+    echoLine("            // if current state is a terminate state, be careful");
+    echoLine("            if(retn.hasArc){");
+    echoLine("                if(retn.state === -1){");
+    echoLine("                    // nowhere to go, stay where we are");
+    echoLine("                    this._doLexAction(lexstate, this._state);");
+    echoLine("                    // recover");
+    echoLine("                    this._marker = -1;");
+    echoLine("                    this._backupCount = 0;");
+    echoLine("                    this._state = 0;                    ");
+    echoLine("                    // character not consumed");
+    echoLine("                    return false;");
+    echoLine("                }");
+    echoLine("                else {");
+    echoLine("                    // now we can either go to that new state, or stay where we are");
+    echoLine("                    // it is prefered to move forward, but that could lead to errors,");
+    echoLine("                    // so we need to memorize this state before move on, in case if ");
+    echoLine("                    // an error occurs later, we could just return to this state.");
+    echoLine("                    this._marker = this._state;");
+    echoLine("                    this._markerLine = this._line;");
+    echoLine("                    this._markerColumn = this._column;");
+    echoLine("                    this._state = retn.state;");
+    echoLine("                    this._backupCount = 1;");
+    echoLine("                    this._matched.push(c);");
+    echoLine("                    c === '\\n' ? (this._line++, this._column = 0) : (this._column++);");
+    echoLine("                    // character consumed");
+    echoLine("                    return true;");
+    echoLine("                }");
+    echoLine("            }");
+    echoLine("            else {");
+    echoLine("                // current state doesn't lead to any state, just stay here.");
+    echoLine("                this._doLexAction(lexstate, this._state);");
+    echoLine("                // recover");
+    echoLine("                this._marker = -1;");
+    echoLine("                this._backupCount = 0;");
+    echoLine("                this._state = 0;");
+    echoLine("                // character not consumed");
+    echoLine("                return false;");
+    echoLine("            }");
+    echoLine("        }");
+    echoLine("        else {");
+    echoLine("            if(retn.state === -1){");
+    echoLine("                // nowhere to go at current state, error may have occured.");
+    echoLine("                // check marker to verify that");
+    echoLine("                if(this._marker !== -1){");
+    echoLine("                    // we have a previously marked state, which is a terminate state.");
+    echoLine("                    // rollback");
+    echoLine("                    this._state = this._marker;");
+    echoLine("                    this._marker = -1;");
+    echoLine("                    this._line = this._markerLine;");
+    echoLine("                    this._column = this._markerColumn;");
+    echoLine("                    while(this._backupCount --> 0){");
+    echoLine("                        this._inputBuf.push(this._matched.pop());");
+    echoLine("                    }");
+    echoLine("                    this._doLexAction(lexstate, this._state);");
+    echoLine("                    this._state = 0;");
+    echoLine("                    // character not consumed");
+    echoLine("                    return false;");
+    echoLine("                }");
+    echoLine("                else {");
+    echoLine("                    // error occurs");
+    echoLine("                    this._emit('error', `unexpected character \"${c}\"`);");
+    echoLine("                    // force consume");
+    echoLine("                    return true;");
+    echoLine("                }");
+    echoLine("            }");
+    echoLine("            else {");
+    echoLine("                this._state = retn.state;");
+    echoLine("                c === '\\n' ? (this._line++, this._column = 0) : (this._column++);");
+    echoLine("                // character consumed");
+    echoLine("                return true;");
+    echoLine("            }");
+    echoLine("        }");
+    echoLine("    }");
+    echoLine("    accept(s: string){");
+    echoLine("        for(let i = s.length - 1; i >= 0; i--){");
+    echoLine("            this._inputBuf.push(s.charAt(i));");
+    echoLine("        }");
+    echoLine("        while(this._inputBuf.length > 0){");
+    echoLine("            this._acceptChar(this._inputBuf[this._inputBuf.length - 1]) && this._inputBuf.pop();");
+    echoLine("        }");
+    echo("    }");
+    function printReduceActions() {
+        var codegen = {
+            addBlock: function (b, line) {
+                echoLine("");
+                echo("                ");
+                echo(b.replace(/\$\$/g, prefix + 'top'));
+            },
+            pushLexState: function (n) {
+                echoLine("");
+                echo("                this._lexState.push(");
+                echo(n.toString());
+                echo(");");
+            },
+            popLexState: function () {
+                echoLine("");
+                echo("                this._lexState.pop();");
+            },
+            setImg: function (n) {
+                echoLine("");
+                echo("                this._setImg(\"");
+                echo(n);
+                echo("\");");
+            },
+            returnToken: function (t) {
+                echoLine("");
+                echoLine("                this._token = {");
+                echo("                    id: ");
+                echo(t.index.toString());
+                echoLine(",");
+                echoLine("                    val: this._matched.join('')");
+                echo("                };");
+            }
+        };
+        for (var _i = 0, _b = input.g.rules; _i < _b.length; _i++) {
+            var rule = _b[_i];
+            if (rule.action !== null) {
+                echoLine("");
+                echo("            case ");
+                echo(rule.index.toString());
+                echoLine(":");
+                echo("                /* ");
+                echo(rule.toString());
+                echo(" */");
+                for (var uvar in rule.vars) {
+                    echoLine("");
+                    echo("                var ");
+                    echo(uvar);
+                    echo(" = this._sematicS[");
+                    echo(prefix);
+                    echo("sp - ");
+                    echo(rule.rhs.length - rule.vars[uvar].val);
+                    echo("];");
+                }
+                for (var uvar2 in rule.usedVars) {
+                    echoLine("");
+                    echo("                var ");
+                    echo(uvar2);
+                    echo(" = this._sematicS[");
+                    echo(prefix);
+                    echo("sp - ");
+                    echo(rule.usedVars[uvar2].val);
+                    echo("];");
+                }
+                for (var _c = 0, _d = rule.action; _c < _d.length; _c++) {
+                    var act = _d[_c];
+                    act.toCode(codegen);
+                }
+                echoLine("");
+                echo("                break;");
+            }
+        }
+    }
+    echoLine("");
+    echo("    private _doReduction(");
+    echo(prefix);
+    echoLine("rulenum: number){");
+    echo("        let ");
+    echo(prefix);
+    echo("nt = ");
+    echo(prefix);
+    echo("lhs[");
+    echo(prefix);
+    echoLine("rulenum];");
+    echo("        let ");
+    echo(prefix);
+    echoLine("top = null;");
+    echo("        let ");
+    echo(prefix);
+    echoLine("sp = this._sematicS.length;");
+    echo("        switch(");
+    echo(prefix);
+    echo("rulenum){");
+    printReduceActions();
     echoLine("");
     echoLine("        }");
+    echo("        this._lrState.length -= ");
+    echo(prefix);
+    echo("ruleLen[");
+    echo(prefix);
+    echoLine("rulenum];");
+    echo("        let ");
+    echo(prefix);
+    echoLine("cstate = this._lrState[this._lrState.length - 1];");
+    echo("        this._lrState.push(");
+    echo(prefix);
+    echo("pgoto[");
+    echo(prefix);
+    echo("disgoto[");
+    echo(prefix);
+    echo("cstate] + ");
+    echo(prefix);
+    echoLine("nt]);");
+    echoLine("");
+    echo("        this._sematicS.length -= ");
+    echo(prefix);
+    echo("ruleLen[");
+    echo(prefix);
+    echoLine("rulenum];");
+    echo("        this._sematicS.push(");
+    echo(prefix);
+    echoLine("top);");
     echoLine("    }");
     echoLine("");
     echoLine("    private _acceptToken(t: Token){");
-    echoLine("        ");
+    echoLine("        // look up action table");
+    echoLine("        let cstate = this._lrState[this._lrState.length - 1];");
+    echo("        let ind = ");
+    echo(prefix);
+    echoLine("disact[cstate] + t.id;");
+    echoLine("        let act = 0;");
+    echo("        if(ind < 0 || ind >= ");
+    echo(prefix);
+    echo("pact.length || ");
+    echo(prefix);
+    echoLine("checkact[ind] !== this._state){");
+    echo("            act = -");
+    echo(prefix);
+    echoLine("defred[this._state] - 1;");
+    echoLine("        }");
+    echoLine("        else {");
+    echo("            act = ");
+    echo(prefix);
+    echoLine("pact[ind];");
+    echoLine("        }");
+    echoLine("        if(act > 0){");
+    echoLine("            // shift");
+    echoLine("            if(act === 1){");
+    echoLine("                this._accepted = true;");
+    echoLine("                return false;");
+    echoLine("            }");
+    echoLine("            else {");
+    echoLine("                this._lrState.push(act - 1);");
+    echoLine("                this._sematicS.push(t);");
+    echoLine("                // token consumed");
+    echoLine("                return true;");
+    echoLine("            }");
+    echoLine("        }");
+    echoLine("        else if(act < 0){");
+    echoLine("            this._doReduction(-act - 1);");
+    echoLine("        }");
+    echoLine("        else {");
+    echoLine("            // error");
+    echo("            this._emit(\"syntaxerror\", `unexpected token ${");
+    echo(prefix);
+    echoLine("tokenNames[t.id]}`);");
+    echoLine("            // force consume");
+    echoLine("            return true;");
+    echoLine("        }");
     echoLine("    }");
     echo("}");
 };

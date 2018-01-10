@@ -43,17 +43,21 @@ function compileFiles(dir, inext, outext, opt){
         return Promise.all(ps);
     });
 }
-var escapes = {
-    '\n': '\\n',
-    '\t': '\\t',
-    '"': '\\"',
-    '\b': '\\b',
-    '\f': '\\f'
-};
+var escapes = [
+    { from: /\\/g, to: '\\\\'},
+    { from: /\n/g, to: '\\n' },
+    { from: /\t/g, to: '\\t'},
+    { from: /"/g, to: '\\"'},
+//    { from: /\b/g, to: '\\b'},
+//    { from: /\f/g, to: '\\f'},
+];
 function escape(s){
-    for(var from in escapes){
-        s = s.replace(new RegExp(from, 'g'), escapes[from]);
-    }
+    // for(var from in escapes){
+    //     s = s.replace(new RegExp(from, 'g'), escapes[from]);
+    // }
+    escapes.forEach(function(r){
+        s = s.replace(r.from, r.to);
+    });
     return s;
 }
 function compile(input, opt){

@@ -15,6 +15,9 @@ templates: $(wildcard src/templates/*.ets)
 	@node scripts/etsc.js
 	@echo "templates created"
 
+install: jscc
+	@npm install -g
+
 .PHONY: sandwitch
 
 sandwitch:

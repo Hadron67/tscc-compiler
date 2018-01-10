@@ -4,6 +4,6 @@
         "target": "es3",
         "removeComments": true,
         "moduleResolution": "node",
-        "sourceMap": true,
+        "sourceMap": true
     }
 }
