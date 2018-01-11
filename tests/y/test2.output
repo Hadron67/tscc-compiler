@@ -1,0 +1,92 @@
+state 0(start)
+    '+' -> state 1
+    'r' -> state 2
+
+state 1(end 1)
+
+state 2
+    't' -> state 3
+
+state 3
+    'r' -> state 4
+
+state 4
+    't' -> state 5
+
+state 5
+    'h' -> state 6
+
+state 6(end 0)
+
+
+
+state 0
+    [ 0: (accept) => . regexp <EOF> ]*
+    [ 1: regexp => . simpleRE ]
+    [ 2: simpleRE => . simpleRE basicRE ]
+    [ 3: simpleRE => . basicRE ]
+    [ 4: basicRE => . ept primitiveRE "+" ]
+    [ 6: ept => . ]
+    default action: reduce with rule 6
+    regexp : goto state 1
+    simpleRE : goto state 2
+    basicRE : goto state 3
+    ept : goto state 4
+
+
+state 1
+    [ 0: (accept) => regexp . <EOF> ]*
+    no default action
+    <EOF> : shift, and goto state 5
+
+
+state 2
+    [ 1: regexp => simpleRE . ]*
+    [ 2: simpleRE => simpleRE . basicRE ]*
+    [ 4: basicRE => . ept primitiveRE "+" ]
+    [ 6: ept => . ]
+    default action: reduce with rule 1
+    "rtrth" : reduce with rule 6
+    basicRE : goto state 6
+    ept : goto state 4
+
+
+state 3
+    [ 3: simpleRE => basicRE . ]*
+    default action: reduce with rule 3
+
+
+state 4
+    [ 4: basicRE => ept . primitiveRE "+" ]*
+    [ 5: primitiveRE => . "rtrth" ]
+    no default action
+    "rtrth" : shift, and goto state 8
+    primitiveRE : goto state 7
+
+
+state 5
+    [ 0: (accept) => regexp <EOF> . ]*
+    default action: reduce with rule 0
+
+
+state 6
+    [ 2: simpleRE => simpleRE basicRE . ]*
+    default action: reduce with rule 2
+
+
+state 7
+    [ 4: basicRE => ept primitiveRE . "+" ]*
+    no default action
+    "+" : shift, and goto state 9
+
+
+state 8
+    [ 5: primitiveRE => "rtrth" . ]*
+    default action: reduce with rule 5
+
+
+state 9
+    [ 4: basicRE => ept primitiveRE "+" . ]*
+    default action: reduce with rule 4
+
+

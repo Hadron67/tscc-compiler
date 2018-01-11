@@ -12,161 +12,65 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
         case 0:
             ret.hasArc = true;
             ret.isEnd = false;
-            if((c >= 9 && c <= 10) || c === 13 || c === 32){
+            if(c === 43){
                 ret.state = 1;
             }
-            else if(c === 40){
+            else if(c === 114){
                 ret.state = 2;
-            }
-            else if(c === 41){
-                ret.state = 3;
-            }
-            else if(c === 42){
-                ret.state = 4;
-            }
-            else if(c === 43){
-                ret.state = 5;
-            }
-            else if(c === 45){
-                ret.state = 6;
-            }
-            else if(c === 46){
-                ret.state = 7;
-            }
-            else if(c === 47){
-                ret.state = 8;
-            }
-            else if((c >= 48 && c <= 57)){
-                ret.state = 9;
             }
             else {
                 ret.state = -1;
             }
             break;
         case 1:
-            ret.hasArc = true;
+            ret.hasArc = false;
             ret.isEnd = true;
-            if((c >= 9 && c <= 10) || c === 13 || c === 32){
-                ret.state = 1;
+            ret.state = -1;
+            break;
+        case 2:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c === 116){
+                ret.state = 3;
             }
             else {
                 ret.state = -1;
             }
             break;
-        case 2:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
-            break;
         case 3:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c === 114){
+                ret.state = 4;
+            }
+            else {
+                ret.state = -1;
+            }
             break;
         case 4:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c === 116){
+                ret.state = 5;
+            }
+            else {
+                ret.state = -1;
+            }
             break;
         case 5:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c === 104){
+                ret.state = 6;
+            }
+            else {
+                ret.state = -1;
+            }
             break;
         case 6:
             ret.hasArc = false;
             ret.isEnd = true;
             ret.state = -1;
-            break;
-        case 7:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if((c >= 48 && c <= 57)){
-                ret.state = 10;
-            }
-            else {
-                ret.state = -1;
-            }
-            break;
-        case 8:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
-            break;
-        case 9:
-            ret.hasArc = true;
-            ret.isEnd = true;
-            if(c === 46){
-                ret.state = 11;
-            }
-            else if((c >= 48 && c <= 57)){
-                ret.state = 9;
-            }
-            else if(c === 69 || c === 101){
-                ret.state = 12;
-            }
-            else {
-                ret.state = -1;
-            }
-            break;
-        case 10:
-            ret.hasArc = true;
-            ret.isEnd = true;
-            if((c >= 48 && c <= 57)){
-                ret.state = 10;
-            }
-            else if(c === 69 || c === 101){
-                ret.state = 12;
-            }
-            else {
-                ret.state = -1;
-            }
-            break;
-        case 11:
-            ret.hasArc = true;
-            ret.isEnd = true;
-            if((c >= 48 && c <= 57)){
-                ret.state = 13;
-            }
-            else if(c === 69 || c === 101){
-                ret.state = 12;
-            }
-            else {
-                ret.state = -1;
-            }
-            break;
-        case 12:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if((c >= 48 && c <= 57)){
-                ret.state = 14;
-            }
-            else {
-                ret.state = -1;
-            }
-            break;
-        case 13:
-            ret.hasArc = true;
-            ret.isEnd = true;
-            if((c >= 48 && c <= 57)){
-                ret.state = 13;
-            }
-            else if(c === 69 || c === 101){
-                ret.state = 12;
-            }
-            else {
-                ret.state = -1;
-            }
-            break;
-        case 14:
-            ret.hasArc = true;
-            ret.isEnd = true;
-            if((c >= 48 && c <= 57)){
-                ret.state = 14;
-            }
-            else {
-                ret.state = -1;
-            }
             break;
         default:
             ret.state = -1;
@@ -185,13 +89,12 @@ let jjlexers = [
     tokens that a lexical dfa state can return
 */
 let jjlexTokens0 = [ 
-        -1,    -1,     6,     7,     4,     2,     3,    -1,     5,     1,
-         1,     1,    -1,     1,     1,
+        -1,     2,    -1,    -1,    -1,    -1,     1,
 ]; 
 
-let jjstateCount = 20;
-let jjtokenCount = 8;
-let jjactERR = 21;
+let jjstateCount = 10;
+let jjtokenCount = 3;
+let jjactERR = 11;
 /*
     compressed action table: action = jjpact[jjdisact[STATE-NUM] + TOKEN]
     when action > 0, shift the token and goto state (action - 1);
@@ -199,19 +102,13 @@ let jjactERR = 21;
     when action = 0, do default action.
 */
 let jjpact = [ 
-         9,    10,    11,    12,     5,    20,     4,     6,     7,    11,
-        12,     8,     4,     6,     7,    11,    12,     8,     4,     6,
-         7,     0,     0,     8,     4,     6,     7,     0,     0,     8,
-         4,     6,     7,     0,     0,     8,     4,     6,     7,     0,
-         0,     8,     4,     6,     7,     0,     0,     8,     9,    10,
-        11,    12,     4,     6,     7,     0,     0,     8,     0,
+        10,     9,    -7,     6,     0,     0,
 ]; 
 /*
     displacement of action table.
 */
 let jjdisact = [ 
-        51,     4,    46,    -8,    -8,    41,    35,    29,    23,    17,
-        11,     5,    -8,    -8,    -2,    11,     5,    -8,    -8,    -8,
+        -3,     3,     1,    -3,     0,    -3,    -3,    -2,    -3,    -3,
     
 ]; 
 /*
@@ -219,65 +116,54 @@ let jjdisact = [
     if jjcheckact[jjdisact[STATE-NUM] + TOKEN] = STATE-NUM, this position is not out of bounds.
 */
 let jjcheckact = [ 
-        14,    14,    14,    14,     1,    14,    11,    11,    11,    16,
-        16,    11,    10,    10,    10,    15,    15,    10,     9,     9,
-         9,     0,     0,     9,     8,     8,     8,     0,     0,     8,
-         7,     7,     7,     0,     0,     7,     6,     6,     6,     0,
-         0,     6,     5,     5,     5,     0,     0,     5,     2,     2,
-         2,     2,     0,     0,     0,     0,     0,     0,     0,
+         7,     4,     2,     1,     0,     0,
 ]; 
 /*
     default action table. action = jjdefred[STATE-NUM],
     where action is the number of the rule to reduce with.
 */
 let jjdefred = [ 
-        -1,    -1,     1,     9,     0,    -1,    -1,    -1,    -1,    -1,
-        -1,    -1,     6,     7,    -1,     2,     3,     4,     5,     8,
+         6,    -1,     1,     3,    -1,     0,     2,    -1,     5,     4,
     
 ]; 
 /*
     compressed goto table: goto = jjpgoto[jjdisgoto[STATE-NUM] + NON_TERMINAL]
 */
 let jjpgoto = [ 
-        18,    17,    16,    15,    14,    13,    12,     1,     2,
+         7,     6,    -1,     4,     1,     2,     3,    -1,     4,
 ]; 
 /*
     displacement of the goto table
 */
 let jjdisgoto = [ 
-         6,    -3,    -3,    -3,    -3,     4,     3,     2,     1,     0,
-        -1,    -2,    -3,    -3,    -3,    -3,    -3,    -3,    -3,    -3,
+         3,    -6,    -2,    -6,    -4,    -6,    -6,    -6,    -6,    -6,
     
 ]; 
 /*
     length of each rule: rule length = jjruleLen[RULE-NUM]
 */
 let jjruleLen = [ 
-         2,     1,     3,     3,     3,     3,     2,     2,     3,     1,
-    
+         2,     1,     2,     1,     3,     1,     0,
 ]; 
 /*
     index of the LHS of each rule
 */
 let jjlhs = [ 
-         0,     1,     2,     2,     2,     2,     2,     2,     2,     2,
-    
+         0,     1,     2,     2,     3,     4,     5,
 ]; 
 /*
     token names
 */
 let jjtokenNames = [ 
-                   "EOF",               "NUM",              "PLUS",
-                 "MINUS",             "TIMES",            "DIVIDE",
-                   "BRA",               "KET",
+                   "EOF",            "STRING",              "PLUS",
+    
 ]; 
 /*
     token alias
 */
 let jjtokenAlias = [ 
-                    null,                null,                 "+",
-                     "-",                 "*",                 "/",
-                     "(",                 ")",
+                    null,             "rtrth",                 "+",
+    
 ]; 
 
 
@@ -327,8 +213,6 @@ export class Parser {
 
     // extra members, defined by %extra_arg
     
-    val: number;
-
 
     constructor(){
         this.init();
@@ -392,9 +276,6 @@ export class Parser {
     private _doLexAction0(jjstaten: number){
         let jjtk = jjlexTokens0[jjstaten];
         switch(jjstaten){
-            case 1:
-                this._setImg("");
-                break;
             default:;
         }
         jjtk !== -1 && this._returnToken(jjtk);
@@ -569,55 +450,6 @@ export class Parser {
         let jjsp = this._sematicS.length;
         let jjtop = this._sematicS[jjsp - jjruleLen[jjrulenum]];
         switch(jjrulenum){
-            case 1:
-                /* 1: start => expr */
-                var a = this._sematicS[jjsp - 1];
-                { this.val = a; }
-                break;
-            case 2:
-                /* 2: expr => expr "+" expr */
-                var a = this._sematicS[jjsp - 3];
-                var b = this._sematicS[jjsp - 1];
-                { jjtop = a + b; }
-                break;
-            case 3:
-                /* 3: expr => expr "-" expr */
-                var a = this._sematicS[jjsp - 3];
-                var b = this._sematicS[jjsp - 1];
-                { jjtop = a - b; }
-                break;
-            case 4:
-                /* 4: expr => expr "*" expr */
-                var a = this._sematicS[jjsp - 3];
-                var b = this._sematicS[jjsp - 1];
-                { jjtop = a * b; }
-                break;
-            case 5:
-                /* 5: expr => expr "/" expr */
-                var a = this._sematicS[jjsp - 3];
-                var b = this._sematicS[jjsp - 1];
-                { jjtop = a / b; }
-                break;
-            case 6:
-                /* 6: expr => "+" expr */
-                var a = this._sematicS[jjsp - 1];
-                { jjtop = a; }
-                break;
-            case 7:
-                /* 7: expr => "-" expr */
-                var a = this._sematicS[jjsp - 1];
-                { jjtop = -a; }
-                break;
-            case 8:
-                /* 8: expr => "(" expr ")" */
-                var a = this._sematicS[jjsp - 2];
-                { jjtop = a; }
-                break;
-            case 9:
-                /* 9: expr => <NUM> */
-                var a = this._sematicS[jjsp - 1];
-                { jjtop = Number(a.val); }
-                break;
         }
         this._lrState.length -= jjruleLen[jjrulenum];
         let jjcstate = this._lrState[this._lrState.length - 1];

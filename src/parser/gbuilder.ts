@@ -3,10 +3,10 @@ import { File } from './file';
 import { BitSet } from '../util/bitset';
 import { TokenSet } from '../grammar/token-set';
 import { Assoc, TokenDef } from '../grammar/token-entry';
-import { CompilationError as E, JsccError, JsccWarning } from '../util/E';
+import { CompilationError as E, JsccError, JsccWarning, CompilationError } from '../util/E';
 import { Context } from '../util/context';
 import { StateBuilder } from '../lexer/builder';
-import { LexAction } from '../lexer/action';
+import { LexAction, pushState } from '../lexer/action';
 import { Coroutine, CoroutineMgr } from '../util/coroutine';
 import { Located } from '../util/located';
 
@@ -314,6 +314,16 @@ export class GBuilder{
         }
         this._onCommit.length = 0;
         return this;
+    }
+    addPushStateAction(acts: LexAction[], vn: string, line: number){
+        this.lexBuilder.requiringState.wait(vn, (su, sn) => {
+            if(su){
+                acts.push(pushState(sn));
+            }
+            else {
+                this._ctx.err(new CompilationError(`state "${vn}" is undefined`, line));
+            }
+        });
     }
     build(){
         this._g.tokenCount = this._g.tokens.length;

@@ -39,11 +39,14 @@
                 else if (c === 45) {
                     ret.state = 6;
                 }
-                else if (c === 47) {
+                else if (c === 46) {
                     ret.state = 7;
                 }
-                else if ((c >= 48 && c <= 57)) {
+                else if (c === 47) {
                     ret.state = 8;
+                }
+                else if ((c >= 48 && c <= 57)) {
+                    ret.state = 9;
                 }
                 else {
                     ret.state = -1;
@@ -85,15 +88,90 @@
                 ret.state = -1;
                 break;
             case 7:
+                ret.hasArc = true;
+                ret.isEnd = false;
+                if ((c >= 48 && c <= 57)) {
+                    ret.state = 10;
+                }
+                else {
+                    ret.state = -1;
+                }
+                break;
+            case 8:
                 ret.hasArc = false;
                 ret.isEnd = true;
                 ret.state = -1;
                 break;
-            case 8:
+            case 9:
+                ret.hasArc = true;
+                ret.isEnd = true;
+                if (c === 46) {
+                    ret.state = 11;
+                }
+                else if ((c >= 48 && c <= 57)) {
+                    ret.state = 9;
+                }
+                else if (c === 69 || c === 101) {
+                    ret.state = 12;
+                }
+                else {
+                    ret.state = -1;
+                }
+                break;
+            case 10:
                 ret.hasArc = true;
                 ret.isEnd = true;
                 if ((c >= 48 && c <= 57)) {
-                    ret.state = 8;
+                    ret.state = 10;
+                }
+                else if (c === 69 || c === 101) {
+                    ret.state = 12;
+                }
+                else {
+                    ret.state = -1;
+                }
+                break;
+            case 11:
+                ret.hasArc = true;
+                ret.isEnd = true;
+                if ((c >= 48 && c <= 57)) {
+                    ret.state = 13;
+                }
+                else if (c === 69 || c === 101) {
+                    ret.state = 12;
+                }
+                else {
+                    ret.state = -1;
+                }
+                break;
+            case 12:
+                ret.hasArc = true;
+                ret.isEnd = false;
+                if ((c >= 48 && c <= 57)) {
+                    ret.state = 14;
+                }
+                else {
+                    ret.state = -1;
+                }
+                break;
+            case 13:
+                ret.hasArc = true;
+                ret.isEnd = true;
+                if ((c >= 48 && c <= 57)) {
+                    ret.state = 13;
+                }
+                else if (c === 69 || c === 101) {
+                    ret.state = 12;
+                }
+                else {
+                    ret.state = -1;
+                }
+                break;
+            case 14:
+                ret.hasArc = true;
+                ret.isEnd = true;
+                if ((c >= 48 && c <= 57)) {
+                    ret.state = 14;
                 }
                 else {
                     ret.state = -1;
@@ -114,9 +192,12 @@
         tokens that a lexical dfa state can return
     */
     var jjlexTokens0 = [
-        -1, -1, 6, 7, 4, 2, 3, 5, 1,
+        -1, -1, 6, 7, 4, 2, 3, -1, 5, 1,
+        1, 1, -1, 1, 1,
     ];
     var jjstateCount = 20;
+    var jjtokenCount = 8;
+    var jjactERR = 21;
     /*
         compressed action table: action = jjpact[jjdisact[STATE-NUM] + TOKEN]
         when action > 0, shift the token and goto state (action - 1);
@@ -195,17 +276,38 @@
         token alias
     */
     var jjtokenAlias = [
-        "null", "null", "+",
+        null, null, "+",
         "-", "*", "/",
         "(", ")",
     ];
-    ;
+    function tokenToString(tk) {
+        return jjtokenAlias[tk] === null ? "<" + jjtokenNames[tk] + ">" : "\"" + jjtokenAlias[tk] + "\"";
+    }
+    exports.tokenToString = tokenToString;
+    var Token = /** @class */ (function () {
+        function Token(id, val, startLine, startColumn, endLine, endColumn) {
+            this.id = id;
+            this.val = val;
+            this.startLine = startLine;
+            this.startColumn = startColumn;
+            this.endLine = endLine;
+            this.endColumn = endColumn;
+        }
+        Token.prototype.toString = function () {
+            return (jjtokenAlias[this.id] === null ?
+                "<" + jjtokenNames[this.id] + ">" :
+                "\"" + jjtokenAlias[this.id] + "\"") + ("(\"" + this.val + "\")");
+        };
+        return Token;
+    }());
+    exports.Token = Token;
     var Parser = /** @class */ (function () {
         function Parser() {
             this._inputBuf = [];
             // members for parser
             this._lrState = [];
             this._sematicS = [];
+            this._stop = false;
             this._handlers = {};
             this.init();
         }
@@ -222,7 +324,7 @@
             this._column = this._tcolumn = 0;
             this._lrState = [0];
             this._sematicS = [];
-            this._accepted = false;
+            this._stop = false;
         };
         /**
          *  set
@@ -236,19 +338,12 @@
             this._tcolumn = this._column;
         };
         Parser.prototype._returnToken = function (tid) {
-            this._token = {
-                id: tid,
-                val: this._matched.join(''),
-                startLine: this._tline,
-                startColumn: this._tcolumn,
-                endLine: this._line,
-                endColumn: this._column
-            };
+            this._token = new Token(tid, this._matched.join(''), this._tline, this._tcolumn, this._line, this._column);
             this._matched.length = 0;
             this._tline = this._line;
             this._tcolumn = this._column;
             this._emit('token', jjtokenNames[this._token.id], this._token.val);
-            while (!this._acceptToken(this._token))
+            while (!this._stop && !this._acceptToken(this._token))
                 ;
             this._token = null;
         };
@@ -268,6 +363,9 @@
         Parser.prototype._doLexAction0 = function (jjstaten) {
             var jjtk = jjlexTokens0[jjstaten];
             switch (jjstaten) {
+                case 1:
+                    this._setImg("");
+                    break;
                 default: ;
             }
             jjtk !== -1 && this._returnToken(jjtk);
@@ -319,8 +417,8 @@
                         this._markerColumn = this._column;
                         this._state = retn.state;
                         this._backupCount = 1;
-                        this._matched.push(c);
                         c === '\n' ? (this._line++, this._column = 0) : (this._column++);
+                        this._matched.push(c);
                         // character consumed
                         return true;
                     }
@@ -365,7 +463,42 @@
                 else {
                     this._state = retn.state;
                     c === '\n' ? (this._line++, this._column = 0) : (this._column++);
+                    this._matched.push(c);
                     // character consumed
+                    return true;
+                }
+            }
+        };
+        Parser.prototype._acceptEOF = function () {
+            if (this._state === 0) {
+                // recover
+                this._returnToken(0);
+                return true;
+            }
+            else {
+                var lexstate = this._lexState[this._lexState.length - 1];
+                var retn = { state: this._state, hasArc: false, isEnd: false };
+                jjlexers[lexstate](-1, retn);
+                if (retn.isEnd) {
+                    this._doLexAction(lexstate, this._state);
+                    this._state = 0;
+                    this._marker = -1;
+                    return false;
+                }
+                else if (this._marker !== -1) {
+                    this._state = this._marker;
+                    this._marker = -1;
+                    this._line = this._markerLine;
+                    this._column = this._markerColumn;
+                    while (this._backupCount-- > 0) {
+                        this._inputBuf.push(this._matched.pop());
+                    }
+                    this._doLexAction(lexstate, this._state);
+                    this._state = 0;
+                    return false;
+                }
+                else {
+                    this._emit('lexicalerror', 'unexpected end of file');
                     return true;
                 }
             }
@@ -375,11 +508,13 @@
          *  @api public
          */
         Parser.prototype.accept = function (s) {
-            for (var i = s.length - 1; i >= 0; i--) {
-                this._inputBuf.push(s.charAt(i));
-            }
-            while (this._inputBuf.length > 0) {
-                this._acceptChar(this._inputBuf[this._inputBuf.length - 1]) && this._inputBuf.pop();
+            if (!this._stop) {
+                for (var i = s.length - 1; i >= 0; i--) {
+                    this._inputBuf.push(s.charAt(i));
+                }
+                while (!this._stop && this._inputBuf.length > 0) {
+                    this._acceptChar(this._inputBuf[this._inputBuf.length - 1]) && this._inputBuf.pop();
+                }
             }
         };
         /**
@@ -387,7 +522,18 @@
          *  @api public
          */
         Parser.prototype.end = function () {
-            this._returnToken(0);
+            while (!this._stop) {
+                if (this._inputBuf.length > 0) {
+                    this._acceptChar(this._inputBuf[this._inputBuf.length - 1]) && this._inputBuf.pop();
+                }
+                else if (this._acceptEOF()) {
+                    break;
+                }
+            }
+            this._stop = true;
+        };
+        Parser.prototype.halt = function () {
+            this._stop = true;
         };
         Parser.prototype._doReduction = function (jjrulenum) {
             var jjnt = jjlhs[jjrulenum];
@@ -479,13 +625,18 @@
             else {
                 act = jjpact[ind];
             }
-            if (act > 0) {
+            if (act === jjactERR) {
+                // explicit error
+                this._syntaxError(t);
+                return true;
+            }
+            else if (act > 0) {
                 // shift
                 if (t.id === 0) {
                     // end of file
-                    this._accepted = true;
+                    this._stop = true;
                     this._emit('accept');
-                    return false;
+                    return true;
                 }
                 else {
                     this._lrState.push(act - 1);
@@ -496,13 +647,36 @@
             }
             else if (act < 0) {
                 this._doReduction(-act - 1);
+                return false;
             }
             else {
                 // error
-                this._emit("syntaxerror", "unexpected token " + jjtokenNames[t.id]);
+                this._syntaxError(t);
                 // force consume
                 return true;
             }
+        };
+        Parser.prototype._syntaxError = function (t) {
+            var msg = "unexpected token " + t.toString() + ", expecting one of the following token(s):\n";
+            msg += this._expected(this._lrState[this._lrState.length - 1]);
+            this._emit("syntaxerror", msg);
+        };
+        Parser.prototype._expected = function (state) {
+            var dis = jjdisact[state];
+            var ret = '';
+            function expect(tk) {
+                var ind = dis + tk;
+                if (ind < 0 || ind >= jjpact.length || state !== jjcheckact[ind]) {
+                    return jjdefred[state] !== -1;
+                }
+                else {
+                    return true;
+                }
+            }
+            for (var tk = 0; tk < jjtokenCount; tk++) {
+                expect(tk) && (ret += "    " + tokenToString(tk) + " ..." + '\n');
+            }
+            return ret;
         };
         return Parser;
     }());

@@ -5,9 +5,9 @@
 %lex [
     DIGIT = <['0'-'9']>
 
-    < [' ', '\n', '\t', '\r']+ >
+    < [' ', '\n', '\t', '\r']+ >: [='']
 
-    < NUM: <DIGIT>+ >
+    < NUM: (<DIGIT>+ ('.' <DIGIT>*)?|'.' <DIGIT>+ ) (['e', 'E']<DIGIT>+)? >
     < PLUS: '+' >
     < MINUS: '-' >
     < TIMES: '*' >

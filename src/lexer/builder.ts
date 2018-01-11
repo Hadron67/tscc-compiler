@@ -3,6 +3,7 @@ import { Context } from '../util/context';
 import { CompilationError } from '../util/E';
 import { DFA } from './dfa';
 import { Coroutine, CoroutineMgr } from '../util/coroutine';
+import { LexAction } from './action';
 
 class CmdArray{
     opcodes: ((s: StateBuilder<any>) => void)[] = [];
@@ -257,6 +258,7 @@ export class StateBuilder<T>{
             cela._currentArc = null;
         });
     }
+
     build(): DFA<T>[]{
         let dfas: DFA<T>[] = [];
         for(let state of this._states){

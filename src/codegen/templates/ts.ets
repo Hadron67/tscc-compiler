@@ -131,6 +131,8 @@ let <%- prefix %>lexers = [
 
 <% let pt = input.pt; %>
 let <%- prefix %>stateCount = <%- pt.stateCount %>;
+let <%- prefix %>tokenCount = <%- input.g.tokens.length %>;
+let <%- prefix %>actERR = <%- pt.stateCount + 1 %>;
 /*
     compressed action table: action = <%- prefix %>pact[<%- prefix %>disact[STATE-NUM] + TOKEN]
     when action > 0, shift the token and goto state (action - 1);
@@ -138,8 +140,11 @@ let <%- prefix %>stateCount = <%- pt.stateCount %>;
     when action = 0, do default action.
 */
 <% printTable<Item>('pact', pt.pact, 6, 10, t => {
-    if(t === null || t === Item.NULL){
+    if(t === null){
         return '0';
+    }
+    else if(t === Item.NULL){
+        return String(pt.stateCount + 1);
     }
     else if(t.actionType === Action.SHIFT){
         return (t.shift.stateIndex + 1).toString();
@@ -192,7 +197,7 @@ let <%- prefix %>stateCount = <%- pt.stateCount %>;
 /*
     token alias
 */
-<% printTable<TokenDef>('tokenAlias', pt.g.tokens, 20, 3, t => `"${t.alias}"` || '""'); %>
+<% printTable<TokenDef>('tokenAlias', pt.g.tokens, 20, 3, t => t.alias ? `"${t.alias}"` : "null"); %>
 <% let className = input.opt.className || 'Parser'; %>
 
 <% function printLexActionsFunc(dfa: DFA<LexAction[]>, n: number){
@@ -243,15 +248,25 @@ let <%- prefix %>stateCount = <%- pt.stateCount %>;
     }
 <% } %>
 
-interface Token{
-    id: number;
-    val: string;
+export function tokenToString(tk: number){
+    return <%- prefix %>tokenAlias[tk] === null ? `<${<%- prefix %>tokenNames[tk]}>` : `"${<%- prefix %>tokenAlias[tk]}"`;
+}
 
-    startLine: number;
-    startColumn: number;
-    endLine: number;
-    endColumn: number;
-};
+export class Token {
+    constructor(
+        public id: number,
+        public val: string,
+        public startLine: number,
+        public startColumn: number,
+        public endLine: number,
+        public endColumn: number
+    ){}
+    toString(){
+        return (<%- prefix %>tokenAlias[this.id] === null ? 
+            `<${<%- prefix %>tokenNames[this.id]}>` :
+            `"${<%- prefix %>tokenAlias[this.id]}"`) + `("${this.val}")`;
+    }
+}
 
 export class <%- className %> {
     // members for lexer
@@ -272,7 +287,8 @@ export class <%- className %> {
     // members for parser
     private _lrState: number[] = [];
     private _sematicS: any[] = [];
-    private _accepted: boolean;
+
+    private _stop = false;
 
     private _handlers: {[s: string]: ((a1?, a2?, a3?) => any)[]} = {};
 
@@ -296,7 +312,8 @@ export class <%- className %> {
         
         this._lrState = [ 0 ];
         this._sematicS = [];
-        this._accepted = false;
+
+        this._stop = false;
     }
     /**
      *  set 
@@ -310,19 +327,19 @@ export class <%- className %> {
         this._tcolumn = this._column;
     }
     private _returnToken(tid: number){
-        this._token = {
-            id: tid,
-            val: this._matched.join(''),
-            startLine: this._tline,
-            startColumn: this._tcolumn,
-            endLine: this._line,
-            endColumn: this._column
-        }
+        this._token = new Token(
+            tid,
+            this._matched.join(''),
+            this._tline,
+            this._tcolumn,
+            this._line,
+            this._column
+        );
         this._matched.length = 0;
         this._tline = this._line;
         this._tcolumn = this._column;
         this._emit('token', <%- prefix %>tokenNames[this._token.id], this._token.val);
-        while(!this._acceptToken(this._token));
+        while(!this._stop && !this._acceptToken(this._token));
         this._token = null;
     }
     private _emit(name: string, a1?, a2?, a3?){
@@ -389,8 +406,8 @@ export class <%- className %> {
                     this._markerColumn = this._column;
                     this._state = retn.state;
                     this._backupCount = 1;
-                    this._matched.push(c);
                     c === '\n' ? (this._line++, this._column = 0) : (this._column++);
+                    this._matched.push(c);
                     // character consumed
                     return true;
                 }
@@ -435,6 +452,7 @@ export class <%- className %> {
             else {
                 this._state = retn.state;
                 c === '\n' ? (this._line++, this._column = 0) : (this._column++);
+                this._matched.push(c);
                 // character consumed
                 return true;
             }
@@ -444,9 +462,34 @@ export class <%- className %> {
         if(this._state === 0){
             // recover
             this._returnToken(0);
+            return true;
         }
-        else if(this._marker !== -1){
-            
+        else {
+            let lexstate = this._lexState[this._lexState.length - 1];
+            let retn = { state: this._state, hasArc: false, isEnd: false };
+            <%- prefix %>lexers[lexstate](-1, retn);
+            if(retn.isEnd){
+                this._doLexAction(lexstate, this._state);
+                this._state = 0;
+                this._marker = -1;
+                return false;
+            }
+            else if(this._marker !== -1){
+                this._state = this._marker;
+                this._marker = -1;
+                this._line = this._markerLine;
+                this._column = this._markerColumn;
+                while(this._backupCount --> 0){
+                    this._inputBuf.push(this._matched.pop());
+                }
+                this._doLexAction(lexstate, this._state);
+                this._state = 0;
+                return false;
+            }
+            else {
+                this._emit('lexicalerror', 'unexpected end of file');
+                return true;
+            }
         }
     }
     /**
@@ -454,11 +497,13 @@ export class <%- className %> {
      *  @api public
      */
     accept(s: string){
-        for(let i = s.length - 1; i >= 0; i--){
-            this._inputBuf.push(s.charAt(i));
-        }
-        while(this._inputBuf.length > 0){
-            this._acceptChar(this._inputBuf[this._inputBuf.length - 1]) && this._inputBuf.pop();
+        if(!this._stop){
+            for(let i = s.length - 1; i >= 0; i--){
+                this._inputBuf.push(s.charAt(i));
+            }
+            while(!this._stop && this._inputBuf.length > 0){
+                this._acceptChar(this._inputBuf[this._inputBuf.length - 1]) && this._inputBuf.pop();
+            }
         }
     }
     /**
@@ -466,7 +511,18 @@ export class <%- className %> {
      *  @api public
      */
     end(){
-        this._returnToken(0);
+        while(!this._stop){
+            if(this._inputBuf.length > 0){
+                this._acceptChar(this._inputBuf[this._inputBuf.length - 1]) && this._inputBuf.pop();
+            }
+            else if(this._acceptEOF()){
+                break;
+            }
+        }
+        this._stop = true;
+    }
+    halt(){
+        this._stop = true;
     }
 <% function printReduceActions(){
     let codegen = {
@@ -509,7 +565,7 @@ export class <%- className %> {
     private _doReduction(<%- prefix %>rulenum: number){
         let <%- prefix %>nt = <%- prefix %>lhs[<%- prefix %>rulenum];
         let <%- prefix %>sp = this._sematicS.length;
-        let <%- prefix %>top = this._sematicS[<%- prefix %>sp - <%- prefix %>ruleLen[<%- prefix %>rulenum]];
+        let <%- prefix %>top = this._sematicS[<%- prefix %>sp - <%- prefix %>ruleLen[<%- prefix %>rulenum]] || {};
         switch(<%- prefix %>rulenum){
 <% printReduceActions(); %>
         }
@@ -532,13 +588,18 @@ export class <%- className %> {
         else {
             act = <%- prefix %>pact[ind];
         }
-        if(act > 0){
+        if(act === <%- prefix %>actERR){
+            // explicit error
+            this._syntaxError(t);
+            return true;
+        }
+        else if(act > 0){
             // shift
             if(t.id === 0){
                 // end of file
-                this._accepted = true;
+                this._stop = true;
                 this._emit('accept');
-                return false;
+                return true;
             }
             else {
                 this._lrState.push(act - 1);
@@ -549,12 +610,35 @@ export class <%- className %> {
         }
         else if(act < 0){
             this._doReduction(-act - 1);
+            return false;
         }
         else {
             // error
-            this._emit("syntaxerror", `unexpected token ${<%- prefix %>tokenNames[t.id]}`);
+            this._syntaxError(t);
             // force consume
             return true;
         }
+    }
+    private _syntaxError(t: Token){
+        let msg = `unexpected token ${t.toString()}, expecting one of the following token(s):\n`
+        msg += this._expected(this._lrState[this._lrState.length - 1]);
+        this._emit("syntaxerror", msg);
+    }
+    private _expected(state: number){
+        let dis = <%- prefix %>disact[state];
+        let ret = '';
+        function expect(tk: number){
+            let ind = dis + tk;
+            if(ind < 0 || ind >= <%- prefix %>pact.length || state !== <%- prefix %>checkact[ind]){
+                return <%- prefix %>defred[state] !== -1;
+            }
+            else {
+                return true;
+            }
+        }
+        for(let tk = 0; tk < <%- prefix %>tokenCount; tk++){
+            expect(tk) && (ret += `    ${tokenToString(tk)} ...` + '\n');
+        }
+        return ret;
     }
 }

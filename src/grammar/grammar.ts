@@ -124,31 +124,28 @@ export class Grammar implements TokenEntry{
         while(changed){
             changed = false;
             // iterate for each non terminal
-            for(var i = 0;i < this.nts.length;i++){
-                var rules = this.nts[i].rules;
-                var firstSet = this.nts[i].firstSet;
+            for(var nt = 0;nt < this.nts.length;nt++){
+                var rules = this.nts[nt].rules;
+                var firstSet = this.nts[nt].firstSet;
                 for(var j = 0;j < rules.length;j++){
                     var rule = rules[j];
-                    if(rule.rhs.length === 0){
-                        changed = firstSet.add(0) || changed;
-                    }
-                    else {
-                        for(var k = 0;k < rule.rhs.length;k++){
-                            var ritem = rule.rhs[k];
-                            if(this.isToken(ritem)){
-                                changed = firstSet.add(ritem + 1) || changed;
-                                break;
+                    for(var k = 0;k < rule.rhs.length;k++){
+                        var ritem = rule.rhs[k];
+                        if(this.isToken(ritem)){
+                            changed = firstSet.add(ritem + 1) || changed;
+                            break;
+                        }
+                        else {
+                            ritem = -ritem - 1;
+                            if(nt !== ritem){
+                                changed = firstSet.union(this.nts[ritem].firstSet) || changed;
                             }
-                            else {
-                                if(i !== ritem){
-                                    changed = firstSet.union(this.nts[-ritem - 1].firstSet) || changed;
-                                }
-                                if(!firstSet.contains(0)){
-                                    break;
-                                }
+                            if(!this.nts[ritem].firstSet.contains(0)){
+                                break;
                             }
                         }
                     }
+                    k === rule.rhs.length && firstSet.add(0);
                 }
             }
         }
