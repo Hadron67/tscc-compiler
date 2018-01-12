@@ -3,6 +3,13 @@
     template for typescript, written by hadroncfy, aussi.
 */
 
+import { GBuilder, TokenRefType } from './gbuilder';
+import { Assoc } from '../grammar/token-entry';
+import { CompilationError as E, CompilationError } from '../util/E';
+import { InputStream } from '../util/io';
+import { Context } from '../util/context';
+import { LexAction, returnToken, blockAction, pushState, popState, setImg } from '../lexer/action';
+
 
 /*
     find the next state to go in the dfa
@@ -12,26 +19,55 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
         case 0:
             ret.hasArc = true;
             ret.isEnd = false;
-            if(c === 43){
+            if((c >= 9 && c <= 10) || c === 13 || c === 32){
                 ret.state = 1;
             }
-            else if(c === 114){
+            else if(c === 36 || (c >= 65 && c <= 90) || c === 95 || (c >= 97 && c <= 122)){
                 ret.state = 2;
+            }
+            else if(c === 47){
+                ret.state = 3;
+            }
+            else if(c === 58){
+                ret.state = 4;
+            }
+            else if(c === 59){
+                ret.state = 5;
+            }
+            else if(c === 61){
+                ret.state = 6;
+            }
+            else if(c === 91){
+                ret.state = 7;
+            }
+            else if(c === 93){
+                ret.state = 8;
+            }
+            else if(c === 124){
+                ret.state = 9;
             }
             else {
                 ret.state = -1;
             }
             break;
         case 1:
-            ret.hasArc = false;
+            ret.hasArc = true;
             ret.isEnd = true;
-            ret.state = -1;
+            if((c >= 9 && c <= 10) || c === 13 || c === 32){
+                ret.state = 1;
+            }
+            else {
+                ret.state = -1;
+            }
             break;
         case 2:
             ret.hasArc = true;
-            ret.isEnd = false;
-            if(c === 116){
-                ret.state = 3;
+            ret.isEnd = true;
+            if(c === 36 || (c >= 65 && c <= 90) || c === 95 || (c >= 97 && c <= 122)){
+                ret.state = 10;
+            }
+            else if((c >= 48 && c <= 57)){
+                ret.state = 11;
             }
             else {
                 ret.state = -1;
@@ -40,37 +76,209 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
         case 3:
             ret.hasArc = true;
             ret.isEnd = false;
-            if(c === 114){
-                ret.state = 4;
+            if(c === 42){
+                ret.state = 12;
+            }
+            else if(c === 47){
+                ret.state = 13;
             }
             else {
                 ret.state = -1;
             }
             break;
         case 4:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if(c === 116){
-                ret.state = 5;
-            }
-            else {
-                ret.state = -1;
-            }
-            break;
-        case 5:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if(c === 104){
-                ret.state = 6;
-            }
-            else {
-                ret.state = -1;
-            }
-            break;
-        case 6:
             ret.hasArc = false;
             ret.isEnd = true;
             ret.state = -1;
+            break;
+        case 5:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 6:
+            ret.hasArc = true;
+            ret.isEnd = true;
+            if(c === 62){
+                ret.state = 14;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 7:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 8:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 9:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 10:
+            ret.hasArc = true;
+            ret.isEnd = true;
+            if(c === 36 || (c >= 65 && c <= 90) || c === 95 || (c >= 97 && c <= 122)){
+                ret.state = 10;
+            }
+            else if((c >= 48 && c <= 57)){
+                ret.state = 11;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 11:
+            ret.hasArc = true;
+            ret.isEnd = true;
+            if(c === 36 || (c >= 65 && c <= 90) || c === 95 || (c >= 97 && c <= 122)){
+                ret.state = 10;
+            }
+            else if((c >= 48 && c <= 57)){
+                ret.state = 11;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 12:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c <= 41 || (c >= 43 && c <= 46) || c >= 48){
+                ret.state = 15;
+            }
+            else if(c === 42){
+                ret.state = 16;
+            }
+            else if(c === 47){
+                ret.state = 17;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 13:
+            ret.hasArc = true;
+            ret.isEnd = true;
+            if(c <= 9 || c >= 11){
+                ret.state = 18;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 14:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 15:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c <= 41 || (c >= 43 && c <= 46) || c >= 48){
+                ret.state = 15;
+            }
+            else if(c === 42){
+                ret.state = 16;
+            }
+            else if(c === 47){
+                ret.state = 19;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 16:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c <= 46 || c >= 48){
+                ret.state = 20;
+            }
+            else if(c === 47){
+                ret.state = 21;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 17:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c === 47){
+                ret.state = 22;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 18:
+            ret.hasArc = true;
+            ret.isEnd = true;
+            if(c <= 9 || c >= 11){
+                ret.state = 18;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 19:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c <= 41 || (c >= 43 && c <= 46) || c >= 48){
+                ret.state = 15;
+            }
+            else if(c === 42){
+                ret.state = 16;
+            }
+            else if(c === 47){
+                ret.state = 19;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 20:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c <= 41 || (c >= 43 && c <= 46) || c >= 48){
+                ret.state = 15;
+            }
+            else if(c === 42){
+                ret.state = 16;
+            }
+            else if(c === 47){
+                ret.state = 17;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 21:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 22:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c <= 41 || (c >= 43 && c <= 46) || c >= 48){
+                ret.state = 15;
+            }
+            else if(c === 42){
+                ret.state = 16;
+            }
+            else if(c === 47){
+                ret.state = 17;
+            }
+            else {
+                ret.state = -1;
+            }
             break;
         default:
             ret.state = -1;
@@ -89,12 +297,14 @@ let jjlexers = [
     tokens that a lexical dfa state can return
 */
 let jjlexTokens0 = [ 
-        -1,     2,    -1,    -1,    -1,    -1,     1,
+        -1,    -1,     1,    -1,     5,     7,     2,     3,     4,     8,
+         1,     1,    -1,    -1,     6,    -1,    -1,    -1,    -1,    -1,
+        -1,    -1,    -1,
 ]; 
 
-let jjstateCount = 10;
-let jjtokenCount = 3;
-let jjactERR = 11;
+let jjstateCount = 15;
+let jjtokenCount = 9;
+let jjactERR = 16;
 /*
     compressed action table: action = jjpact[jjdisact[STATE-NUM] + TOKEN]
     when action > 0, shift the token and goto state (action - 1);
@@ -102,67 +312,76 @@ let jjactERR = 11;
     when action = 0, do default action.
 */
 let jjpact = [ 
-        10,     9,    -7,     6,     0,     0,
+         8,     8,   -10,   -10,    15,    14,    11,     6,     5,     0,
+         0,     0,     0,     0,     0,     0,     0,
 ]; 
 /*
     displacement of action table.
 */
 let jjdisact = [ 
-        -3,     3,     1,    -3,     0,    -3,    -3,    -2,    -3,    -3,
-    
+        -9,     8,    -1,     0,    -9,    -9,    -9,     4,    -9,    -1,
+        -9,    -9,     2,     0,    -9,
 ]; 
 /*
     used to check if a position in jjpact is out of bouds.
     if jjcheckact[jjdisact[STATE-NUM] + TOKEN] = STATE-NUM, this position is not out of bounds.
 */
 let jjcheckact = [ 
-         7,     4,     2,     1,     0,     0,
+         9,     3,     9,     3,    13,    12,     7,     2,     1,     0,
+         0,     0,     0,     0,     0,     0,     0,
 ]; 
 /*
     default action table. action = jjdefred[STATE-NUM],
     where action is the number of the rule to reduce with.
 */
 let jjdefred = [ 
-         6,    -1,     1,     3,    -1,     0,     2,    -1,     5,     4,
-    
+         7,    -1,     1,     5,     0,     7,     6,    10,     2,     4,
+         8,    11,    -1,    -1,     3,
 ]; 
 /*
     compressed goto table: goto = jjpgoto[jjdisgoto[STATE-NUM] + NON_TERMINAL]
 */
 let jjpgoto = [ 
-         7,     6,    -1,     4,     1,     2,     3,    -1,     4,
+         8,     6,     8,     6,    11,    12,     9,     1,    -1,    -1,
+         2,     3,    -1,    -1,
 ]; 
 /*
     displacement of the goto table
 */
 let jjdisgoto = [ 
-         3,    -6,    -2,    -6,    -4,    -6,    -6,    -6,    -6,    -6,
-    
+         6,    -8,    -8,    -4,    -8,     1,    -8,    -8,     2,    -6,
+        -8,    -8,    -8,    -8,    -8,
 ]; 
 /*
     length of each rule: rule length = jjruleLen[RULE-NUM]
 */
 let jjruleLen = [ 
-         2,     1,     2,     1,     3,     1,     0,
+         2,     1,     0,     3,     3,     1,     2,     0,     2,     0,
+         1,     2,
 ]; 
 /*
     index of the LHS of each rule
 */
 let jjlhs = [ 
-         0,     1,     2,     2,     3,     4,     5,
+         0,     1,     3,     2,     4,     4,     5,     5,     6,     6,
+         7,     7,
 ]; 
 /*
     token names
 */
 let jjtokenNames = [ 
-                   "EOF",            "STRING",              "PLUS",
+                   "EOF",              "NAME",               "EQU",
+                  "CBRA",              "CKET",             "COLON",
+                 "ARROW",               "EOL",                "OR",
     
 ]; 
 /*
     token alias
 */
 let jjtokenAlias = [ 
-                    null,             "rtrth",                 "+",
+                    null,                null,                 "=",
+                     "[",                 "]",                 ":",
+                    "=>",                 ";",                 "|",
     
 ]; 
 
@@ -213,6 +432,12 @@ export class Parser {
 
     // extra members, defined by %extra_arg
     
+    gb: GBuilder;
+    ctx: Context;
+    assoc: Assoc;
+    lexacts: LexAction[];
+    ruleLhs: Token;
+
 
     constructor(){
         this.init();
@@ -276,6 +501,18 @@ export class Parser {
     private _doLexAction0(jjstaten: number){
         let jjtk = jjlexTokens0[jjstaten];
         switch(jjstaten){
+            case 1:
+                this._setImg("");
+                break;
+            case 13:
+                this._setImg("");
+                break;
+            case 18:
+                this._setImg("");
+                break;
+            case 21:
+                this._setImg("");
+                break;
             default:;
         }
         jjtk !== -1 && this._returnToken(jjtk);
@@ -448,8 +685,12 @@ export class Parser {
     private _doReduction(jjrulenum: number){
         let jjnt = jjlhs[jjrulenum];
         let jjsp = this._sematicS.length;
-        let jjtop = this._sematicS[jjsp - jjruleLen[jjrulenum]];
+        let jjtop = this._sematicS[jjsp - jjruleLen[jjrulenum]] || {};
         switch(jjrulenum){
+            case 2:
+                /* 2: @0 => */
+                { this.lexacts = []; }
+                break;
         }
         this._lrState.length -= jjruleLen[jjrulenum];
         let jjcstate = this._lrState[this._lrState.length - 1];

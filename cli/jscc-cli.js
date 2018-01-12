@@ -87,7 +87,7 @@ function generate(arg){
     // var input = fs.readFileSync(arg.input,'utf-8');
     return readFile(arg.input)
     .then(function(input){
-        var result = jscc.genResult(jscc.io.StringIS(input));
+        var result = jscc.genResult(input);
         if(result.hasWarning()){
             result.printWarning(consoleStream);
         }

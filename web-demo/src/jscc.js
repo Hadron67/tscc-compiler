@@ -68,12 +68,14 @@ var BitSet = (function () {
         var offset = i - block * BSIZE;
         return (this._s[block] & (1 << offset)) !== 0;
     };
-    BitSet.prototype.union = function (set) {
+    BitSet.prototype.union = function (set, mask) {
         var changed = false;
         for (var i = 0; i < this._s.length; i++) {
             var orig = this._s[i];
-            this._s[i] |= set._s[i];
-            changed = changed || (this._s[i] !== orig);
+            var source = set._s[i];
+            mask && (source &= mask._s[i]);
+            this._s[i] |= source;
+            changed = (this._s[i] !== orig) || changed;
         }
         return changed;
     };
@@ -1256,6 +1258,32 @@ var pattern = Object.freeze({
 	lexerBuilder: lexerBuilder
 });
 
+var TokenSet = (function (_super) {
+    __extends(TokenSet, _super);
+    function TokenSet(tcount) {
+        return _super.call(this, tcount) || this;
+    }
+    TokenSet.prototype.toString = function (g) {
+        var ret = '';
+        var first = true;
+        if (this.contains(0)) {
+            ret += '""';
+            first = false;
+        }
+        for (var i = 0; i < g.tokenCount; i++) {
+            if (this.contains(i + 1)) {
+                if (!first) {
+                    ret += ',';
+                }
+                ret += '"' + g.tokens[i].sym + '"';
+                first = false;
+            }
+        }
+        return ret;
+    };
+    return TokenSet;
+}(BitSet));
+
 var Assoc;
 (function (Assoc) {
     Assoc[Assoc["UNDEFINED"] = 0] = "UNDEFINED";
@@ -1373,6 +1401,9 @@ var Grammar = (function () {
     };
     Grammar.prototype.genFirstSets = function () {
         var changed = true;
+        var mask = new TokenSet(this.tokens.length);
+        mask.addAll();
+        mask.remove(0);
         while (changed) {
             changed = false;
             for (var nt = 0; nt < this.nts.length; nt++) {
@@ -1389,14 +1420,14 @@ var Grammar = (function () {
                         else {
                             ritem = -ritem - 1;
                             if (nt !== ritem) {
-                                changed = firstSet.union(this.nts[ritem].firstSet) || changed;
+                                changed = firstSet.union(this.nts[ritem].firstSet, mask) || changed;
                             }
                             if (!this.nts[ritem].firstSet.contains(0)) {
                                 break;
                             }
                         }
                     }
-                    k === rule.rhs.length && firstSet.add(0);
+                    k === rule.rhs.length && (changed = firstSet.add(0) || changed);
                 }
             }
         }
@@ -1452,32 +1483,6 @@ var File = (function () {
     }
     return File;
 }());
-
-var TokenSet = (function (_super) {
-    __extends(TokenSet, _super);
-    function TokenSet(tcount) {
-        return _super.call(this, tcount) || this;
-    }
-    TokenSet.prototype.toString = function (g) {
-        var ret = '';
-        var first = true;
-        if (this.contains(0)) {
-            ret += '""';
-            first = false;
-        }
-        for (var i = 0; i < g.tokenCount; i++) {
-            if (this.contains(i + 1)) {
-                if (!first) {
-                    ret += ',';
-                }
-                ret += '"' + g.tokens[i].sym + '"';
-                first = false;
-            }
-        }
-        return ret;
-    };
-    return TokenSet;
-}(BitSet));
 
 var CoroutineMgr = (function () {
     function CoroutineMgr(getRes) {
@@ -1940,6 +1945,9 @@ var GBuilder = (function () {
     GBuilder.prototype.setExtraArg = function (a) {
         this._f.extraArgs = a;
     };
+    GBuilder.prototype.setType = function (t) {
+        this._f.sematicType = t;
+    };
     GBuilder.prototype.incPr = function () {
         this._pr++;
         return this;
@@ -2143,24 +2151,25 @@ var T;
     T[T["USE_DIR"] = 14] = "USE_DIR";
     T[T["HEADER_DIR"] = 15] = "HEADER_DIR";
     T[T["EXTRA_ARG_DIR"] = 16] = "EXTRA_ARG_DIR";
-    T[T["INIT_DIR"] = 17] = "INIT_DIR";
-    T[T["LINE_COMMENT"] = 18] = "LINE_COMMENT";
-    T[T["BLOCK_COMMENT"] = 19] = "BLOCK_COMMENT";
-    T[T["GT"] = 20] = "GT";
-    T[T["LT"] = 21] = "LT";
-    T[T["DASH"] = 22] = "DASH";
-    T[T["BRA"] = 23] = "BRA";
-    T[T["KET"] = 24] = "KET";
-    T[T["CBRA"] = 25] = "CBRA";
-    T[T["CKET"] = 26] = "CKET";
-    T[T["COMMA"] = 27] = "COMMA";
-    T[T["PLUS"] = 28] = "PLUS";
-    T[T["EQU"] = 29] = "EQU";
-    T[T["STAR"] = 30] = "STAR";
-    T[T["QUESTION"] = 31] = "QUESTION";
-    T[T["WEDGE"] = 32] = "WEDGE";
-    T[T["OPEN_CURLY_BRA"] = 33] = "OPEN_CURLY_BRA";
-    T[T["CLOSE_CURLY_BRA"] = 34] = "CLOSE_CURLY_BRA";
+    T[T["TYPE_DIR"] = 17] = "TYPE_DIR";
+    T[T["INIT_DIR"] = 18] = "INIT_DIR";
+    T[T["LINE_COMMENT"] = 19] = "LINE_COMMENT";
+    T[T["BLOCK_COMMENT"] = 20] = "BLOCK_COMMENT";
+    T[T["GT"] = 21] = "GT";
+    T[T["LT"] = 22] = "LT";
+    T[T["DASH"] = 23] = "DASH";
+    T[T["BRA"] = 24] = "BRA";
+    T[T["KET"] = 25] = "KET";
+    T[T["CBRA"] = 26] = "CBRA";
+    T[T["CKET"] = 27] = "CKET";
+    T[T["COMMA"] = 28] = "COMMA";
+    T[T["PLUS"] = 29] = "PLUS";
+    T[T["EQU"] = 30] = "EQU";
+    T[T["STAR"] = 31] = "STAR";
+    T[T["QUESTION"] = 32] = "QUESTION";
+    T[T["WEDGE"] = 33] = "WEDGE";
+    T[T["OPEN_CURLY_BRA"] = 34] = "OPEN_CURLY_BRA";
+    T[T["CLOSE_CURLY_BRA"] = 35] = "CLOSE_CURLY_BRA";
 })(T || (T = {}));
 
 var Token = (function () {
@@ -2322,6 +2331,10 @@ function scan(opt) {
                 }
                 else if (iss('init')) {
                     token.id = T.INIT_DIR;
+                    break lex;
+                }
+                else if (iss('type')) {
+                    token.id = T.TYPE_DIR;
                     break lex;
                 }
                 else if (c == '%') {
@@ -2579,6 +2592,13 @@ function parse(scanner, ctx) {
                 case T.EXTRA_ARG_DIR:
                     nt();
                     expectToken(T.BLOCK, function (val, line) { return gb.setExtraArg(val); });
+                    break;
+                case T.TYPE_DIR:
+                    nt();
+                    
+                    var tname = token.val;
+                    expect(T.NAME);
+                    gb.setType(tname);
                     break;
                 default: return;
             }
@@ -3875,16 +3895,16 @@ var Result = (function () {
             extraArg: this.file.extraArgs,
             g: this.file.grammar,
             pt: this.parseTable,
-            sematicType: 'any',
+            sematicType: this.file.sematicType,
             dfas: this.file.lexDFA
         };
     };
     return Result;
 }());
-function genResult(stream) {
+function genResult(source) {
     var result = new Result();
     try {
-        var f = parseSource(stream, result);
+        var f = parseSource(StringIS(source), result);
     }
     catch (e) {
         result.terminated = true;
@@ -4211,7 +4231,7 @@ var tsRenderer = function (input, output) {
             addBlock: function (b, line) {
                 echoLine("");
                 echo("                ");
-                echo(b);
+                echo(b.replace(/\$token/g, 'this._token').replace(/\$\$/g, 'this._sematicVal'));
             },
             pushLexState: function (n) {
                 echoLine("");
@@ -4264,6 +4284,11 @@ var tsRenderer = function (input, output) {
         echo("[");
         echo(statevn);
         echoLine("];");
+        echo("        ");
+        echo(prefix);
+        echo("tk !== -1 && this._prepareToken(");
+        echo(prefix);
+        echoLine("tk);");
         echo("        switch(");
         echo(statevn);
         echo("){");
@@ -4284,11 +4309,6 @@ var tsRenderer = function (input, output) {
         echoLine("");
         echoLine("            default:;");
         echoLine("        }");
-        echo("        ");
-        echo(prefix);
-        echo("tk !== -1 && this._returnToken(");
-        echo(prefix);
-        echoLine("tk);");
         echo("    }");
     }
     echoLine("");
@@ -4323,7 +4343,8 @@ var tsRenderer = function (input, output) {
     echo(prefix);
     echoLine("tokenAlias[this.id]}\"`) + `(\"${this.val}\")`;");
     echoLine("    }");
-    echoLine("}");
+    echo("}");
+    var stype = input.sematicType || 'any';
     echoLine("");
     echo("export class ");
     echo(className);
@@ -4337,7 +4358,7 @@ var tsRenderer = function (input, output) {
     echoLine("    private _markerLine;");
     echoLine("    private _markerColumn;");
     echoLine("    private _backupCount: number;");
-    echoLine("    private _inputBuf: string[] = [];");
+    echoLine("    private _inputBuf: string[];");
     echoLine("    private _line: number;");
     echoLine("    private _column: number;");
     echoLine("    private _tline: number;");
@@ -4345,9 +4366,14 @@ var tsRenderer = function (input, output) {
     echoLine("");
     echoLine("    // members for parser");
     echoLine("    private _lrState: number[] = [];");
-    echoLine("    private _sematicS: any[] = [];");
+    echo("    private _sematicS: ");
+    echo(stype);
+    echoLine("[] = [];");
+    echo("    private _sematicVal: ");
+    echo(stype);
+    echoLine(";");
     echoLine("");
-    echoLine("    private _stop = false;");
+    echoLine("    private _stop;");
     echoLine("");
     echoLine("    private _handlers: {[s: string]: ((a1?, a2?, a3?) => any)[]} = {};");
     echoLine("");
@@ -4373,6 +4399,7 @@ var tsRenderer = function (input, output) {
     echoLine("        ");
     echoLine("        this._lrState = [ 0 ];");
     echoLine("        this._sematicS = [];");
+    echoLine("        this._sematicVal = null;");
     echoLine("");
     echoLine("        this._stop = false;");
     echoLine("    }");
@@ -4387,7 +4414,7 @@ var tsRenderer = function (input, output) {
     echoLine("        this._tline = this._line;");
     echoLine("        this._tcolumn = this._column;");
     echoLine("    }");
-    echoLine("    private _returnToken(tid: number){");
+    echoLine("    private _prepareToken(tid: number){");
     echoLine("        this._token = new Token(");
     echoLine("            tid,");
     echoLine("            this._matched.join(''),");
@@ -4399,6 +4426,8 @@ var tsRenderer = function (input, output) {
     echoLine("        this._matched.length = 0;");
     echoLine("        this._tline = this._line;");
     echoLine("        this._tcolumn = this._column;");
+    echoLine("    }");
+    echoLine("    private _returnToken(){");
     echo("        this._emit('token', ");
     echo(prefix);
     echoLine("tokenNames[this._token.id], this._token.val);");
@@ -4441,7 +4470,7 @@ var tsRenderer = function (input, output) {
     echoLine("");
     echoLine("            default:;");
     echoLine("        }");
-    echoLine("        this._token !== null && (this._acceptToken(this._token), (this._token = null));");
+    echoLine("        this._token !== null && this._returnToken();");
     echoLine("    }");
     echoLine("    /**");
     echoLine("     *  accept a character");
@@ -4533,7 +4562,8 @@ var tsRenderer = function (input, output) {
     echoLine("    private _acceptEOF(){");
     echoLine("        if(this._state === 0){");
     echoLine("            // recover");
-    echoLine("            this._returnToken(0);");
+    echoLine("            this._prepareToken(0);");
+    echoLine("            this._returnToken();");
     echoLine("            return true;");
     echoLine("        }");
     echoLine("        else {");
@@ -4693,7 +4723,7 @@ var tsRenderer = function (input, output) {
     echo(prefix);
     echo("ruleLen[");
     echo(prefix);
-    echoLine("rulenum]] || {};");
+    echoLine("rulenum]] || null;");
     echo("        switch(");
     echo(prefix);
     echo("rulenum){");
@@ -4766,7 +4796,8 @@ var tsRenderer = function (input, output) {
     echoLine("            }");
     echoLine("            else {");
     echoLine("                this._lrState.push(act - 1);");
-    echoLine("                this._sematicS.push(t);");
+    echoLine("                this._sematicS.push(this._sematicVal);");
+    echoLine("                this._sematicVal = null;");
     echoLine("                // token consumed");
     echoLine("                return true;");
     echoLine("            }");

@@ -25,6 +25,7 @@ enum T  {
     USE_DIR,
     HEADER_DIR,
     EXTRA_ARG_DIR,
+    TYPE_DIR,
     INIT_DIR,
     // REGEXP,
     // STATE_DIR,
@@ -229,6 +230,10 @@ function scan(opt: { isHighlight?: boolean } = {}){
                 }
                 else if(iss('init')){
                     token.id = T.INIT_DIR;
+                    break lex;
+                }
+                else if(iss('type')){
+                    token.id = T.TYPE_DIR;
                     break lex;
                 }
                 else if(c == '%'){
@@ -504,6 +509,13 @@ function parse(scanner, ctx: Context){
                 case T.EXTRA_ARG_DIR:
                     nt();
                     expectToken(T.BLOCK, (val, line) => gb.setExtraArg(val));
+                    break;
+                case T.TYPE_DIR:
+                    nt();
+                    var tline = token.line;
+                    var tname = token.val;
+                    expect(T.NAME);
+                    gb.setType(tname);
                     break;
                 default:return;
             }

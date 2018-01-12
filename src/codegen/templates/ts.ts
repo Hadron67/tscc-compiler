@@ -290,7 +290,7 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
         addBlock(b: string, line: number){ 
     echoLine("");
     echo("                ");
-    echo(b );
+    echo(b.replace(/\$token/g, 'this._token').replace(/\$\$/g, 'this._sematicVal') );
     },
         pushLexState(n: number){ 
     echoLine("");
@@ -342,6 +342,11 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echo("[");
     echo(statevn );
     echoLine("];");
+    echo("        ");
+    echo(prefix );
+    echo("tk !== -1 && this._prepareToken(");
+    echo(prefix );
+    echoLine("tk);");
     echo("        switch(");
     echo(statevn );
     echo("){");
@@ -361,11 +366,6 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("");
     echoLine("            default:;");
     echoLine("        }");
-    echo("        ");
-    echo(prefix );
-    echo("tk !== -1 && this._returnToken(");
-    echo(prefix );
-    echoLine("tk);");
     echo("    }");
     } 
     echoLine("");
@@ -400,7 +400,8 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echo(prefix );
     echoLine("tokenAlias[this.id]}\"`) + `(\"${this.val}\")`;");
     echoLine("    }");
-    echoLine("}");
+    echo("}");
+    let stype = input.sematicType || 'any'; 
     echoLine("");
     echo("export class ");
     echo(className );
@@ -414,7 +415,7 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("    private _markerLine;");
     echoLine("    private _markerColumn;");
     echoLine("    private _backupCount: number;");
-    echoLine("    private _inputBuf: string[] = [];");
+    echoLine("    private _inputBuf: string[];");
     echoLine("    private _line: number;");
     echoLine("    private _column: number;");
     echoLine("    private _tline: number;");
@@ -422,9 +423,14 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("");
     echoLine("    // members for parser");
     echoLine("    private _lrState: number[] = [];");
-    echoLine("    private _sematicS: any[] = [];");
+    echo("    private _sematicS: ");
+    echo(stype );
+    echoLine("[] = [];");
+    echo("    private _sematicVal: ");
+    echo(stype );
+    echoLine(";");
     echoLine("");
-    echoLine("    private _stop = false;");
+    echoLine("    private _stop;");
     echoLine("");
     echoLine("    private _handlers: {[s: string]: ((a1?, a2?, a3?) => any)[]} = {};");
     echoLine("");
@@ -450,6 +456,7 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("        ");
     echoLine("        this._lrState = [ 0 ];");
     echoLine("        this._sematicS = [];");
+    echoLine("        this._sematicVal = null;");
     echoLine("");
     echoLine("        this._stop = false;");
     echoLine("    }");
@@ -464,7 +471,7 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("        this._tline = this._line;");
     echoLine("        this._tcolumn = this._column;");
     echoLine("    }");
-    echoLine("    private _returnToken(tid: number){");
+    echoLine("    private _prepareToken(tid: number){");
     echoLine("        this._token = new Token(");
     echoLine("            tid,");
     echoLine("            this._matched.join(''),");
@@ -476,6 +483,8 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("        this._matched.length = 0;");
     echoLine("        this._tline = this._line;");
     echoLine("        this._tcolumn = this._column;");
+    echoLine("    }");
+    echoLine("    private _returnToken(){");
     echo("        this._emit('token', ");
     echo(prefix );
     echoLine("tokenNames[this._token.id], this._token.val);");
@@ -518,7 +527,7 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("");
     echoLine("            default:;");
     echoLine("        }");
-    echoLine("        this._token !== null && (this._acceptToken(this._token), (this._token = null));");
+    echoLine("        this._token !== null && this._returnToken();");
     echoLine("    }");
     echoLine("    /**");
     echoLine("     *  accept a character");
@@ -610,7 +619,8 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("    private _acceptEOF(){");
     echoLine("        if(this._state === 0){");
     echoLine("            // recover");
-    echoLine("            this._returnToken(0);");
+    echoLine("            this._prepareToken(0);");
+    echoLine("            this._returnToken();");
     echoLine("            return true;");
     echoLine("        }");
     echoLine("        else {");
@@ -768,7 +778,7 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echo(prefix );
     echo("ruleLen[");
     echo(prefix );
-    echoLine("rulenum]] || {};");
+    echoLine("rulenum]] || null;");
     echo("        switch(");
     echo(prefix );
     echo("rulenum){");
@@ -841,7 +851,8 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("            }");
     echoLine("            else {");
     echoLine("                this._lrState.push(act - 1);");
-    echoLine("                this._sematicS.push(t);");
+    echoLine("                this._sematicS.push(this._sematicVal);");
+    echoLine("                this._sematicVal = null;");
     echoLine("                // token consumed");
     echoLine("                return true;");
     echoLine("            }");

@@ -174,6 +174,9 @@ export class GBuilder{
     setExtraArg(a: string){
         this._f.extraArgs = a;
     }
+    setType(t: string){
+        this._f.sematicType = t;
+    }
     incPr(){
         this._pr++;
         return this;

@@ -10,6 +10,45 @@ import { InputStream } from '../util/io';
 import { Context } from '../util/context';
 import { LexAction, returnToken, blockAction, pushState, popState, setImg } from '../lexer/action';
 
+interface Node{
+    val: string;
+    ext: any;
+    startLine: number;
+    startColumn: number;
+    endLine: number;
+    endColumn: number;
+}
+function nodeFromToken(t: Token): Node{
+    return {
+        val: t.val,
+        ext: null,
+        startLine: t.startLine,
+        startColumn: t.startColumn,
+        endLine: t.endLine,
+        endColumn: t.endColumn
+    };
+}
+function nodeFromTrivalToken(t: Token): Node{
+    return {
+        val: null,
+        ext: null,
+        startLine: t.startLine,
+        startColumn: t.startColumn,
+        endLine: t.endLine,
+        endColumn: t.endColumn
+    };
+}
+function newNode(val: string): Node{
+    return {
+        val: val,
+        ext: null,
+        startLine: 0,
+        startColumn: 0,
+        endLine: 0,
+        endColumn: 0
+    };
+}
+
 
 /*
     find the next state to go in the dfa
@@ -1146,9 +1185,9 @@ let jjlexTokens1 = [
         32,    32,     3,     4,
 ]; 
 
-let jjstateCount = 140;
+let jjstateCount = 145;
 let jjtokenCount = 33;
-let jjactERR = 141;
+let jjactERR = 146;
 /*
     compressed action table: action = jjpact[jjdisact[STATE-NUM] + TOKEN]
     when action > 0, shift the token and goto state (action - 1);
@@ -1156,118 +1195,119 @@ let jjactERR = 141;
     when action = 0, do default action.
 */
 let jjpact = [ 
-         9,     7,    12,    13,    14,   -85,    10,    11,    57,    61,
-       -84,   123,   -41,   140,    81,   -41,   130,   131,   129,    78,
-        79,   139,    60,     5,   122,   120,   -30,   -41,   121,   -42,
-        81,    66,   -42,    53,    64,    78,    79,   126,    71,    38,
-        49,    44,    37,    45,   -42,    67,    43,    38,    87,    42,
-        37,    61,    72,    28,    29,    18,    61,    50,   114,   137,
-       136,   114,   134,   103,    60,   125,   124,   117,   115,    60,
-        93,   106,   105,   101,   -84,    93,    91,    90,    89,    88,
-        86,    85,    25,    84,    83,    76,    75,    70,    69,    68,
-        63,    51,    47,    41,    39,    31,    22,    18,     4,     0,
+         9,     7,    12,    13,    14,   124,    10,    11,    67,   -41,
+       -90,   101,   -41,   133,   134,   132,    98,    99,   123,   121,
+       129,   101,   122,     5,   -41,   -42,    98,    99,   -42,    78,
+       -89,   113,    56,    79,   -73,    54,   -73,    50,    48,    51,
+       -42,    44,    77,    33,    34,    39,    57,    80,    38,    78,
+        18,    78,   145,   144,   143,   112,   141,   139,    45,   112,
+       137,    94,    77,   126,    77,   125,   118,   116,   115,   114,
+        83,   104,   103,    96,    95,    92,   -89,    25,    87,    86,
+       -83,    83,    81,    74,    73,    72,    71,    70,    65,    62,
+        59,    58,    53,    46,    37,    35,    29,    22,    18,     4,
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-         0,
+         0,     0,
 ]; 
 /*
     displacement of action table.
 */
 let jjdisact = [ 
-       -33,    98,    -5,   -33,    96,   -33,   -33,    54,    93,   -33,
-       -33,   -33,   -33,   -33,    54,   -33,   -33,    28,    80,    49,
-       -33,   -33,   -33,   -33,   -33,   -33,    37,   -33,   -33,    91,
-        92,   -33,    45,    14,   -33,   -33,   -33,    76,   -33,    26,
-       -33,   -33,    73,   -33,    29,     7,    89,    30,   -33,    88,
-        86,   -33,   -33,   -33,   -33,   -33,   -33,   -33,   -33,    86,
-       -33,    21,   -33,   -33,   -33,   -33,    85,   -33,   -33,    71,
-       -33,    83,    65,    67,    55,   -33,   -33,    78,   -33,   -33,
-        76,    74,   -33,    61,    50,   -33,    12,   -33,   -33,   -33,
-       -33,   -33,    71,    59,   -33,     1,    58,   -33,    52,   -33,
-        45,   -33,   -33,    64,   -33,    -4,   -33,    38,    15,   -33,
-         9,    35,   -33,    41,   -33,    17,   -33,   -33,    -5,   -33,
-        33,    61,   -33,    59,    58,   -33,    -2,   -33,   -33,   -33,
-       -33,    42,    56,     7,   -33,   -33,   -33,    -7,   -33,   -33,
-    
+       -33,    99,    -5,   -33,    97,   -33,   -33,    49,    94,   -33,
+       -33,   -33,   -33,   -33,    49,   -33,   -33,   -33,    81,    47,
+       -33,   -33,   -33,   -33,   -33,   -33,    18,    92,    93,   -33,
+        44,   -33,   -33,   -33,   -33,    27,   -33,   -33,    75,    10,
+       -33,    82,    31,   -33,    90,    88,   -33,   -33,   -33,   -33,
+       -33,   -33,    73,   -33,   -33,   -33,    87,   -33,   -33,   -33,
+         7,    86,    68,    71,    59,   -33,    65,    27,    16,   -33,
+        67,    56,   -33,    79,   -33,   -33,    78,   -33,   -33,    77,
+       -33,   -33,    73,    61,    73,    59,   -33,    58,   -33,    52,
+       -33,    45,   -33,   -33,   -33,   -33,   -33,    68,   -33,   -33,
+        66,    64,   -33,     3,   -33,    37,    11,   -33,     3,    34,
+       -33,    39,    -7,   -33,   -33,   -33,     0,   -33,   -33,    -8,
+       -33,    31,    59,   -33,    57,    55,   -33,     6,   -33,    -5,
+       -33,   -33,   -33,   -33,    39,    53,    40,   -33,   -33,    49,
+       -33,    32,   -33,   -33,   -33,
 ]; 
 /*
     used to check if a position in jjpact is out of bouds.
     if jjcheckact[jjdisact[STATE-NUM] + TOKEN] = STATE-NUM, this position is not out of bounds.
 */
 let jjcheckact = [ 
-         2,     2,     2,     2,     2,    95,     2,     2,    45,    45,
-        45,   110,   126,   137,   105,   126,   118,   118,   118,   105,
-       105,   133,    45,     2,   110,   110,    45,   126,   110,   108,
-        86,    47,   108,    95,    47,    86,    86,   115,    61,    44,
-        39,    33,    44,    33,   108,    47,    32,    26,   115,    32,
-        26,    19,    61,    17,    17,    14,     7,    39,   132,   131,
-       124,   123,   121,   120,    19,   113,   111,   107,   103,     7,
-       100,    98,    96,    93,    92,    84,    83,    81,    80,    77,
-        74,    73,    14,    72,    71,    69,    66,    59,    50,    49,
-        46,    42,    37,    30,    29,    18,     8,     4,     1,     0,
+         2,     2,     2,     2,     2,   108,     2,     2,    60,   129,
+       127,   112,   129,   119,   119,   119,   112,   112,   108,   108,
+       116,   103,   108,     2,   129,   106,   103,   103,   106,    67,
+        67,   116,    42,    68,    60,    42,    60,    39,   127,    39,
+       106,    35,    67,    26,    26,    30,    42,    68,    30,    19,
+        14,     7,   141,   139,   136,   135,   134,   125,    35,   124,
+       122,   121,    19,   111,     7,   109,   105,   101,   100,    97,
+        91,    89,    87,    85,    84,    83,    82,    14,    79,    76,
+        73,    71,    70,    66,    64,    63,    62,    61,    56,    52,
+        45,    44,    41,    38,    28,    27,    18,     8,     4,     1,
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-         0,
+         0,     0,
 ]; 
 /*
     default action table. action = jjdefred[STATE-NUM],
     where action is the number of the rule to reduce with.
 */
 let jjdefred = [ 
-         3,    -1,    -1,     0,    -1,     2,     4,    -1,    -1,    83,
-        83,    10,    11,    12,    -1,    63,    64,    -1,    18,     6,
-        14,    16,     8,     9,     1,    62,    73,    66,    67,    -1,
-        -1,    13,    -1,    -1,    69,    77,    71,    -1,    22,    -1,
-        19,     7,    -1,    65,    73,    70,    -1,    -1,    17,    -1,
-        -1,    86,    88,    89,    68,    76,    78,    79,    80,    -1,
-        82,    -1,    75,     5,    21,    23,    38,    20,    15,    -1,
-        72,    -1,    -1,    -1,    -1,    81,    33,    -1,    35,    36,
-        -1,    -1,    74,    -1,    28,    38,    83,    34,    37,    87,
-        38,    25,    29,    -1,    32,    83,    -1,    27,    -1,    31,
-        28,    44,    54,    -1,    24,    83,    26,    39,    44,    43,
-        -1,    56,    59,    60,    85,    -1,    44,    42,    49,    38,
-        55,    -1,    53,    -1,    -1,    30,    44,    45,    46,    47,
-        48,    -1,    57,    -1,    58,    61,    50,    -1,    52,    51,
-    
+         3,    -1,    -1,     0,    -1,     2,     4,    -1,    -1,    88,
+        88,    10,    11,    12,    -1,    63,    64,    65,    18,     6,
+        14,    16,     8,     9,     1,    62,    -1,    -1,    -1,    13,
+        -1,    71,    67,    68,    22,    -1,    19,     7,    -1,    -1,
+        70,    74,    -1,    17,    -1,    -1,    91,    93,    94,    66,
+        71,    78,    -1,     5,    21,    23,    38,    20,    15,    69,
+        80,    -1,    -1,    -1,    -1,    77,    81,    29,    -1,    76,
+        -1,    28,    38,    79,    84,    85,    -1,    87,    73,    -1,
+        38,    25,    29,    -1,    -1,    -1,    75,    -1,    27,    -1,
+        31,    28,    44,    54,    83,    86,    33,    -1,    35,    36,
+        -1,    -1,    24,    88,    26,    39,    44,    43,    -1,    56,
+        59,    60,    88,    34,    37,    92,    -1,    44,    42,    49,
+        38,    55,    -1,    53,    -1,    -1,    32,    88,    30,    44,
+        45,    46,    47,    48,    -1,    57,    -1,    58,    61,    -1,
+        50,    -1,    52,    90,    51,
 ]; 
 /*
     compressed goto table: goto = jjpgoto[jjdisgoto[STATE-NUM] + NON_TERMINAL]
 */
 let jjpgoto = [ 
-         5,   118,     7,    58,    98,    54,    35,   117,   110,   127,
-       117,   110,   115,    76,    64,    94,    61,    19,   134,   132,
-        53,    81,   103,    31,    51,    33,    34,    35,    55,    57,
-        99,    81,    29,    26,    25,    16,   106,    79,    81,    79,
-        81,   137,   111,   112,    97,    98,    91,    73,   101,    72,
-        39,    20,    18,    14,    15,    16,     1,     2,   131,   101,
-       126,   109,   110,   107,   108,   109,   110,    96,   101,    95,
-        47,    99,    81,    93,   101,    45,    32,    23,    81,    22,
-        81,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+         5,   119,     7,    67,    65,    51,   118,   108,   130,   126,
+       118,   108,   116,    96,    75,    89,    54,    31,    27,    19,
+       141,   109,   110,    48,   101,   139,   137,    46,   135,    88,
+        89,    29,    25,    16,    18,   104,    84,    99,   101,    83,
+        92,    99,   101,    81,    74,    90,   101,    68,    63,    92,
+        62,    60,    42,    35,    26,     1,     2,    20,   134,    92,
+        90,   101,    14,    15,    16,   129,   107,   108,   127,   105,
+       106,   107,   108,    87,    92,    59,    41,    39,    40,    41,
+        30,    23,   101,    22,   101,    -1,    -1,    -1,    -1,    -1,
         -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
         -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-        -1,    -1,    -1,    -1,    -1,
+        -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+        -1,    -1,    -1,
 ]; 
 /*
     displacement of the goto table
 */
 let jjdisgoto = [ 
-        55,   -46,    -3,   -46,    23,   -46,    48,    11,   -46,    38,
-        36,   -46,   -46,   -46,     3,   -46,   -46,     0,    24,   -17,
-       -46,    69,   -46,   -46,   -46,   -46,    -9,   -46,   -46,   -46,
-        41,   -46,   -46,   -46,   -46,    37,   -46,   -46,    60,   -46,
-       -46,   -46,   -46,   -46,   -30,   -11,   -21,     3,   -46,   -46,
-       -46,   -46,   -46,   -46,   -46,   -46,   -46,   -46,   -46,   -46,
-       -46,   -46,   -46,   -46,   -46,    37,    29,   -46,   -46,   -46,
-       -46,   -46,   -46,   -46,   -46,   -46,   -46,   -46,   -46,   -46,
-       -46,   -46,   -46,   -46,    33,    55,    -2,   -46,   -46,    25,
-        49,   -46,    30,   -46,   -46,   -21,   -46,   -46,   -46,   -46,
-        23,    43,   -46,   -46,   -46,    -4,   -46,   -46,   -12,   -46,
-       -24,   -46,   -46,   -46,   -46,   -46,    39,   -46,   -15,    40,
-        -7,   -46,   -46,   -11,   -46,   -46,   -15,   -46,   -46,   -46,
-       -46,   -46,    14,   -46,   -46,   -46,   -46,   -46,   -46,   -46,
-    
+        54,   -50,    -3,   -50,    32,   -50,    30,    13,   -50,    38,
+        36,   -50,   -50,   -50,     1,   -50,   -50,    21,    10,   -13,
+       -50,    73,   -50,   -50,   -50,   -50,   -17,   -50,    44,   -50,
+       -50,    42,   -50,   -50,    42,   -50,   -50,   -50,   -50,   -50,
+       -50,   -33,     5,   -50,   -50,   -50,   -50,   -50,   -50,   -50,
+        39,    11,   -50,   -50,   -50,    38,    30,   -50,   -50,   -50,
+       -38,     8,   -50,   -50,   -50,   -50,   -50,     0,   -50,   -50,
+       -50,    30,    21,    -7,   -50,   -50,   -50,   -50,   -50,   -50,
+        55,   -50,    15,   -50,   -50,   -50,   -50,   -50,   -50,   -50,
+       -50,    22,    49,   -50,   -50,   -50,   -50,   -50,   -50,   -50,
+       -50,   -50,   -50,    -4,   -50,   -50,   -12,   -50,   -24,   -50,
+       -50,   -50,    -8,   -50,   -50,    20,   -50,    44,   -50,   -16,
+        40,     2,   -50,   -50,    -3,   -50,   -50,   -22,   -50,   -16,
+       -50,   -50,   -50,   -50,   -50,    -7,   -50,   -50,   -50,   -50,
+       -50,   -50,   -50,   -50,   -50,
 ]; 
 /*
     length of each rule: rule length = jjruleLen[RULE-NUM]
@@ -1279,10 +1319,10 @@ let jjruleLen = [
          4,     1,     3,     1,     2,     1,     1,     2,     0,     2,
          3,     1,     2,     1,     0,     3,     1,     1,     1,     0,
          3,     4,     3,     1,     1,     0,     1,     0,     3,     1,
-         1,     3,     2,     1,     1,     4,     1,     1,     3,     1,
-         2,     1,     4,     0,     3,     1,     2,     0,     1,     1,
-         1,     3,     1,     0,     0,     5,     2,     0,     1,     1,
-    
+         1,     3,     2,     1,     1,     0,     5,     1,     1,     3,
+         1,     0,     3,     4,     0,     3,     1,     2,     0,     2,
+         0,     1,     0,     4,     2,     2,     3,     1,     0,     0,
+         5,     2,     0,     1,     1,
 ]; 
 /*
     index of the LHS of each rule
@@ -1294,10 +1334,10 @@ let jjlhs = [
         14,    14,    16,    16,    17,    17,    17,    17,    19,    18,
         20,    20,    21,    21,    23,    22,    24,    24,    24,    24,
         25,    25,    25,    25,    26,    26,    27,    27,    28,    28,
-        29,    29,    30,    30,    31,    32,    33,    33,    34,    34,
-        35,    35,    36,    36,    37,    37,    38,    38,    39,    39,
-        39,    40,    40,    42,    43,    41,    44,    44,    45,    45,
-    
+        29,    29,    30,    30,    31,    33,    32,    34,    34,    35,
+        35,    37,    36,    38,    38,    39,    39,    40,    40,    41,
+        41,    42,    43,    42,    42,    42,    44,    44,    46,    47,
+        45,    48,    48,    49,    49,
 ]; 
 /*
     token names
@@ -1354,7 +1394,6 @@ export class Token {
             `"${jjtokenAlias[this.id]}"`) + `("${this.val}")`;
     }
 }
-
 export class Parser {
     // members for lexer
     private _lexState: number[];
@@ -1365,7 +1404,7 @@ export class Parser {
     private _markerLine;
     private _markerColumn;
     private _backupCount: number;
-    private _inputBuf: string[] = [];
+    private _inputBuf: string[];
     private _line: number;
     private _column: number;
     private _tline: number;
@@ -1373,9 +1412,10 @@ export class Parser {
 
     // members for parser
     private _lrState: number[] = [];
-    private _sematicS: any[] = [];
+    private _sematicS: Node[] = [];
+    private _sematicVal: Node;
 
-    private _stop = false;
+    private _stop;
 
     private _handlers: {[s: string]: ((a1?, a2?, a3?) => any)[]} = {};
 
@@ -1385,6 +1425,7 @@ export class Parser {
     ctx: Context;
     assoc: Assoc;
     lexacts: LexAction[];
+    ruleLhs: Node;
 
 
     constructor(){
@@ -1404,6 +1445,7 @@ export class Parser {
         
         this._lrState = [ 0 ];
         this._sematicS = [];
+        this._sematicVal = null;
 
         this._stop = false;
     }
@@ -1418,7 +1460,7 @@ export class Parser {
         this._tline = this._line;
         this._tcolumn = this._column;
     }
-    private _returnToken(tid: number){
+    private _prepareToken(tid: number){
         this._token = new Token(
             tid,
             this._matched.join(''),
@@ -1430,6 +1472,8 @@ export class Parser {
         this._matched.length = 0;
         this._tline = this._line;
         this._tcolumn = this._column;
+    }
+    private _returnToken(){
         this._emit('token', jjtokenNames[this._token.id], this._token.val);
         while(!this._stop && !this._acceptToken(this._token));
         this._token = null;
@@ -1448,9 +1492,31 @@ export class Parser {
     }
     private _doLexAction0(jjstaten: number){
         let jjtk = jjlexTokens0[jjstaten];
+        jjtk !== -1 && this._prepareToken(jjtk);
         switch(jjstaten){
             case 1:
                 this._setImg("");
+                break;
+            case 3:
+                 this._sematicVal = nodeFromToken(this._token); 
+                break;
+            case 22:
+                 this._sematicVal = nodeFromTrivalToken(this._token); 
+                break;
+            case 24:
+                 this._sematicVal = nodeFromTrivalToken(this._token); 
+                break;
+            case 26:
+                 this._sematicVal = nodeFromToken(this._token); 
+                break;
+            case 28:
+                 this._sematicVal = nodeFromToken(this._token); 
+                break;
+            case 29:
+                 this._sematicVal = nodeFromToken(this._token); 
+                break;
+            case 39:
+                 this._sematicVal = nodeFromToken(this._token); 
                 break;
             case 42:
                 this._setImg("");
@@ -1463,14 +1529,25 @@ export class Parser {
                 break;
             default:;
         }
-        jjtk !== -1 && this._returnToken(jjtk);
     }
     private _doLexAction1(jjstaten: number){
         let jjtk = jjlexTokens1[jjstaten];
+        jjtk !== -1 && this._prepareToken(jjtk);
         switch(jjstaten){
+            case 0:
+                 this._sematicVal = newNode(this._token.val); 
+                break;
+            case 1:
+                 this._sematicVal = newNode(this._token.val); 
+                break;
+            case 2:
+                 this._sematicVal = nodeFromTrivalToken(this._token); 
+                break;
+            case 3:
+                 this._sematicVal = nodeFromTrivalToken(this._token); 
+                break;
             default:;
         }
-        jjtk !== -1 && this._returnToken(jjtk);
     }
     /**
      *  do a lexical action
@@ -1487,7 +1564,7 @@ export class Parser {
                 break;
             default:;
         }
-        this._token !== null && (this._acceptToken(this._token), (this._token = null));
+        this._token !== null && this._returnToken();
     }
     /**
      *  accept a character
@@ -1577,7 +1654,8 @@ export class Parser {
     private _acceptEOF(){
         if(this._state === 0){
             // recover
-            this._returnToken(0);
+            this._prepareToken(0);
+            this._returnToken();
             return true;
         }
         else {
@@ -1643,7 +1721,7 @@ export class Parser {
     private _doReduction(jjrulenum: number){
         let jjnt = jjlhs[jjrulenum];
         let jjsp = this._sematicS.length;
-        let jjtop = this._sematicS[jjsp - jjruleLen[jjrulenum]] || {};
+        let jjtop = this._sematicS[jjsp - jjruleLen[jjrulenum]] || null;
         switch(jjrulenum){
             case 4:
                 /* 4: @0 => */
@@ -1674,12 +1752,12 @@ export class Parser {
             case 13:
                 /* 13: assocTokens => assocTokens tokenRef */
                 var t = this._sematicS[jjsp - 1];
-                { this.gb.defineTokenPrec(t.val, this.assoc, t.type, t.startLine); }
+                { this.gb.defineTokenPrec(t.val, this.assoc, t.ext, t.startLine); }
                 break;
             case 14:
                 /* 14: assocTokens => tokenRef */
                 var t = this._sematicS[jjsp - 1];
-                { this.gb.defineTokenPrec(t.val, this.assoc, t.type, t.startLine); }
+                { this.gb.defineTokenPrec(t.val, this.assoc, t.ext, t.startLine); }
                 break;
             case 15:
                 /* 15: optionBody => optionBody <NAME> "=" <STRING> */
@@ -1737,11 +1815,6 @@ export class Parser {
                 var b = this._sematicS[jjsp - 1];
                 { this.lexacts = [blockAction(b.val, b.startLine)]; }
                 break;
-            case 32:
-                /* 32: lexActions => lexActions "," lexActionItem */
-                var it = this._sematicS[jjsp - 1];
-                { this.lexacts.push(it.val); }
-                break;
             case 34:
                 /* 34: lexActionItem => "+" <NAME> */
                 var vn = this._sematicS[jjsp - 1];
@@ -1784,7 +1857,7 @@ export class Parser {
             case 45:
                 /* 45: basicRE => @4 primitiveRE rePostfix */
                 var suffix = this._sematicS[jjsp - 1];
-                { this.gb.lexBuilder.simplePostfix(suffix.val); }
+                { this.gb.lexBuilder.simplePostfix(suffix.val as any); }
                 break;
             case 49:
                 /* 49: rePostfix => */
@@ -1798,7 +1871,7 @@ export class Parser {
             case 53:
                 /* 53: primitiveRE => <STRING> */
                 var s = this._sematicS[jjsp - 1];
-                { this.gb.lexBuilder.addString(s); }
+                { this.gb.lexBuilder.addString(s.val); }
                 break;
             case 54:
                 /* 54: inverse_ => "^" */
@@ -1819,31 +1892,85 @@ export class Parser {
                 var to = this._sematicS[jjsp - 1];
                 { this.gb.lexBuilder.addSetItem(from.val, to.val, from.startLine, to.startLine); }
                 break;
+            case 65:
+                /* 65: @5 => */
+                var n = this._sematicS[jjsp - 1];
+                { this.ruleLhs = n; }
+                break;
+            case 71:
+                /* 71: @6 => */
+                { this.gb.prepareRule(this.ruleLhs.val,this.ruleLhs.startLine); }
+                break;
+            case 72:
+                /* 72: rule => @6 ruleHead ruleItems */
+                { this.gb.commitRule(); }
+                break;
+            case 75:
+                /* 75: varUseList => varUseList "," <NAME> */
+                var vn = this._sematicS[jjsp - 1];
+                { this.gb.addRuleUseVar(vn.val, vn.startLine); }
+                break;
+            case 76:
+                /* 76: varUseList => <NAME> */
+                var vn = this._sematicS[jjsp - 1];
+                { this.gb.addRuleUseVar(vn.val, vn.startLine); }
+                break;
+            case 79:
+                /* 79: itemName => <NAME> "=" */
+                var itn = this._sematicS[jjsp - 2];
+                { this.gb.addRuleSematicVar(itn.val, itn.startLine); }
+                break;
             case 81:
-                /* 81: tokenRef => "<" <NAME> ">" */
-                var t = this._sematicS[jjsp - 2];
-                { jjtop.val = t.val; jjtop.type = TokenRefType.TOKEN; }
+                /* 81: ruleItem => <NAME> */
+                var t = this._sematicS[jjsp - 1];
+                { this.gb.addRuleItem(t.val,TokenRefType.NAME,t.startLine); }
                 break;
             case 82:
-                /* 82: tokenRef => <STRING> */
-                { jjtop.type = TokenRefType.STRING; }
+                /* 82: @7 => */
+                var vn = this._sematicS[jjsp - 2];
+                { this.gb.addRuleSematicVar(vn.val, vn.startLine); }
                 break;
             case 83:
-                /* 83: @5 => */
-                this._lexState.push(1);
+                /* 83: ruleItem => <NAME> "=" @7 <NAME> */
+                var vn = this._sematicS[jjsp - 4];
+                var t = this._sematicS[jjsp - 1];
+                { this.gb.addRuleItem(t.val,TokenRefType.NAME,t.startLine); }
                 break;
             case 84:
-                /* 84: @6 => */
+                /* 84: ruleItem => itemName tokenRef */
+                var t = this._sematicS[jjsp - 1];
+                { this.gb.addRuleItem(t.val, t.ext, t.startLine); }
+                break;
+            case 85:
+                /* 85: ruleItem => itemName lexAction */
+                { this.gb.addAction(this.lexacts); }
+                break;
+            case 86:
+                /* 86: tokenRef => "<" <NAME> ">" */
+                var t = this._sematicS[jjsp - 2];
+                { jjtop = t; jjtop.ext = TokenRefType.TOKEN; }
+                break;
+            case 87:
+                /* 87: tokenRef => <STRING> */
+                { jjtop.ext = TokenRefType.STRING; }
+                break;
+            case 88:
+                /* 88: @8 => */
+                this._lexState.push(1);
+                break;
+            case 89:
+                /* 89: @9 => */
                 var open = this._sematicS[jjsp - 2];
                 var bl = this._sematicS[jjsp - 1];
                 this._lexState.pop();
                 break;
-            case 85:
-                /* 85: block => @5 "{" innerBlock @6 "}" */
+            case 90:
+                /* 90: block => @8 "{" innerBlock @9 "}" */
                 var open = this._sematicS[jjsp - 4];
                 var bl = this._sematicS[jjsp - 3];
                 var close = this._sematicS[jjsp - 1];
                 { 
+    jjtop = newNode('');
     jjtop.val = '{' + bl.val + '}';
     jjtop.startLine = open.startLine;
     jjtop.startColumn = open.startColumn;
@@ -1851,14 +1978,14 @@ export class Parser {
     jjtop.endColumn = close.endColumn;
 }
                 break;
-            case 86:
-                /* 86: innerBlock => innerBlock innerBlockItem */
+            case 91:
+                /* 91: innerBlock => innerBlock innerBlockItem */
                 var b = this._sematicS[jjsp - 1];
                 { jjtop.val += b.val; }
                 break;
-            case 87:
-                /* 87: innerBlock => */
-                { jjtop.val = ''; }
+            case 92:
+                /* 92: innerBlock => */
+                { jjtop = newNode(''); }
                 break;
         }
         this._lrState.length -= jjruleLen[jjrulenum];
@@ -1895,7 +2022,8 @@ export class Parser {
             }
             else {
                 this._lrState.push(act - 1);
-                this._sematicS.push(t);
+                this._sematicS.push(this._sematicVal);
+                this._sematicVal = null;
                 // token consumed
                 return true;
             }

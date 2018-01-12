@@ -300,7 +300,6 @@ export class Token {
             `"${jjtokenAlias[this.id]}"`) + `("${this.val}")`;
     }
 }
-
 export class Parser {
     // members for lexer
     private _lexState: number[];
@@ -311,7 +310,7 @@ export class Parser {
     private _markerLine;
     private _markerColumn;
     private _backupCount: number;
-    private _inputBuf: string[] = [];
+    private _inputBuf: string[];
     private _line: number;
     private _column: number;
     private _tline: number;
@@ -319,9 +318,10 @@ export class Parser {
 
     // members for parser
     private _lrState: number[] = [];
-    private _sematicS: any[] = [];
+    private _sematicS: number[] = [];
+    private _sematicVal: number;
 
-    private _stop = false;
+    private _stop;
 
     private _handlers: {[s: string]: ((a1?, a2?, a3?) => any)[]} = {};
 
@@ -347,6 +347,7 @@ export class Parser {
         
         this._lrState = [ 0 ];
         this._sematicS = [];
+        this._sematicVal = null;
 
         this._stop = false;
     }
@@ -361,7 +362,7 @@ export class Parser {
         this._tline = this._line;
         this._tcolumn = this._column;
     }
-    private _returnToken(tid: number){
+    private _prepareToken(tid: number){
         this._token = new Token(
             tid,
             this._matched.join(''),
@@ -373,6 +374,8 @@ export class Parser {
         this._matched.length = 0;
         this._tline = this._line;
         this._tcolumn = this._column;
+    }
+    private _returnToken(){
         this._emit('token', jjtokenNames[this._token.id], this._token.val);
         while(!this._stop && !this._acceptToken(this._token));
         this._token = null;
@@ -391,13 +394,28 @@ export class Parser {
     }
     private _doLexAction0(jjstaten: number){
         let jjtk = jjlexTokens0[jjstaten];
+        jjtk !== -1 && this._prepareToken(jjtk);
         switch(jjstaten){
             case 1:
                 this._setImg("");
                 break;
+            case 9:
+                 this._sematicVal = Number(this._token.val); 
+                break;
+            case 10:
+                 this._sematicVal = Number(this._token.val); 
+                break;
+            case 11:
+                 this._sematicVal = Number(this._token.val); 
+                break;
+            case 13:
+                 this._sematicVal = Number(this._token.val); 
+                break;
+            case 14:
+                 this._sematicVal = Number(this._token.val); 
+                break;
             default:;
         }
-        jjtk !== -1 && this._returnToken(jjtk);
     }
     /**
      *  do a lexical action
@@ -411,7 +429,7 @@ export class Parser {
                 break;
             default:;
         }
-        this._token !== null && (this._acceptToken(this._token), (this._token = null));
+        this._token !== null && this._returnToken();
     }
     /**
      *  accept a character
@@ -501,7 +519,8 @@ export class Parser {
     private _acceptEOF(){
         if(this._state === 0){
             // recover
-            this._returnToken(0);
+            this._prepareToken(0);
+            this._returnToken();
             return true;
         }
         else {
@@ -567,7 +586,7 @@ export class Parser {
     private _doReduction(jjrulenum: number){
         let jjnt = jjlhs[jjrulenum];
         let jjsp = this._sematicS.length;
-        let jjtop = this._sematicS[jjsp - jjruleLen[jjrulenum]];
+        let jjtop = this._sematicS[jjsp - jjruleLen[jjrulenum]] || null;
         switch(jjrulenum){
             case 1:
                 /* 1: start => expr */
@@ -613,11 +632,6 @@ export class Parser {
                 var a = this._sematicS[jjsp - 2];
                 { jjtop = a; }
                 break;
-            case 9:
-                /* 9: expr => <NUM> */
-                var a = this._sematicS[jjsp - 1];
-                { jjtop = Number(a.val); }
-                break;
         }
         this._lrState.length -= jjruleLen[jjrulenum];
         let jjcstate = this._lrState[this._lrState.length - 1];
@@ -653,7 +667,8 @@ export class Parser {
             }
             else {
                 this._lrState.push(act - 1);
-                this._sematicS.push(t);
+                this._sematicS.push(this._sematicVal);
+                this._sematicVal = null;
                 // token consumed
                 return true;
             }

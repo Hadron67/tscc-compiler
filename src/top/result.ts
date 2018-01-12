@@ -9,7 +9,7 @@ import { ParseTable, IParseTable, printParseTable } from '../grammar/ptable';
 import { TokenDef } from '../grammar/token-entry';
 import { NtDef } from '../grammar/grammar';
 import { List } from '../util/list';
-import { OutputStream, InputStream } from '../util/io';
+import { OutputStream, InputStream, StringIS } from '../util/io';
 import { Context } from '../util/context';
 import { JsccError, JsccWarning, Option } from '../util/E';
 import { CompressedPTable } from '../grammar/ptable-compress';
@@ -85,16 +85,16 @@ class Result implements Context{
 
             g: this.file.grammar,
             pt: this.parseTable,
-            sematicType: 'any',
+            sematicType: this.file.sematicType,
             dfas: this.file.lexDFA
         };
     }
 }
 
-function genResult(stream: InputStream){
+function genResult(source: string){
     var result = new Result();
     try{
-        var f = parseSource(stream, result);
+        var f = parseSource(StringIS(source), result);
     }
     catch(e){
         result.terminated = true;

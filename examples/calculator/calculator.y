@@ -7,7 +7,9 @@
 
     < [' ', '\n', '\t', '\r']+ >: [='']
 
-    < NUM: (<DIGIT>+ ('.' <DIGIT>*)?|'.' <DIGIT>+ ) (['e', 'E']<DIGIT>+)? >
+    < NUM: 
+        (<DIGIT>+ ('.' <DIGIT>*)?|'.' <DIGIT>+ ) (['e', 'E']<DIGIT>+)? 
+    >: { $$ = Number($token.val); }
     < PLUS: '+' >
     < MINUS: '-' >
     < TIMES: '*' >
@@ -20,6 +22,8 @@
 %left '*' '/'
 %left POS NEG
 
+%type number
+
 %%
 
 start: a = expr { this.val = a; } ;
@@ -31,7 +35,7 @@ expr:
 |   '+' a = expr %prec POS { $$ = a; }
 |   '-' a = expr %prec NEG { $$ = -a; }
 |   '(' a = expr ')' { $$ = a; }
-|   a = <NUM> { $$ = Number(a.val); }
+|   <NUM> 
 ;
 
 %%

@@ -37,12 +37,14 @@ export class BitSet{
         var offset = i - block * BSIZE;
         return (this._s[block] & (1 << offset)) !== 0;
     }
-    public union(set: BitSet): boolean{
+    public union(set: BitSet, mask?: BitSet): boolean{
         var changed = false;
         for(var i = 0;i < this._s.length;i++){
             var orig = this._s[i];
-            this._s[i] |= set._s[i];
-            changed = changed || (this._s[i] !== orig);
+            var source = set._s[i];
+            mask && (source &= mask._s[i]);
+            this._s[i] |= source;
+            changed = (this._s[i] !== orig) || changed;
         }
         return changed;
     }

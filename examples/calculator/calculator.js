@@ -303,11 +303,9 @@
     exports.Token = Token;
     var Parser = /** @class */ (function () {
         function Parser() {
-            this._inputBuf = [];
             // members for parser
             this._lrState = [];
             this._sematicS = [];
-            this._stop = false;
             this._handlers = {};
             this.init();
         }
@@ -324,6 +322,7 @@
             this._column = this._tcolumn = 0;
             this._lrState = [0];
             this._sematicS = [];
+            this._sematicVal = null;
             this._stop = false;
         };
         /**
@@ -337,11 +336,13 @@
             this._tline = this._line;
             this._tcolumn = this._column;
         };
-        Parser.prototype._returnToken = function (tid) {
+        Parser.prototype._prepareToken = function (tid) {
             this._token = new Token(tid, this._matched.join(''), this._tline, this._tcolumn, this._line, this._column);
             this._matched.length = 0;
             this._tline = this._line;
             this._tcolumn = this._column;
+        };
+        Parser.prototype._returnToken = function () {
             this._emit('token', jjtokenNames[this._token.id], this._token.val);
             while (!this._stop && !this._acceptToken(this._token))
                 ;
@@ -362,13 +363,28 @@
         };
         Parser.prototype._doLexAction0 = function (jjstaten) {
             var jjtk = jjlexTokens0[jjstaten];
+            jjtk !== -1 && this._prepareToken(jjtk);
             switch (jjstaten) {
                 case 1:
                     this._setImg("");
                     break;
+                case 9:
+                    this._sematicVal = Number(this._token.val);
+                    break;
+                case 10:
+                    this._sematicVal = Number(this._token.val);
+                    break;
+                case 11:
+                    this._sematicVal = Number(this._token.val);
+                    break;
+                case 13:
+                    this._sematicVal = Number(this._token.val);
+                    break;
+                case 14:
+                    this._sematicVal = Number(this._token.val);
+                    break;
                 default: ;
             }
-            jjtk !== -1 && this._returnToken(jjtk);
         };
         /**
          *  do a lexical action
@@ -382,7 +398,7 @@
                     break;
                 default: ;
             }
-            this._token !== null && (this._acceptToken(this._token), (this._token = null));
+            this._token !== null && this._returnToken();
         };
         /**
          *  accept a character
@@ -472,7 +488,8 @@
         Parser.prototype._acceptEOF = function () {
             if (this._state === 0) {
                 // recover
-                this._returnToken(0);
+                this._prepareToken(0);
+                this._returnToken();
                 return true;
             }
             else {
@@ -538,7 +555,7 @@
         Parser.prototype._doReduction = function (jjrulenum) {
             var jjnt = jjlhs[jjrulenum];
             var jjsp = this._sematicS.length;
-            var jjtop = this._sematicS[jjsp - jjruleLen[jjrulenum]];
+            var jjtop = this._sematicS[jjsp - jjruleLen[jjrulenum]] || null;
             switch (jjrulenum) {
                 case 1:
                     /* 1: start => expr */
@@ -600,13 +617,6 @@
                         jjtop = a;
                     }
                     break;
-                case 9:
-                    /* 9: expr => <NUM> */
-                    var a = this._sematicS[jjsp - 1];
-                    {
-                        jjtop = Number(a.val);
-                    }
-                    break;
             }
             this._lrState.length -= jjruleLen[jjrulenum];
             var jjcstate = this._lrState[this._lrState.length - 1];
@@ -640,7 +650,8 @@
                 }
                 else {
                     this._lrState.push(act - 1);
-                    this._sematicS.push(t);
+                    this._sematicS.push(this._sematicVal);
+                    this._sematicVal = null;
                     // token consumed
                     return true;
                 }

@@ -18,14 +18,6 @@ export class StringOS extends OutputStream {
     }
 }
 
-// export function printMany(os: OutputStream, it: () => string, cb: () => any){
-//     function printOne(){
-//         let s = it();
-//         s !== null ? os.write(s, printOne) : cb();
-//     }
-//     printOne();
-// }
-
 export interface InputStream{
     peek(): string;
     next(): string;

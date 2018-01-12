@@ -1,14 +1,11 @@
 %lex [
-    < STRING: "rtrth" >
-    < PLUS: "+" >
+    < CBRA: "[" >
 ]
 
 %%
 
-basicRE: ept primitiveRE '+';
-primitiveRE: 
-    <STRING>
-;
-ept:;
+lexAction: e '[';
+e:;
+
 
 %%

@@ -8,4 +8,5 @@ export class File{
     opt: {[s: string]: string} = {};
     header: string = '';
     extraArgs: string = '';
+    sematicType: string;
 }

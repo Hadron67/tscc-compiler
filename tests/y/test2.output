@@ -1,92 +1,202 @@
 state 0(start)
-    '+' -> state 1
-    'r' -> state 2
+    [\x9,\xa],\xd,' ' -> state 1
+    '$',['A','Z'],'_',['a','z'] -> state 2
+    '/' -> state 3
+    ':' -> state 4
+    ';' -> state 5
+    '=' -> state 6
+    '[' -> state 7
+    ']' -> state 8
+    '|' -> state 9
 
-state 1(end 1)
+state 1(end 0)
+    [\x9,\xa],\xd,' ' -> state 1
 
-state 2
-    't' -> state 3
+state 2(end 3)
+    '$',['A','Z'],'_',['a','z'] -> state 10
+    ['0','9'] -> state 11
 
 state 3
-    'r' -> state 4
+    '*' -> state 12
+    '/' -> state 13
 
-state 4
-    't' -> state 5
+state 4(end 7)
 
-state 5
-    'h' -> state 6
+state 5(end 9)
 
-state 6(end 0)
+state 6(end 4)
+    '>' -> state 14
+
+state 7(end 5)
+
+state 8(end 6)
+
+state 9(end 10)
+
+state 10(end 3)
+    '$',['A','Z'],'_',['a','z'] -> state 10
+    ['0','9'] -> state 11
+
+state 11(end 3)
+    '$',['A','Z'],'_',['a','z'] -> state 10
+    ['0','9'] -> state 11
+
+state 12
+    [\x0,')'],['+','.'],['0',oo) -> state 15
+    '*' -> state 16
+    '/' -> state 17
+
+state 13(end 2)
+    [\x0,\x9],[\xb,oo) -> state 18
+
+state 14(end 8)
+
+state 15
+    [\x0,')'],['+','.'],['0',oo) -> state 15
+    '*' -> state 16
+    '/' -> state 19
+
+state 16
+    [\x0,'.'],['0',oo) -> state 20
+    '/' -> state 21
+
+state 17
+    '/' -> state 22
+
+state 18(end 2)
+    [\x0,\x9],[\xb,oo) -> state 18
+
+state 19
+    [\x0,')'],['+','.'],['0',oo) -> state 15
+    '*' -> state 16
+    '/' -> state 19
+
+state 20
+    [\x0,')'],['+','.'],['0',oo) -> state 15
+    '*' -> state 16
+    '/' -> state 17
+
+state 21(end 1)
+
+state 22
+    [\x0,')'],['+','.'],['0',oo) -> state 15
+    '*' -> state 16
+    '/' -> state 17
 
 
 
 state 0
-    [ 0: (accept) => . regexp <EOF> ]*
-    [ 1: regexp => . simpleRE ]
-    [ 2: simpleRE => . simpleRE basicRE ]
-    [ 3: simpleRE => . basicRE ]
-    [ 4: basicRE => . ept primitiveRE "+" ]
-    [ 6: ept => . ]
-    default action: reduce with rule 6
-    regexp : goto state 1
-    simpleRE : goto state 2
-    basicRE : goto state 3
-    ept : goto state 4
+    [ 0: (accept) => . start <EOF> ]*
+    [ 1: start => . rules ]
+    [ 4: rules => . rules "|" ruleItems ]
+    [ 5: rules => . ruleItems ]
+    [ 6: ruleItems => . ruleItems ruleItem ]
+    [ 7: ruleItems => . ]
+    default action: reduce with rule 7
+    start : goto state 1
+    rules : goto state 2
+    ruleItems : goto state 3
 
 
 state 1
-    [ 0: (accept) => regexp . <EOF> ]*
+    [ 0: (accept) => start . <EOF> ]*
     no default action
-    <EOF> : shift, and goto state 5
+    <EOF> : shift, and goto state 4
 
 
 state 2
-    [ 1: regexp => simpleRE . ]*
-    [ 2: simpleRE => simpleRE . basicRE ]*
-    [ 4: basicRE => . ept primitiveRE "+" ]
-    [ 6: ept => . ]
+    [ 1: start => rules . ]*
+    [ 4: rules => rules . "|" ruleItems ]*
     default action: reduce with rule 1
-    "rtrth" : reduce with rule 6
-    basicRE : goto state 6
-    ept : goto state 4
+    "|" : shift, and goto state 5
 
 
 state 3
-    [ 3: simpleRE => basicRE . ]*
-    default action: reduce with rule 3
+    [ 5: rules => ruleItems . ]*
+    [ 6: ruleItems => ruleItems . ruleItem ]*
+    [ 10: ruleItem => . <NAME> ]
+    [ 11: ruleItem => . itemName lexAction ]
+    [ 8: itemName => . <NAME> "=" ]
+    [ 9: itemName => . ]
+    default action: reduce with rule 5
+    <NAME> : shift, and goto state 7
+    "[" : reduce with rule 9
+    itemName : goto state 8
+    ruleItem : goto state 6
 
 
 state 4
-    [ 4: basicRE => ept . primitiveRE "+" ]*
-    [ 5: primitiveRE => . "rtrth" ]
-    no default action
-    "rtrth" : shift, and goto state 8
-    primitiveRE : goto state 7
-
-
-state 5
-    [ 0: (accept) => regexp <EOF> . ]*
+    [ 0: (accept) => start <EOF> . ]*
     default action: reduce with rule 0
 
 
+state 5
+    [ 4: rules => rules "|" . ruleItems ]*
+    [ 6: ruleItems => . ruleItems ruleItem ]
+    [ 7: ruleItems => . ]
+    default action: reduce with rule 7
+    ruleItems : goto state 9
+
+
 state 6
-    [ 2: simpleRE => simpleRE basicRE . ]*
-    default action: reduce with rule 2
+    [ 6: ruleItems => ruleItems ruleItem . ]*
+    default action: reduce with rule 6
 
 
 state 7
-    [ 4: basicRE => ept primitiveRE . "+" ]*
-    no default action
-    "+" : shift, and goto state 9
+    [ 10: ruleItem => <NAME> . ]*
+    [ 8: itemName => <NAME> . "=" ]*
+    default action: reduce with rule 10
+    "=" : shift, and goto state 10
 
 
 state 8
-    [ 5: primitiveRE => "rtrth" . ]*
-    default action: reduce with rule 5
+    [ 11: ruleItem => itemName . lexAction ]*
+    [ 3: lexAction => . @0 "[" "]" ]
+    [ 2: @0 => . ]
+    default action: reduce with rule 2
+    lexAction : goto state 11
+    @0 : goto state 12
 
 
 state 9
-    [ 4: basicRE => ept primitiveRE "+" . ]*
+    [ 4: rules => rules "|" ruleItems . ]*
+    [ 6: ruleItems => ruleItems . ruleItem ]*
+    [ 10: ruleItem => . <NAME> ]
+    [ 11: ruleItem => . itemName lexAction ]
+    [ 8: itemName => . <NAME> "=" ]
+    [ 9: itemName => . ]
     default action: reduce with rule 4
+    <NAME> : shift, and goto state 7
+    "[" : reduce with rule 9
+    itemName : goto state 8
+    ruleItem : goto state 6
+
+
+state 10
+    [ 8: itemName => <NAME> "=" . ]*
+    default action: reduce with rule 8
+
+
+state 11
+    [ 11: ruleItem => itemName lexAction . ]*
+    default action: reduce with rule 11
+
+
+state 12
+    [ 3: lexAction => @0 . "[" "]" ]*
+    no default action
+    "[" : shift, and goto state 13
+
+
+state 13
+    [ 3: lexAction => @0 "[" . "]" ]*
+    no default action
+    "]" : shift, and goto state 14
+
+
+state 14
+    [ 3: lexAction => @0 "[" "]" . ]*
+    default action: reduce with rule 3
 
 

@@ -5,6 +5,45 @@ import { CompilationError as E, CompilationError } from '../util/E';
 import { InputStream } from '../util/io';
 import { Context } from '../util/context';
 import { LexAction, returnToken, blockAction, pushState, popState, setImg } from '../lexer/action';
+
+interface Node{
+    val: string;
+    ext: any;
+    startLine: number;
+    startColumn: number;
+    endLine: number;
+    endColumn: number;
+}
+function nodeFromToken(t: Token): Node{
+    return {
+        val: t.val,
+        ext: null,
+        startLine: t.startLine,
+        startColumn: t.startColumn,
+        endLine: t.endLine,
+        endColumn: t.endColumn
+    };
+}
+function nodeFromTrivalToken(t: Token): Node{
+    return {
+        val: null,
+        ext: null,
+        startLine: t.startLine,
+        startColumn: t.startColumn,
+        endLine: t.endLine,
+        endColumn: t.endColumn
+    };
+}
+function newNode(val: string): Node{
+    return {
+        val: val,
+        ext: null,
+        startLine: 0,
+        startColumn: 0,
+        endLine: 0,
+        endColumn: 0
+    };
+}
 }
 
 %extra_arg{
@@ -12,6 +51,7 @@ import { LexAction, returnToken, blockAction, pushState, popState, setImg } from
     ctx: Context;
     assoc: Assoc;
     lexacts: LexAction[];
+    ruleLhs: Node;
 }
 
 %lex [
@@ -25,14 +65,13 @@ import { LexAction, returnToken, blockAction, pushState, popState, setImg } from
     < "/*" ([^"*", "/"]|[^"*"]"/"|"*"[^"/"])* "*/" >: [='']
     < "//" [^"\n"]* >: [='']
 
-    < NAME: <LETTER> (<LETTER>|<DIGIT>)* >
-//    < NUM: <DIGIT>+ >
+    < NAME: <LETTER> (<LETTER>|<DIGIT>)* >: { $$ = nodeFromToken($token); }
     < STRING: 
         '"' ( [^'"', '\n', '\\'] | <ESCAPE_CHAR> )* '"' 
     |   "'" ( [^"'", '\n', '\\'] | <ESCAPE_CHAR> )* "'"
-    >
-    < OPEN_BLOCK: "{" >
-    < CLOSE_BLOCK: "}" >
+    >: { $$ = nodeFromToken($token); }
+    < OPEN_BLOCK: "{" >: { $$ = nodeFromTrivalToken($token); }
+    < CLOSE_BLOCK: "}" >: { $$ = nodeFromTrivalToken($token); }
     < OPT_DIR: "%option" >
     < LEX_DIR: "%lex" >
     < LEFT_DIR: "%left" >
@@ -63,10 +102,12 @@ import { LexAction, returnToken, blockAction, pushState, popState, setImg } from
 ]
 
 %lex <IN_BLOCK> [
-    < ANY_CODE: [^"{", "}"]* >
-    < OPEN_BLOCK: "{" >
-    < CLOSE_BLOCK: "}" >
+    < ANY_CODE: [^"{", "}"]* >: { $$ = newNode($token.val); }
+    < OPEN_BLOCK: "{" >: { $$ = nodeFromTrivalToken($token); }
+    < CLOSE_BLOCK: "}" >: { $$ = nodeFromTrivalToken($token); }
 ]
+
+%type Node
 
 %%
 
@@ -85,8 +126,8 @@ associativeDir:
 |   '%nonassoc' { this.assoc = Assoc.NON; }
 ;
 assocTokens: 
-    assocTokens t = tokenRef { this.gb.defineTokenPrec(t.val, this.assoc, t.type, t.startLine); }
-|   t = tokenRef { this.gb.defineTokenPrec(t.val, this.assoc, t.type, t.startLine); }
+    assocTokens t = tokenRef { this.gb.defineTokenPrec(t.val, this.assoc, t.ext, t.startLine); }
+|   t = tokenRef { this.gb.defineTokenPrec(t.val, this.assoc, t.ext, t.startLine); }
 ;
 
 optionBody: 
@@ -117,7 +158,7 @@ lexAction:
 ;
 
 lexActions: 
-    lexActions ',' it = lexActionItem { this.lexacts.push(it.val); }
+    lexActions ',' lexActionItem 
 |   lexActionItem
 ;
 lexActionItem: 
@@ -135,14 +176,14 @@ union:
 simpleRE: simpleRE basicRE | basicRE;
 basicRE: 
     { this.gb.lexBuilder.enterSimple(); } primitiveRE 
-    suffix = rePostfix { this.gb.lexBuilder.simplePostfix(suffix.val); }
+    suffix = rePostfix { this.gb.lexBuilder.simplePostfix(suffix.val as any); }
 ;
 rePostfix: '+' | '?' | '*' | { $$.val = ''; };
 primitiveRE: 
     '(' regexp ')'
 |   '[' inverse_ setRE_ ']'
 |   '<' n = <NAME> '>' { this.gb.lexBuilder.addVar(n.val, n.startLine); }
-|   s = <STRING> { this.gb.lexBuilder.addString(s); }
+|   s = <STRING> { this.gb.lexBuilder.addString(s.val); }
 ;
 inverse_: '^' { this.gb.lexBuilder.beginSet(true); } | { this.gb.lexBuilder.beginSet(false); };
 setRE_: setRE |;
@@ -157,27 +198,45 @@ body: body bodyItem | bodyItem;
 bodyItem: 
     compoundRule
 ;
-compoundRule: <NAME> arrow rules ';';
+compoundRule: n = <NAME> { this.ruleLhs = n; } arrow rules ';';
 arrow: ':' | '=>';
 rules: rules '|' rule | rule;
-rule: ruleHead ruleItems | '%empty';
+rule: 
+    { this.gb.prepareRule(this.ruleLhs.val,this.ruleLhs.startLine); } 
+    ruleHead ruleItems { this.gb.commitRule(); } 
+;
 ruleHead: '%use' '(' varUseList ')' | ;
-varUseList: varUseList ',' <NAME> | <NAME>;
-ruleItems: ruleItems ruleItem |;
-ruleItem: <NAME> | tokenRef | lexAction;
+varUseList: 
+    varUseList ',' vn = <NAME> { this.gb.addRuleUseVar(vn.val, vn.startLine); }
+|   vn = <NAME> { this.gb.addRuleUseVar(vn.val, vn.startLine); }
+;
+
+ruleItems: ruleItems ruleItem | /* empty */;
+itemName: 
+    itn = <NAME> '=' { this.gb.addRuleSematicVar(itn.val, itn.startLine); } 
+|   /* empty */
+;
+ruleItem: 
+    t = <NAME> { this.gb.addRuleItem(t.val,TokenRefType.NAME,t.startLine); }
+|   vn = <NAME> '=' { this.gb.addRuleSematicVar(vn.val, vn.startLine); } 
+    t = <NAME> { this.gb.addRuleItem(t.val,TokenRefType.NAME,t.startLine); }
+|   itemName t = tokenRef { this.gb.addRuleItem(t.val, t.ext, t.startLine); }
+|   itemName lexAction { this.gb.addAction(this.lexacts); }
+;
 tokenRef: 
-    '<' t = <NAME> '>' { $$.val = t.val; $$.type = TokenRefType.TOKEN; } 
-|   <STRING> { $$.type = TokenRefType.STRING; }
+    '<' t = <NAME> '>' { $$ = t; $$.ext = TokenRefType.TOKEN; } 
+|   <STRING> { $$.ext = TokenRefType.STRING; }
 ;
 
 block: [+IN_BLOCK] open = "{" bl = innerBlock [-] close = "}" { 
+    $$ = newNode('');
     $$.val = '{' + bl.val + '}';
     $$.startLine = open.startLine;
     $$.startColumn = open.startColumn;
     $$.endLine = close.endLine;
     $$.endColumn = close.endColumn;
 };
-innerBlock: innerBlock b = innerBlockItem { $$.val += b.val; } | { $$.val = ''; };
+innerBlock: innerBlock b = innerBlockItem { $$.val += b.val; } | { $$ = newNode(''); };
 innerBlockItem: <ANY_CODE> | block;
 
 %%

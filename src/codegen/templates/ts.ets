@@ -203,7 +203,7 @@ let <%- prefix %>actERR = <%- pt.stateCount + 1 %>;
 <% function printLexActionsFunc(dfa: DFA<LexAction[]>, n: number){
     let codegen = {
         addBlock(b: string, line: number){ %>
-                <%- b %>
+                <%- b.replace(/\$token/g, 'this._token').replace(/\$\$/g, 'this._sematicVal') %>
         <% },
         pushLexState(n: number){ %>
                 this._lexState.push(<%- n %>);
@@ -232,6 +232,7 @@ let <%- prefix %>actERR = <%- pt.stateCount + 1 %>;
     let statevn = prefix + 'staten'; %>
     private _doLexAction<%- n %>(<%- statevn %>: number){
         let <%- prefix %>tk = <%- prefix %>lexTokens<%- n %>[<%- statevn %>];
+        <%- prefix %>tk !== -1 && this._prepareToken(<%- prefix %>tk);
         switch(<%- statevn %>){
     <% for(let i = 0, _a = dfa.states; i < _a.length; i++){ 
         if(_a[i].endAction !== null && hasNormalAction(_a[i].endAction.data)){ %>
@@ -244,7 +245,6 @@ let <%- prefix %>actERR = <%- pt.stateCount + 1 %>;
     } %>
             default:;
         }
-        <%- prefix %>tk !== -1 && this._returnToken(<%- prefix %>tk);
     }
 <% } %>
 
@@ -267,7 +267,7 @@ export class Token {
             `"${<%- prefix %>tokenAlias[this.id]}"`) + `("${this.val}")`;
     }
 }
-
+<% let stype = input.sematicType || 'any'; %>
 export class <%- className %> {
     // members for lexer
     private _lexState: number[];
@@ -278,7 +278,7 @@ export class <%- className %> {
     private _markerLine;
     private _markerColumn;
     private _backupCount: number;
-    private _inputBuf: string[] = [];
+    private _inputBuf: string[];
     private _line: number;
     private _column: number;
     private _tline: number;
@@ -286,9 +286,10 @@ export class <%- className %> {
 
     // members for parser
     private _lrState: number[] = [];
-    private _sematicS: any[] = [];
+    private _sematicS: <%- stype %>[] = [];
+    private _sematicVal: <%- stype %>;
 
-    private _stop = false;
+    private _stop;
 
     private _handlers: {[s: string]: ((a1?, a2?, a3?) => any)[]} = {};
 
@@ -312,6 +313,7 @@ export class <%- className %> {
         
         this._lrState = [ 0 ];
         this._sematicS = [];
+        this._sematicVal = null;
 
         this._stop = false;
     }
@@ -326,7 +328,7 @@ export class <%- className %> {
         this._tline = this._line;
         this._tcolumn = this._column;
     }
-    private _returnToken(tid: number){
+    private _prepareToken(tid: number){
         this._token = new Token(
             tid,
             this._matched.join(''),
@@ -338,6 +340,8 @@ export class <%- className %> {
         this._matched.length = 0;
         this._tline = this._line;
         this._tcolumn = this._column;
+    }
+    private _returnToken(){
         this._emit('token', <%- prefix %>tokenNames[this._token.id], this._token.val);
         while(!this._stop && !this._acceptToken(this._token));
         this._token = null;
@@ -371,7 +375,7 @@ export class <%- className %> {
 <% } %>
             default:;
         }
-        this._token !== null && (this._acceptToken(this._token), (this._token = null));
+        this._token !== null && this._returnToken();
     }
     /**
      *  accept a character
@@ -461,7 +465,8 @@ export class <%- className %> {
     private _acceptEOF(){
         if(this._state === 0){
             // recover
-            this._returnToken(0);
+            this._prepareToken(0);
+            this._returnToken();
             return true;
         }
         else {
@@ -565,7 +570,7 @@ export class <%- className %> {
     private _doReduction(<%- prefix %>rulenum: number){
         let <%- prefix %>nt = <%- prefix %>lhs[<%- prefix %>rulenum];
         let <%- prefix %>sp = this._sematicS.length;
-        let <%- prefix %>top = this._sematicS[<%- prefix %>sp - <%- prefix %>ruleLen[<%- prefix %>rulenum]] || {};
+        let <%- prefix %>top = this._sematicS[<%- prefix %>sp - <%- prefix %>ruleLen[<%- prefix %>rulenum]] || null;
         switch(<%- prefix %>rulenum){
 <% printReduceActions(); %>
         }
@@ -603,7 +608,8 @@ export class <%- className %> {
             }
             else {
                 this._lrState.push(act - 1);
-                this._sematicS.push(t);
+                this._sematicS.push(this._sematicVal);
+                this._sematicVal = null;
                 // token consumed
                 return true;
             }

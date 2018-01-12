@@ -121,6 +121,9 @@ export class Grammar implements TokenEntry{
     }
     genFirstSets(): void{
         var changed = true;
+        let mask = new TokenSet(this.tokens.length);
+        mask.addAll();
+        mask.remove(0);
         while(changed){
             changed = false;
             // iterate for each non terminal
@@ -138,14 +141,14 @@ export class Grammar implements TokenEntry{
                         else {
                             ritem = -ritem - 1;
                             if(nt !== ritem){
-                                changed = firstSet.union(this.nts[ritem].firstSet) || changed;
+                                changed = firstSet.union(this.nts[ritem].firstSet, mask) || changed;
                             }
                             if(!this.nts[ritem].firstSet.contains(0)){
                                 break;
                             }
                         }
                     }
-                    k === rule.rhs.length && firstSet.add(0);
+                    k === rule.rhs.length && (changed = firstSet.add(0) || changed);
                 }
             }
         }
