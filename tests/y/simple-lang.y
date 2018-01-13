@@ -1,4 +1,4 @@
-%lex [
+%lex {
     < (["\n", "\r", " ", "\t"] | "\r\n")+ >: [='']
 
     DIGIT = < ['0'-'9'] >
@@ -57,7 +57,7 @@
     < DO: 'do' >
     < FOR: 'for' >
     < FUNCTION: 'function' >
-]
+}
 
 %right 'else'
 
@@ -115,7 +115,7 @@ exprlist: exprlist ',' expr | expr;
 expr: 
     var aoptr expr %prec '='
 |   expr '?' expr ':' expr
-|   expr '||' expr { $$ = $1 + $3; }
+|   expr '||' expr
 |   expr '&&' expr
 |   expr '|' expr
 |   expr '^' expr

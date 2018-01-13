@@ -1,3 +1,8 @@
+/*
+    This file is the grammar for jscc.
+
+    这是一个自我描述文件！hahaha!
+*/
 %header {
 import { GBuilder, TokenRefType } from './gbuilder';
 import { Assoc } from '../grammar/token-entry';
@@ -6,6 +11,12 @@ import { InputStream } from '../util/io';
 import { Context } from '../util/context';
 import { LexAction, returnToken, blockAction, pushState, popState, setImg } from '../lexer/action';
 
+interface Position{
+    startLine: number;
+    startColumn: number;
+    endLine: number;
+    endColumn: number;
+}
 interface Node{
     val: string;
     ext: any;
@@ -44,6 +55,13 @@ function newNode(val: string): Node{
         endColumn: 0
     };
 }
+function unescape(s: string){
+    return s
+    .replace(/\\n/g, '\n')
+    .replace(/\\t/g, '\t')
+    .replace(/\\r/g, '\r')
+    .replace(/\\\\/g, '\\');
+}
 }
 
 %extra_arg{
@@ -54,7 +72,7 @@ function newNode(val: string): Node{
     ruleLhs: Node;
 }
 
-%lex [
+%lex {
     LETTER = < ['a'-'z', 'A'-'Z', '$', '_'] >
     DIGIT = < ['0'-'9'] >
     HEX = < ['0'-'9', 'a'-'f', 'A'-'F'] >
@@ -69,7 +87,7 @@ function newNode(val: string): Node{
     < STRING: 
         '"' ( [^'"', '\n', '\\'] | <ESCAPE_CHAR> )* '"' 
     |   "'" ( [^"'", '\n', '\\'] | <ESCAPE_CHAR> )* "'"
-    >: { $$ = nodeFromToken($token); }
+    >: { $$ = nodeFromToken($token);$$.val = unescape($$.val.substr(1, $$.val.length - 2)); }
     < OPEN_BLOCK: "{" >: { $$ = nodeFromTrivalToken($token); }
     < CLOSE_BLOCK: "}" >: { $$ = nodeFromTrivalToken($token); }
     < OPT_DIR: "%option" >
@@ -81,6 +99,8 @@ function newNode(val: string): Node{
     < HEADER_DIR: "%header" >
     < EXTRA_ARG_DIR: "%extra_arg" >
     < EMPTY: "%empty" >
+    < TYPE_DIR: '%type' >
+    < PREC_DIR: '%prec' >
     < GT: ">" >
     < LT: "<" >
     < BRA: "(" >
@@ -99,13 +119,13 @@ function newNode(val: string): Node{
     < OR: "|" >
     < WEDGE: "^" >
     < COMMA: "," >
-]
+}
 
-%lex <IN_BLOCK> [
+%lex <IN_BLOCK> {
     < ANY_CODE: [^"{", "}"]* >: { $$ = newNode($token.val); }
     < OPEN_BLOCK: "{" >: { $$ = nodeFromTrivalToken($token); }
     < CLOSE_BLOCK: "}" >: { $$ = nodeFromTrivalToken($token); }
-]
+}
 
 %type Node
 
@@ -119,6 +139,7 @@ option:
 |   '%option' '{' optionBody '}'
 |   '%header' b = block { this.gb.setHeader(b.val); }
 |   '%extra_arg' b = block { this.gb.setExtraArg(b.val); }
+|   '%type' t = <NAME> { this.gb.setType(t.val); }
 ;
 associativeDir:
     '%left' { this.assoc = Assoc.LEFT; }
@@ -126,8 +147,12 @@ associativeDir:
 |   '%nonassoc' { this.assoc = Assoc.NON; }
 ;
 assocTokens: 
-    assocTokens t = tokenRef { this.gb.defineTokenPrec(t.val, this.assoc, t.ext, t.startLine); }
-|   t = tokenRef { this.gb.defineTokenPrec(t.val, this.assoc, t.ext, t.startLine); }
+    assocTokens assocToken 
+|   assocToken
+;
+assocToken:
+    t = tokenRef { this.gb.defineTokenPrec(t.val, this.assoc, t.ext, t.startLine); }
+|   t = <NAME> { this.gb.defineTokenPrec(t.val, this.assoc, TokenRefType.NAME, t.startLine); }
 ;
 
 optionBody: 
@@ -144,13 +169,14 @@ lexBody: lexBody lexBodyItem | ;
 lexBodyItem: 
     v = <NAME> { this.gb.lexBuilder.prepareVar(v.val, v.startLine); } 
     '=' '<' regexp '>' { this.gb.lexBuilder.endVar(); }
-|   '<' regexp '>' lexAction_ { this.gb.lexBuilder.end(this.lexacts, '(untitled)'); }
-|   '<' tn = <NAME> ':' regexp '>' lexAction_ { 
+|   newState '<' regexp '>' lexAction_ { this.gb.lexBuilder.end(this.lexacts, '(untitled)'); }
+|   newState '<' tn = <NAME> ':' regexp '>' lexAction_ { 
     let tdef = this.gb.defToken(tn.val, this.gb.lexBuilder.possibleAlias, tn.startLine);
     this.lexacts.push(returnToken(tdef));
     this.gb.lexBuilder.end(this.lexacts, tn.val);
 }
 ;
+newState: { this.gb.lexBuilder.newState(); };
 lexAction_: ':' lexAction | { this.lexacts = []; };
 lexAction: 
     { this.lexacts = []; } '[' lexActions ']'
@@ -176,9 +202,14 @@ union:
 simpleRE: simpleRE basicRE | basicRE;
 basicRE: 
     { this.gb.lexBuilder.enterSimple(); } primitiveRE 
-    suffix = rePostfix { this.gb.lexBuilder.simplePostfix(suffix.val as any); }
+    suffix = rePostfix { this.gb.lexBuilder.simplePostfix(suffix.val as (''|'?'|'+'|'*')); }
 ;
-rePostfix: '+' | '?' | '*' | { $$.val = ''; };
+rePostfix: 
+    '+' { $$ = newNode('+'); }
+|   '?' { $$ = newNode('?'); }
+|   '*' { $$ = newNode('*'); }
+|   { $$ = newNode(''); }
+;
 primitiveRE: 
     '(' regexp ')'
 |   '[' inverse_ setRE_ ']'
@@ -203,14 +234,14 @@ arrow: ':' | '=>';
 rules: rules '|' rule | rule;
 rule: 
     { this.gb.prepareRule(this.ruleLhs.val,this.ruleLhs.startLine); } 
-    ruleHead ruleItems { this.gb.commitRule(); } 
+    ruleHead ruleBody ruleTrailer { this.gb.commitRule(); } 
 ;
 ruleHead: '%use' '(' varUseList ')' | ;
 varUseList: 
     varUseList ',' vn = <NAME> { this.gb.addRuleUseVar(vn.val, vn.startLine); }
 |   vn = <NAME> { this.gb.addRuleUseVar(vn.val, vn.startLine); }
 ;
-
+ruleBody: ruleItems | '%empty';
 ruleItems: ruleItems ruleItem | /* empty */;
 itemName: 
     itn = <NAME> '=' { this.gb.addRuleSematicVar(itn.val, itn.startLine); } 
@@ -227,16 +258,30 @@ tokenRef:
     '<' t = <NAME> '>' { $$ = t; $$.ext = TokenRefType.TOKEN; } 
 |   <STRING> { $$.ext = TokenRefType.STRING; }
 ;
+ruleTrailer:
+    /* empty */
+|   rulePrec
+|   rulePrec lexAction { this.gb.addAction(this.lexacts); }
+;
+rulePrec:
+    '%prec' t = <NAME> { this.gb.defineRulePr(t.val, TokenRefType.NAME, t.startLine); }
+|   '%prec' t = tokenRef { this.gb.defineRulePr(t.val, t.ext, t.startLine); }
+;
 
 block: [+IN_BLOCK] open = "{" bl = innerBlock [-] close = "}" { 
     $$ = newNode('');
-    $$.val = '{' + bl.val + '}';
+    $$.val = bl.val;
     $$.startLine = open.startLine;
     $$.startColumn = open.startColumn;
     $$.endLine = close.endLine;
     $$.endColumn = close.endColumn;
-};
+}
+;
 innerBlock: innerBlock b = innerBlockItem { $$.val += b.val; } | { $$ = newNode(''); };
-innerBlockItem: <ANY_CODE> | block;
+innerBlockItem: 
+    <ANY_CODE> 
+|   [+IN_BLOCK] '{' b = innerBlock [-] '}' 
+    { $$ = newNode(''); $$.val = '{' + b.val + '}'; }
+;
 
 %%

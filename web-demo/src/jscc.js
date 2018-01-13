@@ -1284,6 +1284,257 @@ var TokenSet = (function (_super) {
     return TokenSet;
 }(BitSet));
 
+var Action$1;
+(function (Action) {
+    Action[Action["NONE"] = 1] = "NONE";
+    Action[Action["SHIFT"] = 2] = "SHIFT";
+    Action[Action["REDUCE"] = 3] = "REDUCE";
+})(Action$1 || (Action$1 = {}));
+var Item = (function () {
+    function Item(rule, ik) {
+        this.marker = 0;
+        this.shift = null;
+        this.actionType = Action$1.NONE;
+        this.changed = true;
+        this.rule = rule;
+        this.isKernel = ik;
+        this.lah = new TokenSet(rule.g.tokenCount);
+    }
+    Item.prototype.canShift = function () {
+        return this.rule.rhs.length > this.marker;
+    };
+    Item.prototype.getShift = function () {
+        return this.rule.rhs[this.marker];
+    };
+    Item.prototype.toString = function (opt) {
+        if (opt === void 0) { opt = {}; }
+        var showlah = (opt && opt.showlah) || false;
+        var showTrailer = (opt && opt.showTrailer) || false;
+        var ret = '[ ' + this.rule.toString(this.marker) + (showlah ? ',{ ' + this.lah.toString(this.rule.g) + ' }' : '') + ' ]';
+        this.isKernel && (ret += '*');
+        if (showTrailer) {
+            switch (this.actionType) {
+                case Action$1.NONE:
+                    ret += '(-)';
+                    break;
+                case Action$1.SHIFT:
+                    ret += '(s' + this.shift.stateIndex + ')';
+                    break;
+                case Action$1.REDUCE:
+                    ret += '(r)';
+                    break;
+            }
+        }
+        return ret;
+    };
+    Item.prototype.hash = function () {
+        return this.rule.index + '-' + this.marker;
+    };
+    Item.prototype.hasRRConflictWith = function (i) {
+        return this.actionType === Action$1.REDUCE && i.actionType === Action$1.REDUCE && this.rule.index !== i.rule.index && this.lah.hasIntersection(i.lah);
+    };
+    Item.prototype.getFollowSet = function (set) {
+        var g = this.rule.g;
+        var i;
+        for (i = this.marker + 1; i < this.rule.rhs.length; i++) {
+            var mItem = this.rule.rhs[i];
+            if (g.isToken(mItem)) {
+                set.add(mItem + 1);
+                break;
+            }
+            else {
+                var set1 = g.nts[-mItem - 1].firstSet;
+                set.union(set1);
+                set.remove(0);
+                if (!set1.contains(0)) {
+                    break;
+                }
+            }
+        }
+        if (i === this.rule.rhs.length) {
+            set.union(this.lah);
+        }
+    };
+    Item.NULL = {};
+    return Item;
+}());
+var ItemSet = (function () {
+    function ItemSet(g) {
+        this.it = {};
+        this.complete = false;
+        this.index = -1;
+        this.stateIndex = 0;
+        this.prev = null;
+        this.next = null;
+        this.merges = [];
+        this.g = g;
+        this.data = this;
+    }
+    ItemSet.prototype.add = function (rule, marker, ik, lah, reset) {
+        var h = rule.index + '-' + marker;
+        var it = this.it[h];
+        if (it === undefined) {
+            var n = new Item(rule, ik);
+            n.marker = marker;
+            if (lah) {
+                n.lah.union(lah);
+            }
+            this.it[h] = n;
+            return true;
+        }
+        else if (lah) {
+            var ret = it.lah.union(lah);
+            if (reset && ret && it.canShift()) {
+                it.actionType = Action$1.NONE;
+            }
+            ret && (it.changed = true);
+            return ret;
+        }
+    };
+    ItemSet.prototype.contains = function () {
+    };
+    ItemSet.prototype.closure = function () {
+        var changed = true;
+        var tSet = new TokenSet(this.g.tokenCount);
+        var cela = this;
+        while (changed) {
+            changed = false;
+            for (var hash in this.it) {
+                var item = this.it[hash];
+                if (item.changed && item.canShift()) {
+                    var ritem = item.getShift();
+                    if (ritem < 0) {
+                        tSet.removeAll();
+                        item.getFollowSet(tSet);
+                        this.g.forEachRuleOfNt(-ritem - 1, function (rule) {
+                            changed = cela.add(rule, 0, false, tSet, false) || changed;
+                            return false;
+                        });
+                    }
+                }
+                item.changed = false;
+            }
+        }
+    };
+    ItemSet.prototype.toString = function (opt) {
+        var showTrailer = (opt && opt.showTrailer) || false;
+        var opt2 = { showTrailer: showTrailer };
+        var ret = 's' + this.stateIndex + '';
+        if (this.index !== null) {
+            ret += '(i' + this.index;
+        }
+        else {
+            ret += '(i?';
+        }
+        if (this.merges.length > 0) {
+            ret += ',merged from ';
+            for (var i = 0; i < this.merges.length; i++) {
+                if (i > 0) {
+                    ret += ',';
+                }
+                ret += 'i' + this.merges[i];
+            }
+        }
+        ret += ')' + endl;
+        for (var hash in this.it) {
+            ret += this.it[hash].toString(opt2) + endl;
+        }
+        return ret;
+    };
+    ItemSet.prototype.kernelHash = function () {
+        var ret = 0;
+        for (var hash in this.it) {
+            var item = this.it[hash];
+            if (item.isKernel) {
+                ret += item.rule.index << 5 + item.rule.index + item.marker;
+            }
+        }
+        return String(ret);
+    };
+    ItemSet.prototype.forEach = function (cb) {
+        for (var h in this.it) {
+            cb(this.it[h]);
+        }
+    };
+    ItemSet.prototype.canMergeTo = function (s) {
+        for (var h1 in this.it) {
+            var it1 = this.it[h1];
+            var found = false, hasConflict = false, hasIdentical = false;
+            for (var h2 in s.it) {
+                var it2 = s.it[h2];
+                if (it1.rule.index === it2.rule.index && it1.marker === it2.marker) {
+                    hasIdentical = it1.lah.equals(it2.lah);
+                    found = it1.isKernel && it2.isKernel;
+                }
+                hasConflict = hasConflict || it1.hasRRConflictWith(it2);
+                if (it2.isKernel && this.it[h2] === undefined) {
+                    return false;
+                }
+            }
+            if (it1.isKernel && !found || hasConflict && !hasIdentical) {
+                return false;
+            }
+        }
+        return true;
+    };
+    ItemSet.prototype.mergeTo = function (s) {
+        var ret = false;
+        for (var h in s.it) {
+            var it = s.it[h];
+            ret = this.add(it.rule, it.marker, it.isKernel, it.lah, true) || ret;
+        }
+        this.merges.push(s.index);
+        return ret;
+    };
+    return ItemSet;
+}());
+
+var List = (function () {
+    function List() {
+        this.size = 0;
+        this.head = { prev: null, next: null, data: null };
+        this.tail = { prev: null, next: null, data: null };
+        this.head.next = this.tail;
+        this.tail.prev = this.head;
+    }
+    List.prototype.append = function (n) {
+        n.prev = this.tail.prev;
+        n.next = this.tail;
+        this.tail.prev.next = n;
+        this.tail.prev = n;
+        this.size++;
+    };
+    List.prototype.pull = function () {
+        var n = this.head.next;
+        this.head.next = n.next;
+        n.next.prev = this.head;
+        n.prev = n.next = null;
+        this.size--;
+        return n.data;
+    };
+    List.prototype.isEmpty = function () {
+        return this.size === 0;
+    };
+    List.prototype.forEach = function (cb) {
+        for (var a = this.head.next; a !== this.tail; a = a.next) {
+            cb(a.data);
+        }
+    };
+    List.prototype.remove = function (n) {
+        n.next.prev = n.prev;
+        n.prev.next = n.next;
+        this.size--;
+    };
+    List.prototype.iterator = function () {
+        var p = this.head;
+        var cela = this;
+        return function () {
+            return p !== cela.tail ? (p = p.next, p.data) : null;
+        };
+    };
+    return List;
+}());
+
 var Assoc;
 (function (Assoc) {
     Assoc[Assoc["UNDEFINED"] = 0] = "UNDEFINED";
@@ -1295,6 +1546,630 @@ var Assoc;
 function convertTokenToString(t) {
     return t.alias === null ? "<" + t.sym + ">" : "\"" + t.alias + "\"";
 }
+
+function printParseTable(os, cela, doneList) {
+    var g = cela.g;
+    var tokenCount = g.tokenCount;
+    var ntCount = g.nts.length;
+    doneList.forEach(function (set) {
+        var i = set.stateIndex;
+        var shift = '';
+        var reduce = '';
+        var gotot = '';
+        os.writeln("state " + i);
+        set.forEach(function (item) {
+            os.writeln(YYTAB + item.toString({ showTrailer: false }));
+        });
+        if (cela.defred[i] !== -1) {
+            os.writeln(YYTAB + "default action: reduce with rule " + cela.defred[i]);
+        }
+        else {
+            os.writeln(YYTAB + 'no default action');
+        }
+        for (var j = 0; j < tokenCount; j++) {
+            var item = cela.lookupShift(i, j);
+            if (item !== null && item !== Item.NULL) {
+                if (item.actionType === Action$1.SHIFT) {
+                    shift += "" + YYTAB + convertTokenToString(g.tokens[j]) + " : shift, and goto state " + item.shift.stateIndex + endl;
+                }
+                else {
+                    reduce += "" + YYTAB + convertTokenToString(g.tokens[j]) + " : reduce with rule " + item.rule.index + endl;
+                }
+            }
+        }
+        for (var j = 0; j < ntCount; j++) {
+            var item = cela.lookupGoto(i, j);
+            if (item !== null) {
+                gotot += "" + YYTAB + g.nts[j].sym + " : goto state " + item.shift.stateIndex + endl;
+            }
+        }
+        os.writeln(shift + reduce + gotot);
+        os.writeln('');
+    });
+}
+var ParseTable = (function () {
+    function ParseTable(g, stateCount) {
+        this.defred = null;
+        this.g = g;
+        var tokenCount = g.tokenCount;
+        var ntCount = g.nts.length;
+        this.stateCount = stateCount;
+        this.shift = new Array(tokenCount * stateCount);
+        this.gotot = new Array(ntCount * stateCount);
+        for (var i = 0; i < this.shift.length; i++) {
+            this.shift[i] = null;
+        }
+        for (var i = 0; i < this.gotot.length; i++) {
+            this.gotot[i] = null;
+        }
+    }
+    ParseTable.prototype.forEachShift = function (cb) {
+        for (var state = 0; state < this.stateCount; state++) {
+            for (var tk = 0; tk < this.g.tokens.length; tk++) {
+                var item = this.lookupShift(state, tk);
+                item && cb(item, state, tk);
+            }
+        }
+    };
+    ParseTable.prototype.forEachGoto = function (cb) {
+        for (var state = 0; state < this.stateCount; state++) {
+            for (var nt = 0; nt < this.g.nts.length; nt++) {
+                var item = this.lookupGoto(state, nt);
+                item && cb(item, state, nt);
+            }
+        }
+    };
+    ParseTable.prototype.lookupShift = function (state, token) {
+        return this.shift[this.g.tokenCount * state + token];
+    };
+    ParseTable.prototype.lookupGoto = function (state, nt) {
+        return this.gotot[this.g.nts.length * state + nt];
+    };
+    ParseTable.prototype._getDefRed = function (state, apool) {
+        for (var i = 0; i < apool.length; i++) {
+            apool[i] = 0;
+        }
+        for (var tk = 0; tk < this.g.tokenCount; tk++) {
+            var item = this.lookupShift(state, tk);
+            item && item.actionType === Action$1.REDUCE && apool[item.rule.index]++;
+        }
+        var ret = 0;
+        for (var i = 0; i < apool.length; i++) {
+            apool[i] > apool[ret] && (ret = i);
+        }
+        return apool[ret] > 0 ? ret : -1;
+    };
+    ParseTable.prototype.findDefAct = function () {
+        this.defred = new Array(this.stateCount);
+        var apool = new Array(this.g.rules.length);
+        for (var i = 0; i < this.stateCount; i++) {
+            var def = this._getDefRed(i, apool);
+            this.defred[i] = def;
+            if (def !== -1) {
+                for (var tk = 0; tk < this.g.tokens.length; tk++) {
+                    var item = this.lookupShift(i, tk);
+                    item && item.actionType === Action$1.REDUCE && item.rule.index === def &&
+                        (this.shift[this.g.tokenCount * i + tk] = null);
+                }
+            }
+        }
+    };
+    return ParseTable;
+}());
+
+var ConflictType;
+(function (ConflictType) {
+    ConflictType[ConflictType["RR"] = 0] = "RR";
+    ConflictType[ConflictType["SR"] = 1] = "SR";
+})(ConflictType || (ConflictType = {}));
+
+var Conflict = (function () {
+    function Conflict() {
+    }
+    Conflict.prototype.toString = function () {
+        return "state " + this.set.stateIndex + ", " + Conflict.cNames[this.type] + " conflict:" + endl +
+            (YYTAB + "token: " + convertTokenToString(this.token) + endl) +
+            (YYTAB + "used rule: " + this.used.toString() + endl) +
+            (YYTAB + "discarded rule: " + this.discarded.toString());
+    };
+    Conflict.cNames = ['reduce/reduce', 'shift/reduce'];
+    return Conflict;
+}());
+function genInitialSet(g) {
+    var start = g.nts[0].rules[0];
+    var iset = new ItemSet(g);
+    iset.index = 0;
+    var set1 = new TokenSet(g.tokenCount);
+    set1.add(1);
+    iset.add(start, 0, true, set1, false);
+    return iset;
+}
+function genItemSets(g) {
+    var htable = {};
+    var iterations = 0;
+    function addToTable(iset) {
+        var h = iset.kernelHash();
+        if (htable[h] === undefined) {
+            htable[h] = [];
+        }
+        htable[h].push(iset);
+    }
+    function forEachInBucket(set, cb) {
+        var b = htable[set.kernelHash()];
+        if (b !== undefined) {
+            for (var i = 0; i < b.length; i++) {
+                if (cb(b[i]))
+                    break;
+            }
+        }
+    }
+    var index = 1;
+    var todoList = new List();
+    var incList = new List();
+    var doneList = new List();
+    todoList.append(genInitialSet(g));
+    while (!todoList.isEmpty() || !incList.isEmpty()) {
+        var comeFrom = null;
+        if (!incList.isEmpty()) {
+            var set = comeFrom = incList.pull();
+            set.forEach(function (item) {
+                if (item.actionType === Action$1.NONE) {
+                    console$1.assert(item.canShift());
+                    var shift = item.getShift();
+                    var newSet = new ItemSet(g);
+                    newSet.index = index++;
+                    todoList.append(newSet);
+                    set.forEach(function (item1) {
+                        if (item1.canShift()) {
+                            var rItem = item1.getShift();
+                            if (rItem === shift) {
+                                item1.actionType = Action$1.SHIFT;
+                                item1.shift = newSet;
+                                newSet.add(item1.rule, item1.marker + 1, true, item1.lah, false);
+                            }
+                        }
+                    });
+                }
+            });
+            set.complete = true;
+            doneList.append(set);
+        }
+        while (!todoList.isEmpty()) {
+            var set = todoList.pull();
+            set.closure();
+            set.forEach(function (item) {
+                if (!item.canShift()) {
+                    item.actionType = Action$1.REDUCE;
+                }
+            });
+            var merged = null;
+            forEachInBucket(set, function (gSet) {
+                if (gSet.canMergeTo(set)) {
+                    if (gSet.mergeTo(set)) {
+                        if (gSet.complete) {
+                            merged = gSet;
+                        }
+                    }
+                    if (comeFrom !== null) {
+                        comeFrom.forEach(function (sItem) {
+                            if (sItem.actionType === Action$1.SHIFT && sItem.shift === set) {
+                                sItem.shift = gSet;
+                            }
+                        });
+                    }
+                    set = null;
+                    return true;
+                }
+                return false;
+            });
+            if (merged !== null) {
+                doneList.remove(merged);
+                incList.append(merged);
+                merged.complete = false;
+            }
+            else if (set !== null) {
+                incList.append(set);
+                addToTable(set);
+            }
+        }
+        iterations++;
+    }
+    var i = 0;
+    doneList.forEach(function (set) {
+        set.stateIndex = i++;
+    });
+    return {
+        result: doneList,
+        iterations: iterations
+    };
+}
+function genParseTable(g, doneList) {
+    var conflicts = [];
+    function resolveSRConflict(set, shift, reduce) {
+        var token = g.tokens[shift.getShift()];
+        if (token.assoc !== Assoc.UNDEFINED) {
+            var ruleP = reduce.rule.pr;
+            if (ruleP !== -1) {
+                if (ruleP > token.pr) {
+                    return reduce;
+                }
+                else if (ruleP < token.pr) {
+                    return shift;
+                }
+                else {
+                    if (token.assoc === Assoc.LEFT) {
+                        return reduce;
+                    }
+                    else if (token.assoc === Assoc.RIGHT) {
+                        return shift;
+                    }
+                    else if (token.assoc === Assoc.NON) {
+                        return Item.NULL;
+                    }
+                    else {
+                        console$1.assert(false);
+                    }
+                }
+            }
+        }
+        var cf = new Conflict();
+        cf.type = ConflictType.SR;
+        cf.set = set;
+        cf.token = token;
+        cf.used = shift;
+        cf.discarded = reduce;
+        conflicts.push(cf);
+        return shift;
+    }
+    function resolveRRConflict(set, r1, r2, token) {
+        var tdef = g.tokens[token];
+        if (r1.rule.pr !== -1 && r2.rule.pr !== -1 && r1.rule.pr !== r2.rule.pr) {
+            return r1.rule.pr > r2.rule.pr ? r1 : r2;
+        }
+        else {
+            var used = r1.rule.index > r2.rule.index ? r2 : r1;
+            var discarded = r1.rule.index > r2.rule.index ? r1 : r2;
+            var cf = new Conflict();
+            cf.type = ConflictType.RR;
+            cf.set = set;
+            cf.token = tdef;
+            cf.used = used;
+            cf.discarded = discarded;
+            conflicts.push(cf);
+            return used;
+        }
+    }
+    var ptable = new ParseTable(g, doneList.size);
+    doneList.forEach(function (set) {
+        set.forEach(function (item) {
+            if (item.actionType === Action$1.SHIFT) {
+                var sItem = item.getShift();
+                if (g.isToken(sItem)) {
+                    var tindex = set.stateIndex * g.tokenCount + sItem;
+                    var cItem = ptable.shift[tindex];
+                    if (cItem !== null) {
+                        if (cItem.actionType === Action$1.REDUCE) {
+                            ptable.shift[tindex] = resolveSRConflict(set, item, cItem);
+                        }
+                        else {
+                            console$1.assert(cItem.shift === item.shift);
+                        }
+                    }
+                    else {
+                        ptable.shift[tindex] = item;
+                    }
+                }
+                else {
+                    var tindex = set.stateIndex * g.nts.length + (-sItem - 1);
+                    ptable.gotot[tindex] = item;
+                }
+            }
+            else if (item.actionType === Action$1.REDUCE) {
+                for (var i = 0; i < g.tokenCount; i++) {
+                    if (item.lah.contains(i + 1)) {
+                        var index = set.stateIndex * g.tokenCount + i;
+                        var cItem = ptable.shift[index];
+                        if (cItem !== null) {
+                            if (cItem.actionType === Action$1.REDUCE) {
+                                ptable.shift[index] = resolveRRConflict(set, cItem, item, i);
+                            }
+                            else if (cItem.actionType === Action$1.SHIFT) {
+                                ptable.shift[index] = resolveSRConflict(set, cItem, item);
+                            }
+                        }
+                        else {
+                            ptable.shift[index] = item;
+                        }
+                    }
+                }
+            }
+            else {
+                console$1.assert(false);
+            }
+        });
+    });
+    return {
+        result: ptable,
+        conflicts: conflicts
+    };
+}
+
+function testParse(g, pt, tokens) {
+    var tk = [];
+    for (var _i = 0, tokens_1 = tokens; _i < tokens_1.length; _i++) {
+        var tname = tokens_1[_i];
+        var tdef = void 0;
+        if (/<[^>]+>/.test(tname)) {
+            tdef = g.findTokenByName(tname.substr(1, tname.length - 2));
+            if (tdef === null) {
+                throw new JsccError("cannot recognize " + tname + " as a token");
+            }
+        }
+        else {
+            var defs = g.findTokensByAlias(tname);
+            if (defs.length === 0) {
+                throw new JsccError("cannot recognize \"" + tname + "\" as a token");
+            }
+            if (defs.length > 1) {
+                var msg = '';
+                for (var _a = 0, defs_1 = defs; _a < defs_1.length; _a++) {
+                    var def = defs_1[_a];
+                    msg += "<" + def.sym + "> ";
+                }
+                throw new JsccError("cannot recognize \"" + tname + "\" as a token, since it can be " + msg);
+            }
+            tdef = defs[0];
+        }
+        tk.push(tdef);
+    }
+    var state = [0];
+    var stack = [];
+    var ret = [];
+    function s() {
+        return state[state.length - 1];
+    }
+    function shift(ns) {
+        state.push(ns);
+        var tdef = tk.shift();
+        stack.push(convertTokenToString(tdef));
+    }
+    function reduce(rule) {
+        state.length -= rule.rhs.length;
+        stack.length -= rule.rhs.length;
+        stack.push(rule.lhs.sym);
+        var gotot = pt.lookupGoto(s(), rule.lhs.index).shift.stateIndex;
+        state.push(gotot);
+    }
+    function dump() {
+        var ret = '';
+        for (var _i = 0, stack_1 = stack; _i < stack_1.length; _i++) {
+            var s_1 = stack_1[_i];
+            ret += s_1 + ' ';
+        }
+        ret += '| ';
+        for (var _a = 0, tk_1 = tk; _a < tk_1.length; _a++) {
+            var tdef = tk_1[_a];
+            ret += convertTokenToString(tdef);
+            ret += ' ';
+        }
+        return ret;
+    }
+    ret.push(dump());
+    do {
+        var item = pt.lookupShift(s(), tk[0] ? tk[0].index : 0);
+        if (item !== null) {
+            if (item === Item.NULL) {
+                ret.push('syntax error!');
+                break;
+            }
+            else if (item.actionType === Action$1.SHIFT) {
+                if (tk.length === 0) {
+                    ret.push('accepted!');
+                    break;
+                }
+                shift(item.shift.stateIndex);
+            }
+            else if (item.actionType === Action$1.REDUCE) {
+                if (reduce(item.rule)) {
+                    break;
+                }
+            }
+            else {
+                console.assert(false);
+            }
+        }
+        else {
+            var ri = pt.defred[s()];
+            if (ri !== -1) {
+                reduce(g.rules[ri]);
+            }
+            else {
+                ret.push('syntax error!');
+                break;
+            }
+        }
+        ret.push(dump());
+    } while (true);
+    return ret;
+}
+
+function sorter(cmp) {
+    var a = [];
+    function insert(i, obj) {
+        a.push(null);
+        for (var j = a.length - 1; j > i; j--) {
+            a[j] = a[j - 1];
+        }
+        a[i] = obj;
+    }
+    return {
+        add: function (b) {
+            var i;
+            for (i = 0; i < a.length; i++) {
+                if ((i === 0 || cmp(b, a[i - 1]) >= 0) && cmp(b, a[i]) <= 0) {
+                    break;
+                }
+            }
+            insert(i, b);
+        },
+        done: function () {
+            return a;
+        }
+    };
+}
+var RowEntry = (function () {
+    function RowEntry(emptyCount, row) {
+        this.emptyCount = emptyCount;
+        this.row = row;
+        this.dp = 0;
+    }
+    return RowEntry;
+}());
+function compress(source) {
+    function empty(i, j) {
+        j = j - sorted[i].dp;
+        return j < 0 || j >= source.columns || source.isEmpty(sorted[i].row, j);
+    }
+    function fit(i, dp) {
+        for (var j = 0; j < source.columns; j++) {
+            if (!empty(i, j)) {
+                for (var k = 0; k < i; k++) {
+                    if (!empty(k, j + dp)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+    function getFitdp(i) {
+        var dp = 0;
+        while (-dp < source.columns && source.isEmpty(sorted[i].row, -dp)) {
+            dp--;
+        }
+        while (!fit(i, dp)) {
+            dp++;
+        }
+        return dp;
+    }
+    var tmpsorted = sorter(function (a, b) {
+        return a.emptyCount < b.emptyCount ? -1 :
+            a.emptyCount > b.emptyCount ? 1 : 0;
+    });
+    for (var i = 0; i < source.rows; i++) {
+        tmpsorted.add(new RowEntry(source.emptyCount(i), i));
+    }
+    var sorted = tmpsorted.done();
+    var maxdp = 0, mindp = 0;
+    var dps = new Array(source.rows);
+    var initDp = 0;
+    while (-initDp < source.columns && source.isEmpty(sorted[0].row, -initDp)) {
+        initDp--;
+    }
+    dps[sorted[0].row] = sorted[0].dp = initDp;
+    for (var i = 1; i < sorted.length; i++) {
+        var row = sorted[i].row;
+        var dp = getFitdp(i);
+        dps[row] = sorted[i].dp = dp;
+        dp > maxdp && (maxdp = dp);
+        dp < mindp && (mindp = dp);
+    }
+    return {
+        dps: dps,
+        len: maxdp + source.columns
+    };
+}
+
+function action(pt) {
+    var emCount = [];
+    for (var state = 0; state < pt.stateCount; state++) {
+        emCount.push(0);
+        for (var tk = 0; tk < pt.g.tokens.length; tk++) {
+            pt.lookupShift(state, tk) === null && (emCount[state]++);
+        }
+    }
+    return {
+        rows: pt.stateCount,
+        columns: pt.g.tokens.length,
+        isEmpty: function (state, token) {
+            return pt.lookupShift(state, token) === null;
+        },
+        emptyCount: function (state) {
+            return emCount[state];
+        }
+    };
+}
+function gotot(pt) {
+    var emCount = [];
+    for (var state = 0; state < pt.stateCount; state++) {
+        emCount.push(0);
+        for (var nt = 0; nt < pt.g.nts.length; nt++) {
+            pt.lookupShift(state, nt) === null && (emCount[state]++);
+        }
+    }
+    return {
+        rows: pt.stateCount,
+        columns: pt.g.nts.length,
+        isEmpty: function (state, nt) {
+            return pt.lookupGoto(state, nt) === null;
+        },
+        emptyCount: function (nt) {
+            return emCount[nt];
+        }
+    };
+}
+function initArray(len, cb) {
+    var ret = new Array(len);
+    for (var i = 0; i < len; i++) {
+        ret[i] = cb(i);
+    }
+    return ret;
+}
+var CompressedPTable = (function () {
+    function CompressedPTable(ptable) {
+        this.g = ptable.g;
+        this.defred = ptable.defred;
+        this.stateCount = ptable.stateCount;
+        var actionCResult = compress(action(ptable));
+        var gotoCResult = compress(gotot(ptable));
+        this.disact = actionCResult.dps;
+        this.disgoto = gotoCResult.dps;
+        this.pact = initArray(actionCResult.len, function () { return null; });
+        this.checkact = initArray(actionCResult.len, function () { return 0; });
+        var cela = this;
+        ptable.forEachShift(function (it, state, token) {
+            console$1.assert(cela.pact[cela.disact[state] + token] === null);
+            cela.pact[cela.disact[state] + token] = it;
+            cela.checkact[cela.disact[state] + token] = state;
+        });
+        this.pgoto = initArray(gotoCResult.len, function () { return null; });
+        this.checkgoto = initArray(gotoCResult.len, function () { return 0; });
+        ptable.forEachGoto(function (it, state, nt) {
+            console$1.assert(cela.pgoto[cela.disgoto[state] + nt] === null);
+            cela.pgoto[cela.disgoto[state] + nt] = it;
+            cela.checkgoto[cela.disgoto[state] + nt] = state;
+        });
+    }
+    CompressedPTable.prototype.lookupShift = function (state, token) {
+        var index = this.disact[state] + token;
+        if (index >= 0 && index < this.pact.length && this.checkact[index] === state) {
+            return this.pact[this.disact[state] + token];
+        }
+        else {
+            return null;
+        }
+    };
+    CompressedPTable.prototype.lookupGoto = function (state, nt) {
+        var index = this.disgoto[state] + nt;
+        if (index >= 0 && index < this.pgoto.length && this.checkgoto[index] === state) {
+            return this.pgoto[this.disgoto[state] + nt];
+        }
+        else {
+            return null;
+        }
+    };
+    return CompressedPTable;
+}());
 
 var Rule = (function () {
     function Rule(g, lhs, line) {
@@ -2132,1704 +3007,2134 @@ var GBuilder = (function () {
     return GBuilder;
 }());
 
-var T;
-(function (T) {
-    T[T["EOF"] = 0] = "EOF";
-    T[T["NAME"] = 1] = "NAME";
-    T[T["STRING"] = 2] = "STRING";
-    T[T["OPT"] = 3] = "OPT";
-    T[T["BLOCK"] = 4] = "BLOCK";
-    T[T["ARROW"] = 5] = "ARROW";
-    T[T["EOL"] = 6] = "EOL";
-    T[T["OR"] = 7] = "OR";
-    T[T["SEPERATOR"] = 8] = "SEPERATOR";
-    T[T["LEFT_DIR"] = 9] = "LEFT_DIR";
-    T[T["RIGHT_DIR"] = 10] = "RIGHT_DIR";
-    T[T["NONASSOC_DIR"] = 11] = "NONASSOC_DIR";
-    T[T["LEX_DIR"] = 12] = "LEX_DIR";
-    T[T["PREC_DIR"] = 13] = "PREC_DIR";
-    T[T["USE_DIR"] = 14] = "USE_DIR";
-    T[T["HEADER_DIR"] = 15] = "HEADER_DIR";
-    T[T["EXTRA_ARG_DIR"] = 16] = "EXTRA_ARG_DIR";
-    T[T["TYPE_DIR"] = 17] = "TYPE_DIR";
-    T[T["INIT_DIR"] = 18] = "INIT_DIR";
-    T[T["LINE_COMMENT"] = 19] = "LINE_COMMENT";
-    T[T["BLOCK_COMMENT"] = 20] = "BLOCK_COMMENT";
-    T[T["GT"] = 21] = "GT";
-    T[T["LT"] = 22] = "LT";
-    T[T["DASH"] = 23] = "DASH";
-    T[T["BRA"] = 24] = "BRA";
-    T[T["KET"] = 25] = "KET";
-    T[T["CBRA"] = 26] = "CBRA";
-    T[T["CKET"] = 27] = "CKET";
-    T[T["COMMA"] = 28] = "COMMA";
-    T[T["PLUS"] = 29] = "PLUS";
-    T[T["EQU"] = 30] = "EQU";
-    T[T["STAR"] = 31] = "STAR";
-    T[T["QUESTION"] = 32] = "QUESTION";
-    T[T["WEDGE"] = 33] = "WEDGE";
-    T[T["OPEN_CURLY_BRA"] = 34] = "OPEN_CURLY_BRA";
-    T[T["CLOSE_CURLY_BRA"] = 35] = "CLOSE_CURLY_BRA";
-})(T || (T = {}));
-
+function nodeFromToken(t) {
+    return {
+        val: t.val,
+        ext: null,
+        startLine: t.startLine,
+        startColumn: t.startColumn,
+        endLine: t.endLine,
+        endColumn: t.endColumn
+    };
+}
+function nodeFromTrivalToken(t) {
+    return {
+        val: null,
+        ext: null,
+        startLine: t.startLine,
+        startColumn: t.startColumn,
+        endLine: t.endLine,
+        endColumn: t.endColumn
+    };
+}
+function newNode(val) {
+    return {
+        val: val,
+        ext: null,
+        startLine: 0,
+        startColumn: 0,
+        endLine: 0,
+        endColumn: 0
+    };
+}
+function unescape(s) {
+    return s
+        .replace(/\\n/g, '\n')
+        .replace(/\\t/g, '\t')
+        .replace(/\\r/g, '\r')
+        .replace(/\\\\/g, '\\');
+}
+function moveDFA0(c, ret) {
+    switch (ret.state) {
+        case 0:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if ((c >= 9 && c <= 10) || c === 13 || c === 32) {
+                ret.state = 1;
+            }
+            else if (c === 34) {
+                ret.state = 2;
+            }
+            else if (c === 36 || (c >= 65 && c <= 90) || c === 95 || (c >= 97 && c <= 122)) {
+                ret.state = 3;
+            }
+            else if (c === 37) {
+                ret.state = 4;
+            }
+            else if (c === 39) {
+                ret.state = 5;
+            }
+            else if (c === 40) {
+                ret.state = 6;
+            }
+            else if (c === 41) {
+                ret.state = 7;
+            }
+            else if (c === 42) {
+                ret.state = 8;
+            }
+            else if (c === 43) {
+                ret.state = 9;
+            }
+            else if (c === 44) {
+                ret.state = 10;
+            }
+            else if (c === 45) {
+                ret.state = 11;
+            }
+            else if (c === 47) {
+                ret.state = 12;
+            }
+            else if (c === 58) {
+                ret.state = 13;
+            }
+            else if (c === 59) {
+                ret.state = 14;
+            }
+            else if (c === 60) {
+                ret.state = 15;
+            }
+            else if (c === 61) {
+                ret.state = 16;
+            }
+            else if (c === 62) {
+                ret.state = 17;
+            }
+            else if (c === 63) {
+                ret.state = 18;
+            }
+            else if (c === 91) {
+                ret.state = 19;
+            }
+            else if (c === 93) {
+                ret.state = 20;
+            }
+            else if (c === 94) {
+                ret.state = 21;
+            }
+            else if (c === 123) {
+                ret.state = 22;
+            }
+            else if (c === 124) {
+                ret.state = 23;
+            }
+            else if (c === 125) {
+                ret.state = 24;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 1:
+            ret.hasArc = true;
+            ret.isEnd = true;
+            if ((c >= 9 && c <= 10) || c === 13 || c === 32) {
+                ret.state = 1;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 2:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c <= 9 || (c >= 11 && c <= 33) || (c >= 35 && c <= 91) || c >= 93) {
+                ret.state = 25;
+            }
+            else if (c === 34) {
+                ret.state = 26;
+            }
+            else if (c === 92) {
+                ret.state = 27;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 3:
+            ret.hasArc = true;
+            ret.isEnd = true;
+            if (c === 36 || (c >= 65 && c <= 90) || c === 95 || (c >= 97 && c <= 122)) {
+                ret.state = 28;
+            }
+            else if ((c >= 48 && c <= 57)) {
+                ret.state = 29;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 4:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 37) {
+                ret.state = 30;
+            }
+            else if (c === 101) {
+                ret.state = 31;
+            }
+            else if (c === 104) {
+                ret.state = 32;
+            }
+            else if (c === 108) {
+                ret.state = 33;
+            }
+            else if (c === 110) {
+                ret.state = 34;
+            }
+            else if (c === 111) {
+                ret.state = 35;
+            }
+            else if (c === 112) {
+                ret.state = 36;
+            }
+            else if (c === 114) {
+                ret.state = 37;
+            }
+            else if (c === 116) {
+                ret.state = 38;
+            }
+            else if (c === 117) {
+                ret.state = 39;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 5:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c <= 9 || (c >= 11 && c <= 38) || (c >= 40 && c <= 91) || c >= 93) {
+                ret.state = 40;
+            }
+            else if (c === 39) {
+                ret.state = 41;
+            }
+            else if (c === 92) {
+                ret.state = 42;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 6:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 7:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 8:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 9:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 10:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 11:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 12:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 42) {
+                ret.state = 43;
+            }
+            else if (c === 47) {
+                ret.state = 44;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 13:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 14:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 15:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 16:
+            ret.hasArc = true;
+            ret.isEnd = true;
+            if (c === 62) {
+                ret.state = 45;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 17:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 18:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 19:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 20:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 21:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 22:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 23:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 24:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 25:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c <= 9 || (c >= 11 && c <= 33) || (c >= 35 && c <= 91) || c >= 93) {
+                ret.state = 25;
+            }
+            else if (c === 34) {
+                ret.state = 26;
+            }
+            else if (c === 92) {
+                ret.state = 27;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 26:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 27:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 34 || c === 39 || c === 92 || c === 98 || c === 102 || c === 110 || c === 114 || c === 116) {
+                ret.state = 46;
+            }
+            else if (c === 117 || c === 120) {
+                ret.state = 47;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 28:
+            ret.hasArc = true;
+            ret.isEnd = true;
+            if (c === 36 || (c >= 65 && c <= 90) || c === 95 || (c >= 97 && c <= 122)) {
+                ret.state = 28;
+            }
+            else if ((c >= 48 && c <= 57)) {
+                ret.state = 29;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 29:
+            ret.hasArc = true;
+            ret.isEnd = true;
+            if (c === 36 || (c >= 65 && c <= 90) || c === 95 || (c >= 97 && c <= 122)) {
+                ret.state = 28;
+            }
+            else if ((c >= 48 && c <= 57)) {
+                ret.state = 29;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 30:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 31:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 109) {
+                ret.state = 48;
+            }
+            else if (c === 120) {
+                ret.state = 49;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 32:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 101) {
+                ret.state = 50;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 33:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 101) {
+                ret.state = 51;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 34:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 111) {
+                ret.state = 52;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 35:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 112) {
+                ret.state = 53;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 36:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 114) {
+                ret.state = 54;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 37:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 105) {
+                ret.state = 55;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 38:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 121) {
+                ret.state = 56;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 39:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 115) {
+                ret.state = 57;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 40:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c <= 9 || (c >= 11 && c <= 38) || (c >= 40 && c <= 91) || c >= 93) {
+                ret.state = 40;
+            }
+            else if (c === 39) {
+                ret.state = 41;
+            }
+            else if (c === 92) {
+                ret.state = 42;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 41:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 42:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 34 || c === 39 || c === 92 || c === 98 || c === 102 || c === 110 || c === 114 || c === 116) {
+                ret.state = 58;
+            }
+            else if (c === 117 || c === 120) {
+                ret.state = 59;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 43:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c <= 41 || (c >= 43 && c <= 46) || c >= 48) {
+                ret.state = 60;
+            }
+            else if (c === 42) {
+                ret.state = 61;
+            }
+            else if (c === 47) {
+                ret.state = 62;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 44:
+            ret.hasArc = true;
+            ret.isEnd = true;
+            if (c <= 9 || c >= 11) {
+                ret.state = 63;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 45:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 46:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c <= 9 || (c >= 11 && c <= 33) || (c >= 35 && c <= 91) || c >= 93) {
+                ret.state = 25;
+            }
+            else if (c === 34) {
+                ret.state = 26;
+            }
+            else if (c === 92) {
+                ret.state = 27;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 47:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if ((c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102)) {
+                ret.state = 64;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 48:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 112) {
+                ret.state = 65;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 49:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 116) {
+                ret.state = 66;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 50:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 97) {
+                ret.state = 67;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 51:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 102) {
+                ret.state = 68;
+            }
+            else if (c === 120) {
+                ret.state = 69;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 52:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 110) {
+                ret.state = 70;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 53:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 116) {
+                ret.state = 71;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 54:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 101) {
+                ret.state = 72;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 55:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 103) {
+                ret.state = 73;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 56:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 112) {
+                ret.state = 74;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 57:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 101) {
+                ret.state = 75;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 58:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c <= 9 || (c >= 11 && c <= 38) || (c >= 40 && c <= 91) || c >= 93) {
+                ret.state = 40;
+            }
+            else if (c === 39) {
+                ret.state = 41;
+            }
+            else if (c === 92) {
+                ret.state = 42;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 59:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if ((c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102)) {
+                ret.state = 76;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 60:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c <= 41 || (c >= 43 && c <= 46) || c >= 48) {
+                ret.state = 60;
+            }
+            else if (c === 42) {
+                ret.state = 61;
+            }
+            else if (c === 47) {
+                ret.state = 77;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 61:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c <= 46 || c >= 48) {
+                ret.state = 78;
+            }
+            else if (c === 47) {
+                ret.state = 79;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 62:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 47) {
+                ret.state = 80;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 63:
+            ret.hasArc = true;
+            ret.isEnd = true;
+            if (c <= 9 || c >= 11) {
+                ret.state = 63;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 64:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c <= 9 || (c >= 11 && c <= 33) || (c >= 35 && c <= 47) || (c >= 58 && c <= 64) || (c >= 71 && c <= 91) || (c >= 93 && c <= 96) || c >= 103) {
+                ret.state = 25;
+            }
+            else if (c === 34) {
+                ret.state = 26;
+            }
+            else if ((c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102)) {
+                ret.state = 81;
+            }
+            else if (c === 92) {
+                ret.state = 27;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 65:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 116) {
+                ret.state = 82;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 66:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 114) {
+                ret.state = 83;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 67:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 100) {
+                ret.state = 84;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 68:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 116) {
+                ret.state = 85;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 69:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 70:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 97) {
+                ret.state = 86;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 71:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 105) {
+                ret.state = 87;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 72:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 99) {
+                ret.state = 88;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 73:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 104) {
+                ret.state = 89;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 74:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 101) {
+                ret.state = 90;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 75:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 76:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c <= 9 || (c >= 11 && c <= 38) || (c >= 40 && c <= 47) || (c >= 58 && c <= 64) || (c >= 71 && c <= 91) || (c >= 93 && c <= 96) || c >= 103) {
+                ret.state = 40;
+            }
+            else if (c === 39) {
+                ret.state = 41;
+            }
+            else if ((c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102)) {
+                ret.state = 91;
+            }
+            else if (c === 92) {
+                ret.state = 42;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 77:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c <= 41 || (c >= 43 && c <= 46) || c >= 48) {
+                ret.state = 60;
+            }
+            else if (c === 42) {
+                ret.state = 61;
+            }
+            else if (c === 47) {
+                ret.state = 77;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 78:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c <= 41 || (c >= 43 && c <= 46) || c >= 48) {
+                ret.state = 60;
+            }
+            else if (c === 42) {
+                ret.state = 61;
+            }
+            else if (c === 47) {
+                ret.state = 62;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 79:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 80:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c <= 41 || (c >= 43 && c <= 46) || c >= 48) {
+                ret.state = 60;
+            }
+            else if (c === 42) {
+                ret.state = 61;
+            }
+            else if (c === 47) {
+                ret.state = 62;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 81:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c <= 9 || (c >= 11 && c <= 33) || (c >= 35 && c <= 47) || (c >= 58 && c <= 64) || (c >= 71 && c <= 91) || (c >= 93 && c <= 96) || c >= 103) {
+                ret.state = 25;
+            }
+            else if (c === 34) {
+                ret.state = 26;
+            }
+            else if ((c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102)) {
+                ret.state = 81;
+            }
+            else if (c === 92) {
+                ret.state = 27;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 82:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 121) {
+                ret.state = 92;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 83:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 97) {
+                ret.state = 93;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 84:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 101) {
+                ret.state = 94;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 85:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 86:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 115) {
+                ret.state = 95;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 87:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 111) {
+                ret.state = 96;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 88:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 89:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 116) {
+                ret.state = 97;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 90:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 91:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c <= 9 || (c >= 11 && c <= 38) || (c >= 40 && c <= 47) || (c >= 58 && c <= 64) || (c >= 71 && c <= 91) || (c >= 93 && c <= 96) || c >= 103) {
+                ret.state = 40;
+            }
+            else if (c === 39) {
+                ret.state = 41;
+            }
+            else if ((c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102)) {
+                ret.state = 91;
+            }
+            else if (c === 92) {
+                ret.state = 42;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 92:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 93:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 95) {
+                ret.state = 98;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 94:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 114) {
+                ret.state = 99;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 95:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 115) {
+                ret.state = 100;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 96:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 110) {
+                ret.state = 101;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 97:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 98:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 97) {
+                ret.state = 102;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 99:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 100:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 111) {
+                ret.state = 103;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 101:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 102:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 114) {
+                ret.state = 104;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 103:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 99) {
+                ret.state = 105;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 104:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 103) {
+                ret.state = 106;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 105:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 106:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        default:
+            ret.state = -1;
+            ret.hasArc = false;
+    }
+}
+function moveDFA1(c, ret) {
+    switch (ret.state) {
+        case 0:
+            ret.hasArc = true;
+            ret.isEnd = true;
+            if (c <= 122 || c === 124 || c >= 126) {
+                ret.state = 1;
+            }
+            else if (c === 123) {
+                ret.state = 2;
+            }
+            else if (c === 125) {
+                ret.state = 3;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 1:
+            ret.hasArc = true;
+            ret.isEnd = true;
+            if (c <= 122 || c === 124 || c >= 126) {
+                ret.state = 1;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 2:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 3:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        default:
+            ret.state = -1;
+            ret.hasArc = false;
+    }
+}
+var jjlexers = [
+    moveDFA0,
+    moveDFA1,
+];
+var jjlexTokens0 = [
+    -1, -1, -1, 1, -1, -1, 18, 19, 24, 25,
+    33, 26, -1, 27, 29, 17, 20, 16, 23, 21,
+    22, 32, 3, 31, 4, -1, 2, -1, 1, 1,
+    30, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, 2, -1, -1, -1, 28, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, 6,
+    -1, -1, -1, -1, -1, 10, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, 7, -1, -1, 15, -1,
+    14, -1, 13, -1, -1, -1, -1, 8, -1, 11,
+    -1, 5, -1, -1, -1, 9, 12,
+];
+var jjlexTokens1 = [
+    34, 34, 3, 4,
+];
+var jjtokenCount = 35;
+var jjactERR = 163;
+var jjpact = [
+    9, 7, 13, 14, 15, 143, 10, 11, 77, 12,
+    -106, -45, 162, 110, -45, 151, 152, 150, 107, 108,
+    142, 140, -82, 110, 141, 5, -45, -46, 107, 108,
+    -46, 89, -100, 86, 89, -100, -82, 147, -82, 24,
+    89, 52, -46, 24, 89, -107, 88, 93, 121, 88,
+    54, 60, 55, -34, 58, 88, 48, 43, 19, 88,
+    42, 94, 37, 38, 161, 133, 159, 158, 157, 133,
+    155, 120, 145, 49, 144, 52, 137, 104, 125, 124,
+    123, 122, 118, -100, 114, 113, 112, 29, 104, 101,
+    -89, 99, 98, 97, 96, 95, 90, 83, 81, 80,
+    75, 71, 69, 68, 64, 63, 62, 57, 50, 41,
+    39, 33, 28, 25, 19, 4, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+];
+var jjdisact = [
+    -35, 115, -5, -35, 113, -35, -35, 42, 110, -35,
+    -35, 111, -35, -35, -35, 57, -35, -35, -35, 94,
+    38, -35, -35, -35, -35, -35, -35, -35, -35, -35,
+    35, 107, 108, -35, 56, -35, -35, -35, -35, 40,
+    -35, -35, 88, 21, -35, 97, 50, -35, 105, 103,
+    -35, -35, 101, -35, -35, 90, 84, -35, -35, -35,
+    84, -35, -35, -35, -35, 85, 7, -35, 98, 78,
+    96, 41, -35, 32, 32, -35, 76, 29, 28, -35,
+    78, 78, 66, 88, -35, -35, -35, 90, -35, 89,
+    -35, -35, -35, 88, -35, 61, -35, -35, 70, 84,
+    -35, 68, -35, 80, 66, -35, 80, -35, -35, 78,
+    76, -35, -35, -35, -35, 57, -35, 50, -35, -35,
+    3, -35, -35, -35, -7, -35, 45, 11, -35, 3,
+    41, -35, 46, -35, 7, 15, -35, -35, -8, -35,
+    39, 69, -35, 67, 66, 63, -35, -5, -35, -35,
+    -35, -35, 47, 63, 48, -35, -35, -35, -35, -10,
+    -35, -35,
+];
+var jjcheckact = [
+    2, 2, 2, 2, 2, 129, 2, 2, 66, 2,
+    134, 147, 159, 124, 147, 138, 138, 138, 124, 124,
+    129, 129, 66, 120, 129, 2, 147, 127, 120, 120,
+    127, 77, 77, 74, 74, 73, 66, 135, 66, 20,
+    20, 134, 127, 7, 7, 71, 77, 78, 135, 74,
+    43, 46, 43, 73, 46, 20, 39, 34, 15, 7,
+    34, 78, 30, 30, 154, 153, 152, 145, 144, 143,
+    141, 140, 132, 39, 130, 71, 126, 117, 115, 110,
+    109, 106, 104, 103, 101, 99, 98, 15, 95, 93,
+    89, 87, 83, 82, 81, 80, 76, 70, 69, 68,
+    65, 60, 56, 55, 52, 49, 48, 45, 42, 32,
+    31, 19, 11, 8, 4, 1, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+];
+var jjdefred = [
+    3, -1, -1, 0, -1, 2, 4, -1, -1, 99,
+    99, -1, 11, 12, 13, -1, 67, 68, 69, 21,
+    6, 15, 16, 17, 19, 8, 9, 10, 1, 66,
+    -1, -1, -1, 14, -1, 75, 71, 72, 25, -1,
+    22, 7, -1, -1, 74, 78, 30, 20, -1, -1,
+    102, 104, -1, 70, 75, 84, -1, 5, 24, 26,
+    -1, 23, 18, 103, 73, 94, 86, 82, -1, -1,
+    42, 105, 76, 95, -1, 83, 87, 33, -1, 80,
+    -1, -1, -1, -1, 96, 97, 98, -1, 93, 85,
+    90, 91, 77, -1, 42, 32, 42, 107, -1, -1,
+    79, -1, 28, 33, -1, 37, -1, 39, 40, -1,
+    -1, 92, 89, 27, 31, -1, 35, 32, 48, 58,
+    99, 38, 41, 103, 99, 29, 43, 48, 47, -1,
+    60, 63, 64, 36, 100, -1, 48, 46, 53, 42,
+    59, -1, 57, -1, -1, -1, 34, 48, 49, 50,
+    51, 52, -1, 61, -1, 62, 65, 101, 54, -1,
+    56, 55,
+];
+var jjpgoto = [
+    5, 138, 7, 84, 115, 91, 115, 77, 75, 31,
+    20, 21, 137, 129, 148, 137, 129, 135, 105, 86,
+    55, 133, 72, 73, 35, 33, 19, 159, 130, 131,
+    155, 153, 145, 78, 50, 52, 90, 116, 110, 116,
+    110, 114, 115, 50, 52, 83, 81, 118, 134, 108,
+    110, 22, 108, 110, 65, 66, 58, 125, 60, 29,
+    17, 102, 99, 69, 46, 22, 64, 45, 39, 30,
+    26, 110, 15, 16, 17, 116, 110, 1, 2, 152,
+    118, 147, 128, 129, 126, 127, 128, 129, 104, 118,
+    101, 118, 71, 43, 44, 45, 34, 25, 110, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1,
+];
+var jjdisgoto = [
+    76, -57, -3, -57, 40, -57, 22, 4, -57, 47,
+    20, -57, -57, -57, -57, 26, -57, -57, 34, 0,
+    18, -57, -57, -57, 88, -57, -57, -57, -57, -57,
+    -12, -57, 58, -57, -57, 56, -57, -57, 53, -57,
+    -57, -57, -57, -57, -57, -20, 44, -57, -57, -57,
+    -57, -57, -57, -57, 28, 12, -57, -57, -57, 50,
+    -57, -57, -57, 39, -57, -26, -37, -57, -8, -57,
+    26, -11, -57, -13, -28, -57, -57, -11, -57, -57,
+    -57, -57, -57, -57, -57, -57, -57, -57, -57, 16,
+    -57, -57, -57, -57, 70, 46, 68, -57, -57, -57,
+    -57, -57, -57, 25, -57, -57, -57, -57, -57, -57,
+    -57, -57, -57, -57, -57, -57, -57, 42, 62, -57,
+    2, -57, -57, -5, -1, -57, -57, -9, -57, -26,
+    -57, -57, -57, -57, -20, -57, 58, -57, -12, 59,
+    3, -57, -57, -1, -57, -57, -57, -12, -57, -57,
+    -57, -57, -57, -2, -57, -57, -57, -57, -57, -57,
+    -57, -57,
+];
+var jjruleLen = [
+    2, 4, 2, 0, 0, 6, 2, 4, 2, 2,
+    2, 1, 1, 1, 2, 1, 1, 1, 4, 0,
+    3, 0, 1, 3, 2, 0, 0, 6, 5, 7,
+    0, 2, 0, 0, 4, 1, 3, 1, 2, 1,
+    1, 2, 0, 2, 3, 1, 2, 1, 0, 3,
+    1, 1, 1, 0, 3, 4, 3, 1, 1, 0,
+    1, 0, 3, 1, 1, 3, 2, 1, 1, 0,
+    5, 1, 1, 3, 1, 0, 4, 4, 0, 3,
+    1, 1, 1, 2, 0, 2, 0, 1, 0, 4,
+    2, 2, 3, 1, 0, 1, 2, 2, 2, 0,
+    0, 5, 2, 0, 1, 0, 0, 5,
+];
+var jjlhs = [
+    0, 1, 2, 2, 4, 3, 3, 3, 3, 3,
+    3, 5, 5, 5, 6, 6, 7, 7, 8, 8,
+    9, 9, 10, 10, 11, 11, 13, 12, 12, 12,
+    14, 15, 15, 17, 16, 16, 18, 18, 19, 19,
+    19, 19, 21, 20, 22, 22, 23, 23, 25, 24,
+    26, 26, 26, 26, 27, 27, 27, 27, 28, 28,
+    29, 29, 30, 30, 31, 31, 32, 32, 33, 35,
+    34, 36, 36, 37, 37, 39, 38, 40, 40, 41,
+    41, 42, 42, 43, 43, 44, 44, 45, 46, 45,
+    45, 45, 47, 47, 48, 48, 48, 49, 49, 51,
+    52, 50, 53, 53, 54, 55, 56, 54,
+];
+var jjtokenNames = [
+    "EOF", "NAME", "STRING",
+    "OPEN_BLOCK", "CLOSE_BLOCK", "OPT_DIR",
+    "LEX_DIR", "LEFT_DIR", "RIGHT_DIR",
+    "NONASSOC_DIR", "USE_DIR", "HEADER_DIR",
+    "EXTRA_ARG_DIR", "EMPTY", "TYPE_DIR",
+    "PREC_DIR", "GT", "LT",
+    "BRA", "KET", "EQU",
+    "CBRA", "CKET", "QUESTION",
+    "STAR", "PLUS", "DASH",
+    "COLON", "ARROW", "EOL",
+    "SEPERATOR", "OR", "WEDGE",
+    "COMMA", "ANY_CODE",
+];
+var jjtokenAlias = [
+    null, null, null,
+    "{", "}", "%option",
+    "%lex", "%left", "%right",
+    "%nonassoc", "%use", "%header",
+    "%extra_arg", "%empty", "%type",
+    "%prec", ">", "<",
+    "(", ")", "=",
+    "[", "]", "?",
+    "*", "+", "-",
+    ":", "=>", ";",
+    "%%", "|", "^",
+    ",", null,
+];
+function tokenToString(tk) {
+    return jjtokenAlias[tk] === null ? "<" + jjtokenNames[tk] + ">" : "\"" + jjtokenAlias[tk] + "\"";
+}
 var Token = (function () {
-    function Token() {
-        this.val = null;
+    function Token(id, val, startLine, startColumn, endLine, endColumn) {
+        this.id = id;
+        this.val = val;
+        this.startLine = startLine;
+        this.startColumn = startColumn;
+        this.endLine = endLine;
+        this.endColumn = endColumn;
     }
     Token.prototype.clone = function () {
-        var t = new Token();
-        t.id = this.id;
-        t.line = this.line;
-        t.val = this.val;
-        return t;
+        return new Token(this.id, this.val, this.startLine, this.startColumn, this.endLine, this.endColumn);
+    };
+    Token.prototype.toString = function () {
+        return (jjtokenAlias[this.id] === null ?
+            "<" + jjtokenNames[this.id] + ">" :
+            "\"" + jjtokenAlias[this.id] + "\"") + ("(\"" + this.val + "\")");
     };
     return Token;
 }());
-function scan(opt) {
-    if (opt === void 0) { opt = {}; }
-    var highlight = !!opt.isHighlight;
-    var line = 1;
-    var stream = null;
-    var c = null;
-    function eof() {
-        return c === null;
+var Parser = (function () {
+    function Parser() {
+        this._marker = { state: -1, line: 0, column: 0 };
+        this._lrState = [];
+        this._sematicS = [];
+        this._handlers = {};
+        this.init();
     }
-    function isBlank(c) {
-        return c == ' ' || c == '\n' || c == '\t';
-    }
-    function nc() {
-        if (c === '\n') {
-            line++;
-        }
-        stream.next();
-        c = stream.peek();
-    }
-    function err(c1) {
-        var s1 = '';
-        if (eof()) {
-            s1 = 'unexpected end of file';
-        }
-        else {
-            s1 = "unexpected character \"" + c + "\"";
-        }
-        if (c1) {
-            throw new CompilationError(s1 + " after \"" + c1 + "\"", line);
-        }
-        else {
-            throw new CompilationError(s1, line);
-        }
-    }
-    function iss(s) {
-        var ii = 0;
-        while (ii < s.length) {
-            if (s.charAt(ii++) !== c) {
-                return false;
-            }
-            nc();
-        }
-        return true;
-    }
-    var escapes = {
-        'n': '\n',
-        't': '\t',
-        'r': '\r'
+    Parser.prototype.init = function () {
+        this._lexState = [0];
+        this._state = 0;
+        this._matched = '';
+        this._token = new Token(-1, null, 0, 0, 0, 0);
+        this._marker.state = -1;
+        this._backupCount = 0;
+        this._line = this._tline = 1;
+        this._column = this._tcolumn = 1;
+        this._lrState = [0];
+        this._sematicS = [];
+        this._sematicVal = null;
+        this._stop = false;
     };
-    function escapeChar(regexp) {
-        var tc = c;
-        if (eof()) {
-            return '';
-        }
-        nc();
-        var ret = escapes[tc];
-        if (ret !== undefined) {
-            return ret;
-        }
-        else {
-            if (regexp) {
-                return '\\' + tc;
+    Parser.prototype._setImg = function (s) {
+        this._matched = s;
+        this._tline = this._line;
+        this._tcolumn = this._column;
+    };
+    Parser.prototype._prepareToken = function (tid) {
+        this._token.id = tid;
+        this._token.val = this._matched;
+        this._token.startLine = this._tline;
+        this._token.startColumn = this._tcolumn;
+        this._token.endLine = this._line;
+        this._token.endColumn = this._column;
+        this._matched = '';
+        this._tline = this._line;
+        this._tcolumn = this._column;
+    };
+    Parser.prototype._returnToken = function () {
+        this._emit('token', jjtokenNames[this._token.id], this._token.val);
+        while (!this._stop && !this._acceptToken(this._token))
+            ;
+        this._token.id = -1;
+    };
+    Parser.prototype._emit = function (name, a1, a2, a3) {
+        var cbs = this._handlers[name];
+        if (cbs) {
+            for (var _i = 0, cbs_1 = cbs; _i < cbs_1.length; _i++) {
+                var cb = cbs_1[_i];
+                cb(a1, a2, a3);
             }
-            else {
-                if (tc === '\\') {
-                    return '\\';
-                }
-                else {
-                    return '\\' + tc;
-                }
-            }
-        }
-    }
-    function handleString() {
-        var eos = c;
-        var ret = '';
-        nc();
-        while (c != eos) {
-            if (eof()) {
-                throw new CompilationError('unterminated string literal', line);
-            }
-            else if (c === '\\') {
-                nc();
-                ret += escapeChar(false);
-            }
-            else {
-                ret += c;
-                nc();
-            }
-        }
-        nc();
-        return ret;
-    }
-    function next(token) {
-        token.val = null;
-        while (isBlank(c) && !eof()) {
-            nc();
-        }
-        token.line = line;
-        if (eof()) {
-            token.id = T.EOF;
-            return token;
-        }
-        lex: switch (c) {
-            case '%':
-                nc();
-                if (iss('opt')) {
-                    token.id = T.OPT;
-                    break lex;
-                }
-                else if (iss('le')) {
-                    if (iss('ft')) {
-                        token.id = T.LEFT_DIR;
-                        break lex;
-                    }
-                    else if (iss('x')) {
-                        token.id = T.LEX_DIR;
-                        break lex;
-                    }
-                }
-                else if (iss('right')) {
-                    token.id = T.RIGHT_DIR;
-                    break lex;
-                }
-                else if (iss('nonassoc')) {
-                    token.id = T.NONASSOC_DIR;
-                    break lex;
-                }
-                else if (iss('prec')) {
-                    token.id = T.PREC_DIR;
-                    break lex;
-                }
-                else if (iss('use')) {
-                    token.id = T.USE_DIR;
-                    break lex;
-                }
-                else if (iss('header')) {
-                    token.id = T.HEADER_DIR;
-                    break lex;
-                }
-                else if (iss('extra_arg')) {
-                    token.id = T.EXTRA_ARG_DIR;
-                    break lex;
-                }
-                else if (iss('init')) {
-                    token.id = T.INIT_DIR;
-                    break lex;
-                }
-                else if (iss('type')) {
-                    token.id = T.TYPE_DIR;
-                    break lex;
-                }
-                else if (c == '%') {
-                    nc();
-                    token.id = T.SEPERATOR;
-                    break lex;
-                }
-                err('%');
-            case '{':
-                nc();
-                if (highlight) {
-                    token.id = T.OPEN_CURLY_BRA;
-                    break lex;
-                }
-                else {
-                    token.id = T.BLOCK;
-                    token.val = '';
-                    var st = 1;
-                    while (st > 0) {
-                        if (eof()) {
-                            throw new CompilationError('unclosed block', line);
-                        }
-                        if (c == '{') {
-                            st++;
-                            token.val += c;
-                        }
-                        else if (c == '}') {
-                            st--;
-                            st > 0 && (token.val += c);
-                        }
-                        else {
-                            token.val += c;
-                        }
-                        nc();
-                    }
-                    break lex;
-                }
-            case '/':
-                nc();
-                if (c === '/') {
-                    nc();
-                    token.val = '//';
-                    while (c !== '\n' && !eof()) {
-                        token.val += c;
-                        nc();
-                    }
-                    token.id = T.LINE_COMMENT;
-                    break lex;
-                }
-                else if (c === '*') {
-                    nc();
-                    token.val = '/*';
-                    while (!eof()) {
-                        if (c === '*') {
-                            nc();
-                            if (c === '/') {
-                                nc();
-                                break;
-                            }
-                            else if (eof()) {
-                                break;
-                            }
-                            else {
-                                token.val += '*';
-                            }
-                        }
-                        else {
-                            token.val += c;
-                            nc();
-                        }
-                    }
-                    token.id = T.BLOCK_COMMENT;
-                    break lex;
-                }
-                err('/');
-            case '|':
-                nc();
-                token.id = T.OR;
-                break lex;
-            case ';':
-                nc();
-                token.id = T.EOL;
-                break lex;
-            case ':':
-                nc();
-                token.id = T.ARROW;
-                break lex;
-            case '=':
-                nc();
-                token.id = T.EQU;
-                break lex;
-            case '-':
-                nc();
-                if (c == '>') {
-                    nc();
-                    token.id = T.ARROW;
-                    break lex;
-                }
-                else {
-                    token.id = T.DASH;
-                    break lex;
-                }
-            case '\'':
-            case '"':
-                token.id = T.STRING;
-                token.val = handleString();
-                break lex;
-            case '<':
-                nc();
-                token.id = T.LT;
-                break lex;
-            case '>':
-                nc();
-                token.id = T.GT;
-                break lex;
-            case ',':
-                nc();
-                token.id = T.COMMA;
-                break lex;
-            case '+':
-                nc();
-                token.id = T.PLUS;
-                break lex;
-            case '?':
-                nc();
-                token.id = T.QUESTION;
-                break lex;
-            case '*':
-                nc();
-                token.id = T.STAR;
-                break lex;
-            case '[':
-                nc();
-                token.id = T.CBRA;
-                break lex;
-            case ']':
-                nc();
-                token.id = T.CKET;
-                break lex;
-            case '(':
-                nc();
-                token.id = T.BRA;
-                break lex;
-            case ')':
-                nc();
-                token.id = T.KET;
-                break lex;
-            case '^':
-                nc();
-                token.id = T.WEDGE;
-                break lex;
-            default:
-                if (/[A-Za-z_$]/.test(c)) {
-                    token.id = T.NAME;
-                    token.val = c;
-                    nc();
-                    while (/[A-Za-z0-9_$]/.test(c) && !eof()) {
-                        token.val += c;
-                        nc();
-                    }
-                    break lex;
-                }
-                nc();
-                err();
-        }
-        
-    }
-    
-    return {
-        next: next,
-        init: function (s) {
-            stream = s;
-            c = s.peek();
         }
     };
-}
-function parse(scanner, ctx) {
-    var token = new Token();
-    var gb = new GBuilder(ctx);
-    function nt() {
-        scanner.next(token);
-    }
-    function expect(id) {
-        if (token.id !== id) {
-            throw new CompilationError("unexpected token \"" + T[token.id] + "\", expecting \"" + T[id] + "\"", token.line);
-        }
-        nt();
-    }
-    function expectToken(id, cb) {
-        var val = token.val;
-        var line = token.line;
-        expect(id);
-        cb(val, line);
-    }
-    function file() {
-        options();
-        expect(T.SEPERATOR);
-        rules();
-        expect(T.EOF);
-    }
-    function prTokens(assoc) {
-        do {
-            if (token.id === T.STRING) {
-                gb.defineTokenPrec(token.val, assoc, TokenRefType.STRING, token.line);
-            }
-            else if (token.id === T.NAME) {
-                gb.defineTokenPrec(token.val, assoc, TokenRefType.NAME, token.line);
-            }
-            else if (token.id === T.LT) {
-                nt();
-                var tname = token.val;
-                var tline = token.line;
-                expect(T.NAME);
-                expect(T.GT);
-                gb.defineTokenPrec(tname, assoc, TokenRefType.TOKEN, tline);
-            }
-            else {
-                throw new CompilationError("unexpected token \"" + T[token.id] + "\", expecting string or name or \"<\"", token.line);
-            }
-            nt();
-        } while (token.id === T.STRING || token.id === T.NAME || token.id === T.LT);
-        gb.incPr();
-    }
-    function options() {
-        while (1) {
-            switch (token.id) {
-                case T.LEFT_DIR:
-                    nt();
-                    prTokens(Assoc.LEFT);
-                    break;
-                case T.RIGHT_DIR:
-                    nt();
-                    prTokens(Assoc.RIGHT);
-                    break;
-                case T.NONASSOC_DIR:
-                    nt();
-                    prTokens(Assoc.NON);
-                    break;
-                case T.OPT:
-                    nt();
-                    var name = token.val;
-                    expect(T.NAME);
-                    var s = token.val;
-                    expect(T.STRING);
-                    gb.setOpt(name, s);
-                    break;
-                case T.LEX_DIR:
-                    nt();
-                    lexRule();
-                    break;
-                case T.HEADER_DIR:
-                    nt();
-                    expectToken(T.BLOCK, function (val, line) { return gb.setHeader(val); });
-                    break;
-                case T.EXTRA_ARG_DIR:
-                    nt();
-                    expectToken(T.BLOCK, function (val, line) { return gb.setExtraArg(val); });
-                    break;
-                case T.TYPE_DIR:
-                    nt();
-                    
-                    var tname = token.val;
-                    expect(T.NAME);
-                    gb.setType(tname);
-                    break;
-                default: return;
-            }
-        }
-    }
-    function lexRule() {
-        gb.lexBuilder.prepareLex();
-        if (token.id === T.LT) {
-            nt();
-            states();
-            expect(T.GT);
-        }
-        else {
-            gb.lexBuilder.selectState('DEFAULT');
-        }
-        expect(T.CBRA);
-        while (token.id !== T.CKET) {
-            lexItem();
-        }
-        expect(T.CKET);
-    }
-    function lexItem() {
-        if (token.id + 0 === T.NAME) {
-            var vname = token.val;
-            var line = token.line;
-            nt();
-            expect(T.EQU);
-            expect(T.LT);
-            gb.lexBuilder.prepareVar(vname, line);
-            regexp();
-            gb.lexBuilder.endVar();
-            expect(T.GT);
-        }
-        else if (token.id + 0 === T.LT) {
-            nt();
-            gb.lexBuilder.newState();
-            var label = 'untitled';
-            var acts = [];
-            if (token.id === T.NAME) {
-                var tname = token.val;
-                var tline = token.line;
-                label = tname;
-                nt();
-                expect(T.ARROW);
-                regexp();
-                var tdef = gb.defToken(tname, gb.lexBuilder.possibleAlias, tline);
-                acts.push(returnToken(tdef));
-            }
-            else {
-                regexp();
-            }
-            expect(T.GT);
-            if (token.id === T.ARROW) {
-                nt();
-                lexActions(acts);
-            }
-            gb.lexBuilder.end(acts, label);
-        }
-    }
-    function lexActions(acts) {
-        if (token.id === T.CBRA) {
-            token.id += 0;
-            nt();
-            lexAction(acts);
-            while (token.id === T.COMMA) {
-                nt();
-                lexAction(acts);
-            }
-            expect(T.CKET);
-        }
-        else if (token.id === T.BLOCK) {
-            acts.push(blockAction(token.val, token.line));
-            nt();
-        }
-        else {
-            throw new CompilationError("unexpected token \"" + T[token.id] + "\"", token.line);
-        }
-    }
-    function lexAction(acts) {
-        if (token.id === T.PLUS) {
-            nt();
-            var vn_1 = token.val;
-            var line_1 = token.line;
-            expect(T.NAME);
-            gb.lexBuilder.requiringState.wait(vn_1, function (su, sn) {
-                if (su) {
-                    acts.push(pushState(sn));
-                }
-                else {
-                    ctx.err(new CompilationError("state \"" + vn_1 + "\" is undefined", line_1));
-                }
-            });
-        }
-        else if (token.id === T.DASH) {
-            nt();
-            acts.push(popState());
-        }
-        else if (token.id === T.BLOCK) {
-            nt();
-            acts.push(blockAction(token.val, token.line));
-        }
-        else if (token.id === T.EQU) {
-            nt();
-            var s = token.val;
-            expect(T.STRING);
-            acts.push(setImg(s));
-        }
-        else {
-            throw new CompilationError("unexpected token \"" + T[token.id] + "\"", token.line);
-        }
-    }
-    function states() {
-        var tname = token.val;
-        expect(T.NAME);
-        gb.lexBuilder.selectState(tname);
-        while (token.id === T.COMMA) {
-            nt();
-            tname = token.val;
-            expect(T.NAME);
-            gb.lexBuilder.selectState(tname);
-        }
-    }
-    function regexp() {
-        gb.lexBuilder.enterUnion();
-        simpleRE();
-        gb.lexBuilder.endUnionItem();
-        while (token.id === T.OR) {
-            nt();
-            simpleRE();
-            gb.lexBuilder.endUnionItem();
-        }
-        gb.lexBuilder.leaveUnion();
-    }
-    function simpleRE() {
-        do {
-            basicRE();
-        } while (token.id !== T.GT && token.id !== T.OR && token.id !== T.KET);
-    }
-    function basicRE() {
-        gb.lexBuilder.enterSimple();
-        primitiveRE();
-        switch (token.id) {
-            case T.PLUS:
-                nt();
-                gb.lexBuilder.simplePostfix('+');
+    Parser.prototype.on = function (name, cb) {
+        this._handlers[name] || (this._handlers[name] = []);
+        this._handlers[name].push(cb);
+    };
+    Parser.prototype._doLexAction0 = function (jjstaten) {
+        var jjtk = jjlexTokens0[jjstaten];
+        jjtk !== -1 && this._prepareToken(jjtk);
+        switch (jjstaten) {
+            case 1:
+                this._setImg("");
                 break;
-            case T.STAR:
-                nt();
-                gb.lexBuilder.simplePostfix('*');
+            case 3:
+                this._sematicVal = nodeFromToken(this._token);
                 break;
-            case T.QUESTION:
-                nt();
-                gb.lexBuilder.simplePostfix('?');
+            case 22:
+                this._sematicVal = nodeFromTrivalToken(this._token);
                 break;
-            default:
-                gb.lexBuilder.simplePostfix('');
-        }
-    }
-    function primitiveRE() {
-        if (token.id === T.BRA) {
-            nt();
-            regexp();
-            expect(T.KET);
-        }
-        else if (token.id === T.CBRA) {
-            nt();
-            setRE();
-            expect(T.CKET);
-        }
-        else if (token.id === T.STRING) {
-            var s = token.val;
-            nt();
-            gb.lexBuilder.addString(s);
-        }
-        else if (token.id === T.LT) {
-            nt();
-            var vname = token.val;
-            var line = token.line;
-            expect(T.NAME);
-            expect(T.GT);
-            gb.lexBuilder.addVar(vname, line);
-        }
-        else {
-            throw new CompilationError("unexpected token \"" + T[token.id] + "\"", token.line);
-        }
-    }
-    function setRE() {
-        if (token.id === T.WEDGE) {
-            nt();
-            gb.lexBuilder.beginSet(true);
-        }
-        else {
-            gb.lexBuilder.beginSet(false);
-        }
-        if (token.id !== T.CKET) {
-            setREItem();
-            while (token.id === T.COMMA) {
-                nt();
-                setREItem();
-            }
-        }
-    }
-    function setREItem() {
-        var from = token.val;
-        var line1 = token.line;
-        var to = from;
-        var line2 = line1;
-        expect(T.STRING);
-        if (token.id === T.DASH) {
-            nt();
-            to = token.val;
-            line2 = token.line;
-            expect(T.STRING);
-        }
-        gb.lexBuilder.addSetItem(from, to, line1, line2);
-    }
-    function rules() {
-        rule();
-        while (token.id !== T.SEPERATOR) {
-            rule();
-        }
-        nt();
-    }
-    function rule() {
-        var lhs = token.clone();
-        expect(T.NAME);
-        expect(T.ARROW);
-        gb.prepareRule(lhs.val, lhs.line);
-        ruleItems();
-        gb.commitRule();
-        while (token.id === T.OR) {
-            nt();
-            gb.prepareRule(lhs.val, lhs.line);
-            ruleItems();
-            gb.commitRule();
-        }
-        expect(T.EOL);
-    }
-    function ruleItems() {
-        if (token.id === T.USE_DIR) {
-            nt();
-            expect(T.BRA);
-            useList();
-            expect(T.KET);
-        }
-        while (token.id === T.NAME
-            || token.id === T.LT
-            || token.id === T.STRING
-            || token.id === T.BLOCK
-            || token.id === T.CBRA) {
-            ruleItem();
-        }
-        if (token.id === T.PREC_DIR) {
-            nt();
-            var t = token.val;
-            var line = token.line;
-            if (token.id === T.STRING) {
-                gb.defineRulePr(t, TokenRefType.STRING, line);
-                nt();
-            }
-            else if (token.id === T.LT) {
-                nt();
-                t = token.val;
-                line = token.line;
-                expect(T.NAME);
-                expect(T.GT);
-                gb.defineRulePr(t, TokenRefType.TOKEN, line);
-            }
-            else if (token.id === T.NAME) {
-                gb.defineRulePr(t, TokenRefType.NAME, line);
-                nt();
-            }
-            else {
-                throw new CompilationError("unexpected token \"" + T[token.id] + "\",expecting string or name", token.line);
-            }
-            if (token.id === T.BLOCK || token.id === T.CBRA) {
-                var acts = [];
-                lexActions(acts);
-                gb.addAction(acts);
-            }
-        }
-    }
-    function useList() {
-        var tname = token.val;
-        var tline = token.line;
-        expect(T.NAME);
-        gb.addRuleUseVar(tname, tline);
-        while (token.id === T.COMMA) {
-            nt();
-            tname = token.val;
-            tline = token.line;
-            expect(T.NAME);
-            gb.addRuleUseVar(tname, tline);
-        }
-    }
-    function ruleItem() {
-        var t = token.clone();
-        if (token.id === T.NAME) {
-            nt();
-            if (token.id === T.EQU) {
-                nt();
-                gb.addRuleSematicVar(t.val, t.line);
-                t = token.clone();
-            }
-            else {
-                gb.addRuleItem(t.val, TokenRefType.NAME, t.line);
-                return;
-            }
-        }
-        if (token.id === T.NAME) {
-            nt();
-            gb.addRuleItem(t.val, TokenRefType.NAME, t.line);
-        }
-        else if (token.id === T.STRING) {
-            nt();
-            gb.addRuleItem(t.val, TokenRefType.STRING, t.line);
-        }
-        else if (token.id === T.LT) {
-            nt();
-            t = token.clone();
-            expect(T.NAME);
-            expect(T.GT);
-            gb.addRuleItem(t.val, TokenRefType.TOKEN, t.line);
-        }
-        if (token.id === T.BLOCK || token.id === T.CBRA) {
-            var acts = [];
-            lexActions(acts);
-            gb.addAction(acts);
-        }
-    }
-    nt();
-    file();
-    return gb.build();
-}
-function commentFilter(scanner) {
-    return {
-        next: function (token) {
-            do {
-                scanner.next(token);
-            } while (token.id === T.BLOCK_COMMENT || token.id === T.LINE_COMMENT);
-        },
-        init: function (s) {
-            scanner.init(s);
+            case 24:
+                this._sematicVal = nodeFromTrivalToken(this._token);
+                break;
+            case 26:
+                this._sematicVal = nodeFromToken(this._token);
+                this._sematicVal.val = unescape(this._sematicVal.val.substr(1, this._sematicVal.val.length - 2));
+                break;
+            case 28:
+                this._sematicVal = nodeFromToken(this._token);
+                break;
+            case 29:
+                this._sematicVal = nodeFromToken(this._token);
+                break;
+            case 41:
+                this._sematicVal = nodeFromToken(this._token);
+                this._sematicVal.val = unescape(this._sematicVal.val.substr(1, this._sematicVal.val.length - 2));
+                break;
+            case 44:
+                this._setImg("");
+                break;
+            case 63:
+                this._setImg("");
+                break;
+            case 79:
+                this._setImg("");
+                break;
+            default: ;
         }
     };
-}
-var highlightUtil = {
-    T: T,
-    Token: Token,
-    scanner: scan
-};
-function parseSource(source, ctx) {
-    var scanner = scan();
-    scanner.init(source);
-    return parse(commentFilter(scanner), ctx);
-}
-
-var Action$1;
-(function (Action) {
-    Action[Action["NONE"] = 1] = "NONE";
-    Action[Action["SHIFT"] = 2] = "SHIFT";
-    Action[Action["REDUCE"] = 3] = "REDUCE";
-})(Action$1 || (Action$1 = {}));
-var Item = (function () {
-    function Item(rule, ik) {
-        this.marker = 0;
-        this.shift = null;
-        this.actionType = Action$1.NONE;
-        this.changed = true;
-        this.rule = rule;
-        this.isKernel = ik;
-        this.lah = new TokenSet(rule.g.tokenCount);
-    }
-    Item.prototype.canShift = function () {
-        return this.rule.rhs.length > this.marker;
-    };
-    Item.prototype.getShift = function () {
-        return this.rule.rhs[this.marker];
-    };
-    Item.prototype.toString = function (opt) {
-        if (opt === void 0) { opt = {}; }
-        var showlah = (opt && opt.showlah) || false;
-        var showTrailer = (opt && opt.showTrailer) || false;
-        var ret = '[ ' + this.rule.toString(this.marker) + (showlah ? ',{ ' + this.lah.toString(this.rule.g) + ' }' : '') + ' ]';
-        this.isKernel && (ret += '*');
-        if (showTrailer) {
-            switch (this.actionType) {
-                case Action$1.NONE:
-                    ret += '(-)';
-                    break;
-                case Action$1.SHIFT:
-                    ret += '(s' + this.shift.stateIndex + ')';
-                    break;
-                case Action$1.REDUCE:
-                    ret += '(r)';
-                    break;
-            }
+    Parser.prototype._doLexAction1 = function (jjstaten) {
+        var jjtk = jjlexTokens1[jjstaten];
+        jjtk !== -1 && this._prepareToken(jjtk);
+        switch (jjstaten) {
+            case 0:
+                this._sematicVal = newNode(this._token.val);
+                break;
+            case 1:
+                this._sematicVal = newNode(this._token.val);
+                break;
+            case 2:
+                this._sematicVal = nodeFromTrivalToken(this._token);
+                break;
+            case 3:
+                this._sematicVal = nodeFromTrivalToken(this._token);
+                break;
+            default: ;
         }
+    };
+    Parser.prototype._doLexAction = function (lexstate, state) {
+        switch (lexstate) {
+            case 0:
+                this._doLexAction0(state);
+                break;
+            case 1:
+                this._doLexAction1(state);
+                break;
+            default: ;
+        }
+        this._token.id !== -1 && this._returnToken();
+    };
+    Parser.prototype._rollback = function () {
+        var ret = this._matched.substr(this._matched.length - this._backupCount, this._backupCount);
+        this._matched = this._matched.substr(0, this._matched.length - this._backupCount);
+        this._backupCount = 0;
+        this._line = this._marker.line;
+        this._column = this._marker.column;
+        this._state = this._marker.state;
+        this._marker.state = -1;
         return ret;
     };
-    Item.prototype.hash = function () {
-        return this.rule.index + '-' + this.marker;
+    Parser.prototype._mark = function () {
+        this._marker.state = this._state;
+        this._marker.line = this._line;
+        this._marker.column = this._column;
+        this._backupCount = 0;
     };
-    Item.prototype.hasRRConflictWith = function (i) {
-        return this.actionType === Action$1.REDUCE && i.actionType === Action$1.REDUCE && this.rule.index !== i.rule.index && this.lah.hasIntersection(i.lah);
-    };
-    Item.prototype.getFollowSet = function (set) {
-        var g = this.rule.g;
-        var i;
-        for (i = this.marker + 1; i < this.rule.rhs.length; i++) {
-            var mItem = this.rule.rhs[i];
-            if (g.isToken(mItem)) {
-                set.add(mItem + 1);
-                break;
-            }
-            else {
-                var set1 = g.nts[-mItem - 1].firstSet;
-                set.union(set1);
-                set.remove(0);
-                if (!set1.contains(0)) {
-                    break;
-                }
-            }
-        }
-        if (i === this.rule.rhs.length) {
-            set.union(this.lah);
-        }
-    };
-    Item.NULL = {};
-    return Item;
-}());
-var ItemSet = (function () {
-    function ItemSet(g) {
-        this.it = {};
-        this.complete = false;
-        this.index = -1;
-        this.stateIndex = 0;
-        this.prev = null;
-        this.next = null;
-        this.merges = [];
-        this.g = g;
-        this.data = this;
-    }
-    ItemSet.prototype.add = function (rule, marker, ik, lah, reset) {
-        var h = rule.index + '-' + marker;
-        var it = this.it[h];
-        if (it === undefined) {
-            var n = new Item(rule, ik);
-            n.marker = marker;
-            if (lah) {
-                n.lah.union(lah);
-            }
-            this.it[h] = n;
+    Parser.prototype._acceptChar = function (c) {
+        function consume(cela, c) {
+            c === '\n' ? (cela._line++, cela._column = 0) : (cela._column++);
+            cela._matched += c;
+            cela._marker.state !== -1 && (cela._backupCount++);
             return true;
         }
-        else if (lah) {
-            var ret = it.lah.union(lah);
-            if (reset && ret && it.canShift()) {
-                it.actionType = Action$1.NONE;
-            }
-            ret && (it.changed = true);
-            return ret;
-        }
-    };
-    ItemSet.prototype.contains = function () {
-    };
-    ItemSet.prototype.closure = function () {
-        var changed = true;
-        var tSet = new TokenSet(this.g.tokenCount);
-        var cela = this;
-        while (changed) {
-            changed = false;
-            for (var hash in this.it) {
-                var item = this.it[hash];
-                if (item.changed && item.canShift()) {
-                    var ritem = item.getShift();
-                    if (ritem < 0) {
-                        tSet.removeAll();
-                        item.getFollowSet(tSet);
-                        this.g.forEachRuleOfNt(-ritem - 1, function (rule) {
-                            changed = cela.add(rule, 0, false, tSet, false) || changed;
-                            return false;
-                        });
-                    }
-                }
-                item.changed = false;
-            }
-        }
-    };
-    ItemSet.prototype.toString = function (opt) {
-        var showTrailer = (opt && opt.showTrailer) || false;
-        var opt2 = { showTrailer: showTrailer };
-        var ret = 's' + this.stateIndex + '';
-        if (this.index !== null) {
-            ret += '(i' + this.index;
-        }
-        else {
-            ret += '(i?';
-        }
-        if (this.merges.length > 0) {
-            ret += ',merged from ';
-            for (var i = 0; i < this.merges.length; i++) {
-                if (i > 0) {
-                    ret += ',';
-                }
-                ret += 'i' + this.merges[i];
-            }
-        }
-        ret += ')' + endl;
-        for (var hash in this.it) {
-            ret += this.it[hash].toString(opt2) + endl;
-        }
-        return ret;
-    };
-    ItemSet.prototype.kernelHash = function () {
-        var ret = 0;
-        for (var hash in this.it) {
-            var item = this.it[hash];
-            if (item.isKernel) {
-                ret += item.rule.index << 5 + item.rule.index + item.marker;
-            }
-        }
-        return String(ret);
-    };
-    ItemSet.prototype.forEach = function (cb) {
-        for (var h in this.it) {
-            cb(this.it[h]);
-        }
-    };
-    ItemSet.prototype.canMergeTo = function (s) {
-        for (var h1 in this.it) {
-            var it1 = this.it[h1];
-            var found = false, hasConflict = false, hasIdentical = false;
-            for (var h2 in s.it) {
-                var it2 = s.it[h2];
-                if (it1.rule.index === it2.rule.index && it1.marker === it2.marker) {
-                    hasIdentical = it1.lah.equals(it2.lah);
-                    found = it1.isKernel && it2.isKernel;
-                }
-                hasConflict = hasConflict || it1.hasRRConflictWith(it2);
-                if (it2.isKernel && this.it[h2] === undefined) {
+        var lexstate = this._lexState[this._lexState.length - 1];
+        var retn = { state: this._state, hasArc: false, isEnd: false };
+        jjlexers[lexstate](c.charCodeAt(0), retn);
+        if (retn.isEnd) {
+            if (retn.hasArc) {
+                if (retn.state === -1) {
+                    this._doLexAction(lexstate, this._state);
+                    this._marker.state = -1;
+                    this._backupCount = 0;
+                    this._state = 0;
                     return false;
                 }
+                else {
+                    this._mark();
+                    this._state = retn.state;
+                    return consume(this, c);
+                }
             }
-            if (it1.isKernel && !found || hasConflict && !hasIdentical) {
+            else {
+                this._doLexAction(lexstate, this._state);
+                this._marker.state = -1;
+                this._backupCount = 0;
+                this._state = 0;
                 return false;
             }
         }
-        return true;
-    };
-    ItemSet.prototype.mergeTo = function (s) {
-        var ret = false;
-        for (var h in s.it) {
-            var it = s.it[h];
-            ret = this.add(it.rule, it.marker, it.isKernel, it.lah, true) || ret;
-        }
-        this.merges.push(s.index);
-        return ret;
-    };
-    return ItemSet;
-}());
-
-var List = (function () {
-    function List() {
-        this.size = 0;
-        this.head = { prev: null, next: null, data: null };
-        this.tail = { prev: null, next: null, data: null };
-        this.head.next = this.tail;
-        this.tail.prev = this.head;
-    }
-    List.prototype.append = function (n) {
-        n.prev = this.tail.prev;
-        n.next = this.tail;
-        this.tail.prev.next = n;
-        this.tail.prev = n;
-        this.size++;
-    };
-    List.prototype.pull = function () {
-        var n = this.head.next;
-        this.head.next = n.next;
-        n.next.prev = this.head;
-        n.prev = n.next = null;
-        this.size--;
-        return n.data;
-    };
-    List.prototype.isEmpty = function () {
-        return this.size === 0;
-    };
-    List.prototype.forEach = function (cb) {
-        for (var a = this.head.next; a !== this.tail; a = a.next) {
-            cb(a.data);
-        }
-    };
-    List.prototype.remove = function (n) {
-        n.next.prev = n.prev;
-        n.prev.next = n.next;
-        this.size--;
-    };
-    List.prototype.iterator = function () {
-        var p = this.head;
-        var cela = this;
-        return function () {
-            return p !== cela.tail ? (p = p.next, p.data) : null;
-        };
-    };
-    return List;
-}());
-
-function printParseTable(os, cela, doneList) {
-    var g = cela.g;
-    var tokenCount = g.tokenCount;
-    var ntCount = g.nts.length;
-    doneList.forEach(function (set) {
-        var i = set.stateIndex;
-        var shift = '';
-        var reduce = '';
-        var gotot = '';
-        os.writeln("state " + i);
-        set.forEach(function (item) {
-            os.writeln(YYTAB + item.toString({ showTrailer: false }));
-        });
-        if (cela.defred[i] !== -1) {
-            os.writeln(YYTAB + "default action: reduce with rule " + cela.defred[i]);
-        }
         else {
-            os.writeln(YYTAB + 'no default action');
-        }
-        for (var j = 0; j < tokenCount; j++) {
-            var item = cela.lookupShift(i, j);
-            if (item !== null && item !== Item.NULL) {
-                if (item.actionType === Action$1.SHIFT) {
-                    shift += "" + YYTAB + convertTokenToString(g.tokens[j]) + " : shift, and goto state " + item.shift.stateIndex + endl;
+            if (retn.state === -1) {
+                if (this._marker.state !== -1) {
+                    var s = this._rollback();
+                    this._doLexAction(lexstate, this._state);
+                    this._state = 0;
+                    this.accept(s);
+                    return false;
                 }
                 else {
-                    reduce += "" + YYTAB + convertTokenToString(g.tokens[j]) + " : reduce with rule " + item.rule.index + endl;
-                }
-            }
-        }
-        for (var j = 0; j < ntCount; j++) {
-            var item = cela.lookupGoto(i, j);
-            if (item !== null) {
-                gotot += "" + YYTAB + g.nts[j].sym + " : goto state " + item.shift.stateIndex + endl;
-            }
-        }
-        os.writeln(shift + reduce + gotot);
-        os.writeln('');
-    });
-}
-var ParseTable = (function () {
-    function ParseTable(g, stateCount) {
-        this.defred = null;
-        this.g = g;
-        var tokenCount = g.tokenCount;
-        var ntCount = g.nts.length;
-        this.stateCount = stateCount;
-        this.shift = new Array(tokenCount * stateCount);
-        this.gotot = new Array(ntCount * stateCount);
-        for (var i = 0; i < this.shift.length; i++) {
-            this.shift[i] = null;
-        }
-        for (var i = 0; i < this.gotot.length; i++) {
-            this.gotot[i] = null;
-        }
-    }
-    ParseTable.prototype.forEachShift = function (cb) {
-        for (var state = 0; state < this.stateCount; state++) {
-            for (var tk = 0; tk < this.g.tokens.length; tk++) {
-                var item = this.lookupShift(state, tk);
-                item && cb(item, state, tk);
-            }
-        }
-    };
-    ParseTable.prototype.forEachGoto = function (cb) {
-        for (var state = 0; state < this.stateCount; state++) {
-            for (var nt = 0; nt < this.g.nts.length; nt++) {
-                var item = this.lookupGoto(state, nt);
-                item && cb(item, state, nt);
-            }
-        }
-    };
-    ParseTable.prototype.lookupShift = function (state, token) {
-        return this.shift[this.g.tokenCount * state + token];
-    };
-    ParseTable.prototype.lookupGoto = function (state, nt) {
-        return this.gotot[this.g.nts.length * state + nt];
-    };
-    ParseTable.prototype._getDefRed = function (state, apool) {
-        for (var i = 0; i < apool.length; i++) {
-            apool[i] = 0;
-        }
-        for (var tk = 0; tk < this.g.tokenCount; tk++) {
-            var item = this.lookupShift(state, tk);
-            item && item.actionType === Action$1.REDUCE && apool[item.rule.index]++;
-        }
-        var ret = 0;
-        for (var i = 0; i < apool.length; i++) {
-            apool[i] > apool[ret] && (ret = i);
-        }
-        return apool[ret] > 0 ? ret : -1;
-    };
-    ParseTable.prototype.findDefAct = function () {
-        this.defred = new Array(this.stateCount);
-        var apool = new Array(this.g.rules.length);
-        for (var i = 0; i < this.stateCount; i++) {
-            var def = this._getDefRed(i, apool);
-            this.defred[i] = def;
-            if (def !== -1) {
-                for (var tk = 0; tk < this.g.tokens.length; tk++) {
-                    var item = this.lookupShift(i, tk);
-                    item && item.actionType === Action$1.REDUCE && item.rule.index === def &&
-                        (this.shift[this.g.tokenCount * i + tk] = null);
-                }
-            }
-        }
-    };
-    return ParseTable;
-}());
-
-var ConflictType;
-(function (ConflictType) {
-    ConflictType[ConflictType["RR"] = 0] = "RR";
-    ConflictType[ConflictType["SR"] = 1] = "SR";
-})(ConflictType || (ConflictType = {}));
-
-var Conflict = (function () {
-    function Conflict() {
-    }
-    Conflict.prototype.toString = function () {
-        return "state " + this.set.stateIndex + ", " + Conflict.cNames[this.type] + " conflict:" + endl +
-            (YYTAB + "token: " + convertTokenToString(this.token) + endl) +
-            (YYTAB + "used rule: " + this.used.toString() + endl) +
-            (YYTAB + "discarded rule: " + this.discarded.toString());
-    };
-    Conflict.cNames = ['reduce/reduce', 'shift/reduce'];
-    return Conflict;
-}());
-function genInitialSet(g) {
-    var start = g.nts[0].rules[0];
-    var iset = new ItemSet(g);
-    iset.index = 0;
-    var set1 = new TokenSet(g.tokenCount);
-    set1.add(1);
-    iset.add(start, 0, true, set1, false);
-    return iset;
-}
-function genItemSets(g) {
-    var htable = {};
-    var iterations = 0;
-    function addToTable(iset) {
-        var h = iset.kernelHash();
-        if (htable[h] === undefined) {
-            htable[h] = [];
-        }
-        htable[h].push(iset);
-    }
-    function forEachInBucket(set, cb) {
-        var b = htable[set.kernelHash()];
-        if (b !== undefined) {
-            for (var i = 0; i < b.length; i++) {
-                if (cb(b[i]))
-                    break;
-            }
-        }
-    }
-    var index = 1;
-    var todoList = new List();
-    var incList = new List();
-    var doneList = new List();
-    todoList.append(genInitialSet(g));
-    while (!todoList.isEmpty() || !incList.isEmpty()) {
-        var comeFrom = null;
-        if (!incList.isEmpty()) {
-            var set = comeFrom = incList.pull();
-            set.forEach(function (item) {
-                if (item.actionType === Action$1.NONE) {
-                    console$1.assert(item.canShift());
-                    var shift = item.getShift();
-                    var newSet = new ItemSet(g);
-                    newSet.index = index++;
-                    todoList.append(newSet);
-                    set.forEach(function (item1) {
-                        if (item1.canShift()) {
-                            var rItem = item1.getShift();
-                            if (rItem === shift) {
-                                item1.actionType = Action$1.SHIFT;
-                                item1.shift = newSet;
-                                newSet.add(item1.rule, item1.marker + 1, true, item1.lah, false);
-                            }
-                        }
-                    });
-                }
-            });
-            set.complete = true;
-            doneList.append(set);
-        }
-        while (!todoList.isEmpty()) {
-            var set = todoList.pull();
-            set.closure();
-            set.forEach(function (item) {
-                if (!item.canShift()) {
-                    item.actionType = Action$1.REDUCE;
-                }
-            });
-            var merged = null;
-            forEachInBucket(set, function (gSet) {
-                if (gSet.canMergeTo(set)) {
-                    if (gSet.mergeTo(set)) {
-                        if (gSet.complete) {
-                            merged = gSet;
-                        }
-                    }
-                    if (comeFrom !== null) {
-                        comeFrom.forEach(function (sItem) {
-                            if (sItem.actionType === Action$1.SHIFT && sItem.shift === set) {
-                                sItem.shift = gSet;
-                            }
-                        });
-                    }
-                    set = null;
+                    this._emit('lexicalerror', "unexpected character \"" + c + "\"", this._line, this._column);
                     return true;
                 }
-                return false;
-            });
-            if (merged !== null) {
-                doneList.remove(merged);
-                incList.append(merged);
-                merged.complete = false;
-            }
-            else if (set !== null) {
-                incList.append(set);
-                addToTable(set);
-            }
-        }
-        iterations++;
-    }
-    var i = 0;
-    doneList.forEach(function (set) {
-        set.stateIndex = i++;
-    });
-    return {
-        result: doneList,
-        iterations: iterations
-    };
-}
-function genParseTable(g, doneList) {
-    var conflicts = [];
-    function resolveSRConflict(set, shift, reduce) {
-        var token = g.tokens[shift.getShift()];
-        if (token.assoc !== Assoc.UNDEFINED) {
-            var ruleP = reduce.rule.pr;
-            if (ruleP !== -1) {
-                if (ruleP > token.pr) {
-                    return reduce;
-                }
-                else if (ruleP < token.pr) {
-                    return shift;
-                }
-                else {
-                    if (token.assoc === Assoc.LEFT) {
-                        return reduce;
-                    }
-                    else if (token.assoc === Assoc.RIGHT) {
-                        return shift;
-                    }
-                    else if (token.assoc === Assoc.NON) {
-                        return Item.NULL;
-                    }
-                    else {
-                        console$1.assert(false);
-                    }
-                }
-            }
-        }
-        var cf = new Conflict();
-        cf.type = ConflictType.SR;
-        cf.set = set;
-        cf.token = token;
-        cf.used = shift;
-        cf.discarded = reduce;
-        conflicts.push(cf);
-        return shift;
-    }
-    function resolveRRConflict(set, r1, r2, token) {
-        var tdef = g.tokens[token];
-        if (r1.rule.pr !== -1 && r2.rule.pr !== -1 && r1.rule.pr !== r2.rule.pr) {
-            return r1.rule.pr > r2.rule.pr ? r1 : r2;
-        }
-        else {
-            var used = r1.rule.index > r2.rule.index ? r2 : r1;
-            var discarded = r1.rule.index > r2.rule.index ? r1 : r2;
-            var cf = new Conflict();
-            cf.type = ConflictType.RR;
-            cf.set = set;
-            cf.token = tdef;
-            cf.used = used;
-            cf.discarded = discarded;
-            conflicts.push(cf);
-            return used;
-        }
-    }
-    var ptable = new ParseTable(g, doneList.size);
-    doneList.forEach(function (set) {
-        set.forEach(function (item) {
-            if (item.actionType === Action$1.SHIFT) {
-                var sItem = item.getShift();
-                if (g.isToken(sItem)) {
-                    var tindex = set.stateIndex * g.tokenCount + sItem;
-                    var cItem = ptable.shift[tindex];
-                    if (cItem !== null) {
-                        if (cItem.actionType === Action$1.REDUCE) {
-                            ptable.shift[tindex] = resolveSRConflict(set, item, cItem);
-                        }
-                        else {
-                            console$1.assert(cItem.shift === item.shift);
-                        }
-                    }
-                    else {
-                        ptable.shift[tindex] = item;
-                    }
-                }
-                else {
-                    var tindex = set.stateIndex * g.nts.length + (-sItem - 1);
-                    ptable.gotot[tindex] = item;
-                }
-            }
-            else if (item.actionType === Action$1.REDUCE) {
-                for (var i = 0; i < g.tokenCount; i++) {
-                    if (item.lah.contains(i + 1)) {
-                        var index = set.stateIndex * g.tokenCount + i;
-                        var cItem = ptable.shift[index];
-                        if (cItem !== null) {
-                            if (cItem.actionType === Action$1.REDUCE) {
-                                ptable.shift[index] = resolveRRConflict(set, cItem, item, i);
-                            }
-                            else if (cItem.actionType === Action$1.SHIFT) {
-                                ptable.shift[index] = resolveSRConflict(set, cItem, item);
-                            }
-                        }
-                        else {
-                            ptable.shift[index] = item;
-                        }
-                    }
-                }
             }
             else {
-                console$1.assert(false);
+                this._state = retn.state;
+                return consume(this, c);
             }
-        });
-    });
-    return {
-        result: ptable,
-        conflicts: conflicts
+        }
     };
-}
-
-function testParse(g, pt, tokens) {
-    var tk = [];
-    for (var _i = 0, tokens_1 = tokens; _i < tokens_1.length; _i++) {
-        var tname = tokens_1[_i];
-        var tdef = void 0;
-        if (/<[^>]+>/.test(tname)) {
-            tdef = g.findTokenByName(tname.substr(1, tname.length - 2));
-            if (tdef === null) {
-                throw new JsccError("cannot recognize " + tname + " as a token");
-            }
+    Parser.prototype._acceptEOF = function () {
+        if (this._state === 0) {
+            this._prepareToken(0);
+            this._returnToken();
+            return true;
         }
         else {
-            var defs = g.findTokensByAlias(tname);
-            if (defs.length === 0) {
-                throw new JsccError("cannot recognize \"" + tname + "\" as a token");
+            var lexstate = this._lexState[this._lexState.length - 1];
+            var retn = { state: this._state, hasArc: false, isEnd: false };
+            jjlexers[lexstate](-1, retn);
+            if (retn.isEnd) {
+                this._doLexAction(lexstate, this._state);
+                this._state = 0;
+                this._marker.state = -1;
+                return false;
             }
-            if (defs.length > 1) {
-                var msg = '';
-                for (var _a = 0, defs_1 = defs; _a < defs_1.length; _a++) {
-                    var def = defs_1[_a];
-                    msg += "<" + def.sym + "> ";
+            else if (this._marker.state !== -1) {
+                var s = this._rollback();
+                this._doLexAction(lexstate, this._state);
+                this._state = 0;
+                this.accept(s);
+                return false;
+            }
+            else {
+                this._emit('lexicalerror', 'unexpected end of file');
+                return true;
+            }
+        }
+    };
+    Parser.prototype.accept = function (s) {
+        for (var i = 0; i < s.length && !this._stop;) {
+            this._acceptChar(s.charAt(i)) && i++;
+        }
+    };
+    Parser.prototype.end = function () {
+        while (!this._stop && !this._acceptEOF())
+            ;
+        this._stop = true;
+    };
+    Parser.prototype.halt = function () {
+        this._stop = true;
+    };
+    Parser.prototype._doReduction = function (jjrulenum) {
+        var jjnt = jjlhs[jjrulenum];
+        var jjsp = this._sematicS.length;
+        var jjtop = this._sematicS[jjsp - jjruleLen[jjrulenum]] || null;
+        switch (jjrulenum) {
+            case 4:
+                {
+                    this.gb.lexBuilder.prepareLex();
                 }
-                throw new JsccError("cannot recognize \"" + tname + "\" as a token, since it can be " + msg);
+                break;
+            case 8:
+                var b = this._sematicS[jjsp - 1];
+                {
+                    this.gb.setHeader(b.val);
+                }
+                break;
+            case 9:
+                var b = this._sematicS[jjsp - 1];
+                {
+                    this.gb.setExtraArg(b.val);
+                }
+                break;
+            case 10:
+                var t = this._sematicS[jjsp - 1];
+                {
+                    this.gb.setType(t.val);
+                }
+                break;
+            case 11:
+                {
+                    this.assoc = Assoc.LEFT;
+                }
+                break;
+            case 12:
+                {
+                    this.assoc = Assoc.RIGHT;
+                }
+                break;
+            case 13:
+                {
+                    this.assoc = Assoc.NON;
+                }
+                break;
+            case 16:
+                var t = this._sematicS[jjsp - 1];
+                {
+                    this.gb.defineTokenPrec(t.val, this.assoc, t.ext, t.startLine);
+                }
+                break;
+            case 17:
+                var t = this._sematicS[jjsp - 1];
+                {
+                    this.gb.defineTokenPrec(t.val, this.assoc, TokenRefType.NAME, t.startLine);
+                }
+                break;
+            case 18:
+                var name = this._sematicS[jjsp - 3];
+                var val = this._sematicS[jjsp - 1];
+                {
+                    this.gb.setOpt(name.val, val.val);
+                }
+                break;
+            case 21:
+                {
+                    this.gb.lexBuilder.selectState('DEFAULT');
+                }
+                break;
+            case 22:
+                var s = this._sematicS[jjsp - 1];
+                {
+                    this.gb.lexBuilder.selectState(s.val);
+                }
+                break;
+            case 23:
+                var s = this._sematicS[jjsp - 1];
+                {
+                    this.gb.lexBuilder.selectState(s.val);
+                }
+                break;
+            case 26:
+                var v = this._sematicS[jjsp - 1];
+                {
+                    this.gb.lexBuilder.prepareVar(v.val, v.startLine);
+                }
+                break;
+            case 27:
+                var v = this._sematicS[jjsp - 6];
+                {
+                    this.gb.lexBuilder.endVar();
+                }
+                break;
+            case 28:
+                {
+                    this.gb.lexBuilder.end(this.lexacts, '(untitled)');
+                }
+                break;
+            case 29:
+                var tn = this._sematicS[jjsp - 5];
+                {
+                    var tdef = this.gb.defToken(tn.val, this.gb.lexBuilder.possibleAlias, tn.startLine);
+                    this.lexacts.push(returnToken(tdef));
+                    this.gb.lexBuilder.end(this.lexacts, tn.val);
+                }
+                break;
+            case 30:
+                {
+                    this.gb.lexBuilder.newState();
+                }
+                break;
+            case 32:
+                {
+                    this.lexacts = [];
+                }
+                break;
+            case 33:
+                {
+                    this.lexacts = [];
+                }
+                break;
+            case 35:
+                var b = this._sematicS[jjsp - 1];
+                {
+                    this.lexacts = [blockAction(b.val, b.startLine)];
+                }
+                break;
+            case 38:
+                var vn = this._sematicS[jjsp - 1];
+                {
+                    this.gb.addPushStateAction(this.lexacts, vn.val, vn.startLine);
+                }
+                break;
+            case 39:
+                {
+                    this.lexacts.push(popState());
+                }
+                break;
+            case 40:
+                var b = this._sematicS[jjsp - 1];
+                {
+                    this.lexacts.push(blockAction(b.val, b.startLine));
+                }
+                break;
+            case 41:
+                var s = this._sematicS[jjsp - 1];
+                {
+                    this.lexacts.push(setImg(s.val));
+                }
+                break;
+            case 42:
+                {
+                    this.gb.lexBuilder.enterUnion();
+                }
+                break;
+            case 43:
+                {
+                    this.gb.lexBuilder.leaveUnion();
+                }
+                break;
+            case 44:
+                {
+                    this.gb.lexBuilder.endUnionItem();
+                }
+                break;
+            case 45:
+                {
+                    this.gb.lexBuilder.endUnionItem();
+                }
+                break;
+            case 48:
+                {
+                    this.gb.lexBuilder.enterSimple();
+                }
+                break;
+            case 49:
+                var suffix = this._sematicS[jjsp - 1];
+                {
+                    this.gb.lexBuilder.simplePostfix(suffix.val);
+                }
+                break;
+            case 50:
+                {
+                    jjtop = newNode('+');
+                }
+                break;
+            case 51:
+                {
+                    jjtop = newNode('?');
+                }
+                break;
+            case 52:
+                {
+                    jjtop = newNode('*');
+                }
+                break;
+            case 53:
+                {
+                    jjtop = newNode('');
+                }
+                break;
+            case 56:
+                var n = this._sematicS[jjsp - 2];
+                {
+                    this.gb.lexBuilder.addVar(n.val, n.startLine);
+                }
+                break;
+            case 57:
+                var s = this._sematicS[jjsp - 1];
+                {
+                    this.gb.lexBuilder.addString(s.val);
+                }
+                break;
+            case 58:
+                {
+                    this.gb.lexBuilder.beginSet(true);
+                }
+                break;
+            case 59:
+                {
+                    this.gb.lexBuilder.beginSet(false);
+                }
+                break;
+            case 64:
+                var s = this._sematicS[jjsp - 1];
+                {
+                    this.gb.lexBuilder.addSetItem(s.val, s.val, s.startLine, s.startLine);
+                }
+                break;
+            case 65:
+                var from = this._sematicS[jjsp - 3];
+                var to = this._sematicS[jjsp - 1];
+                {
+                    this.gb.lexBuilder.addSetItem(from.val, to.val, from.startLine, to.startLine);
+                }
+                break;
+            case 69:
+                var n = this._sematicS[jjsp - 1];
+                {
+                    this.ruleLhs = n;
+                }
+                break;
+            case 75:
+                {
+                    this.gb.prepareRule(this.ruleLhs.val, this.ruleLhs.startLine);
+                }
+                break;
+            case 76:
+                {
+                    this.gb.commitRule();
+                }
+                break;
+            case 79:
+                var vn = this._sematicS[jjsp - 1];
+                {
+                    this.gb.addRuleUseVar(vn.val, vn.startLine);
+                }
+                break;
+            case 80:
+                var vn = this._sematicS[jjsp - 1];
+                {
+                    this.gb.addRuleUseVar(vn.val, vn.startLine);
+                }
+                break;
+            case 85:
+                var itn = this._sematicS[jjsp - 2];
+                {
+                    this.gb.addRuleSematicVar(itn.val, itn.startLine);
+                }
+                break;
+            case 87:
+                var t = this._sematicS[jjsp - 1];
+                {
+                    this.gb.addRuleItem(t.val, TokenRefType.NAME, t.startLine);
+                }
+                break;
+            case 88:
+                var vn = this._sematicS[jjsp - 2];
+                {
+                    this.gb.addRuleSematicVar(vn.val, vn.startLine);
+                }
+                break;
+            case 89:
+                var vn = this._sematicS[jjsp - 4];
+                var t = this._sematicS[jjsp - 1];
+                {
+                    this.gb.addRuleItem(t.val, TokenRefType.NAME, t.startLine);
+                }
+                break;
+            case 90:
+                var t = this._sematicS[jjsp - 1];
+                {
+                    this.gb.addRuleItem(t.val, t.ext, t.startLine);
+                }
+                break;
+            case 91:
+                {
+                    this.gb.addAction(this.lexacts);
+                }
+                break;
+            case 92:
+                var t = this._sematicS[jjsp - 2];
+                {
+                    jjtop = t;
+                    jjtop.ext = TokenRefType.TOKEN;
+                }
+                break;
+            case 93:
+                {
+                    jjtop.ext = TokenRefType.STRING;
+                }
+                break;
+            case 96:
+                {
+                    this.gb.addAction(this.lexacts);
+                }
+                break;
+            case 97:
+                var t = this._sematicS[jjsp - 1];
+                {
+                    this.gb.defineRulePr(t.val, TokenRefType.NAME, t.startLine);
+                }
+                break;
+            case 98:
+                var t = this._sematicS[jjsp - 1];
+                {
+                    this.gb.defineRulePr(t.val, t.ext, t.startLine);
+                }
+                break;
+            case 99:
+                this._lexState.push(1);
+                break;
+            case 100:
+                var open = this._sematicS[jjsp - 2];
+                var bl = this._sematicS[jjsp - 1];
+                this._lexState.pop();
+                break;
+            case 101:
+                var open = this._sematicS[jjsp - 4];
+                var bl = this._sematicS[jjsp - 3];
+                var close = this._sematicS[jjsp - 1];
+                {
+                    jjtop = newNode('');
+                    jjtop.val = bl.val;
+                    jjtop.startLine = open.startLine;
+                    jjtop.startColumn = open.startColumn;
+                    jjtop.endLine = close.endLine;
+                    jjtop.endColumn = close.endColumn;
+                }
+                break;
+            case 102:
+                var b = this._sematicS[jjsp - 1];
+                {
+                    jjtop.val += b.val;
+                }
+                break;
+            case 103:
+                {
+                    jjtop = newNode('');
+                }
+                break;
+            case 105:
+                this._lexState.push(1);
+                break;
+            case 106:
+                var b = this._sematicS[jjsp - 1];
+                this._lexState.pop();
+                break;
+            case 107:
+                var b = this._sematicS[jjsp - 3];
+                {
+                    jjtop = newNode('');
+                    jjtop.val = '{' + b.val + '}';
+                }
+                break;
+        }
+        this._lrState.length -= jjruleLen[jjrulenum];
+        var jjcstate = this._lrState[this._lrState.length - 1];
+        this._lrState.push(jjpgoto[jjdisgoto[jjcstate] + jjnt]);
+        this._sematicS.length -= jjruleLen[jjrulenum];
+        this._sematicS.push(jjtop);
+    };
+    Parser.prototype._acceptToken = function (t) {
+        var cstate = this._lrState[this._lrState.length - 1];
+        var ind = jjdisact[cstate] + t.id;
+        var act = 0;
+        if (ind < 0 || ind >= jjpact.length || jjcheckact[ind] !== cstate) {
+            act = -jjdefred[cstate] - 1;
+        }
+        else {
+            act = jjpact[ind];
+        }
+        if (act === jjactERR) {
+            this._syntaxError(t);
+            return true;
+        }
+        else if (act > 0) {
+            if (t.id === 0) {
+                this._stop = true;
+                this._emit('accept');
+                return true;
             }
-            tdef = defs[0];
+            else {
+                this._lrState.push(act - 1);
+                this._sematicS.push(this._sematicVal);
+                this._sematicVal = null;
+                return true;
+            }
         }
-        tk.push(tdef);
-    }
-    var state = [0];
-    var stack = [];
-    var ret = [];
-    function s() {
-        return state[state.length - 1];
-    }
-    function shift(ns) {
-        state.push(ns);
-        var tdef = tk.shift();
-        stack.push(convertTokenToString(tdef));
-    }
-    function reduce(rule) {
-        state.length -= rule.rhs.length;
-        stack.length -= rule.rhs.length;
-        stack.push(rule.lhs.sym);
-        var gotot = pt.lookupGoto(s(), rule.lhs.index).shift.stateIndex;
-        state.push(gotot);
-    }
-    function dump() {
+        else if (act < 0) {
+            this._doReduction(-act - 1);
+            return false;
+        }
+        else {
+            this._syntaxError(t);
+            return true;
+        }
+    };
+    Parser.prototype._syntaxError = function (t) {
+        var msg = "unexpected token " + t.toString() + ", expecting one of the following token(s):\n";
+        msg += this._expected(this._lrState[this._lrState.length - 1]);
+        this._emit("syntaxerror", msg, t);
+    };
+    Parser.prototype._expected = function (state) {
+        var dis = jjdisact[state];
         var ret = '';
-        for (var _i = 0, stack_1 = stack; _i < stack_1.length; _i++) {
-            var s_1 = stack_1[_i];
-            ret += s_1 + ' ';
+        function expect(tk) {
+            var ind = dis + tk;
+            if (ind < 0 || ind >= jjpact.length || state !== jjcheckact[ind]) {
+                return jjdefred[state] !== -1;
+            }
+            else {
+                return true;
+            }
         }
-        ret += '| ';
-        for (var _a = 0, tk_1 = tk; _a < tk_1.length; _a++) {
-            var tdef = tk_1[_a];
-            ret += convertTokenToString(tdef);
-            ret += ' ';
+        for (var tk = 0; tk < jjtokenCount; tk++) {
+            expect(tk) && (ret += "    " + tokenToString(tk) + " ..." + '\n');
         }
         return ret;
-    }
-    ret.push(dump());
-    do {
-        var item = pt.lookupShift(s(), tk[0] ? tk[0].index : 0);
-        if (item !== null) {
-            if (item === Item.NULL) {
-                ret.push('syntax error!');
-                break;
-            }
-            else if (item.actionType === Action$1.SHIFT) {
-                if (tk.length === 0) {
-                    ret.push('accepted!');
-                    break;
-                }
-                shift(item.shift.stateIndex);
-            }
-            else if (item.actionType === Action$1.REDUCE) {
-                if (reduce(item.rule)) {
-                    break;
-                }
-            }
-            else {
-                console.assert(false);
-            }
-        }
-        else {
-            var ri = pt.defred[s()];
-            if (ri !== -1) {
-                reduce(g.rules[ri]);
-            }
-            else {
-                ret.push('syntax error!');
-                break;
-            }
-        }
-        ret.push(dump());
-    } while (true);
-    return ret;
-}
-
-function sorter(cmp) {
-    var a = [];
-    function insert(i, obj) {
-        a.push(null);
-        for (var j = a.length - 1; j > i; j--) {
-            a[j] = a[j - 1];
-        }
-        a[i] = obj;
-    }
-    return {
-        add: function (b) {
-            var i;
-            for (i = 0; i < a.length; i++) {
-                if ((i === 0 || cmp(b, a[i - 1]) >= 0) && cmp(b, a[i]) <= 0) {
-                    break;
-                }
-            }
-            insert(i, b);
-        },
-        done: function () {
-            return a;
-        }
     };
-}
-var RowEntry = (function () {
-    function RowEntry(emptyCount, row) {
-        this.emptyCount = emptyCount;
-        this.row = row;
-        this.dp = 0;
-    }
-    return RowEntry;
+    return Parser;
 }());
-function compress(source) {
-    function empty(i, j) {
-        j = j - sorted[i].dp;
-        return j < 0 || j >= source.columns || source.isEmpty(sorted[i].row, j);
-    }
-    function fit(i, dp) {
-        for (var j = 0; j < source.columns; j++) {
-            if (!empty(i, j)) {
-                for (var k = 0; k < i; k++) {
-                    if (!empty(k, j + dp)) {
-                        return false;
-                    }
-                }
-            }
-        }
-        return true;
-    }
-    function getFitdp(i) {
-        var dp = 0;
-        while (-dp < source.columns && source.isEmpty(sorted[i].row, -dp)) {
-            dp--;
-        }
-        while (!fit(i, dp)) {
-            dp++;
-        }
-        return dp;
-    }
-    var tmpsorted = sorter(function (a, b) {
-        return a.emptyCount < b.emptyCount ? -1 :
-            a.emptyCount > b.emptyCount ? 1 : 0;
+
+function parse(ctx, source) {
+    var parser = new Parser();
+    var err = false;
+    parser.on('lexicalerror', function (msg, line, column) {
+        ctx.err(new CompilationError(msg, line));
+        parser.halt();
+        err = true;
     });
-    for (var i = 0; i < source.rows; i++) {
-        tmpsorted.add(new RowEntry(source.emptyCount(i), i));
+    parser.on('syntaxerror', function (msg, token) {
+        ctx.err(new CompilationError(msg, token.startLine));
+        parser.halt();
+        err = true;
+    });
+    parser.gb = new GBuilder(ctx);
+    parser.accept(source);
+    parser.end();
+    if (err) {
+        return null;
     }
-    var sorted = tmpsorted.done();
-    var maxdp = 0, mindp = 0;
-    var dps = new Array(source.rows);
-    var initDp = 0;
-    while (-initDp < source.columns && source.isEmpty(sorted[0].row, -initDp)) {
-        initDp--;
+    else {
+        return parser.gb.build();
     }
-    dps[sorted[0].row] = sorted[0].dp = initDp;
-    for (var i = 1; i < sorted.length; i++) {
-        var row = sorted[i].row;
-        var dp = getFitdp(i);
-        dps[row] = sorted[i].dp = dp;
-        dp > maxdp && (maxdp = dp);
-        dp < mindp && (mindp = dp);
-    }
-    return {
-        dps: dps,
-        len: maxdp + source.columns
-    };
 }
-
-function action(pt) {
-    var emCount = [];
-    for (var state = 0; state < pt.stateCount; state++) {
-        emCount.push(0);
-        for (var tk = 0; tk < pt.g.tokens.length; tk++) {
-            pt.lookupShift(state, tk) === null && (emCount[state]++);
-        }
-    }
-    return {
-        rows: pt.stateCount,
-        columns: pt.g.tokens.length,
-        isEmpty: function (state, token) {
-            return pt.lookupShift(state, token) === null;
-        },
-        emptyCount: function (state) {
-            return emCount[state];
-        }
-    };
-}
-function gotot(pt) {
-    var emCount = [];
-    for (var state = 0; state < pt.stateCount; state++) {
-        emCount.push(0);
-        for (var nt = 0; nt < pt.g.nts.length; nt++) {
-            pt.lookupShift(state, nt) === null && (emCount[state]++);
-        }
-    }
-    return {
-        rows: pt.stateCount,
-        columns: pt.g.nts.length,
-        isEmpty: function (state, nt) {
-            return pt.lookupGoto(state, nt) === null;
-        },
-        emptyCount: function (nt) {
-            return emCount[nt];
-        }
-    };
-}
-function initArray(len, cb) {
-    var ret = new Array(len);
-    for (var i = 0; i < len; i++) {
-        ret[i] = cb(i);
-    }
-    return ret;
-}
-var CompressedPTable = (function () {
-    function CompressedPTable(ptable) {
-        this.g = ptable.g;
-        this.defred = ptable.defred;
-        this.stateCount = ptable.stateCount;
-        var actionCResult = compress(action(ptable));
-        var gotoCResult = compress(gotot(ptable));
-        this.disact = actionCResult.dps;
-        this.disgoto = gotoCResult.dps;
-        this.pact = initArray(actionCResult.len, function () { return null; });
-        this.checkact = initArray(actionCResult.len, function () { return 0; });
-        var cela = this;
-        ptable.forEachShift(function (it, state, token) {
-            console$1.assert(cela.pact[cela.disact[state] + token] === null);
-            cela.pact[cela.disact[state] + token] = it;
-            cela.checkact[cela.disact[state] + token] = state;
-        });
-        this.pgoto = initArray(gotoCResult.len, function () { return null; });
-        this.checkgoto = initArray(gotoCResult.len, function () { return 0; });
-        ptable.forEachGoto(function (it, state, nt) {
-            console$1.assert(cela.pgoto[cela.disgoto[state] + nt] === null);
-            cela.pgoto[cela.disgoto[state] + nt] = it;
-            cela.checkgoto[cela.disgoto[state] + nt] = state;
-        });
-    }
-    CompressedPTable.prototype.lookupShift = function (state, token) {
-        var index = this.disact[state] + token;
-        if (index >= 0 && index < this.pact.length && this.checkact[index] === state) {
-            return this.pact[this.disact[state] + token];
-        }
-        else {
-            return null;
-        }
-    };
-    CompressedPTable.prototype.lookupGoto = function (state, nt) {
-        var index = this.disgoto[state] + nt;
-        if (index >= 0 && index < this.pgoto.length && this.checkgoto[index] === state) {
-            return this.pgoto[this.disgoto[state] + nt];
-        }
-        else {
-            return null;
-        }
-    };
-    return CompressedPTable;
-}());
 
 var Result = (function () {
     function Result() {
@@ -3903,12 +5208,9 @@ var Result = (function () {
 }());
 function genResult(source) {
     var result = new Result();
-    try {
-        var f = parseSource(StringIS(source), result);
-    }
-    catch (e) {
+    var f = parse(result, source);
+    if (result.hasError()) {
         result.terminated = true;
-        result.err(e);
         return result;
     }
     var g = f.grammar;
@@ -4332,6 +5634,16 @@ var tsRenderer = function (input, output) {
     echoLine("        public endLine: number,");
     echoLine("        public endColumn: number");
     echoLine("    ){}");
+    echoLine("    clone(){");
+    echoLine("        return new Token(");
+    echoLine("            this.id,");
+    echoLine("            this.val,");
+    echoLine("            this.startLine,");
+    echoLine("            this.startColumn,");
+    echoLine("            this.endLine,");
+    echoLine("            this.endColumn");
+    echoLine("        );");
+    echoLine("    }");
     echoLine("    toString(){");
     echo("        return (");
     echo(prefix);
@@ -4352,13 +5664,12 @@ var tsRenderer = function (input, output) {
     echoLine("    // members for lexer");
     echoLine("    private _lexState: number[];");
     echoLine("    private _state: number;");
-    echoLine("    private _matched: string[];");
+    echoLine("    private _matched: string;");
     echoLine("    private _token: Token;");
-    echoLine("    private _marker: number;");
-    echoLine("    private _markerLine;");
-    echoLine("    private _markerColumn;");
+    echoLine("    ");
+    echoLine("    private _marker: { state: number, line: number, column: number } = { state: -1, line: 0, column: 0 };");
     echoLine("    private _backupCount: number;");
-    echoLine("    private _inputBuf: string[];");
+    echoLine("");
     echoLine("    private _line: number;");
     echoLine("    private _column: number;");
     echoLine("    private _tline: number;");
@@ -4388,14 +5699,12 @@ var tsRenderer = function (input, output) {
     echoLine("    init(){");
     echoLine("        this._lexState = [ 0 ];// DEFAULT");
     echoLine("        this._state = 0;");
-    echoLine("        this._matched = [];");
-    echoLine("        this._token = null;");
-    echoLine("        this._marker = -1;");
-    echoLine("        this._markerLine = this._markerColumn = 0;");
+    echoLine("        this._matched = '';");
+    echoLine("        this._token = new Token(-1, null, 0, 0, 0, 0);");
+    echoLine("        this._marker.state = -1;");
     echoLine("        this._backupCount = 0;");
-    echoLine("        this._inputBuf = [];");
-    echoLine("        this._line = this._tline = 0;");
-    echoLine("        this._column = this._tcolumn = 0;");
+    echoLine("        this._line = this._tline = 1;");
+    echoLine("        this._column = this._tcolumn = 1;");
     echoLine("        ");
     echoLine("        this._lrState = [ 0 ];");
     echoLine("        this._sematicS = [];");
@@ -4407,23 +5716,19 @@ var tsRenderer = function (input, output) {
     echoLine("     *  set ");
     echoLine("     */");
     echoLine("    private _setImg(s: string){");
-    echoLine("        this._matched.length = 0;");
-    echoLine("        for(let i = 0;i < s.length;i++){");
-    echoLine("            this._matched.push(s.charAt(i));");
-    echoLine("        }");
+    echoLine("        this._matched = s;");
     echoLine("        this._tline = this._line;");
     echoLine("        this._tcolumn = this._column;");
     echoLine("    }");
     echoLine("    private _prepareToken(tid: number){");
-    echoLine("        this._token = new Token(");
-    echoLine("            tid,");
-    echoLine("            this._matched.join(''),");
-    echoLine("            this._tline,");
-    echoLine("            this._tcolumn,");
-    echoLine("            this._line,");
-    echoLine("            this._column");
-    echoLine("        );");
-    echoLine("        this._matched.length = 0;");
+    echoLine("        this._token.id = tid;");
+    echoLine("        this._token.val = this._matched;");
+    echoLine("        this._token.startLine = this._tline;");
+    echoLine("        this._token.startColumn = this._tcolumn;");
+    echoLine("        this._token.endLine = this._line;");
+    echoLine("        this._token.endColumn = this._column;");
+    echoLine("");
+    echoLine("        this._matched = '';");
     echoLine("        this._tline = this._line;");
     echoLine("        this._tcolumn = this._column;");
     echoLine("    }");
@@ -4432,7 +5737,7 @@ var tsRenderer = function (input, output) {
     echo(prefix);
     echoLine("tokenNames[this._token.id], this._token.val);");
     echoLine("        while(!this._stop && !this._acceptToken(this._token));");
-    echoLine("        this._token = null;");
+    echoLine("        this._token.id = -1;");
     echoLine("    }");
     echoLine("    private _emit(name: string, a1?, a2?, a3?){");
     echoLine("        let cbs = this._handlers[name];");
@@ -4470,7 +5775,23 @@ var tsRenderer = function (input, output) {
     echoLine("");
     echoLine("            default:;");
     echoLine("        }");
-    echoLine("        this._token !== null && this._returnToken();");
+    echoLine("        this._token.id !== -1 && this._returnToken();");
+    echoLine("    }");
+    echoLine("    private _rollback(){");
+    echoLine("        let ret = this._matched.substr(this._matched.length - this._backupCount, this._backupCount);");
+    echoLine("        this._matched = this._matched.substr(0, this._matched.length - this._backupCount);");
+    echoLine("        this._backupCount = 0;");
+    echoLine("        this._line = this._marker.line;");
+    echoLine("        this._column = this._marker.column;");
+    echoLine("        this._state = this._marker.state;");
+    echoLine("        this._marker.state = -1;");
+    echoLine("        return ret;");
+    echoLine("    }");
+    echoLine("    private _mark(){");
+    echoLine("        this._marker.state = this._state;");
+    echoLine("        this._marker.line = this._line;");
+    echoLine("        this._marker.column = this._column;");
+    echoLine("        this._backupCount = 0;");
     echoLine("    }");
     echoLine("    /**");
     echoLine("     *  accept a character");
@@ -4479,6 +5800,14 @@ var tsRenderer = function (input, output) {
     echoLine("     *  @internal");
     echoLine("     */");
     echoLine("    private _acceptChar(c: string){");
+    echo("        function consume(cela: ");
+    echo(className);
+    echoLine(", c: string){");
+    echoLine("            c === '\\n' ? (cela._line++, cela._column = 0) : (cela._column++);");
+    echoLine("            cela._matched += c;");
+    echoLine("            cela._marker.state !== -1 && (cela._backupCount++);");
+    echoLine("            return true;");
+    echoLine("        }");
     echoLine("        let lexstate = this._lexState[this._lexState.length - 1];");
     echoLine("        let retn = { state: this._state, hasArc: false, isEnd: false };");
     echo("        ");
@@ -4491,7 +5820,7 @@ var tsRenderer = function (input, output) {
     echoLine("                    // nowhere to go, stay where we are");
     echoLine("                    this._doLexAction(lexstate, this._state);");
     echoLine("                    // recover");
-    echoLine("                    this._marker = -1;");
+    echoLine("                    this._marker.state = -1;");
     echoLine("                    this._backupCount = 0;");
     echoLine("                    this._state = 0;                    ");
     echoLine("                    // character not consumed");
@@ -4502,22 +5831,16 @@ var tsRenderer = function (input, output) {
     echoLine("                    // it is prefered to move forward, but that could lead to errors,");
     echoLine("                    // so we need to memorize this state before move on, in case if ");
     echoLine("                    // an error occurs later, we could just return to this state.");
-    echoLine("                    this._marker = this._state;");
-    echoLine("                    this._markerLine = this._line;");
-    echoLine("                    this._markerColumn = this._column;");
+    echoLine("                    this._mark();");
     echoLine("                    this._state = retn.state;");
-    echoLine("                    this._backupCount = 1;");
-    echoLine("                    c === '\\n' ? (this._line++, this._column = 0) : (this._column++);");
-    echoLine("                    this._matched.push(c);");
-    echoLine("                    // character consumed");
-    echoLine("                    return true;");
+    echoLine("                    return consume(this, c);");
     echoLine("                }");
     echoLine("            }");
     echoLine("            else {");
     echoLine("                // current state doesn't lead to any state, just stay here.");
     echoLine("                this._doLexAction(lexstate, this._state);");
     echoLine("                // recover");
-    echoLine("                this._marker = -1;");
+    echoLine("                this._marker.state = -1;");
     echoLine("                this._backupCount = 0;");
     echoLine("                this._state = 0;");
     echoLine("                // character not consumed");
@@ -4528,34 +5851,26 @@ var tsRenderer = function (input, output) {
     echoLine("            if(retn.state === -1){");
     echoLine("                // nowhere to go at current state, error may have occured.");
     echoLine("                // check marker to verify that");
-    echoLine("                if(this._marker !== -1){");
+    echoLine("                if(this._marker.state !== -1){");
     echoLine("                    // we have a previously marked state, which is a terminate state.");
-    echoLine("                    // rollback");
-    echoLine("                    this._state = this._marker;");
-    echoLine("                    this._marker = -1;");
-    echoLine("                    this._line = this._markerLine;");
-    echoLine("                    this._column = this._markerColumn;");
-    echoLine("                    while(this._backupCount --> 0){");
-    echoLine("                        this._inputBuf.push(this._matched.pop());");
-    echoLine("                    }");
+    echoLine("                    let s = this._rollback();");
     echoLine("                    this._doLexAction(lexstate, this._state);");
     echoLine("                    this._state = 0;");
+    echoLine("                    this.accept(s);");
     echoLine("                    // character not consumed");
     echoLine("                    return false;");
     echoLine("                }");
     echoLine("                else {");
     echoLine("                    // error occurs");
-    echoLine("                    this._emit('lexicalerror', `unexpected character \"${c}\"`);");
+    echoLine("                    this._emit('lexicalerror', `unexpected character \"${c}\"`, this._line, this._column);");
     echoLine("                    // force consume");
     echoLine("                    return true;");
     echoLine("                }");
     echoLine("            }");
     echoLine("            else {");
     echoLine("                this._state = retn.state;");
-    echoLine("                c === '\\n' ? (this._line++, this._column = 0) : (this._column++);");
-    echoLine("                this._matched.push(c);");
     echoLine("                // character consumed");
-    echoLine("                return true;");
+    echoLine("                return consume(this, c);");
     echoLine("            }");
     echoLine("        }");
     echoLine("    }");
@@ -4575,19 +5890,14 @@ var tsRenderer = function (input, output) {
     echoLine("            if(retn.isEnd){");
     echoLine("                this._doLexAction(lexstate, this._state);");
     echoLine("                this._state = 0;");
-    echoLine("                this._marker = -1;");
+    echoLine("                this._marker.state = -1;");
     echoLine("                return false;");
     echoLine("            }");
-    echoLine("            else if(this._marker !== -1){");
-    echoLine("                this._state = this._marker;");
-    echoLine("                this._marker = -1;");
-    echoLine("                this._line = this._markerLine;");
-    echoLine("                this._column = this._markerColumn;");
-    echoLine("                while(this._backupCount --> 0){");
-    echoLine("                    this._inputBuf.push(this._matched.pop());");
-    echoLine("                }");
+    echoLine("            else if(this._marker.state !== -1){");
+    echoLine("                let s = this._rollback();");
     echoLine("                this._doLexAction(lexstate, this._state);");
     echoLine("                this._state = 0;");
+    echoLine("                this.accept(s);");
     echoLine("                return false;");
     echoLine("            }");
     echoLine("            else {");
@@ -4601,13 +5911,8 @@ var tsRenderer = function (input, output) {
     echoLine("     *  @api public");
     echoLine("     */");
     echoLine("    accept(s: string){");
-    echoLine("        if(!this._stop){");
-    echoLine("            for(let i = s.length - 1; i >= 0; i--){");
-    echoLine("                this._inputBuf.push(s.charAt(i));");
-    echoLine("            }");
-    echoLine("            while(!this._stop && this._inputBuf.length > 0){");
-    echoLine("                this._acceptChar(this._inputBuf[this._inputBuf.length - 1]) && this._inputBuf.pop();");
-    echoLine("            }");
+    echoLine("        for(let i = 0; i < s.length && !this._stop;){");
+    echoLine("            this._acceptChar(s.charAt(i)) && i++;");
     echoLine("        }");
     echoLine("    }");
     echoLine("    /**");
@@ -4615,14 +5920,7 @@ var tsRenderer = function (input, output) {
     echoLine("     *  @api public");
     echoLine("     */");
     echoLine("    end(){");
-    echoLine("        while(!this._stop){");
-    echoLine("            if(this._inputBuf.length > 0){");
-    echoLine("                this._acceptChar(this._inputBuf[this._inputBuf.length - 1]) && this._inputBuf.pop();");
-    echoLine("            }");
-    echoLine("            else if(this._acceptEOF()){");
-    echoLine("                break;");
-    echoLine("            }");
-    echoLine("        }");
+    echoLine("        while(!this._stop && !this._acceptEOF());");
     echoLine("        this._stop = true;");
     echoLine("    }");
     echoLine("    halt(){");
@@ -4816,7 +6114,7 @@ var tsRenderer = function (input, output) {
     echoLine("    private _syntaxError(t: Token){");
     echoLine("        let msg = `unexpected token ${t.toString()}, expecting one of the following token(s):\\n`");
     echoLine("        msg += this._expected(this._lrState[this._lrState.length - 1]);");
-    echoLine("        this._emit(\"syntaxerror\", msg);");
+    echoLine("        this._emit(\"syntaxerror\", msg, t);");
     echoLine("    }");
     echoLine("    private _expected(state: number){");
     echo("        let dis = ");
@@ -4876,7 +6174,6 @@ var debug = Object.freeze({
 exports.Pattern = pattern;
 exports.io = io;
 exports.debug = debug;
-exports.highlightUtil = highlightUtil;
 exports.setDebugger = setDebugger;
 exports.setTab = setTab;
 exports.genResult = genResult;

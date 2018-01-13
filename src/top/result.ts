@@ -1,5 +1,5 @@
 import { genItemSets,genParseTable, Conflict } from '../grammar/ptable-gen';
-import { parseSource } from '../parser/gparser';
+// import { parseSource } from '../parser/gparser';
 import { lexer } from '../lexer/pattern';
 import { testParse } from './parse-test';
 import { YYTAB } from '../util/common';
@@ -14,6 +14,7 @@ import { Context } from '../util/context';
 import { JsccError, JsccWarning, Option } from '../util/E';
 import { CompressedPTable } from '../grammar/ptable-compress';
 import { TemplateInput } from '../codegen/def';
+import { parse } from '../parser/parser-wrapper';
 
 class Result implements Context{
     file: File;
@@ -93,12 +94,17 @@ class Result implements Context{
 
 function genResult(source: string){
     var result = new Result();
-    try{
-        var f = parseSource(StringIS(source), result);
-    }
-    catch(e){
+    //try{
+        //var f = parseSource(StringIS(source), result);
+        var f = parse(result, source);
+    // }
+    // catch(e){
+    //     result.terminated = true;
+    //     result.err(e as JsccError);
+    //     return result;
+    // }
+    if(result.hasError()){
         result.terminated = true;
-        result.err(e as JsccError);
         return result;
     }
     var g = f.grammar;

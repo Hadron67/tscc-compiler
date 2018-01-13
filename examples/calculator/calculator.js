@@ -48,6 +48,9 @@
                 else if ((c >= 48 && c <= 57)) {
                     ret.state = 9;
                 }
+                else if (c === 115) {
+                    ret.state = 10;
+                }
                 else {
                     ret.state = -1;
                 }
@@ -91,7 +94,7 @@
                 ret.hasArc = true;
                 ret.isEnd = false;
                 if ((c >= 48 && c <= 57)) {
-                    ret.state = 10;
+                    ret.state = 11;
                 }
                 else {
                     ret.state = -1;
@@ -106,13 +109,13 @@
                 ret.hasArc = true;
                 ret.isEnd = true;
                 if (c === 46) {
-                    ret.state = 11;
+                    ret.state = 12;
                 }
                 else if ((c >= 48 && c <= 57)) {
                     ret.state = 9;
                 }
                 else if (c === 69 || c === 101) {
-                    ret.state = 12;
+                    ret.state = 13;
                 }
                 else {
                     ret.state = -1;
@@ -120,12 +123,9 @@
                 break;
             case 10:
                 ret.hasArc = true;
-                ret.isEnd = true;
-                if ((c >= 48 && c <= 57)) {
-                    ret.state = 10;
-                }
-                else if (c === 69 || c === 101) {
-                    ret.state = 12;
+                ret.isEnd = false;
+                if (c === 105) {
+                    ret.state = 14;
                 }
                 else {
                     ret.state = -1;
@@ -135,10 +135,10 @@
                 ret.hasArc = true;
                 ret.isEnd = true;
                 if ((c >= 48 && c <= 57)) {
-                    ret.state = 13;
+                    ret.state = 11;
                 }
                 else if (c === 69 || c === 101) {
-                    ret.state = 12;
+                    ret.state = 13;
                 }
                 else {
                     ret.state = -1;
@@ -146,9 +146,12 @@
                 break;
             case 12:
                 ret.hasArc = true;
-                ret.isEnd = false;
+                ret.isEnd = true;
                 if ((c >= 48 && c <= 57)) {
-                    ret.state = 14;
+                    ret.state = 15;
+                }
+                else if (c === 69 || c === 101) {
+                    ret.state = 13;
                 }
                 else {
                     ret.state = -1;
@@ -156,12 +159,9 @@
                 break;
             case 13:
                 ret.hasArc = true;
-                ret.isEnd = true;
+                ret.isEnd = false;
                 if ((c >= 48 && c <= 57)) {
-                    ret.state = 13;
-                }
-                else if (c === 69 || c === 101) {
-                    ret.state = 12;
+                    ret.state = 16;
                 }
                 else {
                     ret.state = -1;
@@ -169,13 +169,51 @@
                 break;
             case 14:
                 ret.hasArc = true;
-                ret.isEnd = true;
-                if ((c >= 48 && c <= 57)) {
-                    ret.state = 14;
+                ret.isEnd = false;
+                if (c === 110) {
+                    ret.state = 17;
                 }
                 else {
                     ret.state = -1;
                 }
+                break;
+            case 15:
+                ret.hasArc = true;
+                ret.isEnd = true;
+                if ((c >= 48 && c <= 57)) {
+                    ret.state = 15;
+                }
+                else if (c === 69 || c === 101) {
+                    ret.state = 13;
+                }
+                else {
+                    ret.state = -1;
+                }
+                break;
+            case 16:
+                ret.hasArc = true;
+                ret.isEnd = true;
+                if ((c >= 48 && c <= 57)) {
+                    ret.state = 16;
+                }
+                else {
+                    ret.state = -1;
+                }
+                break;
+            case 17:
+                ret.hasArc = true;
+                ret.isEnd = true;
+                if (c === 104) {
+                    ret.state = 18;
+                }
+                else {
+                    ret.state = -1;
+                }
+                break;
+            case 18:
+                ret.hasArc = false;
+                ret.isEnd = true;
+                ret.state = -1;
                 break;
             default:
                 ret.state = -1;
@@ -193,11 +231,11 @@
     */
     var jjlexTokens0 = [
         -1, -1, 6, 7, 4, 2, 3, -1, 5, 1,
-        1, 1, -1, 1, 1,
+        -1, 1, 1, -1, -1, 1, 1, 8, 9,
     ];
-    var jjstateCount = 20;
-    var jjtokenCount = 8;
-    var jjactERR = 21;
+    var jjstateCount = 29;
+    var jjtokenCount = 10;
+    var jjactERR = 30;
     /*
         compressed action table: action = jjpact[jjdisact[STATE-NUM] + TOKEN]
         when action > 0, shift the token and goto state (action - 1);
@@ -205,64 +243,83 @@
         when action = 0, do default action.
     */
     var jjpact = [
-        9, 10, 11, 12, 5, 20, 4, 6, 7, 11,
-        12, 8, 4, 6, 7, 11, 12, 8, 4, 6,
-        7, 0, 0, 8, 4, 6, 7, 0, 0, 8,
-        4, 6, 7, 0, 0, 8, 4, 6, 7, 0,
-        0, 8, 4, 6, 7, 0, 0, 8, 9, 10,
-        11, 12, 4, 6, 7, 0, 0, 8, 0,
+        4, 9, 10, 13, 12, 11, 8, 6, 7, 4,
+        9, 10, 0, 0, 11, 0, 6, 7, 4, 9,
+        10, 0, 0, 11, 0, 6, 7, 4, 9, 10,
+        0, 0, 11, 0, 6, 7, 4, 9, 10, 0,
+        0, 11, 0, 6, 7, 4, 9, 10, 0, 0,
+        11, 0, 6, 7, 4, 9, 10, 0, 0, 11,
+        0, 6, 7, 4, 9, 10, 0, 0, 11, 0,
+        6, 7, 4, 9, 10, 0, 0, 11, 0, 6,
+        7, 4, 9, 10, 0, 0, 11, 0, 6, 7,
+        14, 15, 16, 17, 0, 29, 14, 15, 16, 17,
+        0, 28, 14, 15, 16, 17, 0, 27, 14, 15,
+        16, 17, 0, 0, 0, 0,
     ];
     /*
         displacement of action table.
     */
     var jjdisact = [
-        51, 4, 46, -8, -8, 41, 35, 29, 23, 17,
-        11, 5, -8, -8, -2, 11, 5, -8, -8, -8,
+        80, 6, 106, -10, -10, -2, -3, -10, 71, 62,
+        53, 44, 35, 26, 17, 8, -1, -10, -10, 100,
+        94, 88, -10, -10, -10, -10, -10, -10, -10,
     ];
     /*
         used to check if a position in jjpact is out of bouds.
         if jjcheckact[jjdisact[STATE-NUM] + TOKEN] = STATE-NUM, this position is not out of bounds.
     */
     var jjcheckact = [
-        14, 14, 14, 14, 1, 14, 11, 11, 11, 16,
-        16, 11, 10, 10, 10, 15, 15, 10, 9, 9,
-        9, 0, 0, 9, 8, 8, 8, 0, 0, 8,
-        7, 7, 7, 0, 0, 7, 6, 6, 6, 0,
-        0, 6, 5, 5, 5, 0, 0, 5, 2, 2,
-        2, 2, 0, 0, 0, 0, 0, 0, 0,
+        16, 16, 16, 6, 5, 16, 1, 16, 16, 15,
+        15, 15, 0, 0, 15, 0, 15, 15, 14, 14,
+        14, 0, 0, 14, 0, 14, 14, 13, 13, 13,
+        0, 0, 13, 0, 13, 13, 12, 12, 12, 0,
+        0, 12, 0, 12, 12, 11, 11, 11, 0, 0,
+        11, 0, 11, 11, 10, 10, 10, 0, 0, 10,
+        0, 10, 10, 9, 9, 9, 0, 0, 9, 0,
+        9, 9, 8, 8, 8, 0, 0, 8, 0, 8,
+        8, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        21, 21, 21, 21, 0, 21, 20, 20, 20, 20,
+        0, 20, 19, 19, 19, 19, 0, 19, 2, 2,
+        2, 2, 0, 0, 0, 0,
     ];
     /*
         default action table. action = jjdefred[STATE-NUM],
         where action is the number of the rule to reduce with.
     */
     var jjdefred = [
-        -1, -1, 1, 9, 0, -1, -1, -1, -1, -1,
-        -1, -1, 6, 7, -1, 2, 3, 4, 5, 8,
+        -1, -1, 1, 9, 10, -1, -1, 0, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, 6, 7, -1,
+        -1, -1, 2, 3, 4, 5, 8, 11, 12,
     ];
     /*
         compressed goto table: goto = jjpgoto[jjdisgoto[STATE-NUM] + NON_TERMINAL]
     */
     var jjpgoto = [
-        18, 17, 16, 15, 14, 13, 12, 1, 2,
+        25, 4, 24, 4, 23, 4, 22, 4, 21, 4,
+        20, 4, 19, 4, 18, 4, 17, 4, 1, 2,
+        4,
     ];
     /*
         displacement of the goto table
     */
     var jjdisgoto = [
-        6, -3, -3, -3, -3, 4, 3, 2, 1, 0,
-        -1, -2, -3, -3, -3, -3, -3, -3, -3, -3,
+        17, -4, -4, -4, -4, -4, -4, -4, 14, 12,
+        10, 8, 6, 4, 2, 0, -2, -4, -4, -4,
+        -4, -4, -4, -4, -4, -4, -4, -4, -4,
     ];
     /*
         length of each rule: rule length = jjruleLen[RULE-NUM]
     */
     var jjruleLen = [
         2, 1, 3, 3, 3, 3, 2, 2, 3, 1,
+        1, 4, 4,
     ];
     /*
         index of the LHS of each rule
     */
     var jjlhs = [
         0, 1, 2, 2, 2, 2, 2, 2, 2, 2,
+        2, 3, 3,
     ];
     /*
         token names
@@ -270,7 +327,8 @@
     var jjtokenNames = [
         "EOF", "NUM", "PLUS",
         "MINUS", "TIMES", "DIVIDE",
-        "BRA", "KET",
+        "BRA", "KET", "SIN",
+        "SINH",
     ];
     /*
         token alias
@@ -278,7 +336,8 @@
     var jjtokenAlias = [
         null, null, "+",
         "-", "*", "/",
-        "(", ")",
+        "(", ")", "sin",
+        "sinh",
     ];
     function tokenToString(tk) {
         return jjtokenAlias[tk] === null ? "<" + jjtokenNames[tk] + ">" : "\"" + jjtokenAlias[tk] + "\"";
@@ -303,6 +362,7 @@
     exports.Token = Token;
     var Parser = /** @class */ (function () {
         function Parser() {
+            this._marker = { state: -1, line: 0, column: 0 };
             // members for parser
             this._lrState = [];
             this._sematicS = [];
@@ -312,14 +372,12 @@
         Parser.prototype.init = function () {
             this._lexState = [0]; // DEFAULT
             this._state = 0;
-            this._matched = [];
+            this._matched = '';
             this._token = null;
-            this._marker = -1;
-            this._markerLine = this._markerColumn = 0;
+            this._marker.state = -1;
             this._backupCount = 0;
-            this._inputBuf = [];
-            this._line = this._tline = 0;
-            this._column = this._tcolumn = 0;
+            this._line = this._tline = 1;
+            this._column = this._tcolumn = 1;
             this._lrState = [0];
             this._sematicS = [];
             this._sematicVal = null;
@@ -329,16 +387,13 @@
          *  set
          */
         Parser.prototype._setImg = function (s) {
-            this._matched.length = 0;
-            for (var i = 0; i < s.length; i++) {
-                this._matched.push(s.charAt(i));
-            }
+            this._matched = s;
             this._tline = this._line;
             this._tcolumn = this._column;
         };
         Parser.prototype._prepareToken = function (tid) {
-            this._token = new Token(tid, this._matched.join(''), this._tline, this._tcolumn, this._line, this._column);
-            this._matched.length = 0;
+            this._token = new Token(tid, this._matched, this._tline, this._tcolumn, this._line, this._column);
+            this._matched = '';
             this._tline = this._line;
             this._tcolumn = this._column;
         };
@@ -371,16 +426,16 @@
                 case 9:
                     this._sematicVal = Number(this._token.val);
                     break;
-                case 10:
-                    this._sematicVal = Number(this._token.val);
-                    break;
                 case 11:
                     this._sematicVal = Number(this._token.val);
                     break;
-                case 13:
+                case 12:
                     this._sematicVal = Number(this._token.val);
                     break;
-                case 14:
+                case 15:
+                    this._sematicVal = Number(this._token.val);
+                    break;
+                case 16:
                     this._sematicVal = Number(this._token.val);
                     break;
                 default: ;
@@ -400,6 +455,22 @@
             }
             this._token !== null && this._returnToken();
         };
+        Parser.prototype._rollback = function () {
+            var ret = this._matched.substr(this._matched.length - this._backupCount, this._backupCount);
+            this._matched = this._matched.substr(0, this._matched.length - this._backupCount);
+            this._backupCount = 0;
+            this._line = this._marker.line;
+            this._column = this._marker.column;
+            this._state = this._marker.state;
+            this._marker.state = -1;
+            return ret;
+        };
+        Parser.prototype._mark = function () {
+            this._marker.state = this._state;
+            this._marker.line = this._line;
+            this._marker.column = this._column;
+            this._backupCount = 0;
+        };
         /**
          *  accept a character
          *  @return - true if the character is consumed, false if not consumed
@@ -407,6 +478,12 @@
          *  @internal
          */
         Parser.prototype._acceptChar = function (c) {
+            function consume(cela, c) {
+                c === '\n' ? (cela._line++, cela._column = 0) : (cela._column++);
+                cela._matched += c;
+                cela._marker.state !== -1 && (cela._backupCount++);
+                return true;
+            }
             var lexstate = this._lexState[this._lexState.length - 1];
             var retn = { state: this._state, hasArc: false, isEnd: false };
             jjlexers[lexstate](c.charCodeAt(0), retn);
@@ -417,7 +494,7 @@
                         // nowhere to go, stay where we are
                         this._doLexAction(lexstate, this._state);
                         // recover
-                        this._marker = -1;
+                        this._marker.state = -1;
                         this._backupCount = 0;
                         this._state = 0;
                         // character not consumed
@@ -428,22 +505,16 @@
                         // it is prefered to move forward, but that could lead to errors,
                         // so we need to memorize this state before move on, in case if 
                         // an error occurs later, we could just return to this state.
-                        this._marker = this._state;
-                        this._markerLine = this._line;
-                        this._markerColumn = this._column;
+                        this._mark();
                         this._state = retn.state;
-                        this._backupCount = 1;
-                        c === '\n' ? (this._line++, this._column = 0) : (this._column++);
-                        this._matched.push(c);
-                        // character consumed
-                        return true;
+                        return consume(this, c);
                     }
                 }
                 else {
                     // current state doesn't lead to any state, just stay here.
                     this._doLexAction(lexstate, this._state);
                     // recover
-                    this._marker = -1;
+                    this._marker.state = -1;
                     this._backupCount = 0;
                     this._state = 0;
                     // character not consumed
@@ -454,34 +525,26 @@
                 if (retn.state === -1) {
                     // nowhere to go at current state, error may have occured.
                     // check marker to verify that
-                    if (this._marker !== -1) {
+                    if (this._marker.state !== -1) {
                         // we have a previously marked state, which is a terminate state.
-                        // rollback
-                        this._state = this._marker;
-                        this._marker = -1;
-                        this._line = this._markerLine;
-                        this._column = this._markerColumn;
-                        while (this._backupCount-- > 0) {
-                            this._inputBuf.push(this._matched.pop());
-                        }
+                        var s = this._rollback();
                         this._doLexAction(lexstate, this._state);
                         this._state = 0;
+                        this.accept(s);
                         // character not consumed
                         return false;
                     }
                     else {
                         // error occurs
-                        this._emit('lexicalerror', "unexpected character \"" + c + "\"");
+                        this._emit('lexicalerror', "unexpected character \"" + c + "\"", this._line, this._column);
                         // force consume
                         return true;
                     }
                 }
                 else {
                     this._state = retn.state;
-                    c === '\n' ? (this._line++, this._column = 0) : (this._column++);
-                    this._matched.push(c);
                     // character consumed
-                    return true;
+                    return consume(this, c);
                 }
             }
         };
@@ -499,19 +562,14 @@
                 if (retn.isEnd) {
                     this._doLexAction(lexstate, this._state);
                     this._state = 0;
-                    this._marker = -1;
+                    this._marker.state = -1;
                     return false;
                 }
-                else if (this._marker !== -1) {
-                    this._state = this._marker;
-                    this._marker = -1;
-                    this._line = this._markerLine;
-                    this._column = this._markerColumn;
-                    while (this._backupCount-- > 0) {
-                        this._inputBuf.push(this._matched.pop());
-                    }
+                else if (this._marker.state !== -1) {
+                    var s = this._rollback();
                     this._doLexAction(lexstate, this._state);
                     this._state = 0;
+                    this.accept(s);
                     return false;
                 }
                 else {
@@ -525,13 +583,8 @@
          *  @api public
          */
         Parser.prototype.accept = function (s) {
-            if (!this._stop) {
-                for (var i = s.length - 1; i >= 0; i--) {
-                    this._inputBuf.push(s.charAt(i));
-                }
-                while (!this._stop && this._inputBuf.length > 0) {
-                    this._acceptChar(this._inputBuf[this._inputBuf.length - 1]) && this._inputBuf.pop();
-                }
+            for (var i = 0; i < s.length && !this._stop;) {
+                this._acceptChar(s.charAt(i)) && i++;
             }
         };
         /**
@@ -539,14 +592,8 @@
          *  @api public
          */
         Parser.prototype.end = function () {
-            while (!this._stop) {
-                if (this._inputBuf.length > 0) {
-                    this._acceptChar(this._inputBuf[this._inputBuf.length - 1]) && this._inputBuf.pop();
-                }
-                else if (this._acceptEOF()) {
-                    break;
-                }
-            }
+            while (!this._stop && !this._acceptEOF())
+                ;
             this._stop = true;
         };
         Parser.prototype.halt = function () {
@@ -617,6 +664,20 @@
                         jjtop = a;
                     }
                     break;
+                case 11:
+                    /* 11: funcs => "sin" "(" expr ")" */
+                    var a = this._sematicS[jjsp - 2];
+                    {
+                        jjtop = Math.sin(a);
+                    }
+                    break;
+                case 12:
+                    /* 12: funcs => "sinh" "(" expr ")" */
+                    var a = this._sematicS[jjsp - 2];
+                    {
+                        jjtop = Math.sinh(a);
+                    }
+                    break;
             }
             this._lrState.length -= jjruleLen[jjrulenum];
             var jjcstate = this._lrState[this._lrState.length - 1];
@@ -670,7 +731,7 @@
         Parser.prototype._syntaxError = function (t) {
             var msg = "unexpected token " + t.toString() + ", expecting one of the following token(s):\n";
             msg += this._expected(this._lrState[this._lrState.length - 1]);
-            this._emit("syntaxerror", msg);
+            this._emit("syntaxerror", msg, t);
         };
         Parser.prototype._expected = function (state) {
             var dis = jjdisact[state];

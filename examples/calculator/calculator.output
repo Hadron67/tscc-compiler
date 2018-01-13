@@ -8,6 +8,7 @@ state 0(start)
     '.' -> state 7
     '/' -> state 8
     ['0','9'] -> state 9
+    's' -> state 10
 
 state 1(end 0)
     [\x9,\xa],\xd,' ' -> state 1
@@ -23,32 +24,43 @@ state 5(end 2)
 state 6(end 3)
 
 state 7
-    ['0','9'] -> state 10
+    ['0','9'] -> state 11
 
 state 8(end 5)
 
 state 9(end 1)
-    '.' -> state 11
+    '.' -> state 12
     ['0','9'] -> state 9
-    'E','e' -> state 12
+    'E','e' -> state 13
 
-state 10(end 1)
-    ['0','9'] -> state 10
-    'E','e' -> state 12
+state 10
+    'i' -> state 14
 
 state 11(end 1)
-    ['0','9'] -> state 13
-    'E','e' -> state 12
+    ['0','9'] -> state 11
+    'E','e' -> state 13
 
-state 12
-    ['0','9'] -> state 14
+state 12(end 1)
+    ['0','9'] -> state 15
+    'E','e' -> state 13
 
-state 13(end 1)
-    ['0','9'] -> state 13
-    'E','e' -> state 12
+state 13
+    ['0','9'] -> state 16
 
-state 14(end 1)
-    ['0','9'] -> state 14
+state 14
+    'n' -> state 17
+
+state 15(end 1)
+    ['0','9'] -> state 15
+    'E','e' -> state 13
+
+state 16(end 1)
+    ['0','9'] -> state 16
+
+state 17(end 8)
+    'h' -> state 18
+
+state 18(end 9)
 
 
 
@@ -63,19 +75,25 @@ state 0
     [ 7: expr => . "-" expr ]
     [ 8: expr => . "(" expr ")" ]
     [ 9: expr => . <NUM> ]
+    [ 10: expr => . funcs ]
+    [ 11: funcs => . "sin" "(" expr ")" ]
+    [ 12: funcs => . "sinh" "(" expr ")" ]
     no default action
     <NUM> : shift, and goto state 3
-    "+" : shift, and goto state 5
-    "-" : shift, and goto state 6
-    "(" : shift, and goto state 7
+    "+" : shift, and goto state 8
+    "-" : shift, and goto state 9
+    "(" : shift, and goto state 10
+    "sin" : shift, and goto state 5
+    "sinh" : shift, and goto state 6
     start : goto state 1
     expr : goto state 2
+    funcs : goto state 4
 
 
 state 1
     [ 0: (accept) => start . <EOF> ]*
     no default action
-    <EOF> : shift, and goto state 4
+    <EOF> : shift, and goto state 7
 
 
 state 2
@@ -85,10 +103,10 @@ state 2
     [ 4: expr => expr . "*" expr ]*
     [ 5: expr => expr . "/" expr ]*
     default action: reduce with rule 1
-    "+" : shift, and goto state 8
-    "-" : shift, and goto state 9
-    "*" : shift, and goto state 10
-    "/" : shift, and goto state 11
+    "+" : shift, and goto state 13
+    "-" : shift, and goto state 14
+    "*" : shift, and goto state 15
+    "/" : shift, and goto state 16
 
 
 state 3
@@ -97,11 +115,28 @@ state 3
 
 
 state 4
+    [ 10: expr => funcs . ]*
+    default action: reduce with rule 10
+
+
+state 5
+    [ 11: funcs => "sin" . "(" expr ")" ]*
+    no default action
+    "(" : shift, and goto state 11
+
+
+state 6
+    [ 12: funcs => "sinh" . "(" expr ")" ]*
+    no default action
+    "(" : shift, and goto state 12
+
+
+state 7
     [ 0: (accept) => start <EOF> . ]*
     default action: reduce with rule 0
 
 
-state 5
+state 8
     [ 6: expr => "+" . expr ]*
     [ 2: expr => . expr "+" expr ]
     [ 3: expr => . expr "-" expr ]
@@ -111,15 +146,21 @@ state 5
     [ 7: expr => . "-" expr ]
     [ 8: expr => . "(" expr ")" ]
     [ 9: expr => . <NUM> ]
+    [ 10: expr => . funcs ]
+    [ 11: funcs => . "sin" "(" expr ")" ]
+    [ 12: funcs => . "sinh" "(" expr ")" ]
     no default action
     <NUM> : shift, and goto state 3
-    "+" : shift, and goto state 5
-    "-" : shift, and goto state 6
-    "(" : shift, and goto state 7
-    expr : goto state 12
+    "+" : shift, and goto state 8
+    "-" : shift, and goto state 9
+    "(" : shift, and goto state 10
+    "sin" : shift, and goto state 5
+    "sinh" : shift, and goto state 6
+    expr : goto state 17
+    funcs : goto state 4
 
 
-state 6
+state 9
     [ 7: expr => "-" . expr ]*
     [ 2: expr => . expr "+" expr ]
     [ 3: expr => . expr "-" expr ]
@@ -129,15 +170,21 @@ state 6
     [ 7: expr => . "-" expr ]
     [ 8: expr => . "(" expr ")" ]
     [ 9: expr => . <NUM> ]
+    [ 10: expr => . funcs ]
+    [ 11: funcs => . "sin" "(" expr ")" ]
+    [ 12: funcs => . "sinh" "(" expr ")" ]
     no default action
     <NUM> : shift, and goto state 3
-    "+" : shift, and goto state 5
-    "-" : shift, and goto state 6
-    "(" : shift, and goto state 7
-    expr : goto state 13
+    "+" : shift, and goto state 8
+    "-" : shift, and goto state 9
+    "(" : shift, and goto state 10
+    "sin" : shift, and goto state 5
+    "sinh" : shift, and goto state 6
+    expr : goto state 18
+    funcs : goto state 4
 
 
-state 7
+state 10
     [ 8: expr => "(" . expr ")" ]*
     [ 2: expr => . expr "+" expr ]
     [ 3: expr => . expr "-" expr ]
@@ -147,15 +194,69 @@ state 7
     [ 7: expr => . "-" expr ]
     [ 8: expr => . "(" expr ")" ]
     [ 9: expr => . <NUM> ]
+    [ 10: expr => . funcs ]
+    [ 11: funcs => . "sin" "(" expr ")" ]
+    [ 12: funcs => . "sinh" "(" expr ")" ]
     no default action
     <NUM> : shift, and goto state 3
-    "+" : shift, and goto state 5
-    "-" : shift, and goto state 6
-    "(" : shift, and goto state 7
-    expr : goto state 14
+    "+" : shift, and goto state 8
+    "-" : shift, and goto state 9
+    "(" : shift, and goto state 10
+    "sin" : shift, and goto state 5
+    "sinh" : shift, and goto state 6
+    expr : goto state 19
+    funcs : goto state 4
 
 
-state 8
+state 11
+    [ 11: funcs => "sin" "(" . expr ")" ]*
+    [ 2: expr => . expr "+" expr ]
+    [ 3: expr => . expr "-" expr ]
+    [ 4: expr => . expr "*" expr ]
+    [ 5: expr => . expr "/" expr ]
+    [ 6: expr => . "+" expr ]
+    [ 7: expr => . "-" expr ]
+    [ 8: expr => . "(" expr ")" ]
+    [ 9: expr => . <NUM> ]
+    [ 10: expr => . funcs ]
+    [ 11: funcs => . "sin" "(" expr ")" ]
+    [ 12: funcs => . "sinh" "(" expr ")" ]
+    no default action
+    <NUM> : shift, and goto state 3
+    "+" : shift, and goto state 8
+    "-" : shift, and goto state 9
+    "(" : shift, and goto state 10
+    "sin" : shift, and goto state 5
+    "sinh" : shift, and goto state 6
+    expr : goto state 20
+    funcs : goto state 4
+
+
+state 12
+    [ 12: funcs => "sinh" "(" . expr ")" ]*
+    [ 2: expr => . expr "+" expr ]
+    [ 3: expr => . expr "-" expr ]
+    [ 4: expr => . expr "*" expr ]
+    [ 5: expr => . expr "/" expr ]
+    [ 6: expr => . "+" expr ]
+    [ 7: expr => . "-" expr ]
+    [ 8: expr => . "(" expr ")" ]
+    [ 9: expr => . <NUM> ]
+    [ 10: expr => . funcs ]
+    [ 11: funcs => . "sin" "(" expr ")" ]
+    [ 12: funcs => . "sinh" "(" expr ")" ]
+    no default action
+    <NUM> : shift, and goto state 3
+    "+" : shift, and goto state 8
+    "-" : shift, and goto state 9
+    "(" : shift, and goto state 10
+    "sin" : shift, and goto state 5
+    "sinh" : shift, and goto state 6
+    expr : goto state 21
+    funcs : goto state 4
+
+
+state 13
     [ 2: expr => expr "+" . expr ]*
     [ 2: expr => . expr "+" expr ]
     [ 3: expr => . expr "-" expr ]
@@ -165,15 +266,21 @@ state 8
     [ 7: expr => . "-" expr ]
     [ 8: expr => . "(" expr ")" ]
     [ 9: expr => . <NUM> ]
+    [ 10: expr => . funcs ]
+    [ 11: funcs => . "sin" "(" expr ")" ]
+    [ 12: funcs => . "sinh" "(" expr ")" ]
     no default action
     <NUM> : shift, and goto state 3
-    "+" : shift, and goto state 5
-    "-" : shift, and goto state 6
-    "(" : shift, and goto state 7
-    expr : goto state 15
+    "+" : shift, and goto state 8
+    "-" : shift, and goto state 9
+    "(" : shift, and goto state 10
+    "sin" : shift, and goto state 5
+    "sinh" : shift, and goto state 6
+    expr : goto state 22
+    funcs : goto state 4
 
 
-state 9
+state 14
     [ 3: expr => expr "-" . expr ]*
     [ 2: expr => . expr "+" expr ]
     [ 3: expr => . expr "-" expr ]
@@ -183,15 +290,21 @@ state 9
     [ 7: expr => . "-" expr ]
     [ 8: expr => . "(" expr ")" ]
     [ 9: expr => . <NUM> ]
+    [ 10: expr => . funcs ]
+    [ 11: funcs => . "sin" "(" expr ")" ]
+    [ 12: funcs => . "sinh" "(" expr ")" ]
     no default action
     <NUM> : shift, and goto state 3
-    "+" : shift, and goto state 5
-    "-" : shift, and goto state 6
-    "(" : shift, and goto state 7
-    expr : goto state 16
+    "+" : shift, and goto state 8
+    "-" : shift, and goto state 9
+    "(" : shift, and goto state 10
+    "sin" : shift, and goto state 5
+    "sinh" : shift, and goto state 6
+    expr : goto state 23
+    funcs : goto state 4
 
 
-state 10
+state 15
     [ 4: expr => expr "*" . expr ]*
     [ 2: expr => . expr "+" expr ]
     [ 3: expr => . expr "-" expr ]
@@ -201,15 +314,21 @@ state 10
     [ 7: expr => . "-" expr ]
     [ 8: expr => . "(" expr ")" ]
     [ 9: expr => . <NUM> ]
+    [ 10: expr => . funcs ]
+    [ 11: funcs => . "sin" "(" expr ")" ]
+    [ 12: funcs => . "sinh" "(" expr ")" ]
     no default action
     <NUM> : shift, and goto state 3
-    "+" : shift, and goto state 5
-    "-" : shift, and goto state 6
-    "(" : shift, and goto state 7
-    expr : goto state 17
+    "+" : shift, and goto state 8
+    "-" : shift, and goto state 9
+    "(" : shift, and goto state 10
+    "sin" : shift, and goto state 5
+    "sinh" : shift, and goto state 6
+    expr : goto state 24
+    funcs : goto state 4
 
 
-state 11
+state 16
     [ 5: expr => expr "/" . expr ]*
     [ 2: expr => . expr "+" expr ]
     [ 3: expr => . expr "-" expr ]
@@ -219,15 +338,21 @@ state 11
     [ 7: expr => . "-" expr ]
     [ 8: expr => . "(" expr ")" ]
     [ 9: expr => . <NUM> ]
+    [ 10: expr => . funcs ]
+    [ 11: funcs => . "sin" "(" expr ")" ]
+    [ 12: funcs => . "sinh" "(" expr ")" ]
     no default action
     <NUM> : shift, and goto state 3
-    "+" : shift, and goto state 5
-    "-" : shift, and goto state 6
-    "(" : shift, and goto state 7
-    expr : goto state 18
+    "+" : shift, and goto state 8
+    "-" : shift, and goto state 9
+    "(" : shift, and goto state 10
+    "sin" : shift, and goto state 5
+    "sinh" : shift, and goto state 6
+    expr : goto state 25
+    funcs : goto state 4
 
 
-state 12
+state 17
     [ 6: expr => "+" expr . ]*
     [ 2: expr => expr . "+" expr ]*
     [ 3: expr => expr . "-" expr ]*
@@ -236,7 +361,7 @@ state 12
     default action: reduce with rule 6
 
 
-state 13
+state 18
     [ 7: expr => "-" expr . ]*
     [ 2: expr => expr . "+" expr ]*
     [ 3: expr => expr . "-" expr ]*
@@ -245,43 +370,67 @@ state 13
     default action: reduce with rule 7
 
 
-state 14
+state 19
     [ 8: expr => "(" expr . ")" ]*
     [ 2: expr => expr . "+" expr ]*
     [ 3: expr => expr . "-" expr ]*
     [ 4: expr => expr . "*" expr ]*
     [ 5: expr => expr . "/" expr ]*
     no default action
-    "+" : shift, and goto state 8
-    "-" : shift, and goto state 9
-    "*" : shift, and goto state 10
-    "/" : shift, and goto state 11
-    ")" : shift, and goto state 19
+    "+" : shift, and goto state 13
+    "-" : shift, and goto state 14
+    "*" : shift, and goto state 15
+    "/" : shift, and goto state 16
+    ")" : shift, and goto state 26
 
 
-state 15
+state 20
+    [ 11: funcs => "sin" "(" expr . ")" ]*
+    [ 2: expr => expr . "+" expr ]*
+    [ 3: expr => expr . "-" expr ]*
+    [ 4: expr => expr . "*" expr ]*
+    [ 5: expr => expr . "/" expr ]*
+    no default action
+    "+" : shift, and goto state 13
+    "-" : shift, and goto state 14
+    "*" : shift, and goto state 15
+    "/" : shift, and goto state 16
+    ")" : shift, and goto state 27
+
+
+state 21
+    [ 12: funcs => "sinh" "(" expr . ")" ]*
+    [ 2: expr => expr . "+" expr ]*
+    [ 3: expr => expr . "-" expr ]*
+    [ 4: expr => expr . "*" expr ]*
+    [ 5: expr => expr . "/" expr ]*
+    no default action
+    "+" : shift, and goto state 13
+    "-" : shift, and goto state 14
+    "*" : shift, and goto state 15
+    "/" : shift, and goto state 16
+    ")" : shift, and goto state 28
+
+
+state 22
     [ 2: expr => expr "+" expr . ]*
     [ 2: expr => expr . "+" expr ]*
     [ 3: expr => expr . "-" expr ]*
     [ 4: expr => expr . "*" expr ]*
     [ 5: expr => expr . "/" expr ]*
     default action: reduce with rule 2
-    "*" : shift, and goto state 10
-    "/" : shift, and goto state 11
 
 
-state 16
+state 23
     [ 3: expr => expr "-" expr . ]*
     [ 2: expr => expr . "+" expr ]*
     [ 3: expr => expr . "-" expr ]*
     [ 4: expr => expr . "*" expr ]*
     [ 5: expr => expr . "/" expr ]*
     default action: reduce with rule 3
-    "*" : shift, and goto state 10
-    "/" : shift, and goto state 11
 
 
-state 17
+state 24
     [ 4: expr => expr "*" expr . ]*
     [ 2: expr => expr . "+" expr ]*
     [ 3: expr => expr . "-" expr ]*
@@ -290,7 +439,7 @@ state 17
     default action: reduce with rule 4
 
 
-state 18
+state 25
     [ 5: expr => expr "/" expr . ]*
     [ 2: expr => expr . "+" expr ]*
     [ 3: expr => expr . "-" expr ]*
@@ -299,8 +448,18 @@ state 18
     default action: reduce with rule 5
 
 
-state 19
+state 26
     [ 8: expr => "(" expr ")" . ]*
     default action: reduce with rule 8
+
+
+state 27
+    [ 11: funcs => "sin" "(" expr ")" . ]*
+    default action: reduce with rule 11
+
+
+state 28
+    [ 12: funcs => "sinh" "(" expr ")" . ]*
+    default action: reduce with rule 12
 
 

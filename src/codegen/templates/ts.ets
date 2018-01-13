@@ -261,6 +261,16 @@ export class Token {
         public endLine: number,
         public endColumn: number
     ){}
+    clone(){
+        return new Token(
+            this.id,
+            this.val,
+            this.startLine,
+            this.startColumn,
+            this.endLine,
+            this.endColumn
+        );
+    }
     toString(){
         return (<%- prefix %>tokenAlias[this.id] === null ? 
             `<${<%- prefix %>tokenNames[this.id]}>` :
@@ -272,13 +282,12 @@ export class <%- className %> {
     // members for lexer
     private _lexState: number[];
     private _state: number;
-    private _matched: string[];
+    private _matched: string;
     private _token: Token;
-    private _marker: number;
-    private _markerLine;
-    private _markerColumn;
+    
+    private _marker: { state: number, line: number, column: number } = { state: -1, line: 0, column: 0 };
     private _backupCount: number;
-    private _inputBuf: string[];
+
     private _line: number;
     private _column: number;
     private _tline: number;
@@ -302,14 +311,12 @@ export class <%- className %> {
     init(){
         this._lexState = [ 0 ];// DEFAULT
         this._state = 0;
-        this._matched = [];
-        this._token = null;
-        this._marker = -1;
-        this._markerLine = this._markerColumn = 0;
+        this._matched = '';
+        this._token = new Token(-1, null, 0, 0, 0, 0);
+        this._marker.state = -1;
         this._backupCount = 0;
-        this._inputBuf = [];
-        this._line = this._tline = 0;
-        this._column = this._tcolumn = 0;
+        this._line = this._tline = 1;
+        this._column = this._tcolumn = 1;
         
         this._lrState = [ 0 ];
         this._sematicS = [];
@@ -321,30 +328,26 @@ export class <%- className %> {
      *  set 
      */
     private _setImg(s: string){
-        this._matched.length = 0;
-        for(let i = 0;i < s.length;i++){
-            this._matched.push(s.charAt(i));
-        }
+        this._matched = s;
         this._tline = this._line;
         this._tcolumn = this._column;
     }
     private _prepareToken(tid: number){
-        this._token = new Token(
-            tid,
-            this._matched.join(''),
-            this._tline,
-            this._tcolumn,
-            this._line,
-            this._column
-        );
-        this._matched.length = 0;
+        this._token.id = tid;
+        this._token.val = this._matched;
+        this._token.startLine = this._tline;
+        this._token.startColumn = this._tcolumn;
+        this._token.endLine = this._line;
+        this._token.endColumn = this._column;
+
+        this._matched = '';
         this._tline = this._line;
         this._tcolumn = this._column;
     }
     private _returnToken(){
         this._emit('token', <%- prefix %>tokenNames[this._token.id], this._token.val);
         while(!this._stop && !this._acceptToken(this._token));
-        this._token = null;
+        this._token.id = -1;
     }
     private _emit(name: string, a1?, a2?, a3?){
         let cbs = this._handlers[name];
@@ -375,7 +378,23 @@ export class <%- className %> {
 <% } %>
             default:;
         }
-        this._token !== null && this._returnToken();
+        this._token.id !== -1 && this._returnToken();
+    }
+    private _rollback(){
+        let ret = this._matched.substr(this._matched.length - this._backupCount, this._backupCount);
+        this._matched = this._matched.substr(0, this._matched.length - this._backupCount);
+        this._backupCount = 0;
+        this._line = this._marker.line;
+        this._column = this._marker.column;
+        this._state = this._marker.state;
+        this._marker.state = -1;
+        return ret;
+    }
+    private _mark(){
+        this._marker.state = this._state;
+        this._marker.line = this._line;
+        this._marker.column = this._column;
+        this._backupCount = 0;
     }
     /**
      *  accept a character
@@ -384,6 +403,12 @@ export class <%- className %> {
      *  @internal
      */
     private _acceptChar(c: string){
+        function consume(cela: <%- className %>, c: string){
+            c === '\n' ? (cela._line++, cela._column = 0) : (cela._column++);
+            cela._matched += c;
+            cela._marker.state !== -1 && (cela._backupCount++);
+            return true;
+        }
         let lexstate = this._lexState[this._lexState.length - 1];
         let retn = { state: this._state, hasArc: false, isEnd: false };
         <%- prefix %>lexers[lexstate](c.charCodeAt(0), retn);
@@ -394,7 +419,7 @@ export class <%- className %> {
                     // nowhere to go, stay where we are
                     this._doLexAction(lexstate, this._state);
                     // recover
-                    this._marker = -1;
+                    this._marker.state = -1;
                     this._backupCount = 0;
                     this._state = 0;                    
                     // character not consumed
@@ -405,22 +430,16 @@ export class <%- className %> {
                     // it is prefered to move forward, but that could lead to errors,
                     // so we need to memorize this state before move on, in case if 
                     // an error occurs later, we could just return to this state.
-                    this._marker = this._state;
-                    this._markerLine = this._line;
-                    this._markerColumn = this._column;
+                    this._mark();
                     this._state = retn.state;
-                    this._backupCount = 1;
-                    c === '\n' ? (this._line++, this._column = 0) : (this._column++);
-                    this._matched.push(c);
-                    // character consumed
-                    return true;
+                    return consume(this, c);
                 }
             }
             else {
                 // current state doesn't lead to any state, just stay here.
                 this._doLexAction(lexstate, this._state);
                 // recover
-                this._marker = -1;
+                this._marker.state = -1;
                 this._backupCount = 0;
                 this._state = 0;
                 // character not consumed
@@ -431,34 +450,26 @@ export class <%- className %> {
             if(retn.state === -1){
                 // nowhere to go at current state, error may have occured.
                 // check marker to verify that
-                if(this._marker !== -1){
+                if(this._marker.state !== -1){
                     // we have a previously marked state, which is a terminate state.
-                    // rollback
-                    this._state = this._marker;
-                    this._marker = -1;
-                    this._line = this._markerLine;
-                    this._column = this._markerColumn;
-                    while(this._backupCount --> 0){
-                        this._inputBuf.push(this._matched.pop());
-                    }
+                    let s = this._rollback();
                     this._doLexAction(lexstate, this._state);
                     this._state = 0;
+                    this.accept(s);
                     // character not consumed
                     return false;
                 }
                 else {
                     // error occurs
-                    this._emit('lexicalerror', `unexpected character "${c}"`);
+                    this._emit('lexicalerror', `unexpected character "${c}"`, this._line, this._column);
                     // force consume
                     return true;
                 }
             }
             else {
                 this._state = retn.state;
-                c === '\n' ? (this._line++, this._column = 0) : (this._column++);
-                this._matched.push(c);
                 // character consumed
-                return true;
+                return consume(this, c);
             }
         }
     }
@@ -476,19 +487,14 @@ export class <%- className %> {
             if(retn.isEnd){
                 this._doLexAction(lexstate, this._state);
                 this._state = 0;
-                this._marker = -1;
+                this._marker.state = -1;
                 return false;
             }
-            else if(this._marker !== -1){
-                this._state = this._marker;
-                this._marker = -1;
-                this._line = this._markerLine;
-                this._column = this._markerColumn;
-                while(this._backupCount --> 0){
-                    this._inputBuf.push(this._matched.pop());
-                }
+            else if(this._marker.state !== -1){
+                let s = this._rollback();
                 this._doLexAction(lexstate, this._state);
                 this._state = 0;
+                this.accept(s);
                 return false;
             }
             else {
@@ -502,13 +508,8 @@ export class <%- className %> {
      *  @api public
      */
     accept(s: string){
-        if(!this._stop){
-            for(let i = s.length - 1; i >= 0; i--){
-                this._inputBuf.push(s.charAt(i));
-            }
-            while(!this._stop && this._inputBuf.length > 0){
-                this._acceptChar(this._inputBuf[this._inputBuf.length - 1]) && this._inputBuf.pop();
-            }
+        for(let i = 0; i < s.length && !this._stop;){
+            this._acceptChar(s.charAt(i)) && i++;
         }
     }
     /**
@@ -516,14 +517,7 @@ export class <%- className %> {
      *  @api public
      */
     end(){
-        while(!this._stop){
-            if(this._inputBuf.length > 0){
-                this._acceptChar(this._inputBuf[this._inputBuf.length - 1]) && this._inputBuf.pop();
-            }
-            else if(this._acceptEOF()){
-                break;
-            }
-        }
+        while(!this._stop && !this._acceptEOF());
         this._stop = true;
     }
     halt(){
@@ -628,7 +622,7 @@ export class <%- className %> {
     private _syntaxError(t: Token){
         let msg = `unexpected token ${t.toString()}, expecting one of the following token(s):\n`
         msg += this._expected(this._lrState[this._lrState.length - 1]);
-        this._emit("syntaxerror", msg);
+        this._emit("syntaxerror", msg, t);
     }
     private _expected(state: number){
         let dis = <%- prefix %>disact[state];

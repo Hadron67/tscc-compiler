@@ -12,9 +12,9 @@ parser.on('syntaxerror', function(msg){
 parser.on('accept', function(){
     console.log('result: ' + parser.val);
 });
-// parser.on('token', function(tk, val){
-//     console.log(`token <${tk}>("${val}") found`);
-// });
+parser.on('token', function(tk, val){
+    console.log(`token <${tk}>("${val}") found`);
+});
 
 parser.accept(process.argv[2]);
 parser.end();

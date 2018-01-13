@@ -4,9 +4,11 @@
 
 %lex [
     DIGIT = <['0'-'9']>
+    LETTER = <['a'-'z', 'A'-'Z']>
 
     < [' ', '\n', '\t', '\r']+ >: [='']
 
+//    < NAME: <LETTER> (<LETTER>|<DIGIT>)* >
     < NUM: 
         (<DIGIT>+ ('.' <DIGIT>*)?|'.' <DIGIT>+ ) (['e', 'E']<DIGIT>+)? 
     >: { $$ = Number($token.val); }
@@ -16,6 +18,8 @@
     < DIVIDE: '/' >
     < BRA: '(' >
     < KET: ')' >
+    < SIN: 'sin' >
+    < SINH: 'sinh' >
 ]
 
 %left '+' '-'
@@ -36,6 +40,11 @@ expr:
 |   '-' a = expr %prec NEG { $$ = -a; }
 |   '(' a = expr ')' { $$ = a; }
 |   <NUM> 
+|   funcs
 ;
 
+funcs:
+    'sin' '(' a = expr ')' { $$ = Math.sin(a); }
+|   <SINH> '(' a = expr ')' { $$ = (Math as any).sinh(a); }
+;
 %%

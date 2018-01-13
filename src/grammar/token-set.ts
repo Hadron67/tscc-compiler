@@ -1,5 +1,5 @@
 import { BitSet } from '../util/bitset';
-import { TokenEntry } from './token-entry'
+import { TokenEntry } from './token-entry';
 
 export class TokenSet extends BitSet{
     constructor(tcount: number){
