@@ -1322,6 +1322,16 @@ export class Token {
         public endLine: number,
         public endColumn: number
     ){}
+    clone(){
+        return new Token(
+            this.id,
+            this.val,
+            this.startLine,
+            this.startColumn,
+            this.endLine,
+            this.endColumn
+        );
+    }
     toString(){
         return (jjtokenAlias[this.id] === null ? 
             `<${jjtokenNames[this.id]}>` :
@@ -1362,7 +1372,7 @@ export class Parser {
         this._lexState = [ 0 ];// DEFAULT
         this._state = 0;
         this._matched = '';
-        this._token = null;
+        this._token = new Token(-1, null, 0, 0, 0, 0);
         this._marker.state = -1;
         this._backupCount = 0;
         this._line = this._tline = 1;
@@ -1383,14 +1393,13 @@ export class Parser {
         this._tcolumn = this._column;
     }
     private _prepareToken(tid: number){
-        this._token = new Token(
-            tid,
-            this._matched,
-            this._tline,
-            this._tcolumn,
-            this._line,
-            this._column
-        );
+        this._token.id = tid;
+        this._token.val = this._matched;
+        this._token.startLine = this._tline;
+        this._token.startColumn = this._tcolumn;
+        this._token.endLine = this._line;
+        this._token.endColumn = this._column;
+
         this._matched = '';
         this._tline = this._line;
         this._tcolumn = this._column;
@@ -1398,7 +1407,7 @@ export class Parser {
     private _returnToken(){
         this._emit('token', jjtokenNames[this._token.id], this._token.val);
         while(!this._stop && !this._acceptToken(this._token));
-        this._token = null;
+        this._token.id = -1;
     }
     private _emit(name: string, a1?, a2?, a3?){
         let cbs = this._handlers[name];
@@ -1440,7 +1449,7 @@ export class Parser {
                 break;
             default:;
         }
-        this._token !== null && this._returnToken();
+        this._token.id !== -1 && this._returnToken();
     }
     private _rollback(){
         let ret = this._matched.substr(this._matched.length - this._backupCount, this._backupCount);

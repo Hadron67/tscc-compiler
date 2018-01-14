@@ -82,7 +82,7 @@ export function printParseTable(os: OutputStream, cela: IParseTable, doneList: L
             var item = cela.lookupShift(i,j);
             if(item !== null && item !== Item.NULL){
                 if(item.actionType === Action.SHIFT){
-                    shift += `${YYTAB}${convertTokenToString(g.tokens[j])} : shift, and goto state ${item.shift.stateIndex}${endl}`;
+                    shift += `${YYTAB}${convertTokenToString(g.tokens[j])} : shift, and go to state ${item.shift.stateIndex}${endl}`;
                 }
                 else {
                     reduce += `${YYTAB}${convertTokenToString(g.tokens[j])} : reduce with rule ${item.rule.index}${endl}`;
@@ -92,7 +92,7 @@ export function printParseTable(os: OutputStream, cela: IParseTable, doneList: L
         for(var j = 0;j < ntCount;j++){
             var item = cela.lookupGoto(i,j);
             if(item !== null){
-                gotot += `${YYTAB}${g.nts[j].sym} : goto state ${item.shift.stateIndex}${endl}`;
+                gotot += `${YYTAB}${g.nts[j].sym} : go to state ${item.shift.stateIndex}${endl}`;
             }
         }
         os.writeln(shift + reduce + gotot);

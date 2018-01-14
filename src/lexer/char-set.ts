@@ -9,6 +9,10 @@ export class CharSet<T> extends IntervalSet<T>{
     addAll(): void{
         super.add(0, Inf.oo);
     }
+    constainsAll(): boolean{
+        let c = this.head.next;
+        return c.next === this.tail && c.a === 0 && c.b === oo;
+    }
     toString(): string{
         return super.toString(function(c){
             if(c !== oo && c !== _oo){

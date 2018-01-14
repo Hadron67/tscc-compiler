@@ -390,6 +390,10 @@ var CharSet = (function (_super) {
     CharSet.prototype.addAll = function () {
         _super.prototype.add.call(this, 0, Inf.oo);
     };
+    CharSet.prototype.constainsAll = function () {
+        var c = this.head.next;
+        return c.next === this.tail && c.a === 0 && c.b === oo;
+    };
     CharSet.prototype.toString = function () {
         return _super.prototype.toString.call(this, function (c) {
             if (c !== oo && c !== _oo) {
@@ -566,6 +570,9 @@ var State = (function () {
     };
     State.prototype.epsilonTo = function (s) {
         this.epsilons.push(s);
+    };
+    State.prototype.hasDefinate = function () {
+        return this.arcs.length === 1 && this.arcs[0].chars.constainsAll();
     };
     State.prototype.iterator = function (epOnly) {
         if (epOnly === void 0) { epOnly = false; }
@@ -1570,7 +1577,7 @@ function printParseTable(os, cela, doneList) {
             var item = cela.lookupShift(i, j);
             if (item !== null && item !== Item.NULL) {
                 if (item.actionType === Action$1.SHIFT) {
-                    shift += "" + YYTAB + convertTokenToString(g.tokens[j]) + " : shift, and goto state " + item.shift.stateIndex + endl;
+                    shift += "" + YYTAB + convertTokenToString(g.tokens[j]) + " : shift, and go to state " + item.shift.stateIndex + endl;
                 }
                 else {
                     reduce += "" + YYTAB + convertTokenToString(g.tokens[j]) + " : reduce with rule " + item.rule.index + endl;
@@ -1580,7 +1587,7 @@ function printParseTable(os, cela, doneList) {
         for (var j = 0; j < ntCount; j++) {
             var item = cela.lookupGoto(i, j);
             if (item !== null) {
-                gotot += "" + YYTAB + g.nts[j].sym + " : goto state " + item.shift.stateIndex + endl;
+                gotot += "" + YYTAB + g.nts[j].sym + " : go to state " + item.shift.stateIndex + endl;
             }
         }
         os.writeln(shift + reduce + gotot);
@@ -2353,8 +2360,12 @@ var File = (function () {
         this.grammar = null;
         this.lexDFA = [];
         this.opt = {};
+        this.prefix = 'jj';
         this.header = '';
         this.extraArgs = '';
+        this.initArg = '';
+        this.initBody = '';
+        this.epilogue = null;
     }
     return File;
 }());
@@ -2403,239 +2414,254 @@ var CmdArray = (function () {
     return CmdArray;
 }());
 
-var StateBuilder = (function () {
-    function StateBuilder(ctx) {
-        this.ctx = ctx;
-        this._head = new State();
-        this._currentState = null;
-        this._unionStack = [];
-        this._simpleStack = [];
-        this._currentArc = null;
-        this._isInverse = false;
-        this.possibleAlias = null;
-        this._first = false;
-        this._scount = 0;
-        this._regexpVars = {};
-        this._states = [new CmdArray('')];
-        this._stateMap = { DEFAULT: 0 };
-        this._selectedStates = [];
-        this._selectedVar = null;
-        this._ar = [];
-        var cela = this;
-        this.requiringState = new CoroutineMgr(function (s) {
-            return cela._stateMap[s];
-        });
-    }
-    StateBuilder.prototype._emit = function (func) {
-        if (this._selectedVar !== null) {
-            this._selectedVar.opcodes.push(func);
+function createLexBuilder(ctx) {
+    var _head = new State();
+    var _currentState = null;
+    var _unionStack = [];
+    var _simpleStack = [];
+    var _currentArc = null;
+    var _isInverse = false;
+    var possibleAlias = null;
+    var _first = false;
+    var _scount = 0;
+    var _regexpVars = {};
+    var _states = [new CmdArray('')];
+    var _stateMap = { DEFAULT: 0 };
+    var requiringState;
+    var _selectedStates = [];
+    var _selectedVar = null;
+    var _ar = [];
+    requiringState = new CoroutineMgr(function (s) { return _stateMap[s]; });
+    return {
+        prepareVar: prepareVar,
+        endVar: endVar,
+        prepareLex: prepareLex,
+        selectState: selectState,
+        newState: newState,
+        end: end,
+        enterUnion: enterUnion,
+        endUnionItem: endUnionItem,
+        leaveUnion: leaveUnion,
+        enterSimple: enterSimple,
+        simplePostfix: simplePostfix,
+        addString: addString,
+        addVar: addVar,
+        beginSet: beginSet,
+        addSetItem: addSetItem,
+        endSet: endSet,
+        build: build,
+        getPossibleAlias: function () { return possibleAlias; },
+        requiringState: requiringState
+    };
+    function _emit(func) {
+        if (_selectedVar !== null) {
+            _selectedVar.opcodes.push(func);
         }
         else {
-            for (var _i = 0, _a = this._selectedStates; _i < _a.length; _i++) {
-                var sn = _a[_i];
+            for (var _i = 0, _selectedStates_1 = _selectedStates; _i < _selectedStates_1.length; _i++) {
+                var sn = _selectedStates_1[_i];
                 sn.opcodes.push(func);
             }
         }
-    };
-    StateBuilder.prototype._exec = function (a) {
-        this._head = this._currentState = new State();
-        this._head.isStart = true;
-        this._unionStack.length = 0;
-        this._simpleStack.length = 0;
-        this._currentArc = null;
-        this._isInverse = false;
-        this._ar.length = 0;
-        this._ar.push({
+    }
+    function _exec(a) {
+        _head = _currentState = new State();
+        _head.isStart = true;
+        _unionStack.length = 0;
+        _simpleStack.length = 0;
+        _currentArc = null;
+        _isInverse = false;
+        _ar.length = 0;
+        _ar.push({
             pc: 0,
             cmds: a
         });
-        while (this._ar.length > 0) {
-            var top_1 = this._ar[this._ar.length - 1];
-            top_1.cmds.opcodes[top_1.pc++](this);
-            top_1 = this._ar[this._ar.length - 1];
-            top_1.pc >= top_1.cmds.opcodes.length && this._ar.pop();
+        while (_ar.length > 0) {
+            var top_1 = _ar[_ar.length - 1];
+            top_1.cmds.opcodes[top_1.pc++]();
+            top_1 = _ar[_ar.length - 1];
+            top_1.pc >= top_1.cmds.opcodes.length && _ar.pop();
         }
-        this._head.removeEpsilons();
-        var dhead = this._head.toDFA();
+        _head.removeEpsilons();
+        var dhead = _head.toDFA();
         var ret = new DFA(dhead.states);
         return ret;
-    };
-    StateBuilder.prototype.prepareVar = function (vname, line) {
-        var vdef = this._regexpVars[vname];
+    }
+    function prepareVar(vname, line) {
+        var vdef = _regexpVars[vname];
         if (vdef !== undefined) {
-            this.ctx.err(new CompilationError("variable \"" + vname + "\" was already defined at line " + vdef.line, line));
+            ctx.err(new CompilationError("variable \"" + vname + "\" was already defined at line " + vdef.line, line));
         }
-        vdef = this._regexpVars[vname] = {
+        vdef = _regexpVars[vname] = {
             line: line,
             cmds: new CmdArray(vname)
         };
-        this._selectedVar = vdef.cmds;
-    };
-    StateBuilder.prototype.endVar = function () {
-        this._selectedVar = null;
-    };
-    StateBuilder.prototype.prepareLex = function () {
-        this._selectedStates.length = 0;
-    };
-    StateBuilder.prototype.selectState = function (s) {
-        var sn = this._stateMap[s];
+        _selectedVar = vdef.cmds;
+    }
+    function endVar() {
+        _selectedVar = null;
+    }
+    function prepareLex() {
+        _selectedStates.length = 0;
+    }
+    function selectState(s) {
+        var sn = _stateMap[s];
         if (sn === undefined) {
-            sn = this._stateMap[s] = this._states.length;
-            this._states.push(new CmdArray(''));
-            this.requiringState.signal(s, sn);
+            sn = _stateMap[s] = _states.length;
+            _states.push(new CmdArray(''));
+            requiringState.signal(s, sn);
         }
-        this._selectedStates.push(this._states[this._stateMap[s]]);
-    };
-    StateBuilder.prototype.newState = function () {
-        this._first = true;
-        this.possibleAlias = null;
-        this._emit(function (cela) {
-            cela._currentState = new State();
-            cela._head.epsilonTo(cela._currentState);
+        _selectedStates.push(_states[_stateMap[s]]);
+    }
+    function newState() {
+        _first = true;
+        possibleAlias = null;
+        _emit(function () {
+            _currentState = new State();
+            _head.epsilonTo(_currentState);
         });
-    };
-    StateBuilder.prototype.end = function (action, label) {
+    }
+    function end(action, label) {
         if (label === void 0) { label = '(untitled)'; }
-        for (var _i = 0, _a = this._selectedStates; _i < _a.length; _i++) {
-            var sn = _a[_i];
+        for (var _i = 0, _selectedStates_2 = _selectedStates; _i < _selectedStates_2.length; _i++) {
+            var sn = _selectedStates_2[_i];
             sn.label = "<" + label + ">";
         }
-        this._emit(function (cela) {
+        _emit(function () {
             var ac = new EndAction();
-            ac.id = ac.priority = cela._scount++;
+            ac.id = ac.priority = _scount++;
             ac.data = action;
-            cela._currentState.endAction = ac;
+            _currentState.endAction = ac;
         });
-    };
-    StateBuilder.prototype.enterUnion = function () {
-        this._emit(function (s) {
-            s._unionStack.push({
-                head: s._currentState,
+    }
+    function enterUnion() {
+        _emit(function () {
+            _unionStack.push({
+                head: _currentState,
                 tail: new State()
             });
         });
-    };
-    StateBuilder.prototype.endUnionItem = function () {
-        this._emit(function (s) {
-            var top = s._unionStack[s._unionStack.length - 1];
-            s._currentState.epsilonTo(top.tail);
-            s._currentState = top.head;
+    }
+    function endUnionItem() {
+        _emit(function () {
+            var top = _unionStack[_unionStack.length - 1];
+            _currentState.epsilonTo(top.tail);
+            _currentState = top.head;
         });
-    };
-    StateBuilder.prototype.leaveUnion = function () {
-        this._emit(function (s) {
-            s._currentState = s._unionStack.pop().tail;
+    }
+    function leaveUnion() {
+        _emit(function () {
+            _currentState = _unionStack.pop().tail;
         });
-    };
-    StateBuilder.prototype.enterSimple = function () {
-        this._emit(function (s) {
-            s._simpleStack.push(s._currentState);
+    }
+    function enterSimple() {
+        _emit(function () {
+            _simpleStack.push(_currentState);
         });
-    };
-    StateBuilder.prototype.simplePostfix = function (postfix) {
-        postfix === '' || (this.possibleAlias = null, this._first = false);
-        this._emit(function (s) {
-            var top = s._simpleStack.pop();
+    }
+    function simplePostfix(postfix) {
+        postfix === '' || (possibleAlias = null, _first = false);
+        _emit(function () {
+            var top = _simpleStack.pop();
             if (postfix === '?') {
-                top.epsilonTo(s._currentState);
+                top.epsilonTo(_currentState);
             }
             else if (postfix === '+') {
-                s._currentState.epsilonTo(top);
+                _currentState.epsilonTo(top);
             }
             else if (postfix === '*') {
-                s._currentState.epsilonTo(top);
-                s._currentState = top;
+                _currentState.epsilonTo(top);
+                _currentState = top;
             }
         });
-    };
-    StateBuilder.prototype.addString = function (s) {
-        if (this._first) {
-            this.possibleAlias = s;
-            this._first = false;
+    }
+    function addString(s) {
+        if (_first) {
+            possibleAlias = s;
+            _first = false;
         }
         else {
-            this.possibleAlias = null;
+            possibleAlias = null;
         }
-        this._emit(function (cela) {
+        _emit(function () {
             for (var i = 0; i < s.length; i++) {
                 var ns = new State();
-                cela._currentState.to(ns).chars.add(s.charCodeAt(i));
-                cela._currentState = ns;
+                _currentState.to(ns).chars.add(s.charCodeAt(i));
+                _currentState = ns;
             }
         });
-    };
-    StateBuilder.prototype.addVar = function (vname, line) {
-        this._first = false;
-        this.possibleAlias = null;
-        this._emit(function (cela) {
-            var vdef = cela._regexpVars[vname];
+    }
+    function addVar(vname, line) {
+        _first = false;
+        possibleAlias = null;
+        _emit(function () {
+            var vdef = _regexpVars[vname];
             if (vdef === undefined) {
-                cela.ctx.err(new CompilationError("use of undefined variable \"" + vname + "\"", line));
+                ctx.err(new CompilationError("use of undefined variable \"" + vname + "\"", line));
             }
             var cmds = vdef.cmds;
-            for (var i = 0; i < cela._ar.length; i++) {
-                var aitem = cela._ar[i];
+            for (var i = 0; i < _ar.length; i++) {
+                var aitem = _ar[i];
                 if (aitem.cmds === cmds) {
                     var msg = "circular dependence in lexical variable detected: " + cmds.label;
-                    for (i++; i < cela._ar.length; i++) {
-                        msg += " -> " + cela._ar[i].cmds.label;
+                    for (i++; i < _ar.length; i++) {
+                        msg += " -> " + _ar[i].cmds.label;
                     }
                     msg += " -> " + cmds.label;
-                    cela.ctx.err(new CompilationError(msg, line));
+                    ctx.err(new CompilationError(msg, line));
                     return;
                 }
             }
-            cela._ar.push({
+            _ar.push({
                 pc: 0,
                 cmds: cmds
             });
         });
-    };
-    StateBuilder.prototype.beginSet = function (inverse) {
-        this._first = false;
-        this.possibleAlias = null;
-        this._emit(function (cela) {
-            cela._isInverse = inverse;
+    }
+    function beginSet(inverse) {
+        _first = false;
+        possibleAlias = null;
+        _emit(function () {
+            _isInverse = inverse;
             var ns = new State();
-            cela._currentArc = cela._currentState.to(ns);
-            cela._currentState = ns;
-            inverse && cela._currentArc.chars.addAll();
+            _currentArc = _currentState.to(ns);
+            _currentState = ns;
+            inverse && _currentArc.chars.addAll();
         });
-    };
-    StateBuilder.prototype.addSetItem = function (from, to, line1, line2) {
+    }
+    function addSetItem(from, to, line1, line2) {
         if (from.length !== 1) {
-            this.ctx.err(new CompilationError("character expected in union, got \"" + from + "\"", line1));
+            ctx.err(new CompilationError("character expected in union, got \"" + from + "\"", line1));
             return;
         }
         if (to.length !== 1) {
-            this.ctx.err(new CompilationError("character expected in union, got \"" + to + "\"", line2));
+            ctx.err(new CompilationError("character expected in union, got \"" + to + "\"", line2));
             return;
         }
         if (from.charCodeAt(0) > to.charCodeAt(0)) {
-            this.ctx.err(new CompilationError("left hand side must be larger than right hand side in wild card character (got '" + from + "' > '" + to + "')", line1));
+            ctx.err(new CompilationError("left hand side must be larger than right hand side in wild card character (got '" + from + "' > '" + to + "')", line1));
         }
-        this._emit(function (cela) {
-            cela._isInverse ?
-                cela._currentArc.chars.remove(from.charCodeAt(0), to.charCodeAt(0)) :
-                cela._currentArc.chars.add(from.charCodeAt(0), to.charCodeAt(0));
+        _emit(function () {
+            _isInverse ?
+                _currentArc.chars.remove(from.charCodeAt(0), to.charCodeAt(0)) :
+                _currentArc.chars.add(from.charCodeAt(0), to.charCodeAt(0));
         });
-    };
-    StateBuilder.prototype.endSet = function () {
-        this._emit(function (cela) {
-            cela._currentArc = null;
+    }
+    function endSet() {
+        _emit(function () {
+            _currentArc = null;
         });
-    };
-    StateBuilder.prototype.build = function () {
+    }
+    function build() {
         var dfas = [];
-        for (var _i = 0, _a = this._states; _i < _a.length; _i++) {
-            var state = _a[_i];
-            dfas.push(this._exec(state));
+        for (var _i = 0, _states_1 = _states; _i < _states_1.length; _i++) {
+            var state = _states_1[_i];
+            dfas.push(_exec(state));
         }
-        this.requiringState.fail();
+        requiringState.fail();
         return dfas;
-    };
-    return StateBuilder;
-}());
+    }
+}
 
 function noCode(c) {
 }
@@ -2685,47 +2711,65 @@ var TokenRefType;
     TokenRefType[TokenRefType["NAME"] = 2] = "NAME";
 })(TokenRefType || (TokenRefType = {}));
 
-var GBuilder = (function () {
-    function GBuilder(ctx) {
-        this._ctx = null;
-        this._f = new File();
-        this._g = new Grammar();
-        this._tokenNameTable = {};
-        this._tokenAliasTable = {};
-        this._ruleStack = [];
-        this._sematicVar = null;
-        this._ntTable = {};
-        this._requiringNt = null;
-        this._genIndex = 0;
-        this._first = true;
-        this._pr = 1;
-        this._onCommit = [];
-        this._onDone = [];
-        this._pseudoTokens = {};
-        var cela = this;
-        this._f.grammar = this._g;
-        this._ctx = ctx;
-        this.lexBuilder = new StateBuilder(ctx);
-        this._requiringNt = new CoroutineMgr(function (s) {
-            return cela._ntTable[s];
-        });
-        this.defToken('EOF', null, 0);
-    }
-    GBuilder.prototype._top = function () {
-        return this._ruleStack[this._ruleStack.length - 1];
+function createFileBuilder(ctx) {
+    var _f = new File();
+    var _g = new Grammar();
+    var _tokenNameTable = {};
+    var _tokenAliasTable = {};
+    var _ruleStack = [];
+    var _sematicVar = null;
+    var _ntTable = {};
+    var _requiringNt = null;
+    var _genIndex = 0;
+    var _first = true;
+    var _pr = 1;
+    var _onCommit = [];
+    var _onDone = [];
+    var lexBuilder;
+    var _pseudoTokens = {};
+    _f.grammar = _g;
+    lexBuilder = createLexBuilder(ctx);
+    _requiringNt = new CoroutineMgr(function (s) { return _ntTable[s]; });
+    defToken('EOF', null, 0);
+    return {
+        err: err,
+        defToken: defToken,
+        getTokenByAlias: getTokenByAlias,
+        getTokenByName: getTokenByName,
+        defineTokenPrec: defineTokenPrec,
+        setOpt: setOpt,
+        setHeader: setHeader,
+        setExtraArg: setExtraArg,
+        setType: setType,
+        setInit: setInit,
+        setEpilogue: setEpilogue,
+        incPr: incPr,
+        prepareRule: prepareRule,
+        addRuleUseVar: addRuleUseVar,
+        addRuleSematicVar: addRuleSematicVar,
+        addRuleItem: addRuleItem,
+        addAction: addAction,
+        defineRulePr: defineRulePr,
+        commitRule: commitRule,
+        addPushStateAction: addPushStateAction,
+        build: build,
+        lexBuilder: lexBuilder
     };
-    GBuilder.prototype._splitAction = function (line) {
-        var saved = this._sematicVar;
-        this._sematicVar = null;
-        var t = this._top();
-        var s = '@' + this._genIndex++;
-        this.prepareRule(s, line);
-        var gen = this._top();
-        this.addAction(t.action);
-        this.commitRule();
+    function _top() {
+        return _ruleStack[_ruleStack.length - 1];
+    }
+    function _splitAction(line) {
+        var saved = _sematicVar;
+        _sematicVar = null;
+        var t = _top();
+        var s = '@' + _genIndex++;
+        prepareRule(s, line);
+        var gen = _top();
+        addAction(t.action);
+        commitRule();
         t.action = null;
-        this.addRuleItem(s, TokenRefType.NAME, line);
-        this._sematicVar = saved;
+        addRuleItem(s, TokenRefType.NAME, line);
+        _sematicVar = saved;
         for (var vname in t.vars) {
             var v = t.vars[vname];
             gen.usedVars[vname] = { val: v.val, line: v.line };
@@ -2734,18 +2778,18 @@ var GBuilder = (function () {
             var v = t.usedVars[vname];
             gen.usedVars[vname] = { val: v.val, line: v.line };
         }
-    };
-    GBuilder.prototype.err = function (msg, line) {
-        this._ctx.err(new CompilationError(msg, line));
-    };
-    GBuilder.prototype.defToken = function (name, alias, line) {
-        var tkdef = this._tokenNameTable[name];
+    }
+    function err(msg, line) {
+        ctx.err(new CompilationError(msg, line));
+    }
+    function defToken(name, alias, line) {
+        var tkdef = _tokenNameTable[name];
         if (tkdef !== undefined) {
             return tkdef;
         }
         else {
             tkdef = {
-                index: this._g.tokens.length,
+                index: _g.tokens.length,
                 sym: name,
                 alias: alias,
                 line: line,
@@ -2754,18 +2798,18 @@ var GBuilder = (function () {
                 used: false
             };
             if (alias !== null) {
-                this._tokenAliasTable[alias] || (this._tokenAliasTable[alias] = []);
-                this._tokenAliasTable[alias].push(tkdef);
+                _tokenAliasTable[alias] || (_tokenAliasTable[alias] = []);
+                _tokenAliasTable[alias].push(tkdef);
             }
-            this._tokenNameTable[name] = tkdef;
-            this._g.tokens.push(tkdef);
+            _tokenNameTable[name] = tkdef;
+            _g.tokens.push(tkdef);
             return tkdef;
         }
-    };
-    GBuilder.prototype.getTokenByAlias = function (a, line) {
-        var aa = this._tokenAliasTable[a];
+    }
+    function getTokenByAlias(a, line) {
+        var aa = _tokenAliasTable[a];
         if (aa === undefined) {
-            this.err("cannot identify \"" + a + "\" as a token", line);
+            err("cannot identify \"" + a + "\" as a token", line);
             return null;
         }
         else if (aa.length > 1) {
@@ -2774,119 +2818,122 @@ var GBuilder = (function () {
                 i > 0 && (ret += ',');
                 ret += "<" + aa[i].sym + ">";
             }
-            this.err("cannot identify " + a + " as a token, since it could be " + ret, line);
+            err("cannot identify " + a + " as a token, since it could be " + ret, line);
             return null;
         }
         return aa[0];
-    };
-    GBuilder.prototype.getTokenByName = function (t, line) {
-        var ret = this._tokenNameTable[t];
+    }
+    function getTokenByName(t, line) {
+        var ret = _tokenNameTable[t];
         if (ret === undefined) {
-            this.err("cannot identify <" + t + "> as a token", line);
+            err("cannot identify <" + t + "> as a token", line);
             return null;
         }
         return ret;
-    };
-    GBuilder.prototype.defineTokenPrec = function (tid, assoc, type, line) {
+    }
+    function defineTokenPrec(tid, assoc, type, line) {
         if (type === TokenRefType.TOKEN) {
-            var tk = this.getTokenByName(tid, line);
+            var tk = getTokenByName(tid, line);
             if (tk !== null) {
                 tk.assoc = assoc;
-                tk.pr = this._pr;
+                tk.pr = _pr;
             }
         }
         else if (type === TokenRefType.STRING) {
-            var tk = this.getTokenByAlias(tid, line);
+            var tk = getTokenByAlias(tid, line);
             if (tk !== null) {
                 tk.assoc = assoc;
-                tk.pr = this._pr;
+                tk.pr = _pr;
             }
         }
         else if (type === TokenRefType.NAME) {
-            var t2 = this._pseudoTokens[tid] = this._pseudoTokens[tid] || {
+            var t2 = _pseudoTokens[tid] = _pseudoTokens[tid] || {
                 assoc: assoc,
-                pr: this._pr,
+                pr: _pr,
                 line: line
             };
         }
-    };
-    GBuilder.prototype.setOpt = function (name, value) {
-        this._f.opt[name] = value;
-        return this;
-    };
-    GBuilder.prototype.setHeader = function (h) {
-        this._f.header = h;
-    };
-    GBuilder.prototype.setExtraArg = function (a) {
-        this._f.extraArgs = a;
-    };
-    GBuilder.prototype.setType = function (t) {
-        this._f.sematicType = t;
-    };
-    GBuilder.prototype.incPr = function () {
-        this._pr++;
-        return this;
-    };
-    GBuilder.prototype.prepareRule = function (lhs, line) {
-        if (this._first) {
-            this._first = false;
-            this.prepareRule('(accept)', line);
-            this.addRuleItem(lhs, TokenRefType.NAME, line);
-            this.addRuleItem('EOF', TokenRefType.TOKEN, line);
-            this.commitRule();
+    }
+    function setOpt(name, value) {
+        _f.opt[name] = value;
+    }
+    function setHeader(h) {
+        _f.header = h;
+    }
+    function setExtraArg(a) {
+        _f.extraArgs = a;
+    }
+    function setType(t) {
+        _f.sematicType = t;
+    }
+    function setInit(arg, body) {
+        _f.initArg = arg;
+        _f.initBody = body;
+    }
+    function incPr() {
+        _pr++;
+    }
+    function setEpilogue(ep) {
+        _f.epilogue = ep;
+    }
+    function prepareRule(lhs, line) {
+        if (_first) {
+            _first = false;
+            prepareRule('(accept)', line);
+            addRuleItem(lhs, TokenRefType.NAME, line);
+            addRuleItem('EOF', TokenRefType.TOKEN, line);
+            commitRule();
         }
-        var nt = this._ntTable[lhs];
+        var nt = _ntTable[lhs];
         if (nt === undefined) {
-            nt = this._ntTable[lhs] = {
-                index: this._g.nts.length,
+            nt = _ntTable[lhs] = {
+                index: _g.nts.length,
                 sym: lhs,
                 firstSet: null,
                 used: false,
                 rules: [],
                 parents: []
             };
-            this._g.nts.push(nt);
-            this._requiringNt.signal(lhs, nt);
+            _g.nts.push(nt);
+            _requiringNt.signal(lhs, nt);
         }
-        var nr = new Rule(this._g, nt, line);
-        this._ruleStack.push(nr);
-        return this;
-    };
-    GBuilder.prototype.addRuleUseVar = function (vname, line) {
-        var t = this._top();
+        var nr = new Rule(_g, nt, line);
+        _ruleStack.push(nr);
+    }
+    function addRuleUseVar(vname, line) {
+        var t = _top();
         if (t.usedVars[vname] !== undefined) {
-            this.err("re-use of sematic variable \"" + vname + "\"", line);
+            err("re-use of sematic variable \"" + vname + "\"", line);
         }
         else {
             t.usedVars[vname] = { line: line, val: 0 };
         }
-    };
-    GBuilder.prototype.addRuleSematicVar = function (vname, line) {
-        var t = this._top();
+    }
+    function addRuleSematicVar(vname, line) {
+        var t = _top();
         if (t.usedVars[vname] !== undefined) {
-            this.err("variable \"" + vname + "\" conflicts with imported variable defined at line " + t.usedVars[vname].line, line);
+            err("variable \"" + vname + "\" conflicts with imported variable defined at line " + t.usedVars[vname].line, line);
         }
         else if (t.vars[vname] !== undefined) {
-            this.err("sematic variable \"" + vname + "\" is already defined at line " + t.vars[vname].line, line);
+            err("sematic variable \"" + vname + "\" is already defined at line " + t.vars[vname].line, line);
         }
         else {
-            this._sematicVar = { line: line, val: vname };
+            _sematicVar = { line: line, val: vname };
         }
-    };
-    GBuilder.prototype.addRuleItem = function (id, type, line) {
-        var t = this._top();
+    }
+    function addRuleItem(id, type, line) {
+        var t = _top();
         if (t.action !== null) {
-            this._splitAction(line);
+            _splitAction(line);
         }
-        if (this._sematicVar !== null) {
-            t.vars[this._sematicVar.val] = { val: t.rhs.length, line: this._sematicVar.line };
-            this._sematicVar = null;
+        if (_sematicVar !== null) {
+            t.vars[_sematicVar.val] = { val: t.rhs.length, line: _sematicVar.line };
+            _sematicVar = null;
         }
         if (type === TokenRefType.NAME) {
-            var cela_1 = this;
             var pos_1 = t.rhs.length;
             t.rhs.push(0);
-            this._requiringNt.wait(id, function (su, nt) {
+            _requiringNt.wait(id, function (su, nt) {
                 if (su) {
                     t.rhs[pos_1] = -nt.index - 1;
                     nt.parents.push({
@@ -2896,99 +2943,95 @@ var GBuilder = (function () {
                     nt.used = true;
                 }
                 else {
-                    cela_1.err("use of undefined non terminal " + id, line);
+                    err("use of undefined non terminal " + id, line);
                 }
             });
         }
         else if (type === TokenRefType.TOKEN) {
-            var tl = this._tokenNameTable[id];
+            var tl = _tokenNameTable[id];
             if (tl === undefined) {
-                this.err("cannot recognize <" + id + "> as a token", line);
+                err("cannot recognize <" + id + "> as a token", line);
                 return;
             }
             t.rhs.push(tl.index);
             tl.used = true;
         }
         else if (type === TokenRefType.STRING) {
-            var td = this.getTokenByAlias(id, line);
+            var td = getTokenByAlias(id, line);
             if (td !== null) {
                 t.rhs.push(td.index);
                 td.used = true;
             }
         }
-    };
-    GBuilder.prototype.addAction = function (b) {
-        var t = this._top();
+    }
+    function addAction(b) {
+        var t = _top();
         if (t.action !== null) {
-            this._splitAction(t.line);
+            _splitAction(t.line);
         }
         t.action = b;
-        if (this._sematicVar !== null) {
-            t.vars[this._sematicVar.val] = { val: t.rhs.length, line: this._sematicVar.line };
-            this._sematicVar = null;
-            this._splitAction(t.line);
+        if (_sematicVar !== null) {
+            t.vars[_sematicVar.val] = { val: t.rhs.length, line: _sematicVar.line };
+            _sematicVar = null;
+            _splitAction(t.line);
         }
-        return this;
-    };
-    GBuilder.prototype.defineRulePr = function (token, type, line) {
+    }
+    function defineRulePr(token, type, line) {
         if (type === TokenRefType.STRING || type === TokenRefType.TOKEN) {
             var tk = type === TokenRefType.STRING ?
-                this.getTokenByAlias(token, line) :
-                this.getTokenByName(token, line);
+                getTokenByAlias(token, line) :
+                getTokenByName(token, line);
             if (tk !== null) {
                 if (tk.assoc === Assoc.UNDEFINED) {
-                    this.err("precedence of token \"" + token + "\" has not been defined", line);
+                    err("precedence of token \"" + token + "\" has not been defined", line);
                     return;
                 }
-                this._top().pr = tk.pr;
+                _top().pr = tk.pr;
             }
         }
         else {
-            var pt = this._pseudoTokens[token];
+            var pt = _pseudoTokens[token];
             if (!pt) {
-                this.err("pseudo token \"" + token + "\" is not defined", line);
+                err("pseudo token \"" + token + "\" is not defined", line);
             }
-            this._top().pr = pt.pr;
+            _top().pr = pt.pr;
         }
-    };
-    GBuilder.prototype.commitRule = function () {
-        var t = this._ruleStack.pop();
-        t.index = this._g.rules.length;
+    }
+    function commitRule() {
+        var t = _ruleStack.pop();
+        t.index = _g.rules.length;
         t.lhs.rules.push(t);
-        this._g.rules.push(t);
-        for (var _i = 0, _a = this._onCommit; _i < _a.length; _i++) {
-            var cb = _a[_i];
+        _g.rules.push(t);
+        for (var _i = 0, _onCommit_1 = _onCommit; _i < _onCommit_1.length; _i++) {
+            var cb = _onCommit_1[_i];
             cb();
         }
-        this._onCommit.length = 0;
-        return this;
-    };
-    GBuilder.prototype.addPushStateAction = function (acts, vn, line) {
-        var _this = this;
-        this.lexBuilder.requiringState.wait(vn, function (su, sn) {
+        _onCommit.length = 0;
+    }
+    function addPushStateAction(acts, vn, line) {
+        lexBuilder.requiringState.wait(vn, function (su, sn) {
             if (su) {
                 acts.push(pushState(sn));
             }
             else {
-                _this._ctx.err(new CompilationError("state \"" + vn + "\" is undefined", line));
+                ctx.err(new CompilationError("state \"" + vn + "\" is undefined", line));
             }
         });
-    };
-    GBuilder.prototype.build = function () {
-        this._g.tokenCount = this._g.tokens.length;
-        this._g.tokens[0].used = true;
-        this._g.nts[0].used = true;
-        var cela = this;
-        for (var _i = 0, _a = this._g.nts; _i < _a.length; _i++) {
+    }
+    function build() {
+        _g.tokenCount = _g.tokens.length;
+        _g.tokens[0].used = true;
+        _g.nts[0].used = true;
+        for (var _i = 0, _a = _g.nts; _i < _a.length; _i++) {
             var nt = _a[_i];
-            nt.firstSet = new TokenSet(this._g.tokenCount);
+            nt.firstSet = new TokenSet(_g.tokenCount);
             for (var _b = 0, _c = nt.rules; _b < _c.length; _b++) {
                 var rule = _c[_b];
                 rule.calcPr();
                 var _loop_1 = function (vname) {
                     var v = rule.usedVars[vname];
                     v.val = rule.getVarSp(vname, function (msg) {
-                        cela.err("cannot find variable \"" + vname + "\": " + msg, v.line);
+                        err("cannot find variable \"" + vname + "\": " + msg, v.line);
                     });
                 };
                 for (var vname in rule.usedVars) {
@@ -2996,16 +3039,15 @@ var GBuilder = (function () {
                 }
             }
         }
-        this._f.lexDFA = this.lexBuilder.build();
-        for (var _d = 0, _e = this._onDone; _d < _e.length; _d++) {
-            var cb = _e[_d];
+        _f.lexDFA = lexBuilder.build();
+        for (var _d = 0, _onDone_1 = _onDone; _d < _onDone_1.length; _d++) {
+            var cb = _onDone_1[_d];
             cb();
         }
-        this._requiringNt.fail();
-        return this._f;
-    };
-    return GBuilder;
-}());
+        _requiringNt.fail();
+        return _f;
+    }
+}
 
 function nodeFromToken(t) {
     return {
@@ -3176,26 +3218,29 @@ function moveDFA0(c, ret) {
             else if (c === 104) {
                 ret.state = 32;
             }
-            else if (c === 108) {
+            else if (c === 105) {
                 ret.state = 33;
             }
-            else if (c === 110) {
+            else if (c === 108) {
                 ret.state = 34;
             }
-            else if (c === 111) {
+            else if (c === 110) {
                 ret.state = 35;
             }
-            else if (c === 112) {
+            else if (c === 111) {
                 ret.state = 36;
             }
-            else if (c === 114) {
+            else if (c === 112) {
                 ret.state = 37;
             }
-            else if (c === 116) {
+            else if (c === 114) {
                 ret.state = 38;
             }
-            else if (c === 117) {
+            else if (c === 116) {
                 ret.state = 39;
+            }
+            else if (c === 117) {
+                ret.state = 40;
             }
             else {
                 ret.state = -1;
@@ -3205,13 +3250,13 @@ function moveDFA0(c, ret) {
             ret.hasArc = true;
             ret.isEnd = false;
             if (c <= 9 || (c >= 11 && c <= 38) || (c >= 40 && c <= 91) || c >= 93) {
-                ret.state = 40;
-            }
-            else if (c === 39) {
                 ret.state = 41;
             }
-            else if (c === 92) {
+            else if (c === 39) {
                 ret.state = 42;
+            }
+            else if (c === 92) {
+                ret.state = 43;
             }
             else {
                 ret.state = -1;
@@ -3251,10 +3296,10 @@ function moveDFA0(c, ret) {
             ret.hasArc = true;
             ret.isEnd = false;
             if (c === 42) {
-                ret.state = 43;
+                ret.state = 44;
             }
             else if (c === 47) {
-                ret.state = 44;
+                ret.state = 45;
             }
             else {
                 ret.state = -1;
@@ -3279,7 +3324,7 @@ function moveDFA0(c, ret) {
             ret.hasArc = true;
             ret.isEnd = true;
             if (c === 62) {
-                ret.state = 45;
+                ret.state = 46;
             }
             else {
                 ret.state = -1;
@@ -3350,10 +3395,10 @@ function moveDFA0(c, ret) {
             ret.hasArc = true;
             ret.isEnd = false;
             if (c === 34 || c === 39 || c === 92 || c === 98 || c === 102 || c === 110 || c === 114 || c === 116) {
-                ret.state = 46;
+                ret.state = 47;
             }
             else if (c === 117 || c === 120) {
-                ret.state = 47;
+                ret.state = 48;
             }
             else {
                 ret.state = -1;
@@ -3394,10 +3439,10 @@ function moveDFA0(c, ret) {
             ret.hasArc = true;
             ret.isEnd = false;
             if (c === 109) {
-                ret.state = 48;
+                ret.state = 49;
             }
             else if (c === 120) {
-                ret.state = 49;
+                ret.state = 50;
             }
             else {
                 ret.state = -1;
@@ -3407,7 +3452,7 @@ function moveDFA0(c, ret) {
             ret.hasArc = true;
             ret.isEnd = false;
             if (c === 101) {
-                ret.state = 50;
+                ret.state = 51;
             }
             else {
                 ret.state = -1;
@@ -3416,8 +3461,8 @@ function moveDFA0(c, ret) {
         case 33:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 101) {
-                ret.state = 51;
+            if (c === 110) {
+                ret.state = 52;
             }
             else {
                 ret.state = -1;
@@ -3426,8 +3471,8 @@ function moveDFA0(c, ret) {
         case 34:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 111) {
-                ret.state = 52;
+            if (c === 101) {
+                ret.state = 53;
             }
             else {
                 ret.state = -1;
@@ -3436,8 +3481,8 @@ function moveDFA0(c, ret) {
         case 35:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 112) {
-                ret.state = 53;
+            if (c === 111) {
+                ret.state = 54;
             }
             else {
                 ret.state = -1;
@@ -3446,8 +3491,8 @@ function moveDFA0(c, ret) {
         case 36:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 114) {
-                ret.state = 54;
+            if (c === 112) {
+                ret.state = 55;
             }
             else {
                 ret.state = -1;
@@ -3456,8 +3501,8 @@ function moveDFA0(c, ret) {
         case 37:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 105) {
-                ret.state = 55;
+            if (c === 114) {
+                ret.state = 56;
             }
             else {
                 ret.state = -1;
@@ -3466,8 +3511,8 @@ function moveDFA0(c, ret) {
         case 38:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 121) {
-                ret.state = 56;
+            if (c === 105) {
+                ret.state = 57;
             }
             else {
                 ret.state = -1;
@@ -3476,8 +3521,8 @@ function moveDFA0(c, ret) {
         case 39:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 115) {
-                ret.state = 57;
+            if (c === 121) {
+                ret.state = 58;
             }
             else {
                 ret.state = -1;
@@ -3486,48 +3531,42 @@ function moveDFA0(c, ret) {
         case 40:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c <= 9 || (c >= 11 && c <= 38) || (c >= 40 && c <= 91) || c >= 93) {
-                ret.state = 40;
-            }
-            else if (c === 39) {
-                ret.state = 41;
-            }
-            else if (c === 92) {
-                ret.state = 42;
-            }
-            else {
-                ret.state = -1;
-            }
-            break;
-        case 41:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
-            break;
-        case 42:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if (c === 34 || c === 39 || c === 92 || c === 98 || c === 102 || c === 110 || c === 114 || c === 116) {
-                ret.state = 58;
-            }
-            else if (c === 117 || c === 120) {
+            if (c === 115) {
                 ret.state = 59;
             }
             else {
                 ret.state = -1;
             }
             break;
+        case 41:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c <= 9 || (c >= 11 && c <= 38) || (c >= 40 && c <= 91) || c >= 93) {
+                ret.state = 41;
+            }
+            else if (c === 39) {
+                ret.state = 42;
+            }
+            else if (c === 92) {
+                ret.state = 43;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 42:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
         case 43:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c <= 41 || (c >= 43 && c <= 46) || c >= 48) {
+            if (c === 34 || c === 39 || c === 92 || c === 98 || c === 102 || c === 110 || c === 114 || c === 116) {
                 ret.state = 60;
             }
-            else if (c === 42) {
+            else if (c === 117 || c === 120) {
                 ret.state = 61;
-            }
-            else if (c === 47) {
-                ret.state = 62;
             }
             else {
                 ret.state = -1;
@@ -3535,20 +3574,36 @@ function moveDFA0(c, ret) {
             break;
         case 44:
             ret.hasArc = true;
-            ret.isEnd = true;
-            if (c <= 9 || c >= 11) {
+            ret.isEnd = false;
+            if (c <= 41 || (c >= 43 && c <= 46) || c >= 48) {
+                ret.state = 62;
+            }
+            else if (c === 42) {
                 ret.state = 63;
+            }
+            else if (c === 47) {
+                ret.state = 64;
             }
             else {
                 ret.state = -1;
             }
             break;
         case 45:
+            ret.hasArc = true;
+            ret.isEnd = true;
+            if (c <= 9 || c >= 11) {
+                ret.state = 65;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 46:
             ret.hasArc = false;
             ret.isEnd = true;
             ret.state = -1;
             break;
-        case 46:
+        case 47:
             ret.hasArc = true;
             ret.isEnd = false;
             if (c <= 9 || (c >= 11 && c <= 33) || (c >= 35 && c <= 91) || c >= 93) {
@@ -3564,21 +3619,11 @@ function moveDFA0(c, ret) {
                 ret.state = -1;
             }
             break;
-        case 47:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if ((c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102)) {
-                ret.state = 64;
-            }
-            else {
-                ret.state = -1;
-            }
-            break;
         case 48:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 112) {
-                ret.state = 65;
+            if ((c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102)) {
+                ret.state = 66;
             }
             else {
                 ret.state = -1;
@@ -3587,8 +3632,8 @@ function moveDFA0(c, ret) {
         case 49:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 116) {
-                ret.state = 66;
+            if (c === 112) {
+                ret.state = 67;
             }
             else {
                 ret.state = -1;
@@ -3597,8 +3642,8 @@ function moveDFA0(c, ret) {
         case 50:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 97) {
-                ret.state = 67;
+            if (c === 116) {
+                ret.state = 68;
             }
             else {
                 ret.state = -1;
@@ -3607,10 +3652,7 @@ function moveDFA0(c, ret) {
         case 51:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 102) {
-                ret.state = 68;
-            }
-            else if (c === 120) {
+            if (c === 97) {
                 ret.state = 69;
             }
             else {
@@ -3620,7 +3662,7 @@ function moveDFA0(c, ret) {
         case 52:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 110) {
+            if (c === 105) {
                 ret.state = 70;
             }
             else {
@@ -3630,8 +3672,11 @@ function moveDFA0(c, ret) {
         case 53:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 116) {
+            if (c === 102) {
                 ret.state = 71;
+            }
+            else if (c === 120) {
+                ret.state = 72;
             }
             else {
                 ret.state = -1;
@@ -3640,8 +3685,8 @@ function moveDFA0(c, ret) {
         case 54:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 101) {
-                ret.state = 72;
+            if (c === 110) {
+                ret.state = 73;
             }
             else {
                 ret.state = -1;
@@ -3650,24 +3695,14 @@ function moveDFA0(c, ret) {
         case 55:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 103) {
-                ret.state = 73;
-            }
-            else {
-                ret.state = -1;
-            }
-            break;
-        case 56:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if (c === 112) {
+            if (c === 116) {
                 ret.state = 74;
             }
             else {
                 ret.state = -1;
             }
             break;
-        case 57:
+        case 56:
             ret.hasArc = true;
             ret.isEnd = false;
             if (c === 101) {
@@ -3677,17 +3712,21 @@ function moveDFA0(c, ret) {
                 ret.state = -1;
             }
             break;
+        case 57:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 103) {
+                ret.state = 76;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
         case 58:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c <= 9 || (c >= 11 && c <= 38) || (c >= 40 && c <= 91) || c >= 93) {
-                ret.state = 40;
-            }
-            else if (c === 39) {
-                ret.state = 41;
-            }
-            else if (c === 92) {
-                ret.state = 42;
+            if (c === 112) {
+                ret.state = 77;
             }
             else {
                 ret.state = -1;
@@ -3696,8 +3735,8 @@ function moveDFA0(c, ret) {
         case 59:
             ret.hasArc = true;
             ret.isEnd = false;
-            if ((c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102)) {
-                ret.state = 76;
+            if (c === 101) {
+                ret.state = 78;
             }
             else {
                 ret.state = -1;
@@ -3706,14 +3745,14 @@ function moveDFA0(c, ret) {
         case 60:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c <= 41 || (c >= 43 && c <= 46) || c >= 48) {
-                ret.state = 60;
+            if (c <= 9 || (c >= 11 && c <= 38) || (c >= 40 && c <= 91) || c >= 93) {
+                ret.state = 41;
             }
-            else if (c === 42) {
-                ret.state = 61;
+            else if (c === 39) {
+                ret.state = 42;
             }
-            else if (c === 47) {
-                ret.state = 77;
+            else if (c === 92) {
+                ret.state = 43;
             }
             else {
                 ret.state = -1;
@@ -3722,10 +3761,7 @@ function moveDFA0(c, ret) {
         case 61:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c <= 46 || c >= 48) {
-                ret.state = 78;
-            }
-            else if (c === 47) {
+            if ((c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102)) {
                 ret.state = 79;
             }
             else {
@@ -3735,7 +3771,13 @@ function moveDFA0(c, ret) {
         case 62:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 47) {
+            if (c <= 41 || (c >= 43 && c <= 46) || c >= 48) {
+                ret.state = 62;
+            }
+            else if (c === 42) {
+                ret.state = 63;
+            }
+            else if (c === 47) {
                 ret.state = 80;
             }
             else {
@@ -3744,15 +3786,38 @@ function moveDFA0(c, ret) {
             break;
         case 63:
             ret.hasArc = true;
-            ret.isEnd = true;
-            if (c <= 9 || c >= 11) {
-                ret.state = 63;
+            ret.isEnd = false;
+            if (c <= 46 || c >= 48) {
+                ret.state = 81;
+            }
+            else if (c === 47) {
+                ret.state = 82;
             }
             else {
                 ret.state = -1;
             }
             break;
         case 64:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 47) {
+                ret.state = 83;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 65:
+            ret.hasArc = true;
+            ret.isEnd = true;
+            if (c <= 9 || c >= 11) {
+                ret.state = 65;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 66:
             ret.hasArc = true;
             ret.isEnd = false;
             if (c <= 9 || (c >= 11 && c <= 33) || (c >= 35 && c <= 47) || (c >= 58 && c <= 64) || (c >= 71 && c <= 91) || (c >= 93 && c <= 96) || c >= 103) {
@@ -3762,7 +3827,7 @@ function moveDFA0(c, ret) {
                 ret.state = 26;
             }
             else if ((c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102)) {
-                ret.state = 81;
+                ret.state = 84;
             }
             else if (c === 92) {
                 ret.state = 27;
@@ -3771,37 +3836,7 @@ function moveDFA0(c, ret) {
                 ret.state = -1;
             }
             break;
-        case 65:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if (c === 116) {
-                ret.state = 82;
-            }
-            else {
-                ret.state = -1;
-            }
-            break;
-        case 66:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if (c === 114) {
-                ret.state = 83;
-            }
-            else {
-                ret.state = -1;
-            }
-            break;
         case 67:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if (c === 100) {
-                ret.state = 84;
-            }
-            else {
-                ret.state = -1;
-            }
-            break;
-        case 68:
             ret.hasArc = true;
             ret.isEnd = false;
             if (c === 116) {
@@ -3811,16 +3846,31 @@ function moveDFA0(c, ret) {
                 ret.state = -1;
             }
             break;
+        case 68:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 114) {
+                ret.state = 86;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
         case 69:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 100) {
+                ret.state = 87;
+            }
+            else {
+                ret.state = -1;
+            }
             break;
         case 70:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 97) {
-                ret.state = 86;
+            if (c === 116) {
+                ret.state = 88;
             }
             else {
                 ret.state = -1;
@@ -3829,28 +3879,23 @@ function moveDFA0(c, ret) {
         case 71:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 105) {
-                ret.state = 87;
+            if (c === 116) {
+                ret.state = 89;
             }
             else {
                 ret.state = -1;
             }
             break;
         case 72:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if (c === 99) {
-                ret.state = 88;
-            }
-            else {
-                ret.state = -1;
-            }
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
             break;
         case 73:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 104) {
-                ret.state = 89;
+            if (c === 97) {
+                ret.state = 90;
             }
             else {
                 ret.state = -1;
@@ -3859,130 +3904,34 @@ function moveDFA0(c, ret) {
         case 74:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 101) {
-                ret.state = 90;
+            if (c === 105) {
+                ret.state = 91;
             }
             else {
                 ret.state = -1;
             }
             break;
         case 75:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
-            break;
-        case 76:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c <= 9 || (c >= 11 && c <= 38) || (c >= 40 && c <= 47) || (c >= 58 && c <= 64) || (c >= 71 && c <= 91) || (c >= 93 && c <= 96) || c >= 103) {
-                ret.state = 40;
-            }
-            else if (c === 39) {
-                ret.state = 41;
-            }
-            else if ((c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102)) {
-                ret.state = 91;
-            }
-            else if (c === 92) {
-                ret.state = 42;
-            }
-            else {
-                ret.state = -1;
-            }
-            break;
-        case 77:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if (c <= 41 || (c >= 43 && c <= 46) || c >= 48) {
-                ret.state = 60;
-            }
-            else if (c === 42) {
-                ret.state = 61;
-            }
-            else if (c === 47) {
-                ret.state = 77;
-            }
-            else {
-                ret.state = -1;
-            }
-            break;
-        case 78:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if (c <= 41 || (c >= 43 && c <= 46) || c >= 48) {
-                ret.state = 60;
-            }
-            else if (c === 42) {
-                ret.state = 61;
-            }
-            else if (c === 47) {
-                ret.state = 62;
-            }
-            else {
-                ret.state = -1;
-            }
-            break;
-        case 79:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
-            break;
-        case 80:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if (c <= 41 || (c >= 43 && c <= 46) || c >= 48) {
-                ret.state = 60;
-            }
-            else if (c === 42) {
-                ret.state = 61;
-            }
-            else if (c === 47) {
-                ret.state = 62;
-            }
-            else {
-                ret.state = -1;
-            }
-            break;
-        case 81:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if (c <= 9 || (c >= 11 && c <= 33) || (c >= 35 && c <= 47) || (c >= 58 && c <= 64) || (c >= 71 && c <= 91) || (c >= 93 && c <= 96) || c >= 103) {
-                ret.state = 25;
-            }
-            else if (c === 34) {
-                ret.state = 26;
-            }
-            else if ((c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102)) {
-                ret.state = 81;
-            }
-            else if (c === 92) {
-                ret.state = 27;
-            }
-            else {
-                ret.state = -1;
-            }
-            break;
-        case 82:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if (c === 121) {
+            if (c === 99) {
                 ret.state = 92;
             }
             else {
                 ret.state = -1;
             }
             break;
-        case 83:
+        case 76:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 97) {
+            if (c === 104) {
                 ret.state = 93;
             }
             else {
                 ret.state = -1;
             }
             break;
-        case 84:
+        case 77:
             ret.hasArc = true;
             ret.isEnd = false;
             if (c === 101) {
@@ -3992,16 +3941,117 @@ function moveDFA0(c, ret) {
                 ret.state = -1;
             }
             break;
-        case 85:
+        case 78:
             ret.hasArc = false;
             ret.isEnd = true;
             ret.state = -1;
             break;
+        case 79:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c <= 9 || (c >= 11 && c <= 38) || (c >= 40 && c <= 47) || (c >= 58 && c <= 64) || (c >= 71 && c <= 91) || (c >= 93 && c <= 96) || c >= 103) {
+                ret.state = 41;
+            }
+            else if (c === 39) {
+                ret.state = 42;
+            }
+            else if ((c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102)) {
+                ret.state = 95;
+            }
+            else if (c === 92) {
+                ret.state = 43;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 80:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c <= 41 || (c >= 43 && c <= 46) || c >= 48) {
+                ret.state = 62;
+            }
+            else if (c === 42) {
+                ret.state = 63;
+            }
+            else if (c === 47) {
+                ret.state = 80;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 81:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c <= 41 || (c >= 43 && c <= 46) || c >= 48) {
+                ret.state = 62;
+            }
+            else if (c === 42) {
+                ret.state = 63;
+            }
+            else if (c === 47) {
+                ret.state = 64;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 82:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 83:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c <= 41 || (c >= 43 && c <= 46) || c >= 48) {
+                ret.state = 62;
+            }
+            else if (c === 42) {
+                ret.state = 63;
+            }
+            else if (c === 47) {
+                ret.state = 64;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 84:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c <= 9 || (c >= 11 && c <= 33) || (c >= 35 && c <= 47) || (c >= 58 && c <= 64) || (c >= 71 && c <= 91) || (c >= 93 && c <= 96) || c >= 103) {
+                ret.state = 25;
+            }
+            else if (c === 34) {
+                ret.state = 26;
+            }
+            else if ((c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102)) {
+                ret.state = 84;
+            }
+            else if (c === 92) {
+                ret.state = 27;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 85:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 121) {
+                ret.state = 96;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
         case 86:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 115) {
-                ret.state = 95;
+            if (c === 97) {
+                ret.state = 97;
             }
             else {
                 ret.state = -1;
@@ -4010,8 +4060,8 @@ function moveDFA0(c, ret) {
         case 87:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 111) {
-                ret.state = 96;
+            if (c === 101) {
+                ret.state = 98;
             }
             else {
                 ret.state = -1;
@@ -4023,34 +4073,25 @@ function moveDFA0(c, ret) {
             ret.state = -1;
             break;
         case 89:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 90:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 116) {
-                ret.state = 97;
+            if (c === 115) {
+                ret.state = 99;
             }
             else {
                 ret.state = -1;
             }
             break;
-        case 90:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
-            break;
         case 91:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c <= 9 || (c >= 11 && c <= 38) || (c >= 40 && c <= 47) || (c >= 58 && c <= 64) || (c >= 71 && c <= 91) || (c >= 93 && c <= 96) || c >= 103) {
-                ret.state = 40;
-            }
-            else if (c === 39) {
-                ret.state = 41;
-            }
-            else if ((c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102)) {
-                ret.state = 91;
-            }
-            else if (c === 92) {
-                ret.state = 42;
+            if (c === 111) {
+                ret.state = 100;
             }
             else {
                 ret.state = -1;
@@ -4064,68 +4105,77 @@ function moveDFA0(c, ret) {
         case 93:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 95) {
-                ret.state = 98;
-            }
-            else {
-                ret.state = -1;
-            }
-            break;
-        case 94:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if (c === 114) {
-                ret.state = 99;
-            }
-            else {
-                ret.state = -1;
-            }
-            break;
-        case 95:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if (c === 115) {
-                ret.state = 100;
-            }
-            else {
-                ret.state = -1;
-            }
-            break;
-        case 96:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if (c === 110) {
+            if (c === 116) {
                 ret.state = 101;
             }
             else {
                 ret.state = -1;
             }
             break;
-        case 97:
+        case 94:
             ret.hasArc = false;
             ret.isEnd = true;
             ret.state = -1;
             break;
-        case 98:
+        case 95:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 97) {
+            if (c <= 9 || (c >= 11 && c <= 38) || (c >= 40 && c <= 47) || (c >= 58 && c <= 64) || (c >= 71 && c <= 91) || (c >= 93 && c <= 96) || c >= 103) {
+                ret.state = 41;
+            }
+            else if (c === 39) {
+                ret.state = 42;
+            }
+            else if ((c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102)) {
+                ret.state = 95;
+            }
+            else if (c === 92) {
+                ret.state = 43;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 96:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 97:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 95) {
                 ret.state = 102;
             }
             else {
                 ret.state = -1;
             }
             break;
+        case 98:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 114) {
+                ret.state = 103;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
         case 99:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 115) {
+                ret.state = 104;
+            }
+            else {
+                ret.state = -1;
+            }
             break;
         case 100:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 111) {
-                ret.state = 103;
+            if (c === 110) {
+                ret.state = 105;
             }
             else {
                 ret.state = -1;
@@ -4139,28 +4189,23 @@ function moveDFA0(c, ret) {
         case 102:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 114) {
-                ret.state = 104;
+            if (c === 97) {
+                ret.state = 106;
             }
             else {
                 ret.state = -1;
             }
             break;
         case 103:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if (c === 99) {
-                ret.state = 105;
-            }
-            else {
-                ret.state = -1;
-            }
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
             break;
         case 104:
             ret.hasArc = true;
             ret.isEnd = false;
-            if (c === 103) {
-                ret.state = 106;
+            if (c === 111) {
+                ret.state = 107;
             }
             else {
                 ret.state = -1;
@@ -4172,6 +4217,41 @@ function moveDFA0(c, ret) {
             ret.state = -1;
             break;
         case 106:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 114) {
+                ret.state = 108;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 107:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 99) {
+                ret.state = 109;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 108:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if (c === 103) {
+                ret.state = 110;
+            }
+            else {
+                ret.state = -1;
+            }
+            break;
+        case 109:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 110:
             ret.hasArc = false;
             ret.isEnd = true;
             ret.state = -1;
@@ -4224,161 +4304,187 @@ function moveDFA1(c, ret) {
             ret.hasArc = false;
     }
 }
+function moveDFA2(c, ret) {
+    switch (ret.state) {
+        case 0:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            ret.state = 1;
+            break;
+        case 1:
+            ret.hasArc = true;
+            ret.isEnd = true;
+            ret.state = 1;
+            break;
+        default:
+            ret.state = -1;
+            ret.hasArc = false;
+    }
+}
 var jjlexers = [
     moveDFA0,
     moveDFA1,
+    moveDFA2,
 ];
 var jjlexTokens0 = [
-    -1, -1, -1, 1, -1, -1, 18, 19, 24, 25,
-    33, 26, -1, 27, 29, 17, 20, 16, 23, 21,
-    22, 32, 3, 31, 4, -1, 2, -1, 1, 1,
-    30, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, 2, -1, -1, -1, 28, -1, -1, -1, -1,
+    -1, -1, -1, 1, -1, -1, 19, 20, 25, 26,
+    34, 27, -1, 28, 30, 18, 21, 17, 24, 22,
+    23, 33, 3, 32, 4, -1, 2, -1, 1, 1,
+    31, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, 2, -1, -1, -1, 29, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, 6,
-    -1, -1, -1, -1, -1, 10, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, 7, -1, -1, 15, -1,
-    14, -1, 13, -1, -1, -1, -1, 8, -1, 11,
-    -1, 5, -1, -1, -1, 9, 12,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, 6, -1, -1, -1, -1, -1, 10, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, 16, 7,
+    -1, -1, 15, -1, 14, -1, 13, -1, -1, -1,
+    -1, 8, -1, 11, -1, 5, -1, -1, -1, 9,
+    12,
 ];
 var jjlexTokens1 = [
-    34, 34, 3, 4,
+    35, 35, 3, 4,
 ];
-var jjtokenCount = 35;
-var jjactERR = 163;
+var jjlexTokens2 = [
+    -1, 36,
+];
+var jjtokenCount = 37;
+var jjactERR = 169;
 var jjpact = [
-    9, 7, 13, 14, 15, 143, 10, 11, 77, 12,
-    -106, -45, 162, 110, -45, 151, 152, 150, 107, 108,
-    142, 140, -82, 110, 141, 5, -45, -46, 107, 108,
-    -46, 89, -100, 86, 89, -100, -82, 147, -82, 24,
-    89, 52, -46, 24, 89, -107, 88, 93, 121, 88,
-    54, 60, 55, -34, 58, 88, 48, 43, 19, 88,
-    42, 94, 37, 38, 161, 133, 159, 158, 157, 133,
-    155, 120, 145, 49, 144, 52, 137, 104, 125, 124,
-    123, 122, 118, -100, 114, 113, 112, 29, 104, 101,
-    -89, 99, 98, 97, 96, 95, 90, 83, 81, 80,
-    75, 71, 69, 68, 64, 63, 62, 57, 50, 41,
-    39, 33, 28, 25, 19, 4, 0, 0, 0, 0,
+    9, 7, 14, 15, 16, 149, 10, 11, 116, 12,
+    83, 13, -49, 113, 114, -49, 157, 158, 156, -110,
+    -50, 148, 146, -50, -86, 147, 5, -49, 116, 95,
+    -104, 92, 95, 113, 114, -50, 25, 95, 153, -86,
+    99, -86, 25, 95, -104, 94, -111, 66, 94, 127,
+    64, 58, 54, 94, 100, 60, 168, 61, 47, 94,
+    167, 46, 139, -38, 41, 42, 165, 164, 163, 55,
+    139, 161, 126, 151, 150, 143, 110, 58, 131, 130,
+    129, 128, 124, -104, 120, 119, 118, 110, 107, -93,
+    105, 104, 103, 102, 101, 96, 89, 87, 86, 81,
+    77, 75, 74, 70, 69, 68, 63, 56, 49, 45,
+    43, 39, 35, 20, 29, 26, 20, 4, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0,
 ];
 var jjdisact = [
-    -35, 115, -5, -35, 113, -35, -35, 42, 110, -35,
-    -35, 111, -35, -35, -35, 57, -35, -35, -35, 94,
-    38, -35, -35, -35, -35, -35, -35, -35, -35, -35,
-    35, 107, 108, -35, 56, -35, -35, -35, -35, 40,
-    -35, -35, 88, 21, -35, 97, 50, -35, 105, 103,
-    -35, -35, 101, -35, -35, 90, 84, -35, -35, -35,
-    84, -35, -35, -35, -35, 85, 7, -35, 98, 78,
-    96, 41, -35, 32, 32, -35, 76, 29, 28, -35,
-    78, 78, 66, 88, -35, -35, -35, 90, -35, 89,
-    -35, -35, -35, 88, -35, 61, -35, -35, 70, 84,
-    -35, 68, -35, 80, 66, -35, 80, -35, -35, 78,
-    76, -35, -35, -35, -35, 57, -35, 50, -35, -35,
-    3, -35, -35, -35, -7, -35, 45, 11, -35, 3,
-    41, -35, 46, -35, 7, 15, -35, -35, -8, -35,
-    39, 69, -35, 67, 66, 63, -35, -5, -35, -35,
-    -35, -35, 47, 63, 48, -35, -35, -35, -35, -10,
-    -35, -35,
+    -37, 117, -5, -37, 115, -37, -37, 41, 112, -37,
+    -37, 113, -37, -37, -37, -37, 112, -37, -37, -37,
+    94, 35, -37, -37, -37, -37, -37, -37, -37, -37,
+    80, -37, 36, 107, 108, -37, 57, -37, 72, -37,
+    -37, -37, -37, 35, -37, -37, 86, -37, -37, 25,
+    -37, 96, 46, -37, 104, 102, -37, -37, 100, -37,
+    -37, 89, 82, -37, -37, -37, 82, -37, -37, -37,
+    -37, 84, 9, -37, 97, 76, 95, 42, -37, 41,
+    30, -37, 74, 27, 20, -37, 76, 76, 64, 87,
+    -37, -37, -37, 89, -37, 88, -37, -37, -37, 87,
+    -37, 59, -37, -37, 69, 84, -37, 67, -37, 80,
+    65, -37, 80, -37, -37, 78, 76, -37, -37, -37,
+    -37, 56, -37, 48, -37, -37, 7, -37, -37, -37,
+    -13, -37, 43, 3, -37, 3, 40, -37, 46, -37,
+    16, 15, -37, -37, -8, -37, 39, 70, -37, 68,
+    66, 63, -37, -5, -37, -37, -37, -37, 46, 60,
+    43, -37, -37, -37, -37, 33, -37, -37,
 ];
 var jjcheckact = [
-    2, 2, 2, 2, 2, 129, 2, 2, 66, 2,
-    134, 147, 159, 124, 147, 138, 138, 138, 124, 124,
-    129, 129, 66, 120, 129, 2, 147, 127, 120, 120,
-    127, 77, 77, 74, 74, 73, 66, 135, 66, 20,
-    20, 134, 127, 7, 7, 71, 77, 78, 135, 74,
-    43, 46, 43, 73, 46, 20, 39, 34, 15, 7,
-    34, 78, 30, 30, 154, 153, 152, 145, 144, 143,
-    141, 140, 132, 39, 130, 71, 126, 117, 115, 110,
-    109, 106, 104, 103, 101, 99, 98, 15, 95, 93,
-    89, 87, 83, 82, 81, 80, 76, 70, 69, 68,
-    65, 60, 56, 55, 52, 49, 48, 45, 42, 32,
-    31, 19, 11, 8, 4, 1, 0, 0, 0, 0,
+    2, 2, 2, 2, 2, 135, 2, 2, 130, 2,
+    72, 2, 153, 130, 130, 153, 144, 144, 144, 140,
+    133, 135, 135, 133, 72, 135, 2, 153, 126, 83,
+    83, 80, 80, 126, 126, 133, 21, 21, 141, 72,
+    84, 72, 7, 7, 79, 83, 77, 52, 80, 141,
+    52, 140, 43, 21, 84, 49, 165, 49, 36, 7,
+    160, 36, 159, 79, 32, 32, 158, 151, 150, 43,
+    149, 147, 146, 138, 136, 132, 123, 77, 121, 116,
+    115, 112, 110, 109, 107, 105, 104, 101, 99, 95,
+    93, 89, 88, 87, 86, 82, 76, 75, 74, 71,
+    66, 62, 61, 58, 55, 54, 51, 46, 38, 34,
+    33, 30, 20, 16, 11, 8, 4, 1, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0,
 ];
 var jjdefred = [
-    3, -1, -1, 0, -1, 2, 4, -1, -1, 99,
-    99, -1, 11, 12, 13, -1, 67, 68, 69, 21,
-    6, 15, 16, 17, 19, 8, 9, 10, 1, 66,
-    -1, -1, -1, 14, -1, 75, 71, 72, 25, -1,
-    22, 7, -1, -1, 74, 78, 30, 20, -1, -1,
-    102, 104, -1, 70, 75, 84, -1, 5, 24, 26,
-    -1, 23, 18, 103, 73, 94, 86, 82, -1, -1,
-    42, 105, 76, 95, -1, 83, 87, 33, -1, 80,
-    -1, -1, -1, -1, 96, 97, 98, -1, 93, 85,
-    90, 91, 77, -1, 42, 32, 42, 107, -1, -1,
-    79, -1, 28, 33, -1, 37, -1, 39, 40, -1,
-    -1, 92, 89, 27, 31, -1, 35, 32, 48, 58,
-    99, 38, 41, 103, 99, 29, 43, 48, 47, -1,
-    60, 63, 64, 36, 100, -1, 48, 46, 53, 42,
-    59, -1, 57, -1, -1, -1, 34, 48, 49, 50,
-    51, 52, -1, 61, -1, 62, 65, 101, 54, -1,
-    56, 55,
+    4, -1, -1, 0, -1, 3, 5, -1, -1, 103,
+    103, -1, 103, 15, 16, 17, 1, 71, 72, 73,
+    25, 7, 19, 20, 21, 23, 9, 10, 11, 103,
+    -1, 70, -1, -1, -1, 18, -1, 12, 13, 79,
+    75, 76, 29, -1, 26, 8, -1, 2, 14, -1,
+    78, 82, 34, 24, -1, -1, 106, 108, -1, 74,
+    79, 88, -1, 6, 28, 30, -1, 27, 22, 107,
+    77, 98, 90, 86, -1, -1, 46, 109, 80, 99,
+    -1, 87, 91, 37, -1, 84, -1, -1, -1, -1,
+    100, 101, 102, -1, 97, 89, 94, 95, 81, -1,
+    46, 36, 46, 111, -1, -1, 83, -1, 32, 37,
+    -1, 41, -1, 43, 44, -1, -1, 96, 93, 31,
+    35, -1, 39, 36, 52, 62, 103, 42, 45, 107,
+    103, 33, 47, 52, 51, -1, 64, 67, 68, 40,
+    104, -1, 52, 50, 57, 46, 63, -1, 61, -1,
+    -1, -1, 38, 52, 53, 54, 55, 56, -1, 65,
+    -1, 66, 69, 105, 58, -1, 60, 59,
 ];
 var jjpgoto = [
-    5, 138, 7, 84, 115, 91, 115, 77, 75, 31,
-    20, 21, 137, 129, 148, 137, 129, 135, 105, 86,
-    55, 133, 72, 73, 35, 33, 19, 159, 130, 131,
-    155, 153, 145, 78, 50, 52, 90, 116, 110, 116,
-    110, 114, 115, 50, 52, 83, 81, 118, 134, 108,
-    110, 22, 108, 110, 65, 66, 58, 125, 60, 29,
-    17, 102, 99, 69, 46, 22, 64, 45, 39, 30,
-    26, 110, 15, 16, 17, 116, 110, 1, 2, 152,
-    118, 147, 128, 129, 126, 127, 128, 129, 104, 118,
-    101, 118, 71, 43, 44, 45, 34, 25, 110, -1,
+    5, 90, 121, 7, 144, 33, 97, 121, 83, 81,
+    21, 22, 143, 135, 154, 143, 135, 141, 111, 92,
+    61, 139, 78, 79, 39, 35, 20, 165, 136, 137,
+    161, 159, 120, 121, 84, 122, 116, 96, 87, 124,
+    122, 116, 151, 140, 56, 58, 56, 58, 89, 114,
+    116, 23, 114, 116, 71, 72, 64, 131, 66, 108,
+    105, 75, 70, 51, 52, 23, 122, 116, 47, 43,
+    32, 30, 27, 116, 16, 17, 18, 1, 77, 2,
+    158, 124, 153, 134, 135, 132, 133, 134, 135, 110,
+    124, 107, 124, 49, 50, 51, 37, 116, 36, 29,
+    116, 26, 116, -1, 31, 18, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1,
 ];
 var jjdisgoto = [
-    76, -57, -3, -57, 40, -57, 22, 4, -57, 47,
-    20, -57, -57, -57, -57, 26, -57, -57, 34, 0,
-    18, -57, -57, -57, 88, -57, -57, -57, -57, -57,
-    -12, -57, 58, -57, -57, 56, -57, -57, 53, -57,
-    -57, -57, -57, -57, -57, -20, 44, -57, -57, -57,
-    -57, -57, -57, -57, 28, 12, -57, -57, -57, 50,
-    -57, -57, -57, 39, -57, -26, -37, -57, -8, -57,
-    26, -11, -57, -13, -28, -57, -57, -11, -57, -57,
-    -57, -57, -57, -57, -57, -57, -57, -57, -57, 16,
-    -57, -57, -57, -57, 70, 46, 68, -57, -57, -57,
-    -57, -57, -57, 25, -57, -57, -57, -57, -57, -57,
-    -57, -57, -57, -57, -57, -57, -57, 42, 62, -57,
-    2, -57, -57, -5, -1, -57, -57, -9, -57, -26,
-    -57, -57, -57, -57, -20, -57, 58, -57, -12, 59,
-    3, -57, -57, -1, -57, -57, -57, -12, -57, -57,
-    -57, -57, -57, -2, -57, -57, -57, -57, -57, -57,
-    -57, -57,
+    76, -59, -4, -59, 40, -59, 21, 2, -59, 49,
+    20, -59, 47, -59, -59, -59, 69, -59, -59, 33,
+    -6, 16, -59, -59, -59, 88, -59, -59, -59, 44,
+    -59, -59, -14, -59, 57, -59, -59, -59, 62, 54,
+    -59, -59, 51, -59, -59, -59, -59, -59, -59, -59,
+    -59, -22, 42, -59, -59, -59, -59, -59, -59, -59,
+    22, 10, -59, -59, -59, 46, -59, -59, -59, 23,
+    -59, -28, -38, -59, -9, -59, 16, -10, -59, -17,
+    -30, -59, -59, -12, -59, -59, -59, -59, -59, -59,
+    -59, -59, -59, -59, -59, 12, -59, -59, -59, -59,
+    69, 42, 67, -59, -59, -59, -59, -59, -59, 14,
+    -59, -59, -59, -59, -59, -59, -59, -59, -59, -59,
+    -59, -59, -59, 40, 61, -59, 0, -59, -59, -12,
+    -3, -59, -59, -11, -59, -25, -59, -59, -59, -59,
+    -12, -59, 57, -59, -14, 58, 1, -59, -59, -3,
+    -59, -59, -59, -14, -59, -59, -59, -59, -59, -4,
+    -59, -59, -59, -59, -59, -59, -59, -59,
 ];
 var jjruleLen = [
-    2, 4, 2, 0, 0, 6, 2, 4, 2, 2,
-    2, 1, 1, 1, 2, 1, 1, 1, 4, 0,
-    3, 0, 1, 3, 2, 0, 0, 6, 5, 7,
-    0, 2, 0, 0, 4, 1, 3, 1, 2, 1,
-    1, 2, 0, 2, 3, 1, 2, 1, 0, 3,
-    1, 1, 1, 0, 3, 4, 3, 1, 1, 0,
-    1, 0, 3, 1, 1, 3, 2, 1, 1, 0,
-    5, 1, 1, 3, 1, 0, 4, 4, 0, 3,
-    1, 1, 1, 2, 0, 2, 0, 1, 0, 4,
-    2, 2, 3, 1, 0, 1, 2, 2, 2, 0,
-    0, 5, 2, 0, 1, 0, 0, 5,
+    2, 0, 6, 2, 0, 0, 6, 2, 4, 2,
+    2, 2, 3, 0, 1, 1, 1, 1, 2, 1,
+    1, 1, 4, 0, 3, 0, 1, 3, 2, 0,
+    0, 6, 5, 7, 0, 2, 0, 0, 4, 1,
+    3, 1, 2, 1, 1, 2, 0, 2, 3, 1,
+    2, 1, 0, 3, 1, 1, 1, 0, 3, 4,
+    3, 1, 1, 0, 1, 0, 3, 1, 1, 3,
+    2, 1, 1, 0, 5, 1, 1, 3, 1, 0,
+    4, 4, 0, 3, 1, 1, 1, 2, 0, 2,
+    0, 1, 0, 4, 2, 2, 3, 1, 0, 1,
+    2, 2, 2, 0, 0, 5, 2, 0, 1, 0,
+    0, 5,
 ];
 var jjlhs = [
-    0, 1, 2, 2, 4, 3, 3, 3, 3, 3,
-    3, 5, 5, 5, 6, 6, 7, 7, 8, 8,
-    9, 9, 10, 10, 11, 11, 13, 12, 12, 12,
-    14, 15, 15, 17, 16, 16, 18, 18, 19, 19,
-    19, 19, 21, 20, 22, 22, 23, 23, 25, 24,
-    26, 26, 26, 26, 27, 27, 27, 27, 28, 28,
-    29, 29, 30, 30, 31, 31, 32, 32, 33, 35,
-    34, 36, 36, 37, 37, 39, 38, 40, 40, 41,
-    41, 42, 42, 43, 43, 44, 44, 45, 46, 45,
-    45, 45, 47, 47, 48, 48, 48, 49, 49, 51,
-    52, 50, 53, 53, 54, 55, 56, 54,
+    0, 2, 1, 3, 3, 5, 4, 4, 4, 4,
+    4, 4, 4, 6, 6, 7, 7, 7, 8, 8,
+    9, 9, 10, 10, 11, 11, 12, 12, 13, 13,
+    15, 14, 14, 14, 16, 17, 17, 19, 18, 18,
+    20, 20, 21, 21, 21, 21, 23, 22, 24, 24,
+    25, 25, 27, 26, 28, 28, 28, 28, 29, 29,
+    29, 29, 30, 30, 31, 31, 32, 32, 33, 33,
+    34, 34, 35, 37, 36, 38, 38, 39, 39, 41,
+    40, 42, 42, 43, 43, 44, 44, 45, 45, 46,
+    46, 47, 48, 47, 47, 47, 49, 49, 50, 50,
+    50, 51, 51, 53, 54, 52, 55, 55, 56, 57,
+    58, 56,
 ];
 var jjtokenNames = [
     "EOF", "NAME", "STRING",
@@ -4386,13 +4492,14 @@ var jjtokenNames = [
     "LEX_DIR", "LEFT_DIR", "RIGHT_DIR",
     "NONASSOC_DIR", "USE_DIR", "HEADER_DIR",
     "EXTRA_ARG_DIR", "EMPTY", "TYPE_DIR",
-    "PREC_DIR", "GT", "LT",
-    "BRA", "KET", "EQU",
-    "CBRA", "CKET", "QUESTION",
-    "STAR", "PLUS", "DASH",
-    "COLON", "ARROW", "EOL",
-    "SEPERATOR", "OR", "WEDGE",
-    "COMMA", "ANY_CODE",
+    "PREC_DIR", "INIT_DIR", "GT",
+    "LT", "BRA", "KET",
+    "EQU", "CBRA", "CKET",
+    "QUESTION", "STAR", "PLUS",
+    "DASH", "COLON", "ARROW",
+    "EOL", "SEPERATOR", "OR",
+    "WEDGE", "COMMA", "ANY_CODE",
+    "ANY_EPLOGUE_CODE",
 ];
 var jjtokenAlias = [
     null, null, null,
@@ -4400,13 +4507,14 @@ var jjtokenAlias = [
     "%lex", "%left", "%right",
     "%nonassoc", "%use", "%header",
     "%extra_arg", "%empty", "%type",
-    "%prec", ">", "<",
-    "(", ")", "=",
-    "[", "]", "?",
-    "*", "+", "-",
-    ":", "=>", ";",
-    "%%", "|", "^",
-    ",", null,
+    "%prec", "%init", ">",
+    "<", "(", ")",
+    "=", "[", "]",
+    "?", "*", "+",
+    "-", ":", "=>",
+    ";", "%%", "|",
+    "^", ",", null,
+    null,
 ];
 function tokenToString(tk) {
     return jjtokenAlias[tk] === null ? "<" + jjtokenNames[tk] + ">" : "\"" + jjtokenAlias[tk] + "\"";
@@ -4430,586 +4538,627 @@ var Token = (function () {
     };
     return Token;
 }());
-var Parser = (function () {
-    function Parser() {
-        this._marker = { state: -1, line: 0, column: 0 };
-        this._lrState = [];
-        this._sematicS = [];
-        this._handlers = {};
-        this.init();
+function createParser() {
+    var _lexState;
+    var _state;
+    var _matched;
+    var _token;
+    var _marker = { state: -1, line: 0, column: 0 };
+    var _backupCount;
+    var _line;
+    var _column;
+    var _tline;
+    var _tcolumn;
+    var _lrState = [];
+    var _sematicS = [];
+    var _sematicVal;
+    var _stop;
+    var _handlers = {};
+    var gb;
+    var assoc;
+    var lexacts;
+    var ruleLhs;
+    function init(b) {
+        _lexState = [0];
+        _state = 0;
+        _matched = '';
+        _token = new Token(-1, null, 0, 0, 0, 0);
+        _marker.state = -1;
+        _backupCount = 0;
+        _line = _tline = 1;
+        _column = _tcolumn = 1;
+        _lrState = [0];
+        _sematicS = [];
+        _sematicVal = null;
+        _stop = false;
+        gb = b;
     }
-    Parser.prototype.init = function () {
-        this._lexState = [0];
-        this._state = 0;
-        this._matched = '';
-        this._token = new Token(-1, null, 0, 0, 0, 0);
-        this._marker.state = -1;
-        this._backupCount = 0;
-        this._line = this._tline = 1;
-        this._column = this._tcolumn = 1;
-        this._lrState = [0];
-        this._sematicS = [];
-        this._sematicVal = null;
-        this._stop = false;
-    };
-    Parser.prototype._setImg = function (s) {
-        this._matched = s;
-        this._tline = this._line;
-        this._tcolumn = this._column;
-    };
-    Parser.prototype._prepareToken = function (tid) {
-        this._token.id = tid;
-        this._token.val = this._matched;
-        this._token.startLine = this._tline;
-        this._token.startColumn = this._tcolumn;
-        this._token.endLine = this._line;
-        this._token.endColumn = this._column;
-        this._matched = '';
-        this._tline = this._line;
-        this._tcolumn = this._column;
-    };
-    Parser.prototype._returnToken = function () {
-        this._emit('token', jjtokenNames[this._token.id], this._token.val);
-        while (!this._stop && !this._acceptToken(this._token))
+    function _setImg(s) {
+        _matched = s;
+        _tline = _line;
+        _tcolumn = _column;
+    }
+    function _prepareToken(tid) {
+        _token.id = tid;
+        _token.val = _matched;
+        _token.startLine = _tline;
+        _token.startColumn = _tcolumn;
+        _token.endLine = _line;
+        _token.endColumn = _column;
+        _matched = '';
+        _tline = _line;
+        _tcolumn = _column;
+    }
+    function _returnToken() {
+        _emit('token', jjtokenNames[_token.id], _token.val);
+        while (!_stop && !_acceptToken(_token))
             ;
-        this._token.id = -1;
-    };
-    Parser.prototype._emit = function (name, a1, a2, a3) {
-        var cbs = this._handlers[name];
+        _token.id = -1;
+    }
+    function _emit(name, a1, a2, a3) {
+        var cbs = _handlers[name];
         if (cbs) {
-            for (var _i = 0, cbs_1 = cbs; _i < cbs_1.length; _i++) {
-                var cb = cbs_1[_i];
-                cb(a1, a2, a3);
+            for (var i = 0; i < cbs.length; i++) {
+                cbs[i](a1, a2, a3);
             }
         }
-    };
-    Parser.prototype.on = function (name, cb) {
-        this._handlers[name] || (this._handlers[name] = []);
-        this._handlers[name].push(cb);
-    };
-    Parser.prototype._doLexAction0 = function (jjstaten) {
+    }
+    function on(name, cb) {
+        _handlers[name] || (_handlers[name] = []);
+        _handlers[name].push(cb);
+    }
+    function _doLexAction0(jjstaten) {
         var jjtk = jjlexTokens0[jjstaten];
-        jjtk !== -1 && this._prepareToken(jjtk);
+        jjtk !== -1 && _prepareToken(jjtk);
         switch (jjstaten) {
             case 1:
-                this._setImg("");
+                _setImg("");
                 break;
             case 3:
-                this._sematicVal = nodeFromToken(this._token);
+                _sematicVal = nodeFromToken(_token);
                 break;
             case 22:
-                this._sematicVal = nodeFromTrivalToken(this._token);
+                _sematicVal = nodeFromTrivalToken(_token);
                 break;
             case 24:
-                this._sematicVal = nodeFromTrivalToken(this._token);
+                _sematicVal = nodeFromTrivalToken(_token);
                 break;
             case 26:
-                this._sematicVal = nodeFromToken(this._token);
-                this._sematicVal.val = unescape(this._sematicVal.val.substr(1, this._sematicVal.val.length - 2));
+                _sematicVal = nodeFromToken(_token);
+                _sematicVal.val = unescape(_sematicVal.val.substr(1, _sematicVal.val.length - 2));
                 break;
             case 28:
-                this._sematicVal = nodeFromToken(this._token);
+                _sematicVal = nodeFromToken(_token);
                 break;
             case 29:
-                this._sematicVal = nodeFromToken(this._token);
+                _sematicVal = nodeFromToken(_token);
                 break;
-            case 41:
-                this._sematicVal = nodeFromToken(this._token);
-                this._sematicVal.val = unescape(this._sematicVal.val.substr(1, this._sematicVal.val.length - 2));
+            case 42:
+                _sematicVal = nodeFromToken(_token);
+                _sematicVal.val = unescape(_sematicVal.val.substr(1, _sematicVal.val.length - 2));
                 break;
-            case 44:
-                this._setImg("");
+            case 45:
+                _setImg("");
                 break;
-            case 63:
-                this._setImg("");
+            case 65:
+                _setImg("");
                 break;
-            case 79:
-                this._setImg("");
+            case 82:
+                _setImg("");
                 break;
             default: ;
         }
-    };
-    Parser.prototype._doLexAction1 = function (jjstaten) {
+    }
+    function _doLexAction1(jjstaten) {
         var jjtk = jjlexTokens1[jjstaten];
-        jjtk !== -1 && this._prepareToken(jjtk);
+        jjtk !== -1 && _prepareToken(jjtk);
         switch (jjstaten) {
             case 0:
-                this._sematicVal = newNode(this._token.val);
+                _sematicVal = newNode(_token.val);
                 break;
             case 1:
-                this._sematicVal = newNode(this._token.val);
+                _sematicVal = newNode(_token.val);
                 break;
             case 2:
-                this._sematicVal = nodeFromTrivalToken(this._token);
+                _sematicVal = nodeFromTrivalToken(_token);
                 break;
             case 3:
-                this._sematicVal = nodeFromTrivalToken(this._token);
+                _sematicVal = nodeFromTrivalToken(_token);
                 break;
             default: ;
         }
-    };
-    Parser.prototype._doLexAction = function (lexstate, state) {
+    }
+    function _doLexAction2(jjstaten) {
+        var jjtk = jjlexTokens2[jjstaten];
+        jjtk !== -1 && _prepareToken(jjtk);
+        switch (jjstaten) {
+            case 1:
+                _sematicVal = nodeFromToken(_token);
+                break;
+            default: ;
+        }
+    }
+    function _doLexAction(lexstate, state) {
         switch (lexstate) {
             case 0:
-                this._doLexAction0(state);
+                _doLexAction0(state);
                 break;
             case 1:
-                this._doLexAction1(state);
+                _doLexAction1(state);
+                break;
+            case 2:
+                _doLexAction2(state);
                 break;
             default: ;
         }
-        this._token.id !== -1 && this._returnToken();
-    };
-    Parser.prototype._rollback = function () {
-        var ret = this._matched.substr(this._matched.length - this._backupCount, this._backupCount);
-        this._matched = this._matched.substr(0, this._matched.length - this._backupCount);
-        this._backupCount = 0;
-        this._line = this._marker.line;
-        this._column = this._marker.column;
-        this._state = this._marker.state;
-        this._marker.state = -1;
+        _token.id !== -1 && _returnToken();
+    }
+    function _rollback() {
+        var ret = _matched.substr(_matched.length - _backupCount, _backupCount);
+        _matched = _matched.substr(0, _matched.length - _backupCount);
+        _backupCount = 0;
+        _line = _marker.line;
+        _column = _marker.column;
+        _state = _marker.state;
+        _marker.state = -1;
         return ret;
-    };
-    Parser.prototype._mark = function () {
-        this._marker.state = this._state;
-        this._marker.line = this._line;
-        this._marker.column = this._column;
-        this._backupCount = 0;
-    };
-    Parser.prototype._acceptChar = function (c) {
-        function consume(cela, c) {
-            c === '\n' ? (cela._line++, cela._column = 0) : (cela._column++);
-            cela._matched += c;
-            cela._marker.state !== -1 && (cela._backupCount++);
-            return true;
-        }
-        var lexstate = this._lexState[this._lexState.length - 1];
-        var retn = { state: this._state, hasArc: false, isEnd: false };
+    }
+    function _mark() {
+        _marker.state = _state;
+        _marker.line = _line;
+        _marker.column = _column;
+        _backupCount = 0;
+    }
+    function _consume(c) {
+        c === '\n' ? (_line++, _column = 0) : (_column++);
+        _matched += c;
+        _marker.state !== -1 && (_backupCount++);
+        return true;
+    }
+    function _acceptChar(c) {
+        var lexstate = _lexState[_lexState.length - 1];
+        var retn = { state: _state, hasArc: false, isEnd: false };
         jjlexers[lexstate](c.charCodeAt(0), retn);
         if (retn.isEnd) {
             if (retn.hasArc) {
                 if (retn.state === -1) {
-                    this._doLexAction(lexstate, this._state);
-                    this._marker.state = -1;
-                    this._backupCount = 0;
-                    this._state = 0;
+                    _doLexAction(lexstate, _state);
+                    _marker.state = -1;
+                    _backupCount = 0;
+                    _state = 0;
                     return false;
                 }
                 else {
-                    this._mark();
-                    this._state = retn.state;
-                    return consume(this, c);
+                    _mark();
+                    _state = retn.state;
+                    return _consume(c);
                 }
             }
             else {
-                this._doLexAction(lexstate, this._state);
-                this._marker.state = -1;
-                this._backupCount = 0;
-                this._state = 0;
+                _doLexAction(lexstate, _state);
+                _marker.state = -1;
+                _backupCount = 0;
+                _state = 0;
                 return false;
             }
         }
         else {
             if (retn.state === -1) {
-                if (this._marker.state !== -1) {
-                    var s = this._rollback();
-                    this._doLexAction(lexstate, this._state);
-                    this._state = 0;
-                    this.accept(s);
+                if (_marker.state !== -1) {
+                    var s = _rollback();
+                    _doLexAction(lexstate, _state);
+                    _state = 0;
+                    accept(s);
                     return false;
                 }
                 else {
-                    this._emit('lexicalerror', "unexpected character \"" + c + "\"", this._line, this._column);
+                    _emit('lexicalerror', "unexpected character \"" + c + "\"", _line, _column);
                     return true;
                 }
             }
             else {
-                this._state = retn.state;
-                return consume(this, c);
+                _state = retn.state;
+                return _consume(c);
             }
         }
-    };
-    Parser.prototype._acceptEOF = function () {
-        if (this._state === 0) {
-            this._prepareToken(0);
-            this._returnToken();
+    }
+    function _acceptEOF() {
+        if (_state === 0) {
+            _prepareToken(0);
+            _returnToken();
             return true;
         }
         else {
-            var lexstate = this._lexState[this._lexState.length - 1];
-            var retn = { state: this._state, hasArc: false, isEnd: false };
+            var lexstate = _lexState[_lexState.length - 1];
+            var retn = { state: _state, hasArc: false, isEnd: false };
             jjlexers[lexstate](-1, retn);
             if (retn.isEnd) {
-                this._doLexAction(lexstate, this._state);
-                this._state = 0;
-                this._marker.state = -1;
+                _doLexAction(lexstate, _state);
+                _state = 0;
+                _marker.state = -1;
                 return false;
             }
-            else if (this._marker.state !== -1) {
-                var s = this._rollback();
-                this._doLexAction(lexstate, this._state);
-                this._state = 0;
-                this.accept(s);
+            else if (_marker.state !== -1) {
+                var s = _rollback();
+                _doLexAction(lexstate, _state);
+                _state = 0;
+                accept(s);
                 return false;
             }
             else {
-                this._emit('lexicalerror', 'unexpected end of file');
+                _emit('lexicalerror', 'unexpected end of file');
                 return true;
             }
         }
-    };
-    Parser.prototype.accept = function (s) {
-        for (var i = 0; i < s.length && !this._stop;) {
-            this._acceptChar(s.charAt(i)) && i++;
+    }
+    function accept(s) {
+        for (var i = 0; i < s.length && !_stop;) {
+            _acceptChar(s.charAt(i)) && i++;
         }
-    };
-    Parser.prototype.end = function () {
-        while (!this._stop && !this._acceptEOF())
+    }
+    function end() {
+        while (!_stop && !_acceptEOF())
             ;
-        this._stop = true;
-    };
-    Parser.prototype.halt = function () {
-        this._stop = true;
-    };
-    Parser.prototype._doReduction = function (jjrulenum) {
+        _stop = true;
+    }
+    function halt() {
+        _stop = true;
+    }
+    function _doReduction(jjrulenum) {
         var jjnt = jjlhs[jjrulenum];
-        var jjsp = this._sematicS.length;
-        var jjtop = this._sematicS[jjsp - jjruleLen[jjrulenum]] || null;
+        var jjsp = _sematicS.length;
+        var jjtop = _sematicS[jjsp - jjruleLen[jjrulenum]] || null;
         switch (jjrulenum) {
-            case 4:
-                {
-                    this.gb.lexBuilder.prepareLex();
-                }
+            case 1:
+                _lexState.push(2);
                 break;
-            case 8:
-                var b = this._sematicS[jjsp - 1];
+            case 5:
                 {
-                    this.gb.setHeader(b.val);
+                    gb.lexBuilder.prepareLex();
                 }
                 break;
             case 9:
-                var b = this._sematicS[jjsp - 1];
+                var b = _sematicS[jjsp - 1];
                 {
-                    this.gb.setExtraArg(b.val);
+                    gb.setHeader(b.val);
                 }
                 break;
             case 10:
-                var t = this._sematicS[jjsp - 1];
+                var b = _sematicS[jjsp - 1];
                 {
-                    this.gb.setType(t.val);
+                    gb.setExtraArg(b.val);
                 }
                 break;
             case 11:
+                var t = _sematicS[jjsp - 1];
                 {
-                    this.assoc = Assoc.LEFT;
+                    gb.setType(t.val);
                 }
                 break;
             case 12:
+                var args = _sematicS[jjsp - 2];
+                var b = _sematicS[jjsp - 1];
                 {
-                    this.assoc = Assoc.RIGHT;
+                    gb.setInit(args.val, b.val);
                 }
                 break;
-            case 13:
+            case 14:
+                var ep = _sematicS[jjsp - 1];
                 {
-                    this.assoc = Assoc.NON;
+                    gb.setEpilogue(ep);
+                }
+                break;
+            case 15:
+                {
+                    assoc = Assoc.LEFT;
                 }
                 break;
             case 16:
-                var t = this._sematicS[jjsp - 1];
                 {
-                    this.gb.defineTokenPrec(t.val, this.assoc, t.ext, t.startLine);
+                    assoc = Assoc.RIGHT;
                 }
                 break;
             case 17:
-                var t = this._sematicS[jjsp - 1];
                 {
-                    this.gb.defineTokenPrec(t.val, this.assoc, TokenRefType.NAME, t.startLine);
+                    assoc = Assoc.NON;
                 }
                 break;
-            case 18:
-                var name = this._sematicS[jjsp - 3];
-                var val = this._sematicS[jjsp - 1];
+            case 20:
+                var t = _sematicS[jjsp - 1];
                 {
-                    this.gb.setOpt(name.val, val.val);
+                    gb.defineTokenPrec(t.val, assoc, t.ext, t.startLine);
                 }
                 break;
             case 21:
+                var t = _sematicS[jjsp - 1];
                 {
-                    this.gb.lexBuilder.selectState('DEFAULT');
+                    gb.defineTokenPrec(t.val, assoc, TokenRefType.NAME, t.startLine);
                 }
                 break;
             case 22:
-                var s = this._sematicS[jjsp - 1];
+                var name = _sematicS[jjsp - 3];
+                var val = _sematicS[jjsp - 1];
                 {
-                    this.gb.lexBuilder.selectState(s.val);
+                    gb.setOpt(name.val, val.val);
                 }
                 break;
-            case 23:
-                var s = this._sematicS[jjsp - 1];
+            case 25:
                 {
-                    this.gb.lexBuilder.selectState(s.val);
+                    gb.lexBuilder.selectState('DEFAULT');
                 }
                 break;
             case 26:
-                var v = this._sematicS[jjsp - 1];
+                var s = _sematicS[jjsp - 1];
                 {
-                    this.gb.lexBuilder.prepareVar(v.val, v.startLine);
+                    gb.lexBuilder.selectState(s.val);
                 }
                 break;
             case 27:
-                var v = this._sematicS[jjsp - 6];
+                var s = _sematicS[jjsp - 1];
                 {
-                    this.gb.lexBuilder.endVar();
-                }
-                break;
-            case 28:
-                {
-                    this.gb.lexBuilder.end(this.lexacts, '(untitled)');
-                }
-                break;
-            case 29:
-                var tn = this._sematicS[jjsp - 5];
-                {
-                    var tdef = this.gb.defToken(tn.val, this.gb.lexBuilder.possibleAlias, tn.startLine);
-                    this.lexacts.push(returnToken(tdef));
-                    this.gb.lexBuilder.end(this.lexacts, tn.val);
+                    gb.lexBuilder.selectState(s.val);
                 }
                 break;
             case 30:
+                var v = _sematicS[jjsp - 1];
                 {
-                    this.gb.lexBuilder.newState();
+                    gb.lexBuilder.prepareVar(v.val, v.startLine);
+                }
+                break;
+            case 31:
+                var v = _sematicS[jjsp - 6];
+                {
+                    gb.lexBuilder.endVar();
                 }
                 break;
             case 32:
                 {
-                    this.lexacts = [];
+                    gb.lexBuilder.end(lexacts, '(untitled)');
                 }
                 break;
             case 33:
+                var tn = _sematicS[jjsp - 5];
                 {
-                    this.lexacts = [];
+                    var tdef = gb.defToken(tn.val, gb.lexBuilder.getPossibleAlias(), tn.startLine);
+                    lexacts.push(returnToken(tdef));
+                    gb.lexBuilder.end(lexacts, tn.val);
                 }
                 break;
-            case 35:
-                var b = this._sematicS[jjsp - 1];
+            case 34:
                 {
-                    this.lexacts = [blockAction(b.val, b.startLine)];
+                    gb.lexBuilder.newState();
                 }
                 break;
-            case 38:
-                var vn = this._sematicS[jjsp - 1];
+            case 36:
                 {
-                    this.gb.addPushStateAction(this.lexacts, vn.val, vn.startLine);
+                    lexacts = [];
+                }
+                break;
+            case 37:
+                {
+                    lexacts = [];
                 }
                 break;
             case 39:
+                var b = _sematicS[jjsp - 1];
                 {
-                    this.lexacts.push(popState());
-                }
-                break;
-            case 40:
-                var b = this._sematicS[jjsp - 1];
-                {
-                    this.lexacts.push(blockAction(b.val, b.startLine));
-                }
-                break;
-            case 41:
-                var s = this._sematicS[jjsp - 1];
-                {
-                    this.lexacts.push(setImg(s.val));
+                    lexacts = [blockAction(b.val, b.startLine)];
                 }
                 break;
             case 42:
+                var vn = _sematicS[jjsp - 1];
                 {
-                    this.gb.lexBuilder.enterUnion();
+                    gb.addPushStateAction(lexacts, vn.val, vn.startLine);
                 }
                 break;
             case 43:
                 {
-                    this.gb.lexBuilder.leaveUnion();
+                    lexacts.push(popState());
                 }
                 break;
             case 44:
+                var b = _sematicS[jjsp - 1];
                 {
-                    this.gb.lexBuilder.endUnionItem();
+                    lexacts.push(blockAction(b.val, b.startLine));
                 }
                 break;
             case 45:
+                var s = _sematicS[jjsp - 1];
                 {
-                    this.gb.lexBuilder.endUnionItem();
+                    lexacts.push(setImg(s.val));
+                }
+                break;
+            case 46:
+                {
+                    gb.lexBuilder.enterUnion();
+                }
+                break;
+            case 47:
+                {
+                    gb.lexBuilder.leaveUnion();
                 }
                 break;
             case 48:
                 {
-                    this.gb.lexBuilder.enterSimple();
+                    gb.lexBuilder.endUnionItem();
                 }
                 break;
             case 49:
-                var suffix = this._sematicS[jjsp - 1];
                 {
-                    this.gb.lexBuilder.simplePostfix(suffix.val);
-                }
-                break;
-            case 50:
-                {
-                    jjtop = newNode('+');
-                }
-                break;
-            case 51:
-                {
-                    jjtop = newNode('?');
+                    gb.lexBuilder.endUnionItem();
                 }
                 break;
             case 52:
                 {
-                    jjtop = newNode('*');
+                    gb.lexBuilder.enterSimple();
                 }
                 break;
             case 53:
+                var suffix = _sematicS[jjsp - 1];
+                {
+                    gb.lexBuilder.simplePostfix(suffix.val);
+                }
+                break;
+            case 54:
+                {
+                    jjtop = newNode('+');
+                }
+                break;
+            case 55:
+                {
+                    jjtop = newNode('?');
+                }
+                break;
+            case 56:
+                {
+                    jjtop = newNode('*');
+                }
+                break;
+            case 57:
                 {
                     jjtop = newNode('');
                 }
                 break;
-            case 56:
-                var n = this._sematicS[jjsp - 2];
+            case 60:
+                var n = _sematicS[jjsp - 2];
                 {
-                    this.gb.lexBuilder.addVar(n.val, n.startLine);
+                    gb.lexBuilder.addVar(n.val, n.startLine);
                 }
                 break;
-            case 57:
-                var s = this._sematicS[jjsp - 1];
+            case 61:
+                var s = _sematicS[jjsp - 1];
                 {
-                    this.gb.lexBuilder.addString(s.val);
+                    gb.lexBuilder.addString(s.val);
                 }
                 break;
-            case 58:
+            case 62:
                 {
-                    this.gb.lexBuilder.beginSet(true);
+                    gb.lexBuilder.beginSet(true);
                 }
                 break;
-            case 59:
+            case 63:
                 {
-                    this.gb.lexBuilder.beginSet(false);
+                    gb.lexBuilder.beginSet(false);
                 }
                 break;
-            case 64:
-                var s = this._sematicS[jjsp - 1];
+            case 68:
+                var s = _sematicS[jjsp - 1];
                 {
-                    this.gb.lexBuilder.addSetItem(s.val, s.val, s.startLine, s.startLine);
-                }
-                break;
-            case 65:
-                var from = this._sematicS[jjsp - 3];
-                var to = this._sematicS[jjsp - 1];
-                {
-                    this.gb.lexBuilder.addSetItem(from.val, to.val, from.startLine, to.startLine);
+                    gb.lexBuilder.addSetItem(s.val, s.val, s.startLine, s.startLine);
                 }
                 break;
             case 69:
-                var n = this._sematicS[jjsp - 1];
+                var from = _sematicS[jjsp - 3];
+                var to = _sematicS[jjsp - 1];
                 {
-                    this.ruleLhs = n;
+                    gb.lexBuilder.addSetItem(from.val, to.val, from.startLine, to.startLine);
                 }
                 break;
-            case 75:
+            case 73:
+                var n = _sematicS[jjsp - 1];
                 {
-                    this.gb.prepareRule(this.ruleLhs.val, this.ruleLhs.startLine);
-                }
-                break;
-            case 76:
-                {
-                    this.gb.commitRule();
+                    ruleLhs = n;
                 }
                 break;
             case 79:
-                var vn = this._sematicS[jjsp - 1];
                 {
-                    this.gb.addRuleUseVar(vn.val, vn.startLine);
+                    gb.prepareRule(ruleLhs.val, ruleLhs.startLine);
                 }
                 break;
             case 80:
-                var vn = this._sematicS[jjsp - 1];
                 {
-                    this.gb.addRuleUseVar(vn.val, vn.startLine);
+                    gb.commitRule();
                 }
                 break;
-            case 85:
-                var itn = this._sematicS[jjsp - 2];
+            case 83:
+                var vn = _sematicS[jjsp - 1];
                 {
-                    this.gb.addRuleSematicVar(itn.val, itn.startLine);
+                    gb.addRuleUseVar(vn.val, vn.startLine);
                 }
                 break;
-            case 87:
-                var t = this._sematicS[jjsp - 1];
+            case 84:
+                var vn = _sematicS[jjsp - 1];
                 {
-                    this.gb.addRuleItem(t.val, TokenRefType.NAME, t.startLine);
-                }
-                break;
-            case 88:
-                var vn = this._sematicS[jjsp - 2];
-                {
-                    this.gb.addRuleSematicVar(vn.val, vn.startLine);
+                    gb.addRuleUseVar(vn.val, vn.startLine);
                 }
                 break;
             case 89:
-                var vn = this._sematicS[jjsp - 4];
-                var t = this._sematicS[jjsp - 1];
+                var itn = _sematicS[jjsp - 2];
                 {
-                    this.gb.addRuleItem(t.val, TokenRefType.NAME, t.startLine);
-                }
-                break;
-            case 90:
-                var t = this._sematicS[jjsp - 1];
-                {
-                    this.gb.addRuleItem(t.val, t.ext, t.startLine);
+                    gb.addRuleSematicVar(itn.val, itn.startLine);
                 }
                 break;
             case 91:
+                var t = _sematicS[jjsp - 1];
                 {
-                    this.gb.addAction(this.lexacts);
+                    gb.addRuleItem(t.val, TokenRefType.NAME, t.startLine);
                 }
                 break;
             case 92:
-                var t = this._sematicS[jjsp - 2];
+                var vn = _sematicS[jjsp - 2];
+                {
+                    gb.addRuleSematicVar(vn.val, vn.startLine);
+                }
+                break;
+            case 93:
+                var vn = _sematicS[jjsp - 4];
+                var t = _sematicS[jjsp - 1];
+                {
+                    gb.addRuleItem(t.val, TokenRefType.NAME, t.startLine);
+                }
+                break;
+            case 94:
+                var t = _sematicS[jjsp - 1];
+                {
+                    gb.addRuleItem(t.val, t.ext, t.startLine);
+                }
+                break;
+            case 95:
+                {
+                    gb.addAction(lexacts);
+                }
+                break;
+            case 96:
+                var t = _sematicS[jjsp - 2];
                 {
                     jjtop = t;
                     jjtop.ext = TokenRefType.TOKEN;
                 }
                 break;
-            case 93:
+            case 97:
                 {
                     jjtop.ext = TokenRefType.STRING;
                 }
                 break;
-            case 96:
-                {
-                    this.gb.addAction(this.lexacts);
-                }
-                break;
-            case 97:
-                var t = this._sematicS[jjsp - 1];
-                {
-                    this.gb.defineRulePr(t.val, TokenRefType.NAME, t.startLine);
-                }
-                break;
-            case 98:
-                var t = this._sematicS[jjsp - 1];
-                {
-                    this.gb.defineRulePr(t.val, t.ext, t.startLine);
-                }
-                break;
-            case 99:
-                this._lexState.push(1);
-                break;
             case 100:
-                var open = this._sematicS[jjsp - 2];
-                var bl = this._sematicS[jjsp - 1];
-                this._lexState.pop();
+                {
+                    gb.addAction(lexacts);
+                }
                 break;
             case 101:
-                var open = this._sematicS[jjsp - 4];
-                var bl = this._sematicS[jjsp - 3];
-                var close = this._sematicS[jjsp - 1];
+                var t = _sematicS[jjsp - 1];
+                {
+                    gb.defineRulePr(t.val, TokenRefType.NAME, t.startLine);
+                }
+                break;
+            case 102:
+                var t = _sematicS[jjsp - 1];
+                {
+                    gb.defineRulePr(t.val, t.ext, t.startLine);
+                }
+                break;
+            case 103:
+                _lexState.push(1);
+                break;
+            case 104:
+                var open = _sematicS[jjsp - 2];
+                var bl = _sematicS[jjsp - 1];
+                _lexState.pop();
+                break;
+            case 105:
+                var open = _sematicS[jjsp - 4];
+                var bl = _sematicS[jjsp - 3];
+                var close = _sematicS[jjsp - 1];
                 {
                     jjtop = newNode('');
                     jjtop.val = bl.val;
@@ -5019,40 +5168,40 @@ var Parser = (function () {
                     jjtop.endColumn = close.endColumn;
                 }
                 break;
-            case 102:
-                var b = this._sematicS[jjsp - 1];
+            case 106:
+                var b = _sematicS[jjsp - 1];
                 {
                     jjtop.val += b.val;
                 }
                 break;
-            case 103:
+            case 107:
                 {
                     jjtop = newNode('');
                 }
                 break;
-            case 105:
-                this._lexState.push(1);
+            case 109:
+                _lexState.push(1);
                 break;
-            case 106:
-                var b = this._sematicS[jjsp - 1];
-                this._lexState.pop();
+            case 110:
+                var b = _sematicS[jjsp - 1];
+                _lexState.pop();
                 break;
-            case 107:
-                var b = this._sematicS[jjsp - 3];
+            case 111:
+                var b = _sematicS[jjsp - 3];
                 {
                     jjtop = newNode('');
                     jjtop.val = '{' + b.val + '}';
                 }
                 break;
         }
-        this._lrState.length -= jjruleLen[jjrulenum];
-        var jjcstate = this._lrState[this._lrState.length - 1];
-        this._lrState.push(jjpgoto[jjdisgoto[jjcstate] + jjnt]);
-        this._sematicS.length -= jjruleLen[jjrulenum];
-        this._sematicS.push(jjtop);
-    };
-    Parser.prototype._acceptToken = function (t) {
-        var cstate = this._lrState[this._lrState.length - 1];
+        _lrState.length -= jjruleLen[jjrulenum];
+        var jjcstate = _lrState[_lrState.length - 1];
+        _lrState.push(jjpgoto[jjdisgoto[jjcstate] + jjnt]);
+        _sematicS.length -= jjruleLen[jjrulenum];
+        _sematicS.push(jjtop);
+    }
+    function _acceptToken(t) {
+        var cstate = _lrState[_lrState.length - 1];
         var ind = jjdisact[cstate] + t.id;
         var act = 0;
         if (ind < 0 || ind >= jjpact.length || jjcheckact[ind] !== cstate) {
@@ -5062,37 +5211,37 @@ var Parser = (function () {
             act = jjpact[ind];
         }
         if (act === jjactERR) {
-            this._syntaxError(t);
+            _syntaxError(t);
             return true;
         }
         else if (act > 0) {
             if (t.id === 0) {
-                this._stop = true;
-                this._emit('accept');
+                _stop = true;
+                _emit('accept');
                 return true;
             }
             else {
-                this._lrState.push(act - 1);
-                this._sematicS.push(this._sematicVal);
-                this._sematicVal = null;
+                _lrState.push(act - 1);
+                _sematicS.push(_sematicVal);
+                _sematicVal = null;
                 return true;
             }
         }
         else if (act < 0) {
-            this._doReduction(-act - 1);
+            _doReduction(-act - 1);
             return false;
         }
         else {
-            this._syntaxError(t);
+            _syntaxError(t);
             return true;
         }
-    };
-    Parser.prototype._syntaxError = function (t) {
+    }
+    function _syntaxError(t) {
         var msg = "unexpected token " + t.toString() + ", expecting one of the following token(s):\n";
-        msg += this._expected(this._lrState[this._lrState.length - 1]);
-        this._emit("syntaxerror", msg, t);
-    };
-    Parser.prototype._expected = function (state) {
+        msg += _expected(_lrState[_lrState.length - 1]);
+        _emit("syntaxerror", msg, t);
+    }
+    function _expected(state) {
         var dis = jjdisact[state];
         var ret = '';
         function expect(tk) {
@@ -5108,12 +5257,17 @@ var Parser = (function () {
             expect(tk) && (ret += "    " + tokenToString(tk) + " ..." + '\n');
         }
         return ret;
+    }
+    return {
+        init: init,
+        on: on,
+        accept: accept,
+        end: end,
+        halt: halt
     };
-    return Parser;
-}());
-
+}
 function parse(ctx, source) {
-    var parser = new Parser();
+    var parser = createParser();
     var err = false;
     parser.on('lexicalerror', function (msg, line, column) {
         ctx.err(new CompilationError(msg, line));
@@ -5125,124 +5279,16 @@ function parse(ctx, source) {
         parser.halt();
         err = true;
     });
-    parser.gb = new GBuilder(ctx);
+    var gb = createFileBuilder(ctx);
+    parser.init(gb);
     parser.accept(source);
     parser.end();
     if (err) {
         return null;
     }
     else {
-        return parser.gb.build();
+        return gb.build();
     }
-}
-
-var Result = (function () {
-    function Result() {
-        this.errors = [];
-        this.warnings = [];
-        this.terminated = false;
-    }
-    Result.prototype.warn = function (w) {
-        this.warnings.push(w);
-    };
-    Result.prototype.err = function (e) {
-        this.errors.push(e);
-    };
-    Result.prototype.printItemSets = function (stream) {
-        stream.writeln(this.itemSets.size + ' state(s) in total,finished in ' + this.iterationCount + ' iteration(s).');
-        this.itemSets.forEach(function (s) {
-            stream.writeln(s.toString({ showTrailer: true }));
-        });
-    };
-    Result.prototype.printTable = function (os) {
-        printParseTable(os, this.parseTable, this.itemSets);
-    };
-    Result.prototype.printDFA = function (os) {
-        for (var _i = 0, _a = this.file.lexDFA; _i < _a.length; _i++) {
-            var s = _a[_i];
-            s.print(os);
-            os.writeln();
-            os.writeln();
-        }
-    };
-    Result.prototype.testParse = function (tokens) {
-        return testParse(this.file.grammar, this.parseTable, tokens);
-    };
-    Result.prototype.printError = function (os, opt) {
-        for (var _i = 0, _a = this.errors; _i < _a.length; _i++) {
-            var e = _a[_i];
-            os.writeln(e.toString(opt));
-        }
-        os.writeln();
-    };
-    Result.prototype.printWarning = function (os, opt) {
-        for (var _i = 0, _a = this.warnings; _i < _a.length; _i++) {
-            var w = _a[_i];
-            os.writeln(w.toString(opt));
-        }
-        os.writeln();
-    };
-    Result.prototype.hasWarning = function () {
-        return this.warnings.length > 0;
-    };
-    Result.prototype.hasError = function () {
-        return this.errors.length > 0;
-    };
-    Result.prototype.warningSummary = function () {
-        return this.warnings.length + " warning(s), " + this.errors.length + " error(s)";
-    };
-    Result.prototype.getTemplateInput = function () {
-        return {
-            prefix: 'jj',
-            endl: '\n',
-            opt: this.file.opt,
-            header: this.file.header,
-            extraArg: this.file.extraArgs,
-            g: this.file.grammar,
-            pt: this.parseTable,
-            sematicType: this.file.sematicType,
-            dfas: this.file.lexDFA
-        };
-    };
-    return Result;
-}());
-function genResult(source) {
-    var result = new Result();
-    var f = parse(result, source);
-    if (result.hasError()) {
-        result.terminated = true;
-        return result;
-    }
-    var g = f.grammar;
-    result.file = f;
-    for (var _i = 0, _a = g.tokens; _i < _a.length; _i++) {
-        var s = _a[_i];
-        if (!s.used) {
-            result.warn(new JsccWarning("token <" + s.sym + "> is never used (defined at line " + s.line + ")"));
-        }
-    }
-    for (var _b = 0, _c = g.nts; _b < _c.length; _b++) {
-        var s2 = _c[_b];
-        if (!s2.used) {
-            result.warn(new JsccWarning("non terminal \"" + s2.sym + "\" is unreachable"));
-        }
-    }
-    if (result.hasError()) {
-        result.terminated = true;
-        return result;
-    }
-    g.genFirstSets();
-    var temp = genItemSets(g);
-    result.itemSets = temp.result;
-    result.iterationCount = temp.iterations;
-    var temp2 = genParseTable(g, result.itemSets);
-    temp2.result.findDefAct();
-    result.parseTable = new CompressedPTable(temp2.result);
-    for (var _d = 0, _e = temp2.conflicts; _d < _e.length; _d++) {
-        var cf = _e[_d];
-        result.warn(new JsccWarning(cf.toString()));
-    }
-    return result;
 }
 
 var tsRenderer = function (input, output) {
@@ -5250,9 +5296,9 @@ var tsRenderer = function (input, output) {
     echoLine("    generated by jscc, an LALR(1) parser generator made by hadroncfy.");
     echoLine("    template for typescript, written by hadroncfy, aussi.");
     echoLine("*/");
-    echo(input.header);
-    var prefix = input.prefix;
-    var tab = input.opt.tab || '    ';
+    echo(input.file.header);
+    var prefix = input.file.prefix;
+    var tab = input.file.opt.tab || '    ';
     function echo(s) {
         output.write(s);
     }
@@ -5271,7 +5317,7 @@ var tsRenderer = function (input, output) {
     function printTable(tname, t, align, lc, mapper) {
         var count = 1;
         echoLine("");
-        echo("let ");
+        echo("var ");
         echo(prefix + tname);
         echoLine(" = [ ");
         echo(tab);
@@ -5317,39 +5363,34 @@ var tsRenderer = function (input, output) {
         echo("            ret.isEnd = ");
         echo(state.endAction === null ? 'false' : 'true');
         echo(";");
-        for (var _i = 0, _b = state.arcs; _i < _b.length; _i++) {
-            var arc = _b[_i];
-            if (first) {
-                echoLine("");
-                echo("            if(");
-                echo(arcToString(arc));
-                echoLine("){");
-                echo("                ret.state = ");
-                echo(arc.to.index);
-                echoLine(";");
-                echo("            }");
-                first = false;
-            }
-            else {
-                echoLine("");
-                echo("            else if(");
-                echo(arcToString(arc));
-                echoLine("){");
-                echo("                ret.state = ");
-                echo(arc.to.index);
-                echoLine(";");
-                echo("            }");
-            }
-        }
         if (state.arcs.length === 0) {
             echoLine("");
             echo("            ret.state = -1;");
         }
+        else if (state.hasDefinate()) {
+            echoLine("");
+            echo("            ret.state = ");
+            echo(state.arcs[0].to.index);
+            echo(";");
+        }
         else {
+            for (var _i = 0, _b = state.arcs; _i < _b.length; _i++) {
+                var arc = _b[_i];
+                echoLine("");
+                echo("            ");
+                echo(first ? (first = false, '') : 'else ');
+                echo("if(");
+                echo(arcToString(arc));
+                echoLine("){");
+                echo("                ret.state = ");
+                echo(arc.to.index);
+                echoLine(";");
+                echo("            }");
+            }
             echoLine("");
             echoLine("            else {");
             echoLine("                ret.state = -1;");
-            echo("            }");
+            echo("            } ");
         }
         echoLine("");
         echo("            break;");
@@ -5385,12 +5426,12 @@ var tsRenderer = function (input, output) {
             return state.endAction ? getAction(state.endAction.data).toString() : '-1';
         });
     }
-    echoLine("");
+    var dfas = input.file.lexDFA;
     echoLine("");
     echoLine("/*");
     echoLine("    find the next state to go in the dfa");
     echo("*/");
-    for (var i = 0, _a = input.dfas; i < _a.length; i++) {
+    for (var i = 0, _a = dfas; i < _a.length; i++) {
         printDFA(_a[i], i);
     }
     echoLine("");
@@ -5398,10 +5439,10 @@ var tsRenderer = function (input, output) {
     echoLine("/*");
     echoLine("    all the lexer data goes here.");
     echoLine("*/");
-    echo("let ");
+    echo("var ");
     echo(prefix);
     echo("lexers = [");
-    for (var i = 0; i < input.dfas.length; i++) {
+    for (var i = 0; i < dfas.length; i++) {
         echoLine("");
         echo("    moveDFA");
         echo(i);
@@ -5413,23 +5454,23 @@ var tsRenderer = function (input, output) {
     echoLine("/*");
     echoLine("    tokens that a lexical dfa state can return");
     echo("*/");
-    for (var i = 0, _a = input.dfas; i < _a.length; i++) {
+    for (var i = 0, _a = dfas; i < _a.length; i++) {
         printLexTokens(_a[i], i);
     }
     echoLine("");
     var pt = input.pt;
     echoLine("");
-    echo("let ");
+    echo("var ");
     echo(prefix);
     echo("stateCount = ");
     echo(pt.stateCount);
     echoLine(";");
-    echo("let ");
+    echo("var ");
     echo(prefix);
     echo("tokenCount = ");
-    echo(input.g.tokens.length);
+    echo(input.file.grammar.tokens.length);
     echoLine(";");
-    echo("let ");
+    echo("var ");
     echo(prefix);
     echo("actERR = ");
     echo(pt.stateCount + 1);
@@ -5526,28 +5567,28 @@ var tsRenderer = function (input, output) {
     echoLine("    token alias");
     echo("*/");
     printTable('tokenAlias', pt.g.tokens, 20, 3, function (t) { return t.alias ? "\"" + t.alias + "\"" : "null"; });
-    var className = input.opt.className || 'Parser';
+    var className = input.file.opt.className || 'Parser';
     echoLine("");
     function printLexActionsFunc(dfa, n) {
         var codegen = {
             addBlock: function (b, line) {
                 echoLine("");
                 echo("                ");
-                echo(b.replace(/\$token/g, 'this._token').replace(/\$\$/g, 'this._sematicVal'));
+                echo(b.replace(/\$token/g, '_token').replace(/\$\$/g, '_sematicVal'));
             },
             pushLexState: function (n) {
                 echoLine("");
-                echo("                this._lexState.push(");
+                echo("                _lexState.push(");
                 echo(n);
                 echo(");");
             },
             popLexState: function () {
                 echoLine("");
-                echo("                this._lexState.pop();");
+                echo("                _lexState.pop();");
             },
             setImg: function (n) {
                 echoLine("");
-                echo("                this._setImg(\"");
+                echo("                _setImg(\"");
                 echo(n);
                 echo("\");");
             },
@@ -5572,7 +5613,7 @@ var tsRenderer = function (input, output) {
         }
         var statevn = prefix + 'staten';
         echoLine("");
-        echo("    private _doLexAction");
+        echo("    function _doLexAction");
         echo(n);
         echo("(");
         echo(statevn);
@@ -5588,7 +5629,7 @@ var tsRenderer = function (input, output) {
         echoLine("];");
         echo("        ");
         echo(prefix);
-        echo("tk !== -1 && this._prepareToken(");
+        echo("tk !== -1 && _prepareToken(");
         echo(prefix);
         echoLine("tk);");
         echo("        switch(");
@@ -5615,7 +5656,7 @@ var tsRenderer = function (input, output) {
     }
     echoLine("");
     echoLine("");
-    echoLine("export function tokenToString(tk: number){");
+    echoLine("function tokenToString(tk: number){");
     echo("    return ");
     echo(prefix);
     echo("tokenAlias[tk] === null ? `<${");
@@ -5625,7 +5666,7 @@ var tsRenderer = function (input, output) {
     echoLine("tokenAlias[tk]}\"`;");
     echoLine("}");
     echoLine("");
-    echoLine("export class Token {");
+    echoLine("class Token {");
     echoLine("    constructor(");
     echoLine("        public id: number,");
     echoLine("        public val: string,");
@@ -5655,103 +5696,117 @@ var tsRenderer = function (input, output) {
     echo(prefix);
     echoLine("tokenAlias[this.id]}\"`) + `(\"${this.val}\")`;");
     echoLine("    }");
+    echoLine("}");
+    echo("interface ");
+    echo(className);
+    echoLine("{");
+    echo("    init(");
+    echo(input.file.initArg);
+    echoLine(");");
+    echoLine("    accept(s: string);");
+    echoLine("    end();");
+    echoLine("    halt();");
+    echoLine("    on(ent: string, cb: (a1?, a2?, a3?) => any);");
     echo("}");
-    var stype = input.sematicType || 'any';
+    var stype = input.file.sematicType || 'any';
     echoLine("");
-    echo("export class ");
+    echo("function createParser(): ");
     echo(className);
     echoLine(" {");
     echoLine("    // members for lexer");
-    echoLine("    private _lexState: number[];");
-    echoLine("    private _state: number;");
-    echoLine("    private _matched: string;");
-    echoLine("    private _token: Token;");
+    echoLine("    var _lexState: number[];");
+    echoLine("    var _state: number;");
+    echoLine("    var _matched: string;");
+    echoLine("    var _token: Token;");
     echoLine("    ");
-    echoLine("    private _marker: { state: number, line: number, column: number } = { state: -1, line: 0, column: 0 };");
-    echoLine("    private _backupCount: number;");
+    echoLine("    var _marker: { state: number, line: number, column: number } = { state: -1, line: 0, column: 0 };");
+    echoLine("    var _backupCount: number;");
     echoLine("");
-    echoLine("    private _line: number;");
-    echoLine("    private _column: number;");
-    echoLine("    private _tline: number;");
-    echoLine("    private _tcolumn: number;");
+    echoLine("    var _line: number;");
+    echoLine("    var _column: number;");
+    echoLine("    var _tline: number;");
+    echoLine("    var _tcolumn: number;");
     echoLine("");
     echoLine("    // members for parser");
-    echoLine("    private _lrState: number[] = [];");
-    echo("    private _sematicS: ");
+    echoLine("    var _lrState: number[] = [];");
+    echo("    var _sematicS: ");
     echo(stype);
     echoLine("[] = [];");
-    echo("    private _sematicVal: ");
+    echo("    var _sematicVal: ");
     echo(stype);
     echoLine(";");
     echoLine("");
-    echoLine("    private _stop;");
+    echoLine("    var _stop;");
     echoLine("");
-    echoLine("    private _handlers: {[s: string]: ((a1?, a2?, a3?) => any)[]} = {};");
+    echoLine("    var _handlers: {[s: string]: ((a1?, a2?, a3?) => any)[]} = {};");
     echoLine("");
     echoLine("    // extra members, defined by %extra_arg");
     echo("    ");
-    echo(input.extraArg);
+    echo(input.file.extraArgs);
     echoLine("");
     echoLine("");
-    echoLine("    constructor(){");
-    echoLine("        this.init();");
-    echoLine("    }");
-    echoLine("    init(){");
-    echoLine("        this._lexState = [ 0 ];// DEFAULT");
-    echoLine("        this._state = 0;");
-    echoLine("        this._matched = '';");
-    echoLine("        this._token = new Token(-1, null, 0, 0, 0, 0);");
-    echoLine("        this._marker.state = -1;");
-    echoLine("        this._backupCount = 0;");
-    echoLine("        this._line = this._tline = 1;");
-    echoLine("        this._column = this._tcolumn = 1;");
+    echoLine("    ");
+    echo("    function init(");
+    echo(input.file.initArg);
+    echoLine("){");
+    echoLine("        _lexState = [ 0 ];// DEFAULT");
+    echoLine("        _state = 0;");
+    echoLine("        _matched = '';");
+    echoLine("        _token = new Token(-1, null, 0, 0, 0, 0);");
+    echoLine("        _marker.state = -1;");
+    echoLine("        _backupCount = 0;");
+    echoLine("        _line = _tline = 1;");
+    echoLine("        _column = _tcolumn = 1;");
     echoLine("        ");
-    echoLine("        this._lrState = [ 0 ];");
-    echoLine("        this._sematicS = [];");
-    echoLine("        this._sematicVal = null;");
+    echoLine("        _lrState = [ 0 ];");
+    echoLine("        _sematicS = [];");
+    echoLine("        _sematicVal = null;");
     echoLine("");
-    echoLine("        this._stop = false;");
+    echoLine("        _stop = false;");
+    echo("        ");
+    echo(input.file.initBody);
+    echoLine("");
     echoLine("    }");
     echoLine("    /**");
     echoLine("     *  set ");
     echoLine("     */");
-    echoLine("    private _setImg(s: string){");
-    echoLine("        this._matched = s;");
-    echoLine("        this._tline = this._line;");
-    echoLine("        this._tcolumn = this._column;");
+    echoLine("    function _setImg(s: string){");
+    echoLine("        _matched = s;");
+    echoLine("        _tline = _line;");
+    echoLine("        _tcolumn = _column;");
     echoLine("    }");
-    echoLine("    private _prepareToken(tid: number){");
-    echoLine("        this._token.id = tid;");
-    echoLine("        this._token.val = this._matched;");
-    echoLine("        this._token.startLine = this._tline;");
-    echoLine("        this._token.startColumn = this._tcolumn;");
-    echoLine("        this._token.endLine = this._line;");
-    echoLine("        this._token.endColumn = this._column;");
+    echoLine("    function _prepareToken(tid: number){");
+    echoLine("        _token.id = tid;");
+    echoLine("        _token.val = _matched;");
+    echoLine("        _token.startLine = _tline;");
+    echoLine("        _token.startColumn = _tcolumn;");
+    echoLine("        _token.endLine = _line;");
+    echoLine("        _token.endColumn = _column;");
     echoLine("");
-    echoLine("        this._matched = '';");
-    echoLine("        this._tline = this._line;");
-    echoLine("        this._tcolumn = this._column;");
+    echoLine("        _matched = '';");
+    echoLine("        _tline = _line;");
+    echoLine("        _tcolumn = _column;");
     echoLine("    }");
-    echoLine("    private _returnToken(){");
-    echo("        this._emit('token', ");
+    echoLine("    function _returnToken(){");
+    echo("        _emit('token', ");
     echo(prefix);
-    echoLine("tokenNames[this._token.id], this._token.val);");
-    echoLine("        while(!this._stop && !this._acceptToken(this._token));");
-    echoLine("        this._token.id = -1;");
+    echoLine("tokenNames[_token.id], _token.val);");
+    echoLine("        while(!_stop && !_acceptToken(_token));");
+    echoLine("        _token.id = -1;");
     echoLine("    }");
-    echoLine("    private _emit(name: string, a1?, a2?, a3?){");
-    echoLine("        let cbs = this._handlers[name];");
+    echoLine("    function _emit(name: string, a1?, a2?, a3?){");
+    echoLine("        var cbs = _handlers[name];");
     echoLine("        if(cbs){");
-    echoLine("            for(let cb of cbs){");
-    echoLine("                cb(a1, a2, a3);");
+    echoLine("            for(var i = 0; i < cbs.length; i++){");
+    echoLine("                cbs[i](a1, a2, a3);");
     echoLine("            }");
     echoLine("        }");
     echoLine("    }");
-    echoLine("    on(name: string, cb: (a1?, a2?, a3?) => any){");
-    echoLine("        this._handlers[name] || (this._handlers[name] = []);");
-    echoLine("        this._handlers[name].push(cb);");
+    echoLine("    function on(name: string, cb: (a1?, a2?, a3?) => any){");
+    echoLine("        _handlers[name] || (_handlers[name] = []);");
+    echoLine("        _handlers[name].push(cb);");
     echo("    }");
-    for (var i = 0, _a = input.dfas; i < _a.length; i++) {
+    for (var i = 0, _a = dfas; i < _a.length; i++) {
         printLexActionsFunc(_a[i], i);
     }
     echoLine("");
@@ -5760,14 +5815,14 @@ var tsRenderer = function (input, output) {
     echoLine("     *  @api private");
     echoLine("     *  @internal");
     echoLine("     */");
-    echoLine("    private _doLexAction(lexstate: number, state: number){");
+    echoLine("    function _doLexAction(lexstate: number, state: number){");
     echo("        switch(lexstate){");
-    for (var i = 0; i < input.dfas.length; i++) {
+    for (var i = 0; i < dfas.length; i++) {
         echoLine("");
         echo("            case ");
         echo(i);
         echoLine(":");
-        echo("                this._doLexAction");
+        echo("                _doLexAction");
         echo(i);
         echoLine("(state);");
         echo("                break;");
@@ -5775,23 +5830,29 @@ var tsRenderer = function (input, output) {
     echoLine("");
     echoLine("            default:;");
     echoLine("        }");
-    echoLine("        this._token.id !== -1 && this._returnToken();");
+    echoLine("        _token.id !== -1 && _returnToken();");
     echoLine("    }");
-    echoLine("    private _rollback(){");
-    echoLine("        let ret = this._matched.substr(this._matched.length - this._backupCount, this._backupCount);");
-    echoLine("        this._matched = this._matched.substr(0, this._matched.length - this._backupCount);");
-    echoLine("        this._backupCount = 0;");
-    echoLine("        this._line = this._marker.line;");
-    echoLine("        this._column = this._marker.column;");
-    echoLine("        this._state = this._marker.state;");
-    echoLine("        this._marker.state = -1;");
+    echoLine("    function _rollback(): string{");
+    echoLine("        let ret = _matched.substr(_matched.length - _backupCount, _backupCount);");
+    echoLine("        _matched = _matched.substr(0, _matched.length - _backupCount);");
+    echoLine("        _backupCount = 0;");
+    echoLine("        _line = _marker.line;");
+    echoLine("        _column = _marker.column;");
+    echoLine("        _state = _marker.state;");
+    echoLine("        _marker.state = -1;");
     echoLine("        return ret;");
     echoLine("    }");
-    echoLine("    private _mark(){");
-    echoLine("        this._marker.state = this._state;");
-    echoLine("        this._marker.line = this._line;");
-    echoLine("        this._marker.column = this._column;");
-    echoLine("        this._backupCount = 0;");
+    echoLine("    function _mark(){");
+    echoLine("        _marker.state = _state;");
+    echoLine("        _marker.line = _line;");
+    echoLine("        _marker.column = _column;");
+    echoLine("        _backupCount = 0;");
+    echoLine("    }");
+    echoLine("    function _consume(c: string){");
+    echoLine("        c === '\\n' ? (_line++, _column = 0) : (_column++);");
+    echoLine("        _matched += c;");
+    echoLine("        _marker.state !== -1 && (_backupCount++);");
+    echoLine("        return true;");
     echoLine("    }");
     echoLine("    /**");
     echoLine("     *  accept a character");
@@ -5799,17 +5860,9 @@ var tsRenderer = function (input, output) {
     echoLine("     *  @api private");
     echoLine("     *  @internal");
     echoLine("     */");
-    echoLine("    private _acceptChar(c: string){");
-    echo("        function consume(cela: ");
-    echo(className);
-    echoLine(", c: string){");
-    echoLine("            c === '\\n' ? (cela._line++, cela._column = 0) : (cela._column++);");
-    echoLine("            cela._matched += c;");
-    echoLine("            cela._marker.state !== -1 && (cela._backupCount++);");
-    echoLine("            return true;");
-    echoLine("        }");
-    echoLine("        let lexstate = this._lexState[this._lexState.length - 1];");
-    echoLine("        let retn = { state: this._state, hasArc: false, isEnd: false };");
+    echoLine("    function _acceptChar(c: string){");
+    echoLine("        var lexstate = _lexState[_lexState.length - 1];");
+    echoLine("        var retn = { state: _state, hasArc: false, isEnd: false };");
     echo("        ");
     echo(prefix);
     echoLine("lexers[lexstate](c.charCodeAt(0), retn);");
@@ -5818,11 +5871,11 @@ var tsRenderer = function (input, output) {
     echoLine("            if(retn.hasArc){");
     echoLine("                if(retn.state === -1){");
     echoLine("                    // nowhere to go, stay where we are");
-    echoLine("                    this._doLexAction(lexstate, this._state);");
+    echoLine("                    _doLexAction(lexstate, _state);");
     echoLine("                    // recover");
-    echoLine("                    this._marker.state = -1;");
-    echoLine("                    this._backupCount = 0;");
-    echoLine("                    this._state = 0;                    ");
+    echoLine("                    _marker.state = -1;");
+    echoLine("                    _backupCount = 0;");
+    echoLine("                    _state = 0;                    ");
     echoLine("                    // character not consumed");
     echoLine("                    return false;");
     echoLine("                }");
@@ -5831,18 +5884,18 @@ var tsRenderer = function (input, output) {
     echoLine("                    // it is prefered to move forward, but that could lead to errors,");
     echoLine("                    // so we need to memorize this state before move on, in case if ");
     echoLine("                    // an error occurs later, we could just return to this state.");
-    echoLine("                    this._mark();");
-    echoLine("                    this._state = retn.state;");
-    echoLine("                    return consume(this, c);");
+    echoLine("                    _mark();");
+    echoLine("                    _state = retn.state;");
+    echoLine("                    return _consume(c);");
     echoLine("                }");
     echoLine("            }");
     echoLine("            else {");
     echoLine("                // current state doesn't lead to any state, just stay here.");
-    echoLine("                this._doLexAction(lexstate, this._state);");
+    echoLine("                _doLexAction(lexstate, _state);");
     echoLine("                // recover");
-    echoLine("                this._marker.state = -1;");
-    echoLine("                this._backupCount = 0;");
-    echoLine("                this._state = 0;");
+    echoLine("                _marker.state = -1;");
+    echoLine("                _backupCount = 0;");
+    echoLine("                _state = 0;");
     echoLine("                // character not consumed");
     echoLine("                return false;");
     echoLine("            }");
@@ -5851,57 +5904,57 @@ var tsRenderer = function (input, output) {
     echoLine("            if(retn.state === -1){");
     echoLine("                // nowhere to go at current state, error may have occured.");
     echoLine("                // check marker to verify that");
-    echoLine("                if(this._marker.state !== -1){");
+    echoLine("                if(_marker.state !== -1){");
     echoLine("                    // we have a previously marked state, which is a terminate state.");
-    echoLine("                    let s = this._rollback();");
-    echoLine("                    this._doLexAction(lexstate, this._state);");
-    echoLine("                    this._state = 0;");
-    echoLine("                    this.accept(s);");
+    echoLine("                    var s = _rollback();");
+    echoLine("                    _doLexAction(lexstate, _state);");
+    echoLine("                    _state = 0;");
+    echoLine("                    accept(s);");
     echoLine("                    // character not consumed");
     echoLine("                    return false;");
     echoLine("                }");
     echoLine("                else {");
     echoLine("                    // error occurs");
-    echoLine("                    this._emit('lexicalerror', `unexpected character \"${c}\"`, this._line, this._column);");
+    echoLine("                    _emit('lexicalerror', `unexpected character \"${c}\"`, _line, _column);");
     echoLine("                    // force consume");
     echoLine("                    return true;");
     echoLine("                }");
     echoLine("            }");
     echoLine("            else {");
-    echoLine("                this._state = retn.state;");
+    echoLine("                _state = retn.state;");
     echoLine("                // character consumed");
-    echoLine("                return consume(this, c);");
+    echoLine("                return _consume(c);");
     echoLine("            }");
     echoLine("        }");
     echoLine("    }");
-    echoLine("    private _acceptEOF(){");
-    echoLine("        if(this._state === 0){");
+    echoLine("    function _acceptEOF(){");
+    echoLine("        if(_state === 0){");
     echoLine("            // recover");
-    echoLine("            this._prepareToken(0);");
-    echoLine("            this._returnToken();");
+    echoLine("            _prepareToken(0);");
+    echoLine("            _returnToken();");
     echoLine("            return true;");
     echoLine("        }");
     echoLine("        else {");
-    echoLine("            let lexstate = this._lexState[this._lexState.length - 1];");
-    echoLine("            let retn = { state: this._state, hasArc: false, isEnd: false };");
+    echoLine("            let lexstate = _lexState[_lexState.length - 1];");
+    echoLine("            let retn = { state: _state, hasArc: false, isEnd: false };");
     echo("            ");
     echo(prefix);
     echoLine("lexers[lexstate](-1, retn);");
     echoLine("            if(retn.isEnd){");
-    echoLine("                this._doLexAction(lexstate, this._state);");
-    echoLine("                this._state = 0;");
-    echoLine("                this._marker.state = -1;");
+    echoLine("                _doLexAction(lexstate, _state);");
+    echoLine("                _state = 0;");
+    echoLine("                _marker.state = -1;");
     echoLine("                return false;");
     echoLine("            }");
-    echoLine("            else if(this._marker.state !== -1){");
-    echoLine("                let s = this._rollback();");
-    echoLine("                this._doLexAction(lexstate, this._state);");
-    echoLine("                this._state = 0;");
-    echoLine("                this.accept(s);");
+    echoLine("            else if(_marker.state !== -1){");
+    echoLine("                let s = _rollback();");
+    echoLine("                _doLexAction(lexstate, _state);");
+    echoLine("                _state = 0;");
+    echoLine("                accept(s);");
     echoLine("                return false;");
     echoLine("            }");
     echoLine("            else {");
-    echoLine("                this._emit('lexicalerror', 'unexpected end of file');");
+    echoLine("                _emit('lexicalerror', 'unexpected end of file');");
     echoLine("                return true;");
     echoLine("            }");
     echoLine("        }");
@@ -5910,21 +5963,21 @@ var tsRenderer = function (input, output) {
     echoLine("     *  input a string");
     echoLine("     *  @api public");
     echoLine("     */");
-    echoLine("    accept(s: string){");
-    echoLine("        for(let i = 0; i < s.length && !this._stop;){");
-    echoLine("            this._acceptChar(s.charAt(i)) && i++;");
+    echoLine("    function accept(s: string){");
+    echoLine("        for(let i = 0; i < s.length && !_stop;){");
+    echoLine("            _acceptChar(s.charAt(i)) && i++;");
     echoLine("        }");
     echoLine("    }");
     echoLine("    /**");
     echoLine("     *  tell the compiler that end of file is reached");
     echoLine("     *  @api public");
     echoLine("     */");
-    echoLine("    end(){");
-    echoLine("        while(!this._stop && !this._acceptEOF());");
-    echoLine("        this._stop = true;");
+    echoLine("    function end(){");
+    echoLine("        while(!_stop && !_acceptEOF());");
+    echoLine("        _stop = true;");
     echoLine("    }");
-    echoLine("    halt(){");
-    echoLine("        this._stop = true;");
+    echoLine("    function halt(){");
+    echoLine("        _stop = true;");
     echo("    }");
     function printReduceActions() {
         var codegen = {
@@ -5936,31 +5989,31 @@ var tsRenderer = function (input, output) {
             },
             pushLexState: function (n) {
                 echoLine("");
-                echo("                this._lexState.push(");
+                echo("                _lexState.push(");
                 echo(n);
                 echo(");");
             },
             popLexState: function () {
                 echoLine("");
-                echo("                this._lexState.pop();");
+                echo("                _lexState.pop();");
             },
             setImg: function (n) {
                 echoLine("");
-                echo("                this._setImg(\"");
+                echo("                _setImg(\"");
                 echo(n);
                 echo("\");");
             },
             returnToken: function (t) {
                 echoLine("");
-                echoLine("                this._token = {");
+                echoLine("                _token = {");
                 echo("                    id: ");
                 echo(t.index);
                 echoLine(",");
-                echoLine("                    val: this._matched.join('')");
+                echoLine("                    val: _matched.join('')");
                 echo("                };");
             }
         };
-        for (var _i = 0, _b = input.g.rules; _i < _b.length; _i++) {
+        for (var _i = 0, _b = input.file.grammar.rules; _i < _b.length; _i++) {
             var rule = _b[_i];
             if (rule.action !== null) {
                 echoLine("");
@@ -5974,7 +6027,7 @@ var tsRenderer = function (input, output) {
                     echoLine("");
                     echo("                var ");
                     echo(uvar);
-                    echo(" = this._sematicS[");
+                    echo(" = _sematicS[");
                     echo(prefix);
                     echo("sp - ");
                     echo(rule.rhs.length - rule.vars[uvar].val);
@@ -5984,7 +6037,7 @@ var tsRenderer = function (input, output) {
                     echoLine("");
                     echo("                var ");
                     echo(uvar2);
-                    echo(" = this._sematicS[");
+                    echo(" = _sematicS[");
                     echo(prefix);
                     echo("sp - ");
                     echo(rule.usedVars[uvar2].val);
@@ -6000,7 +6053,7 @@ var tsRenderer = function (input, output) {
         }
     }
     echoLine("");
-    echo("    private _doReduction(");
+    echo("    function _doReduction(");
     echo(prefix);
     echoLine("rulenum: number){");
     echo("        let ");
@@ -6012,10 +6065,10 @@ var tsRenderer = function (input, output) {
     echoLine("rulenum];");
     echo("        let ");
     echo(prefix);
-    echoLine("sp = this._sematicS.length;");
+    echoLine("sp = _sematicS.length;");
     echo("        let ");
     echo(prefix);
-    echo("top = this._sematicS[");
+    echo("top = _sematicS[");
     echo(prefix);
     echo("sp - ");
     echo(prefix);
@@ -6028,15 +6081,15 @@ var tsRenderer = function (input, output) {
     printReduceActions();
     echoLine("");
     echoLine("        }");
-    echo("        this._lrState.length -= ");
+    echo("        _lrState.length -= ");
     echo(prefix);
     echo("ruleLen[");
     echo(prefix);
     echoLine("rulenum];");
     echo("        let ");
     echo(prefix);
-    echoLine("cstate = this._lrState[this._lrState.length - 1];");
-    echo("        this._lrState.push(");
+    echoLine("cstate = _lrState[_lrState.length - 1];");
+    echo("        _lrState.push(");
     echo(prefix);
     echo("pgoto[");
     echo(prefix);
@@ -6046,19 +6099,19 @@ var tsRenderer = function (input, output) {
     echo(prefix);
     echoLine("nt]);");
     echoLine("");
-    echo("        this._sematicS.length -= ");
+    echo("        _sematicS.length -= ");
     echo(prefix);
     echo("ruleLen[");
     echo(prefix);
     echoLine("rulenum];");
-    echo("        this._sematicS.push(");
+    echo("        _sematicS.push(");
     echo(prefix);
     echoLine("top);");
     echoLine("    }");
     echoLine("");
-    echoLine("    private _acceptToken(t: Token){");
+    echoLine("    function _acceptToken(t: Token){");
     echoLine("        // look up action table");
-    echoLine("        let cstate = this._lrState[this._lrState.length - 1];");
+    echoLine("        let cstate = _lrState[_lrState.length - 1];");
     echo("        let ind = ");
     echo(prefix);
     echoLine("disact[cstate] + t.id;");
@@ -6081,42 +6134,42 @@ var tsRenderer = function (input, output) {
     echo(prefix);
     echoLine("actERR){");
     echoLine("            // explicit error");
-    echoLine("            this._syntaxError(t);");
+    echoLine("            _syntaxError(t);");
     echoLine("            return true;");
     echoLine("        }");
     echoLine("        else if(act > 0){");
     echoLine("            // shift");
     echoLine("            if(t.id === 0){");
     echoLine("                // end of file");
-    echoLine("                this._stop = true;");
-    echoLine("                this._emit('accept');");
+    echoLine("                _stop = true;");
+    echoLine("                _emit('accept');");
     echoLine("                return true;");
     echoLine("            }");
     echoLine("            else {");
-    echoLine("                this._lrState.push(act - 1);");
-    echoLine("                this._sematicS.push(this._sematicVal);");
-    echoLine("                this._sematicVal = null;");
+    echoLine("                _lrState.push(act - 1);");
+    echoLine("                _sematicS.push(_sematicVal);");
+    echoLine("                _sematicVal = null;");
     echoLine("                // token consumed");
     echoLine("                return true;");
     echoLine("            }");
     echoLine("        }");
     echoLine("        else if(act < 0){");
-    echoLine("            this._doReduction(-act - 1);");
+    echoLine("            _doReduction(-act - 1);");
     echoLine("            return false;");
     echoLine("        }");
     echoLine("        else {");
     echoLine("            // error");
-    echoLine("            this._syntaxError(t);");
+    echoLine("            _syntaxError(t);");
     echoLine("            // force consume");
     echoLine("            return true;");
     echoLine("        }");
     echoLine("    }");
-    echoLine("    private _syntaxError(t: Token){");
+    echoLine("    function _syntaxError(t: Token){");
     echoLine("        let msg = `unexpected token ${t.toString()}, expecting one of the following token(s):\\n`");
-    echoLine("        msg += this._expected(this._lrState[this._lrState.length - 1]);");
-    echoLine("        this._emit(\"syntaxerror\", msg, t);");
+    echoLine("        msg += _expected(_lrState[_lrState.length - 1]);");
+    echoLine("        _emit(\"syntaxerror\", msg, t);");
     echoLine("    }");
-    echoLine("    private _expected(state: number){");
+    echoLine("    function _expected(state: number){");
     echo("        let dis = ");
     echo(prefix);
     echoLine("disact[state];");
@@ -6143,7 +6196,15 @@ var tsRenderer = function (input, output) {
     echoLine("        }");
     echoLine("        return ret;");
     echoLine("    }");
-    echo("}");
+    echoLine("    return {");
+    echoLine("        init,");
+    echoLine("        on,");
+    echoLine("        accept,");
+    echoLine("        end,");
+    echoLine("        halt");
+    echoLine("    };");
+    echoLine("}");
+    echo(input.file.epilogue.val);
 };
 
 var templates = {};
@@ -6159,10 +6220,120 @@ function generateCode(lang, input, fc, cb) {
         templates[lang](input, fc);
     }
 }
+function templateExists(t) {
+    return templates[t] !== undefined;
+}
 defineTemplate('typescript', function (input, fc) {
     tsRenderer(input, fc);
     fc.save('.ts');
 });
+
+var Result = (function () {
+    function Result() {
+        this.errors = [];
+        this.warnings = [];
+        this.terminated = false;
+    }
+    Result.prototype.warn = function (w) {
+        this.warnings.push(w);
+    };
+    Result.prototype.err = function (e) {
+        this.errors.push(e);
+    };
+    Result.prototype.printItemSets = function (stream) {
+        stream.writeln(this.itemSets.size + ' state(s) in total,finished in ' + this.iterationCount + ' iteration(s).');
+        this.itemSets.forEach(function (s) {
+            stream.writeln(s.toString({ showTrailer: true }));
+        });
+    };
+    Result.prototype.printTable = function (os) {
+        printParseTable(os, this.parseTable, this.itemSets);
+    };
+    Result.prototype.printDFA = function (os) {
+        for (var _i = 0, _a = this.file.lexDFA; _i < _a.length; _i++) {
+            var s = _a[_i];
+            s.print(os);
+            os.writeln();
+            os.writeln();
+        }
+    };
+    Result.prototype.testParse = function (tokens) {
+        return testParse(this.file.grammar, this.parseTable, tokens);
+    };
+    Result.prototype.printError = function (os, opt) {
+        for (var _i = 0, _a = this.errors; _i < _a.length; _i++) {
+            var e = _a[_i];
+            os.writeln(e.toString(opt));
+        }
+        os.writeln();
+    };
+    Result.prototype.printWarning = function (os, opt) {
+        for (var _i = 0, _a = this.warnings; _i < _a.length; _i++) {
+            var w = _a[_i];
+            os.writeln(w.toString(opt));
+        }
+        os.writeln();
+    };
+    Result.prototype.hasWarning = function () {
+        return this.warnings.length > 0;
+    };
+    Result.prototype.hasError = function () {
+        return this.errors.length > 0;
+    };
+    Result.prototype.warningSummary = function () {
+        return this.warnings.length + " warning(s), " + this.errors.length + " error(s)";
+    };
+    Result.prototype.getTemplateInput = function () {
+        return {
+            endl: '\n',
+            pt: this.parseTable,
+            file: this.file
+        };
+    };
+    return Result;
+}());
+function genResult(source) {
+    var result = new Result();
+    var f = parse(result, source);
+    if (result.hasError()) {
+        result.terminated = true;
+        return result;
+    }
+    var g = f.grammar;
+    result.file = f;
+    f.opt.output = f.opt.output || 'typescript';
+    for (var _i = 0, _a = g.tokens; _i < _a.length; _i++) {
+        var s = _a[_i];
+        if (!s.used) {
+            result.warn(new JsccWarning("token <" + s.sym + "> is never used (defined at line " + s.line + ")"));
+        }
+    }
+    for (var _b = 0, _c = g.nts; _b < _c.length; _b++) {
+        var s2 = _c[_b];
+        if (!s2.used) {
+            result.warn(new JsccWarning("non terminal \"" + s2.sym + "\" is unreachable"));
+        }
+    }
+    if (!templateExists(f.opt.output)) {
+        result.err(new JsccError("template for '" + f.opt.output + "' is not implemented yet"));
+    }
+    if (result.hasError()) {
+        result.terminated = true;
+        return result;
+    }
+    g.genFirstSets();
+    var temp = genItemSets(g);
+    result.itemSets = temp.result;
+    result.iterationCount = temp.iterations;
+    var temp2 = genParseTable(g, result.itemSets);
+    temp2.result.findDefAct();
+    result.parseTable = new CompressedPTable(temp2.result);
+    for (var _d = 0, _e = temp2.conflicts; _d < _e.length; _d++) {
+        var cf = _e[_d];
+        result.warn(new JsccWarning(cf.toString()));
+    }
+    return result;
+}
 
 
 

@@ -58,7 +58,7 @@ function genCode(result, arg){
     var tempIn = result.getTemplateInput();
     var files = [];
     var current = new jscc.io.StringOS();
-    jscc.generateCode('typescript', tempIn, {
+    jscc.generateCode(tempIn.file.opt.output, tempIn, {
         save: function(ext){
             files.push(writeFile(changeSuffix(arg.input, ext), current.s));
             current.reset();
@@ -75,14 +75,15 @@ function genCode(result, arg){
     return Promise.all(files);
 }
 
+function writeOutput(result){
+    var out = new jscc.io.StringOS();
+    result.printDFA(out);
+    result.printTable(out);
+}
+
 function generate(arg){
     jscc.setDebugger(console);
     var consoleStream = stream(process.stdout);
-    
-    if(arg.help){
-        console.log(help);
-        process.exit(0);
-    }
 
     // var input = fs.readFileSync(arg.input,'utf-8');
     return readFile(arg.input)
@@ -115,6 +116,7 @@ function main(arg){
     return generate(arg)
     .then(function(result){
         console.log(result.warningSummary());
+        
         if(arg.test){
             console.log("preparing for test");
             var r = result.testParse(arg.test.split(/[ ]+/g));
@@ -134,10 +136,18 @@ module.exports = function(options){
     catch(e){
         console.log(e.toString());
         console.log(`try "${pkg.name} --help" for help`);
-        return pass(-1);
+        process.exit(-1);
+    }
+    if(arg.help){
+        console.log(help);
+        process.exit(0);
     }
     return main(arg)
+    .then(function(){
+        process.exit(0);
+    })
     .catch(function(e){
         console.log(e.toString());
+        process.exit(-1);
     });
 }

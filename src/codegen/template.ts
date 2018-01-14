@@ -25,6 +25,10 @@ export function generateCode(lang: string, input: TemplateInput, fc: FileCreator
     }
 }
 
+export function templateExists(t: string){
+    return templates[t] !== undefined;
+}
+
 defineTemplate('typescript', (input, fc) => {
     tsRenderer(input, fc);
     fc.save('.ts');

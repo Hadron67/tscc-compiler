@@ -14,7 +14,8 @@ import { Context } from '../util/context';
 import { JsccError, JsccWarning, Option } from '../util/E';
 import { CompressedPTable } from '../grammar/ptable-compress';
 import { TemplateInput } from '../codegen/def';
-import { parse } from '../parser/parser-wrapper';
+import { parse } from '../parser/parser';
+import { templateExists } from '../codegen/template';
 
 class Result implements Context{
     file: File;
@@ -78,37 +79,24 @@ class Result implements Context{
     }
     getTemplateInput(): TemplateInput{
         return {
-            prefix: 'jj',
             endl: '\n',
-            opt: this.file.opt,
-            header: this.file.header,
-            extraArg: this.file.extraArgs,
-
-            g: this.file.grammar,
             pt: this.parseTable,
-            sematicType: this.file.sematicType,
-            dfas: this.file.lexDFA
+            file: this.file
         };
     }
 }
 
 function genResult(source: string){
     var result = new Result();
-    //try{
-        //var f = parseSource(StringIS(source), result);
-        var f = parse(result, source);
-    // }
-    // catch(e){
-    //     result.terminated = true;
-    //     result.err(e as JsccError);
-    //     return result;
-    // }
+    var f = parse(result, source);
+
     if(result.hasError()){
         result.terminated = true;
         return result;
     }
     var g = f.grammar;
     result.file = f;
+    f.opt.output = f.opt.output || 'typescript';
     // we still could have error here
     for(var s of g.tokens){
         if(!s.used){
@@ -119,6 +107,9 @@ function genResult(source: string){
         if(!s2.used){
             result.warn(new JsccWarning(`non terminal "${s2.sym}" is unreachable`));
         }
+    }
+    if(!templateExists(f.opt.output)){
+        result.err(new JsccError(`template for '${f.opt.output}' is not implemented yet`));
     }
 
     if(result.hasError()){

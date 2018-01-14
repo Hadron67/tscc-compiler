@@ -93,6 +93,9 @@ export class State<T>{
     epsilonTo(s: State<T>): void{
         this.epsilons.push(s);
     }
+    hasDefinate(){
+        return this.arcs.length === 1 && this.arcs[0].chars.constainsAll();
+    }
     iterator(epOnly: boolean = false): () => State<T>{
         var queue: State<T>[] = [this];
         var states: State<T>[] = [this];

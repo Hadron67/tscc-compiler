@@ -4,20 +4,13 @@ import { LexAction } from '../lexer/action';
 import { IParseTable } from '../grammar/ptable';
 import { Grammar } from '../grammar/grammar';
 import { CompressedPTable } from '../grammar/ptable-compress';
+import { File } from '../parser/file';
 
 export interface TemplateInput{
-    prefix: string;
     endl: string;
-    opt: {[s: string]: string};
-    header: string;
-    extraArg: string;
+    file: File;
     // grammar
-    g: Grammar;
     pt: CompressedPTable;
-    sematicType: string;
-
-    // lex
-    dfas: DFA<LexAction[]>[];
 };
 export interface TemplateOutput{
     write(s: string | number);
