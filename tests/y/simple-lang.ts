@@ -3,7 +3,6 @@
     template for typescript, written by hadroncfy, aussi.
 */
 
-
 /*
     find the next state to go in the dfa
 */
@@ -110,7 +109,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 1:
             ret.hasArc = true;
@@ -123,7 +122,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 2:
             ret.hasArc = true;
@@ -139,7 +138,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 3:
             ret.hasArc = true;
@@ -149,7 +148,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 4:
             ret.hasArc = true;
@@ -162,7 +161,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 5:
             ret.hasArc = true;
@@ -172,7 +171,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 6:
             ret.hasArc = true;
@@ -185,7 +184,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 7:
             ret.hasArc = false;
@@ -208,7 +207,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 10:
             ret.hasArc = true;
@@ -221,7 +220,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 11:
             ret.hasArc = false;
@@ -239,7 +238,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 13:
             ret.hasArc = true;
@@ -249,7 +248,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 14:
             ret.hasArc = true;
@@ -259,7 +258,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 15:
             ret.hasArc = false;
@@ -282,7 +281,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 18:
             ret.hasArc = true;
@@ -292,7 +291,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 19:
             ret.hasArc = true;
@@ -305,7 +304,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 20:
             ret.hasArc = false;
@@ -330,7 +329,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 24:
             ret.hasArc = true;
@@ -346,7 +345,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 25:
             ret.hasArc = true;
@@ -362,7 +361,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 26:
             ret.hasArc = true;
@@ -381,7 +380,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 27:
             ret.hasArc = true;
@@ -397,7 +396,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 28:
             ret.hasArc = true;
@@ -413,7 +412,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 29:
             ret.hasArc = false;
@@ -431,7 +430,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 31:
             ret.hasArc = false;
@@ -454,7 +453,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 34:
             ret.hasArc = false;
@@ -472,7 +471,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 36:
             ret.hasArc = true;
@@ -485,7 +484,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 37:
             ret.hasArc = false;
@@ -545,7 +544,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 48:
             ret.hasArc = false;
@@ -573,7 +572,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 52:
             ret.hasArc = false;
@@ -591,7 +590,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 54:
             ret.hasArc = true;
@@ -607,7 +606,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 55:
             ret.hasArc = true;
@@ -623,7 +622,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 56:
             ret.hasArc = true;
@@ -639,7 +638,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 57:
             ret.hasArc = true;
@@ -652,7 +651,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 58:
             ret.hasArc = true;
@@ -668,7 +667,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 59:
             ret.hasArc = false;
@@ -709,7 +708,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 65:
             ret.hasArc = true;
@@ -722,7 +721,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 66:
             ret.hasArc = true;
@@ -738,7 +737,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 67:
             ret.hasArc = true;
@@ -754,7 +753,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 68:
             ret.hasArc = true;
@@ -767,7 +766,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 69:
             ret.hasArc = true;
@@ -783,7 +782,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 70:
             ret.hasArc = true;
@@ -799,7 +798,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 71:
             ret.hasArc = true;
@@ -815,7 +814,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 72:
             ret.hasArc = true;
@@ -828,7 +827,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 73:
             ret.hasArc = true;
@@ -844,7 +843,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 74:
             ret.hasArc = true;
@@ -860,7 +859,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         case 75:
             ret.hasArc = true;
@@ -873,7 +872,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             }
             else {
                 ret.state = -1;
-            }
+            } 
             break;
         default:
             ret.state = -1;
@@ -884,14 +883,14 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
 /*
     all the lexer data goes here.
 */
-let jjlexers = [
+var jjlexers = [
     moveDFA0,
 ];
 
 /*
     tokens that a lexical dfa state can return
 */
-let jjlexTokens0 = [ 
+var jjlexTokens0 = [ 
         -1,    -1,    -1,    47,     1,    10,    28,    37,    38,     5,
          3,    41,     4,     6,     2,     9,    44,    12,    17,    11,
          8,    39,    40,    30,     1,     1,     1,     1,     1,    42,
@@ -902,16 +901,16 @@ let jjlexTokens0 = [
          1,     1,    50,     1,     1,    53,
 ]; 
 
-let jjstateCount = 144;
-let jjtokenCount = 54;
-let jjactERR = 145;
+var jjstateCount = 144;
+var jjtokenCount = 54;
+var jjactERR = 145;
 /*
     compressed action table: action = jjpact[jjdisact[STATE-NUM] + TOKEN]
     when action > 0, shift the token and goto state (action - 1);
     when action < 0, reduce with rule (1-action);
     when action = 0, do default action.
 */
-let jjpact = [ 
+var jjpact = [ 
         55,    56,    57,    58,    60,    45,   110,    59,     8,     9,
         10,    11,    12,    13,    14,    15,    16,    17,    18,    19,
         20,    21,    22,    23,    24,    50,    48,    49,   143,    64,
@@ -1029,7 +1028,7 @@ let jjpact = [
 /*
     displacement of action table.
 */
-let jjdisact = [ 
+var jjdisact = [ 
        -54,   278,   -54,   -54,   -54,   205,   240,   -54,   -54,   -54,
        -54,   -54,   -54,   -54,   -54,   -54,   -54,   -54,   -54,   -54,
        -54,   -54,   -54,   -54,    41,  1069,  1060,  1043,  1022,   -54,
@@ -1050,7 +1049,7 @@ let jjdisact = [
     used to check if a position in jjpact is out of bouds.
     if jjcheckact[jjdisact[STATE-NUM] + TOKEN] = STATE-NUM, this position is not out of bounds.
 */
-let jjcheckact = [ 
+var jjcheckact = [ 
         78,    78,    78,    78,    78,    78,    78,    78,    78,    78,
         78,    78,    78,    78,    32,    32,    32,    32,    32,    32,
         32,    32,    32,    32,    32,    78,    78,    78,   141,    32,
@@ -1169,7 +1168,7 @@ let jjcheckact = [
     default action table. action = jjdefred[STATE-NUM],
     where action is the number of the rule to reduce with.
 */
-let jjdefred = [ 
+var jjdefred = [ 
          2,    -1,     0,     1,     3,    -1,     6,    62,    63,    64,
         65,    66,    67,    51,    52,    53,    54,    55,    56,    57,
         58,    59,    60,    61,    48,    -1,    -1,    -1,    -1,    45,
@@ -1189,7 +1188,7 @@ let jjdefred = [
 /*
     compressed goto table: goto = jjpgoto[jjdisgoto[STATE-NUM] + NON_TERMINAL]
 */
-let jjpgoto = [ 
+var jjpgoto = [ 
         50,    50,    50,    50,    50,    50,    50,     3,    62,   143,
         62,     4,   102,    37,   102,    37,   141,   126,    37,    29,
         24,    29,    24,   139,    29,    24,   102,    37,   134,   126,
@@ -1216,7 +1215,7 @@ let jjpgoto = [
 /*
     displacement of the goto table
 */
-let jjdisgoto = [ 
+var jjdisgoto = [ 
        196,     5,   -18,   -18,   -18,   -18,   188,   -18,   -18,   -18,
        -18,   -18,   -18,   -18,   -18,   -18,   -18,   -18,   -18,   -18,
        -18,   -18,   -18,   -18,   179,   169,   167,   164,   159,   -18,
@@ -1236,7 +1235,7 @@ let jjdisgoto = [
 /*
     length of each rule: rule length = jjruleLen[RULE-NUM]
 */
-let jjruleLen = [ 
+var jjruleLen = [ 
          2,     2,     0,     1,     7,     1,     0,     3,     1,     2,
          0,     1,     3,     2,     6,     5,     7,     9,     0,     2,
          0,     1,     3,     1,     3,     5,     3,     3,     3,     3,
@@ -1249,7 +1248,7 @@ let jjruleLen = [
 /*
     index of the LHS of each rule
 */
-let jjlhs = [ 
+var jjlhs = [ 
          0,     1,     1,     2,     2,     3,     3,     4,     4,     5,
          5,     6,     6,     6,     6,     6,     6,     6,     7,     7,
          8,     8,     9,     9,    10,    10,    10,    10,    10,    10,
@@ -1262,7 +1261,7 @@ let jjlhs = [
 /*
     token names
 */
-let jjtokenNames = [ 
+var jjtokenNames = [ 
                    "EOF",              "NAME",               "NUM",
                   "PLUS",             "MINUS",             "TIMES",
                 "DIVIDE",               "EXP",          "QUESTION",
@@ -1286,7 +1285,7 @@ let jjtokenNames = [
 /*
     token alias
 */
-let jjtokenAlias = [ 
+var jjtokenAlias = [ 
                     null,                null,                null,
                      "+",                 "-",                 "*",
                      "/",                "**",                 "?",
@@ -1309,11 +1308,11 @@ let jjtokenAlias = [
 ]; 
 
 
-export function tokenToString(tk: number){
+function tokenToString(tk: number){
     return jjtokenAlias[tk] === null ? `<${jjtokenNames[tk]}>` : `"${jjtokenAlias[tk]}"`;
 }
 
-export class Token {
+class Token {
     constructor(
         public id: number,
         public val: string,
@@ -1338,101 +1337,107 @@ export class Token {
             `"${jjtokenAlias[this.id]}"`) + `("${this.val}")`;
     }
 }
-export class Parser {
+interface Parser{
+    init();
+    accept(s: string);
+    end();
+    halt();
+    on(ent: string, cb: (a1?, a2?, a3?) => any);
+}
+function createParser(): Parser {
     // members for lexer
-    private _lexState: number[];
-    private _state: number;
-    private _matched: string;
-    private _token: Token;
+    var _lexState: number[];
+    var _state: number;
+    var _matched: string;
+    var _token: Token;
     
-    private _marker: { state: number, line: number, column: number } = { state: -1, line: 0, column: 0 };
-    private _backupCount: number;
+    var _marker: { state: number, line: number, column: number } = { state: -1, line: 0, column: 0 };
+    var _backupCount: number;
 
-    private _line: number;
-    private _column: number;
-    private _tline: number;
-    private _tcolumn: number;
+    var _line: number;
+    var _column: number;
+    var _tline: number;
+    var _tcolumn: number;
 
     // members for parser
-    private _lrState: number[] = [];
-    private _sematicS: any[] = [];
-    private _sematicVal: any;
+    var _lrState: number[] = [];
+    var _sematicS: any[] = [];
+    var _sematicVal: any;
 
-    private _stop;
+    var _stop;
 
-    private _handlers: {[s: string]: ((a1?, a2?, a3?) => any)[]} = {};
+    var _handlers: {[s: string]: ((a1?, a2?, a3?) => any)[]} = {};
 
     // extra members, defined by %extra_arg
     
 
-    constructor(){
-        this.init();
-    }
-    init(){
-        this._lexState = [ 0 ];// DEFAULT
-        this._state = 0;
-        this._matched = '';
-        this._token = new Token(-1, null, 0, 0, 0, 0);
-        this._marker.state = -1;
-        this._backupCount = 0;
-        this._line = this._tline = 1;
-        this._column = this._tcolumn = 1;
+    
+    function init(){
+        _lexState = [ 0 ];// DEFAULT
+        _state = 0;
+        _matched = '';
+        _token = new Token(-1, null, 0, 0, 0, 0);
+        _marker.state = -1;
+        _backupCount = 0;
+        _line = _tline = 0;
+        _column = _tcolumn = 0;
         
-        this._lrState = [ 0 ];
-        this._sematicS = [];
-        this._sematicVal = null;
+        _lrState = [ 0 ];
+        _sematicS = [];
+        _sematicVal = null;
 
-        this._stop = false;
+        _stop = false;
+        
     }
     /**
      *  set 
      */
-    private _setImg(s: string){
-        this._matched = s;
-        this._tline = this._line;
-        this._tcolumn = this._column;
+    function _setImg(s: string){
+        _matched = s;
+        _tline = _line;
+        _tcolumn = _column;
     }
-    private _prepareToken(tid: number){
-        this._token.id = tid;
-        this._token.val = this._matched;
-        this._token.startLine = this._tline;
-        this._token.startColumn = this._tcolumn;
-        this._token.endLine = this._line;
-        this._token.endColumn = this._column;
+    function _prepareToken(tid: number){
+        _token.id = tid;
+        _token.val = _matched;
+        _token.startLine = _tline;
+        _token.startColumn = _tcolumn;
+        _token.endLine = _line;
+        _token.endColumn = _column - 1;
 
-        this._matched = '';
-        this._tline = this._line;
-        this._tcolumn = this._column;
+        _matched = '';
+        _tline = _line;
+        _tcolumn = _column;
     }
-    private _returnToken(){
-        this._emit('token', jjtokenNames[this._token.id], this._token.val);
-        while(!this._stop && !this._acceptToken(this._token));
-        this._token.id = -1;
+    function _returnToken(){
+        _emit('token', jjtokenNames[_token.id], _token.val);
+        while(!_stop && !_acceptToken(_token));
+        _token.id = -1;
     }
-    private _emit(name: string, a1?, a2?, a3?){
-        let cbs = this._handlers[name];
+    function _emit(name: string, a1?, a2?, a3?){
+        var cbs = _handlers[name];
         if(cbs){
-            for(let cb of cbs){
-                cb(a1, a2, a3);
+            for(var i = 0; i < cbs.length; i++){
+                cbs[i](a1, a2, a3);
             }
         }
     }
-    on(name: string, cb: (a1?, a2?, a3?) => any){
-        this._handlers[name] || (this._handlers[name] = []);
-        this._handlers[name].push(cb);
+    function on(name: string, cb: (a1?, a2?, a3?) => any){
+        _handlers[name] || (_handlers[name] = []);
+        _handlers[name].push(cb);
     }
-    private _doLexAction0(jjstaten: number){
+    function _doLexAction0(jjstaten: number){
         let jjtk = jjlexTokens0[jjstaten];
-        jjtk !== -1 && this._prepareToken(jjtk);
+        jjtk !== -1 && _prepareToken(jjtk);
         switch(jjstaten){
             case 1:
-                this._setImg("");
+                _setImg("");
                 break;
             case 2:
-                this._setImg("");
+                _setImg("");
                 break;
             case 33:
-                this._setImg("");
+                _setImg("");
                 break;
             default:;
         }
@@ -1442,30 +1447,36 @@ export class Parser {
      *  @api private
      *  @internal
      */
-    private _doLexAction(lexstate: number, state: number){
+    function _doLexAction(lexstate: number, state: number){
         switch(lexstate){
             case 0:
-                this._doLexAction0(state);
+                _doLexAction0(state);
                 break;
             default:;
         }
-        this._token.id !== -1 && this._returnToken();
+        _token.id !== -1 && _returnToken();
     }
-    private _rollback(){
-        let ret = this._matched.substr(this._matched.length - this._backupCount, this._backupCount);
-        this._matched = this._matched.substr(0, this._matched.length - this._backupCount);
-        this._backupCount = 0;
-        this._line = this._marker.line;
-        this._column = this._marker.column;
-        this._state = this._marker.state;
-        this._marker.state = -1;
+    function _rollback(): string{
+        let ret = _matched.substr(_matched.length - _backupCount, _backupCount);
+        _matched = _matched.substr(0, _matched.length - _backupCount);
+        _backupCount = 0;
+        _line = _marker.line;
+        _column = _marker.column;
+        _state = _marker.state;
+        _marker.state = -1;
         return ret;
     }
-    private _mark(){
-        this._marker.state = this._state;
-        this._marker.line = this._line;
-        this._marker.column = this._column;
-        this._backupCount = 0;
+    function _mark(){
+        _marker.state = _state;
+        _marker.line = _line;
+        _marker.column = _column;
+        _backupCount = 0;
+    }
+    function _consume(c: string){
+        c === '\n' ? (_line++, _column = 0) : (_column++);
+        _matched += c;
+        _marker.state !== -1 && (_backupCount++);
+        return true;
     }
     /**
      *  accept a character
@@ -1473,26 +1484,20 @@ export class Parser {
      *  @api private
      *  @internal
      */
-    private _acceptChar(c: string){
-        function consume(cela: Parser, c: string){
-            c === '\n' ? (cela._line++, cela._column = 0) : (cela._column++);
-            cela._matched += c;
-            cela._marker.state !== -1 && (cela._backupCount++);
-            return true;
-        }
-        let lexstate = this._lexState[this._lexState.length - 1];
-        let retn = { state: this._state, hasArc: false, isEnd: false };
+    function _acceptChar(c: string){
+        var lexstate = _lexState[_lexState.length - 1];
+        var retn = { state: _state, hasArc: false, isEnd: false };
         jjlexers[lexstate](c.charCodeAt(0), retn);
         if(retn.isEnd){
             // if current state is a terminate state, be careful
             if(retn.hasArc){
                 if(retn.state === -1){
                     // nowhere to go, stay where we are
-                    this._doLexAction(lexstate, this._state);
+                    _doLexAction(lexstate, _state);
                     // recover
-                    this._marker.state = -1;
-                    this._backupCount = 0;
-                    this._state = 0;                    
+                    _marker.state = -1;
+                    _backupCount = 0;
+                    _state = 0;                    
                     // character not consumed
                     return false;
                 }
@@ -1501,18 +1506,18 @@ export class Parser {
                     // it is prefered to move forward, but that could lead to errors,
                     // so we need to memorize this state before move on, in case if 
                     // an error occurs later, we could just return to this state.
-                    this._mark();
-                    this._state = retn.state;
-                    return consume(this, c);
+                    _mark();
+                    _state = retn.state;
+                    return _consume(c);
                 }
             }
             else {
                 // current state doesn't lead to any state, just stay here.
-                this._doLexAction(lexstate, this._state);
+                _doLexAction(lexstate, _state);
                 // recover
-                this._marker.state = -1;
-                this._backupCount = 0;
-                this._state = 0;
+                _marker.state = -1;
+                _backupCount = 0;
+                _state = 0;
                 // character not consumed
                 return false;
             }
@@ -1521,55 +1526,55 @@ export class Parser {
             if(retn.state === -1){
                 // nowhere to go at current state, error may have occured.
                 // check marker to verify that
-                if(this._marker.state !== -1){
+                if(_marker.state !== -1){
                     // we have a previously marked state, which is a terminate state.
-                    let s = this._rollback();
-                    this._doLexAction(lexstate, this._state);
-                    this._state = 0;
-                    this.accept(s);
+                    var s = _rollback();
+                    _doLexAction(lexstate, _state);
+                    _state = 0;
+                    accept(s);
                     // character not consumed
                     return false;
                 }
                 else {
                     // error occurs
-                    this._emit('lexicalerror', `unexpected character "${c}"`, this._line, this._column);
+                    _emit('lexicalerror', `unexpected character "${c}"`, _line, _column);
                     // force consume
                     return true;
                 }
             }
             else {
-                this._state = retn.state;
+                _state = retn.state;
                 // character consumed
-                return consume(this, c);
+                return _consume(c);
             }
         }
     }
-    private _acceptEOF(){
-        if(this._state === 0){
+    function _acceptEOF(){
+        if(_state === 0){
             // recover
-            this._prepareToken(0);
-            this._returnToken();
+            _prepareToken(0);
+            _returnToken();
             return true;
         }
         else {
-            let lexstate = this._lexState[this._lexState.length - 1];
-            let retn = { state: this._state, hasArc: false, isEnd: false };
+            let lexstate = _lexState[_lexState.length - 1];
+            let retn = { state: _state, hasArc: false, isEnd: false };
             jjlexers[lexstate](-1, retn);
             if(retn.isEnd){
-                this._doLexAction(lexstate, this._state);
-                this._state = 0;
-                this._marker.state = -1;
+                _doLexAction(lexstate, _state);
+                _state = 0;
+                _marker.state = -1;
                 return false;
             }
-            else if(this._marker.state !== -1){
-                let s = this._rollback();
-                this._doLexAction(lexstate, this._state);
-                this._state = 0;
-                this.accept(s);
+            else if(_marker.state !== -1){
+                let s = _rollback();
+                _doLexAction(lexstate, _state);
+                _state = 0;
+                accept(s);
                 return false;
             }
             else {
-                this._emit('lexicalerror', 'unexpected end of file');
+                _emit('lexicalerror', 'unexpected end of file');
                 return true;
             }
         }
@@ -1578,39 +1583,39 @@ export class Parser {
      *  input a string
      *  @api public
      */
-    accept(s: string){
-        for(let i = 0; i < s.length && !this._stop;){
-            this._acceptChar(s.charAt(i)) && i++;
+    function accept(s: string){
+        for(let i = 0; i < s.length && !_stop;){
+            _acceptChar(s.charAt(i)) && i++;
         }
     }
     /**
      *  tell the compiler that end of file is reached
      *  @api public
      */
-    end(){
-        while(!this._stop && !this._acceptEOF());
-        this._stop = true;
+    function end(){
+        while(!_stop && !_acceptEOF());
+        _stop = true;
     }
-    halt(){
-        this._stop = true;
+    function halt(){
+        _stop = true;
     }
-    private _doReduction(jjrulenum: number){
+    function _doReduction(jjrulenum: number){
         let jjnt = jjlhs[jjrulenum];
-        let jjsp = this._sematicS.length;
-        let jjtop = this._sematicS[jjsp - jjruleLen[jjrulenum]] || null;
+        let jjsp = _sematicS.length;
+        let jjtop = _sematicS[jjsp - jjruleLen[jjrulenum]] || null;
         switch(jjrulenum){
         }
-        this._lrState.length -= jjruleLen[jjrulenum];
-        let jjcstate = this._lrState[this._lrState.length - 1];
-        this._lrState.push(jjpgoto[jjdisgoto[jjcstate] + jjnt]);
+        _lrState.length -= jjruleLen[jjrulenum];
+        let jjcstate = _lrState[_lrState.length - 1];
+        _lrState.push(jjpgoto[jjdisgoto[jjcstate] + jjnt]);
 
-        this._sematicS.length -= jjruleLen[jjrulenum];
-        this._sematicS.push(jjtop);
+        _sematicS.length -= jjruleLen[jjrulenum];
+        _sematicS.push(jjtop);
     }
 
-    private _acceptToken(t: Token){
+    function _acceptToken(t: Token){
         // look up action table
-        let cstate = this._lrState[this._lrState.length - 1];
+        let cstate = _lrState[_lrState.length - 1];
         let ind = jjdisact[cstate] + t.id;
         let act = 0;
         if(ind < 0 || ind >= jjpact.length || jjcheckact[ind] !== cstate){
@@ -1621,42 +1626,42 @@ export class Parser {
         }
         if(act === jjactERR){
             // explicit error
-            this._syntaxError(t);
+            _syntaxError(t);
             return true;
         }
         else if(act > 0){
             // shift
             if(t.id === 0){
                 // end of file
-                this._stop = true;
-                this._emit('accept');
+                _stop = true;
+                _emit('accept');
                 return true;
             }
             else {
-                this._lrState.push(act - 1);
-                this._sematicS.push(this._sematicVal);
-                this._sematicVal = null;
+                _lrState.push(act - 1);
+                _sematicS.push(_sematicVal);
+                _sematicVal = null;
                 // token consumed
                 return true;
             }
         }
         else if(act < 0){
-            this._doReduction(-act - 1);
+            _doReduction(-act - 1);
             return false;
         }
         else {
             // error
-            this._syntaxError(t);
+            _syntaxError(t);
             // force consume
             return true;
         }
     }
-    private _syntaxError(t: Token){
+    function _syntaxError(t: Token){
         let msg = `unexpected token ${t.toString()}, expecting one of the following token(s):\n`
-        msg += this._expected(this._lrState[this._lrState.length - 1]);
-        this._emit("syntaxerror", msg, t);
+        msg += _expected(_lrState[_lrState.length - 1]);
+        _emit("syntaxerror", msg, t);
     }
-    private _expected(state: number){
+    function _expected(state: number){
         let dis = jjdisact[state];
         let ret = '';
         function expect(tk: number){
@@ -1673,4 +1678,11 @@ export class Parser {
         }
         return ret;
     }
+    return {
+        init,
+        on,
+        accept,
+        end,
+        halt
+    };
 }

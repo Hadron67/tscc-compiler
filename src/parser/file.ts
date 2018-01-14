@@ -1,17 +1,18 @@
 import { Grammar } from '../grammar/grammar.js';
 import { LexAction } from '../lexer/action';
 import { DFA } from '../lexer/dfa';
-import { JNode } from './node';
+import { JNode, newNode } from './node';
 
 export class File{
     grammar: Grammar = null;
     lexDFA: DFA<LexAction[]>[] = [];
-    opt: {[s: string]: string} = {};
+    opt: {[s: string]: { name: JNode, val: JNode }} = {};
     prefix: string = 'jj';
-    header: string = '';
-    extraArgs: string = '';
-    initArg: string = '';
-    initBody: string = '';
-    epilogue: JNode = null;
-    sematicType: string;
+    header: JNode[] = [];
+    output: JNode = newNode('typescript');
+    extraArgs: JNode = null;
+    initArg: JNode = null;
+    initBody: JNode = null;
+    epilogue: JNode = newNode('');
+    sematicType: JNode = null;
 }

@@ -7,6 +7,7 @@ import { DFA } from '../../lexer/dfa';
 import { LexAction } from '../../lexer/action';
 import { State, Arc } from '../../lexer/state';
 import { Inf } from '../../util/interval-set';
+import { JNode } from '../../parser/node'
 
 export default function(input: TemplateInput, output: TemplateOutput){
     function echo(s: string){

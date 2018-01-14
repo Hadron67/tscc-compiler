@@ -1,9 +1,9 @@
 import { TokenSet } from './token-set';
 import { TokenDef, TokenEntry, Assoc, convertTokenToString } from './token-entry'
 import { LexAction } from '../lexer/action';
-import { Located, Locatable } from '../util/located';
 import { Context } from '../util/context';
 import { CompilationError } from '../util/E';
+import { Position } from '../parser/node';
 
 export interface NtDef{
     index: number,
@@ -13,8 +13,11 @@ export interface NtDef{
     rules: Rule[],
     parents: { rule: Rule, pos: number }[];
 }
-
-export class Rule implements Locatable{
+interface Located<T>{
+    val: T;
+    pos: Position
+}
+export class Rule{
     public pr: number = -1;
     public rhs: number[] = [];
     public action: LexAction[] = null;
@@ -24,7 +27,7 @@ export class Rule implements Locatable{
     constructor(
         public g: Grammar, 
         public lhs: NtDef,
-        public line: number 
+        public pos: Position 
     ){}
 
     calcPr(){

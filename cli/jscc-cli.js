@@ -58,7 +58,7 @@ function genCode(result, arg){
     var tempIn = result.getTemplateInput();
     var files = [];
     var current = new jscc.io.StringOS();
-    jscc.generateCode(tempIn.file.opt.output, tempIn, {
+    jscc.generateCode(tempIn.file.output.val, tempIn, {
         save: function(ext){
             files.push(writeFile(changeSuffix(arg.input, ext), current.s));
             current.reset();
@@ -94,7 +94,7 @@ function generate(arg){
         }
         if(result.hasError()){
             result.printError(consoleStream);
-            result.terminated && console.log('compilation terminated');
+            result.isTerminated() && console.log('compilation terminated');
             return pass(result);
         }
     

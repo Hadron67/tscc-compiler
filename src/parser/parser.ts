@@ -5,11 +5,11 @@
 
 import { GBuilder, createFileBuilder, TokenRefType } from './gbuilder';
 import { Assoc } from '../grammar/token-entry';
-import { CompilationError as E, CompilationError } from '../util/E';
-import { InputStream } from '../util/io';
+import { CompilationError as E, JsccError } from '../util/E';
+import { InputStream, endl } from '../util/io';
 import { Context } from '../util/context';
 import { LexAction, returnToken, blockAction, pushState, popState, setImg } from '../lexer/action';
-import { Position, JNode } from './node';
+import { Position, JNode, newNode, markPosition } from './node';
 import { File } from './file';
 
 function nodeFromToken(t: Token): JNode{
@@ -32,16 +32,7 @@ function nodeFromTrivalToken(t: Token): JNode{
         endColumn: t.endColumn
     };
 }
-function newNode(val: string): JNode{
-    return {
-        val: val,
-        ext: null,
-        startLine: 0,
-        startColumn: 0,
-        endLine: 0,
-        endColumn: 0
-    };
-}
+
 function unescape(s: string){
     return s
     .replace(/\\n/g, '\n')
@@ -461,6 +452,9 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             if(c === 112){
                 ret.state = 55;
             }
+            else if(c === 117){
+                ret.state = 56;
+            }
             else {
                 ret.state = -1;
             } 
@@ -469,7 +463,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             ret.hasArc = true;
             ret.isEnd = false;
             if(c === 114){
-                ret.state = 56;
+                ret.state = 57;
             }
             else {
                 ret.state = -1;
@@ -479,7 +473,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             ret.hasArc = true;
             ret.isEnd = false;
             if(c === 105){
-                ret.state = 57;
+                ret.state = 58;
             }
             else {
                 ret.state = -1;
@@ -489,7 +483,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             ret.hasArc = true;
             ret.isEnd = false;
             if(c === 121){
-                ret.state = 58;
+                ret.state = 59;
             }
             else {
                 ret.state = -1;
@@ -499,7 +493,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             ret.hasArc = true;
             ret.isEnd = false;
             if(c === 115){
-                ret.state = 59;
+                ret.state = 60;
             }
             else {
                 ret.state = -1;
@@ -530,10 +524,10 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             ret.hasArc = true;
             ret.isEnd = false;
             if(c === 34 || c === 39 || c === 92 || c === 98 || c === 102 || c === 110 || c === 114 || c === 116){
-                ret.state = 60;
+                ret.state = 61;
             }
             else if(c === 117 || c === 120){
-                ret.state = 61;
+                ret.state = 62;
             }
             else {
                 ret.state = -1;
@@ -543,13 +537,13 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             ret.hasArc = true;
             ret.isEnd = false;
             if(c <= 41 || (c >= 43 && c <= 46) || c >= 48){
-                ret.state = 62;
-            }
-            else if(c === 42){
                 ret.state = 63;
             }
-            else if(c === 47){
+            else if(c === 42){
                 ret.state = 64;
+            }
+            else if(c === 47){
+                ret.state = 65;
             }
             else {
                 ret.state = -1;
@@ -559,7 +553,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             ret.hasArc = true;
             ret.isEnd = true;
             if(c <= 9 || c >= 11){
-                ret.state = 65;
+                ret.state = 66;
             }
             else {
                 ret.state = -1;
@@ -590,7 +584,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             ret.hasArc = true;
             ret.isEnd = false;
             if((c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102)){
-                ret.state = 66;
+                ret.state = 67;
             }
             else {
                 ret.state = -1;
@@ -600,7 +594,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             ret.hasArc = true;
             ret.isEnd = false;
             if(c === 112){
-                ret.state = 67;
+                ret.state = 68;
             }
             else {
                 ret.state = -1;
@@ -610,7 +604,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             ret.hasArc = true;
             ret.isEnd = false;
             if(c === 116){
-                ret.state = 68;
+                ret.state = 69;
             }
             else {
                 ret.state = -1;
@@ -620,7 +614,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             ret.hasArc = true;
             ret.isEnd = false;
             if(c === 97){
-                ret.state = 69;
+                ret.state = 70;
             }
             else {
                 ret.state = -1;
@@ -630,7 +624,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             ret.hasArc = true;
             ret.isEnd = false;
             if(c === 105){
-                ret.state = 70;
+                ret.state = 71;
             }
             else {
                 ret.state = -1;
@@ -640,10 +634,10 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             ret.hasArc = true;
             ret.isEnd = false;
             if(c === 102){
-                ret.state = 71;
+                ret.state = 72;
             }
             else if(c === 120){
-                ret.state = 72;
+                ret.state = 73;
             }
             else {
                 ret.state = -1;
@@ -653,7 +647,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             ret.hasArc = true;
             ret.isEnd = false;
             if(c === 110){
-                ret.state = 73;
+                ret.state = 74;
             }
             else {
                 ret.state = -1;
@@ -663,7 +657,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             ret.hasArc = true;
             ret.isEnd = false;
             if(c === 116){
-                ret.state = 74;
+                ret.state = 75;
             }
             else {
                 ret.state = -1;
@@ -672,8 +666,8 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
         case 56:
             ret.hasArc = true;
             ret.isEnd = false;
-            if(c === 101){
-                ret.state = 75;
+            if(c === 116){
+                ret.state = 76;
             }
             else {
                 ret.state = -1;
@@ -682,8 +676,8 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
         case 57:
             ret.hasArc = true;
             ret.isEnd = false;
-            if(c === 103){
-                ret.state = 76;
+            if(c === 101){
+                ret.state = 77;
             }
             else {
                 ret.state = -1;
@@ -692,8 +686,8 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
         case 58:
             ret.hasArc = true;
             ret.isEnd = false;
-            if(c === 112){
-                ret.state = 77;
+            if(c === 103){
+                ret.state = 78;
             }
             else {
                 ret.state = -1;
@@ -702,14 +696,24 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
         case 59:
             ret.hasArc = true;
             ret.isEnd = false;
-            if(c === 101){
-                ret.state = 78;
+            if(c === 112){
+                ret.state = 79;
             }
             else {
                 ret.state = -1;
             } 
             break;
         case 60:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c === 101){
+                ret.state = 80;
+            }
+            else {
+                ret.state = -1;
+            } 
+            break;
+        case 61:
             ret.hasArc = true;
             ret.isEnd = false;
             if(c <= 9 || (c >= 11 && c <= 38) || (c >= 40 && c <= 91) || c >= 93){
@@ -725,27 +729,11 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
                 ret.state = -1;
             } 
             break;
-        case 61:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if((c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102)){
-                ret.state = 79;
-            }
-            else {
-                ret.state = -1;
-            } 
-            break;
         case 62:
             ret.hasArc = true;
             ret.isEnd = false;
-            if(c <= 41 || (c >= 43 && c <= 46) || c >= 48){
-                ret.state = 62;
-            }
-            else if(c === 42){
-                ret.state = 63;
-            }
-            else if(c === 47){
-                ret.state = 80;
+            if((c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102)){
+                ret.state = 81;
             }
             else {
                 ret.state = -1;
@@ -754,8 +742,11 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
         case 63:
             ret.hasArc = true;
             ret.isEnd = false;
-            if(c <= 46 || c >= 48){
-                ret.state = 81;
+            if(c <= 41 || (c >= 43 && c <= 46) || c >= 48){
+                ret.state = 63;
+            }
+            else if(c === 42){
+                ret.state = 64;
             }
             else if(c === 47){
                 ret.state = 82;
@@ -767,8 +758,11 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
         case 64:
             ret.hasArc = true;
             ret.isEnd = false;
-            if(c === 47){
+            if(c <= 46 || c >= 48){
                 ret.state = 83;
+            }
+            else if(c === 47){
+                ret.state = 84;
             }
             else {
                 ret.state = -1;
@@ -776,15 +770,25 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             break;
         case 65:
             ret.hasArc = true;
-            ret.isEnd = true;
-            if(c <= 9 || c >= 11){
-                ret.state = 65;
+            ret.isEnd = false;
+            if(c === 47){
+                ret.state = 85;
             }
             else {
                 ret.state = -1;
             } 
             break;
         case 66:
+            ret.hasArc = true;
+            ret.isEnd = true;
+            if(c <= 9 || c >= 11){
+                ret.state = 66;
+            }
+            else {
+                ret.state = -1;
+            } 
+            break;
+        case 67:
             ret.hasArc = true;
             ret.isEnd = false;
             if(c <= 9 || (c >= 11 && c <= 33) || (c >= 35 && c <= 47) || (c >= 58 && c <= 64) || (c >= 71 && c <= 91) || (c >= 93 && c <= 96) || c >= 103){
@@ -794,7 +798,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
                 ret.state = 26;
             }
             else if((c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102)){
-                ret.state = 84;
+                ret.state = 86;
             }
             else if(c === 92){
                 ret.state = 27;
@@ -803,21 +807,11 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
                 ret.state = -1;
             } 
             break;
-        case 67:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if(c === 116){
-                ret.state = 85;
-            }
-            else {
-                ret.state = -1;
-            } 
-            break;
         case 68:
             ret.hasArc = true;
             ret.isEnd = false;
-            if(c === 114){
-                ret.state = 86;
+            if(c === 116){
+                ret.state = 87;
             }
             else {
                 ret.state = -1;
@@ -826,8 +820,8 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
         case 69:
             ret.hasArc = true;
             ret.isEnd = false;
-            if(c === 100){
-                ret.state = 87;
+            if(c === 114){
+                ret.state = 88;
             }
             else {
                 ret.state = -1;
@@ -836,8 +830,8 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
         case 70:
             ret.hasArc = true;
             ret.isEnd = false;
-            if(c === 116){
-                ret.state = 88;
+            if(c === 100){
+                ret.state = 89;
             }
             else {
                 ret.state = -1;
@@ -847,32 +841,32 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             ret.hasArc = true;
             ret.isEnd = false;
             if(c === 116){
-                ret.state = 89;
-            }
-            else {
-                ret.state = -1;
-            } 
-            break;
-        case 72:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
-            break;
-        case 73:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if(c === 97){
                 ret.state = 90;
             }
             else {
                 ret.state = -1;
             } 
             break;
+        case 72:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c === 116){
+                ret.state = 91;
+            }
+            else {
+                ret.state = -1;
+            } 
+            break;
+        case 73:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
         case 74:
             ret.hasArc = true;
             ret.isEnd = false;
-            if(c === 105){
-                ret.state = 91;
+            if(c === 97){
+                ret.state = 92;
             }
             else {
                 ret.state = -1;
@@ -881,8 +875,8 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
         case 75:
             ret.hasArc = true;
             ret.isEnd = false;
-            if(c === 99){
-                ret.state = 92;
+            if(c === 105){
+                ret.state = 93;
             }
             else {
                 ret.state = -1;
@@ -891,8 +885,8 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
         case 76:
             ret.hasArc = true;
             ret.isEnd = false;
-            if(c === 104){
-                ret.state = 93;
+            if(c === 112){
+                ret.state = 94;
             }
             else {
                 ret.state = -1;
@@ -901,19 +895,39 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
         case 77:
             ret.hasArc = true;
             ret.isEnd = false;
-            if(c === 101){
-                ret.state = 94;
+            if(c === 99){
+                ret.state = 95;
             }
             else {
                 ret.state = -1;
             } 
             break;
         case 78:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c === 104){
+                ret.state = 96;
+            }
+            else {
+                ret.state = -1;
+            } 
+            break;
+        case 79:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c === 101){
+                ret.state = 97;
+            }
+            else {
+                ret.state = -1;
+            } 
+            break;
+        case 80:
             ret.hasArc = false;
             ret.isEnd = true;
             ret.state = -1;
             break;
-        case 79:
+        case 81:
             ret.hasArc = true;
             ret.isEnd = false;
             if(c <= 9 || (c >= 11 && c <= 38) || (c >= 40 && c <= 47) || (c >= 58 && c <= 64) || (c >= 71 && c <= 91) || (c >= 93 && c <= 96) || c >= 103){
@@ -923,7 +937,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
                 ret.state = 42;
             }
             else if((c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102)){
-                ret.state = 95;
+                ret.state = 98;
             }
             else if(c === 92){
                 ret.state = 43;
@@ -932,60 +946,60 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
                 ret.state = -1;
             } 
             break;
-        case 80:
+        case 82:
             ret.hasArc = true;
             ret.isEnd = false;
             if(c <= 41 || (c >= 43 && c <= 46) || c >= 48){
-                ret.state = 62;
-            }
-            else if(c === 42){
                 ret.state = 63;
             }
-            else if(c === 47){
-                ret.state = 80;
-            }
-            else {
-                ret.state = -1;
-            } 
-            break;
-        case 81:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if(c <= 41 || (c >= 43 && c <= 46) || c >= 48){
-                ret.state = 62;
-            }
             else if(c === 42){
-                ret.state = 63;
-            }
-            else if(c === 47){
                 ret.state = 64;
             }
+            else if(c === 47){
+                ret.state = 82;
+            }
             else {
                 ret.state = -1;
             } 
-            break;
-        case 82:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
             break;
         case 83:
             ret.hasArc = true;
             ret.isEnd = false;
             if(c <= 41 || (c >= 43 && c <= 46) || c >= 48){
-                ret.state = 62;
-            }
-            else if(c === 42){
                 ret.state = 63;
             }
-            else if(c === 47){
+            else if(c === 42){
                 ret.state = 64;
+            }
+            else if(c === 47){
+                ret.state = 65;
             }
             else {
                 ret.state = -1;
             } 
             break;
         case 84:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 85:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c <= 41 || (c >= 43 && c <= 46) || c >= 48){
+                ret.state = 63;
+            }
+            else if(c === 42){
+                ret.state = 64;
+            }
+            else if(c === 47){
+                ret.state = 65;
+            }
+            else {
+                ret.state = -1;
+            } 
+            break;
+        case 86:
             ret.hasArc = true;
             ret.isEnd = false;
             if(c <= 9 || (c >= 11 && c <= 33) || (c >= 35 && c <= 47) || (c >= 58 && c <= 64) || (c >= 71 && c <= 91) || (c >= 93 && c <= 96) || c >= 103){
@@ -995,7 +1009,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
                 ret.state = 26;
             }
             else if((c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102)){
-                ret.state = 84;
+                ret.state = 86;
             }
             else if(c === 92){
                 ret.state = 27;
@@ -1004,87 +1018,97 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
                 ret.state = -1;
             } 
             break;
-        case 85:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if(c === 121){
-                ret.state = 96;
-            }
-            else {
-                ret.state = -1;
-            } 
-            break;
-        case 86:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if(c === 97){
-                ret.state = 97;
-            }
-            else {
-                ret.state = -1;
-            } 
-            break;
         case 87:
             ret.hasArc = true;
             ret.isEnd = false;
-            if(c === 101){
-                ret.state = 98;
-            }
-            else {
-                ret.state = -1;
-            } 
-            break;
-        case 88:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
-            break;
-        case 89:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
-            break;
-        case 90:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if(c === 115){
+            if(c === 121){
                 ret.state = 99;
             }
             else {
                 ret.state = -1;
             } 
             break;
-        case 91:
+        case 88:
             ret.hasArc = true;
             ret.isEnd = false;
-            if(c === 111){
+            if(c === 97){
                 ret.state = 100;
             }
             else {
                 ret.state = -1;
             } 
             break;
-        case 92:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
-            break;
-        case 93:
+        case 89:
             ret.hasArc = true;
             ret.isEnd = false;
-            if(c === 116){
+            if(c === 101){
                 ret.state = 101;
             }
             else {
                 ret.state = -1;
             } 
             break;
-        case 94:
+        case 90:
             ret.hasArc = false;
             ret.isEnd = true;
             ret.state = -1;
             break;
+        case 91:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 92:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c === 115){
+                ret.state = 102;
+            }
+            else {
+                ret.state = -1;
+            } 
+            break;
+        case 93:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c === 111){
+                ret.state = 103;
+            }
+            else {
+                ret.state = -1;
+            } 
+            break;
+        case 94:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c === 117){
+                ret.state = 104;
+            }
+            else {
+                ret.state = -1;
+            } 
+            break;
         case 95:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 96:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c === 116){
+                ret.state = 105;
+            }
+            else {
+                ret.state = -1;
+            } 
+            break;
+        case 97:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 98:
             ret.hasArc = true;
             ret.isEnd = false;
             if(c <= 9 || (c >= 11 && c <= 38) || (c >= 40 && c <= 47) || (c >= 58 && c <= 64) || (c >= 71 && c <= 91) || (c >= 93 && c <= 96) || c >= 103){
@@ -1094,7 +1118,7 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
                 ret.state = 42;
             }
             else if((c >= 48 && c <= 57) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102)){
-                ret.state = 95;
+                ret.state = 98;
             }
             else if(c === 92){
                 ret.state = 43;
@@ -1103,76 +1127,56 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
                 ret.state = -1;
             } 
             break;
-        case 96:
+        case 99:
             ret.hasArc = false;
             ret.isEnd = true;
             ret.state = -1;
-            break;
-        case 97:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if(c === 95){
-                ret.state = 102;
-            }
-            else {
-                ret.state = -1;
-            } 
-            break;
-        case 98:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if(c === 114){
-                ret.state = 103;
-            }
-            else {
-                ret.state = -1;
-            } 
-            break;
-        case 99:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if(c === 115){
-                ret.state = 104;
-            }
-            else {
-                ret.state = -1;
-            } 
             break;
         case 100:
             ret.hasArc = true;
             ret.isEnd = false;
-            if(c === 110){
-                ret.state = 105;
-            }
-            else {
-                ret.state = -1;
-            } 
-            break;
-        case 101:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
-            break;
-        case 102:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if(c === 97){
+            if(c === 95){
                 ret.state = 106;
             }
             else {
                 ret.state = -1;
             } 
             break;
+        case 101:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c === 114){
+                ret.state = 107;
+            }
+            else {
+                ret.state = -1;
+            } 
+            break;
+        case 102:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c === 115){
+                ret.state = 108;
+            }
+            else {
+                ret.state = -1;
+            } 
+            break;
         case 103:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c === 110){
+                ret.state = 109;
+            }
+            else {
+                ret.state = -1;
+            } 
             break;
         case 104:
             ret.hasArc = true;
             ret.isEnd = false;
-            if(c === 111){
-                ret.state = 107;
+            if(c === 116){
+                ret.state = 110;
             }
             else {
                 ret.state = -1;
@@ -1186,28 +1190,23 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
         case 106:
             ret.hasArc = true;
             ret.isEnd = false;
-            if(c === 114){
-                ret.state = 108;
+            if(c === 97){
+                ret.state = 111;
             }
             else {
                 ret.state = -1;
             } 
             break;
         case 107:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if(c === 99){
-                ret.state = 109;
-            }
-            else {
-                ret.state = -1;
-            } 
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
             break;
         case 108:
             ret.hasArc = true;
             ret.isEnd = false;
-            if(c === 103){
-                ret.state = 110;
+            if(c === 111){
+                ret.state = 112;
             }
             else {
                 ret.state = -1;
@@ -1219,6 +1218,46 @@ function moveDFA0(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
             ret.state = -1;
             break;
         case 110:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 111:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c === 114){
+                ret.state = 113;
+            }
+            else {
+                ret.state = -1;
+            } 
+            break;
+        case 112:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c === 99){
+                ret.state = 114;
+            }
+            else {
+                ret.state = -1;
+            } 
+            break;
+        case 113:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c === 103){
+                ret.state = 115;
+            }
+            else {
+                ret.state = -1;
+            } 
+            break;
+        case 114:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 115:
             ret.hasArc = false;
             ret.isEnd = true;
             ret.state = -1;
@@ -1302,29 +1341,29 @@ var jjlexers = [
     tokens that a lexical dfa state can return
 */
 var jjlexTokens0 = [ 
-        -1,    -1,    -1,     1,    -1,    -1,    19,    20,    25,    26,
-        34,    27,    -1,    28,    30,    18,    21,    17,    24,    22,
-        23,    33,     3,    32,     4,    -1,     2,    -1,     1,     1,
-        31,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-        -1,    -1,     2,    -1,    -1,    -1,    29,    -1,    -1,    -1,
+        -1,    -1,    -1,     1,    -1,    -1,    20,    21,    26,    27,
+        35,    28,    -1,    29,    31,    19,    22,    18,    25,    23,
+        24,    34,     3,    33,     4,    -1,     2,    -1,     1,     1,
+        32,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+        -1,    -1,     2,    -1,    -1,    -1,    30,    -1,    -1,    -1,
         -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
         -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-        -1,    -1,     6,    -1,    -1,    -1,    -1,    -1,    10,    -1,
-        -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    16,     7,
-        -1,    -1,    15,    -1,    14,    -1,    13,    -1,    -1,    -1,
-        -1,     8,    -1,    11,    -1,     5,    -1,    -1,    -1,     9,
-        12,
+        -1,    -1,    -1,     6,    -1,    -1,    -1,    -1,    -1,    -1,
+        10,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+        16,     7,    -1,    -1,    -1,    15,    -1,    14,    -1,    13,
+        -1,    -1,    -1,    -1,    -1,     8,    -1,    11,    -1,     5,
+        17,    -1,    -1,    -1,     9,    12,
 ]; 
 var jjlexTokens1 = [ 
-        35,    35,     3,     4,
+        36,    36,     3,     4,
 ]; 
 var jjlexTokens2 = [ 
-        -1,    36,
+        -1,    37,
 ]; 
 
-var jjstateCount = 168;
-var jjtokenCount = 37;
-var jjactERR = 169;
+var jjstateCount = 170;
+var jjtokenCount = 38;
+var jjactERR = 171;
 /*
     compressed action table: action = jjpact[jjdisact[STATE-NUM] + TOKEN]
     when action > 0, shift the token and goto state (action - 1);
@@ -1332,105 +1371,107 @@ var jjactERR = 169;
     when action = 0, do default action.
 */
 var jjpact = [ 
-         9,     7,    14,    15,    16,   149,    10,    11,   116,    12,
-        83,    13,   -49,   113,   114,   -49,   157,   158,   156,  -110,
-       -50,   148,   146,   -50,   -86,   147,     5,   -49,   116,    95,
-      -104,    92,    95,   113,   114,   -50,    25,    95,   153,   -86,
-        99,   -86,    25,    95,  -104,    94,  -111,    66,    94,   127,
-        64,    58,    54,    94,   100,    60,   168,    61,    47,    94,
-       167,    46,   139,   -38,    41,    42,   165,   164,   163,    55,
-       139,   161,   126,   151,   150,   143,   110,    58,   131,   130,
-       129,   128,   124,  -104,   120,   119,   118,   110,   107,   -93,
-       105,   104,   103,   102,   101,    96,    89,    87,    86,    81,
-        77,    75,    74,    70,    69,    68,    63,    56,    49,    45,
-        43,    39,    35,    20,    29,    26,    20,     4,     0,     0,
+         9,     7,    15,    16,    17,   151,    10,    11,   170,    12,
+        85,    13,    14,   -50,  -111,   118,   -50,   159,   160,   158,
+       115,   116,   150,   148,   -87,   118,   149,     5,   -50,   -51,
+       115,   116,   -51,    97,  -105,    94,    97,    26,    97,  -105,
+       -87,   155,   -87,   101,   -51,    26,    97,    60,  -112,    56,
+        96,    68,   129,    96,    66,    96,    62,   102,    63,   -39,
+       169,    49,   141,    96,    48,   167,    57,    43,    44,   166,
+       165,   141,   163,   128,   153,   152,   145,   112,   133,   132,
+        60,   131,   130,   126,  -105,   122,   121,   120,   112,   109,
+       -94,   107,   106,   105,   104,   103,    98,    91,    89,    88,
+        83,    79,    77,    76,    72,    71,    70,    65,    58,    51,
+        47,    45,    41,    37,    21,    32,    27,    21,     4,     0,
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-         0,     0,     0,     0,
+         0,     0,     0,     0,     0,     0,
 ]; 
 /*
     displacement of action table.
 */
 var jjdisact = [ 
-       -37,   117,    -5,   -37,   115,   -37,   -37,    41,   112,   -37,
-       -37,   113,   -37,   -37,   -37,   -37,   112,   -37,   -37,   -37,
-        94,    35,   -37,   -37,   -37,   -37,   -37,   -37,   -37,   -37,
-        80,   -37,    36,   107,   108,   -37,    57,   -37,    72,   -37,
-       -37,   -37,   -37,    35,   -37,   -37,    86,   -37,   -37,    25,
-       -37,    96,    46,   -37,   104,   102,   -37,   -37,   100,   -37,
-       -37,    89,    82,   -37,   -37,   -37,    82,   -37,   -37,   -37,
-       -37,    84,     9,   -37,    97,    76,    95,    42,   -37,    41,
-        30,   -37,    74,    27,    20,   -37,    76,    76,    64,    87,
-       -37,   -37,   -37,    89,   -37,    88,   -37,   -37,   -37,    87,
-       -37,    59,   -37,   -37,    69,    84,   -37,    67,   -37,    80,
-        65,   -37,    80,   -37,   -37,    78,    76,   -37,   -37,   -37,
-       -37,    56,   -37,    48,   -37,   -37,     7,   -37,   -37,   -37,
-       -13,   -37,    43,     3,   -37,     3,    40,   -37,    46,   -37,
-        16,    15,   -37,   -37,    -8,   -37,    39,    70,   -37,    68,
-        66,    63,   -37,    -5,   -37,   -37,   -37,   -37,    46,    60,
-        43,   -37,   -37,   -37,   -37,    33,   -37,   -37,
+       -38,   118,    -5,   -38,   116,   -38,   -38,    44,   113,   -38,
+       -38,   -38,   -38,   113,   -38,   -38,   -38,   113,   -38,   -38,
+       -38,    94,    36,   -38,   -38,   -38,   -38,   -38,   -38,   -38,
+       -38,   -38,    80,   -38,    38,   108,   109,   -38,    60,   -38,
+        72,   -38,   -38,   -38,   -38,    31,   -38,   -38,    86,   -38,
+       -38,    25,   -38,    97,    50,   -38,   105,   103,   -38,   -38,
+       101,   -38,   -38,    90,    82,   -38,   -38,   -38,    82,   -38,
+       -38,   -38,   -38,    85,     9,   -38,    98,    76,    96,    44,
+       -38,    36,    34,   -38,    74,    31,    22,   -38,    76,    76,
+        64,    88,   -38,   -38,   -38,    90,   -38,    89,   -38,   -38,
+       -38,    88,   -38,    59,   -38,   -38,    69,    85,   -38,    67,
+       -38,    81,    65,   -38,    81,   -38,   -38,    79,    76,   -38,
+       -38,   -38,   -38,    55,   -38,    48,   -38,   -38,     3,   -38,
+       -38,   -38,    -7,   -38,    43,    11,   -38,     3,    40,   -38,
+        46,   -38,    11,    17,   -38,   -38,    -8,   -38,    39,    71,
+       -38,    69,    68,    65,   -38,    -5,   -38,   -38,   -38,   -38,
+        44,    60,    42,   -38,   -38,   -38,   -38,   -16,   -38,   -38,
+    
 ]; 
 /*
     used to check if a position in jjpact is out of bouds.
     if jjcheckact[jjdisact[STATE-NUM] + TOKEN] = STATE-NUM, this position is not out of bounds.
 */
 var jjcheckact = [ 
-         2,     2,     2,     2,     2,   135,     2,     2,   130,     2,
-        72,     2,   153,   130,   130,   153,   144,   144,   144,   140,
-       133,   135,   135,   133,    72,   135,     2,   153,   126,    83,
-        83,    80,    80,   126,   126,   133,    21,    21,   141,    72,
-        84,    72,     7,     7,    79,    83,    77,    52,    80,   141,
-        52,   140,    43,    21,    84,    49,   165,    49,    36,     7,
-       160,    36,   159,    79,    32,    32,   158,   151,   150,    43,
-       149,   147,   146,   138,   136,   132,   123,    77,   121,   116,
-       115,   112,   110,   109,   107,   105,   104,   101,    99,    95,
-        93,    89,    88,    87,    86,    82,    76,    75,    74,    71,
-        66,    62,    61,    58,    55,    54,    51,    46,    38,    34,
-        33,    30,    20,    16,    11,     8,     4,     1,     0,     0,
+         2,     2,     2,     2,     2,   137,     2,     2,   167,     2,
+        74,     2,     2,   155,   142,   132,   155,   146,   146,   146,
+       132,   132,   137,   137,    74,   128,   137,     2,   155,   135,
+       128,   128,   135,    85,    85,    82,    82,    22,    22,    81,
+        74,   143,    74,    86,   135,     7,     7,   142,    79,    45,
+        85,    54,   143,    82,    54,    22,    51,    86,    51,    81,
+       162,    38,   161,     7,    38,   160,    45,    34,    34,   153,
+       152,   151,   149,   148,   140,   138,   134,   125,   123,   118,
+        79,   117,   114,   112,   111,   109,   107,   106,   103,   101,
+        97,    95,    91,    90,    89,    88,    84,    78,    77,    76,
+        73,    68,    64,    63,    60,    57,    56,    53,    48,    40,
+        36,    35,    32,    21,    17,    13,     8,     4,     1,     0,
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-         0,     0,     0,     0,
+         0,     0,     0,     0,     0,     0,
 ]; 
 /*
     default action table. action = jjdefred[STATE-NUM],
     where action is the number of the rule to reduce with.
 */
 var jjdefred = [ 
-         4,    -1,    -1,     0,    -1,     3,     5,    -1,    -1,   103,
-       103,    -1,   103,    15,    16,    17,     1,    71,    72,    73,
-        25,     7,    19,    20,    21,    23,     9,    10,    11,   103,
-        -1,    70,    -1,    -1,    -1,    18,    -1,    12,    13,    79,
-        75,    76,    29,    -1,    26,     8,    -1,     2,    14,    -1,
-        78,    82,    34,    24,    -1,    -1,   106,   108,    -1,    74,
-        79,    88,    -1,     6,    28,    30,    -1,    27,    22,   107,
-        77,    98,    90,    86,    -1,    -1,    46,   109,    80,    99,
-        -1,    87,    91,    37,    -1,    84,    -1,    -1,    -1,    -1,
-       100,   101,   102,    -1,    97,    89,    94,    95,    81,    -1,
-        46,    36,    46,   111,    -1,    -1,    83,    -1,    32,    37,
-        -1,    41,    -1,    43,    44,    -1,    -1,    96,    93,    31,
-        35,    -1,    39,    36,    52,    62,   103,    42,    45,   107,
-       103,    33,    47,    52,    51,    -1,    64,    67,    68,    40,
-       104,    -1,    52,    50,    57,    46,    63,    -1,    61,    -1,
-        -1,    -1,    38,    52,    53,    54,    55,    56,    -1,    65,
-        -1,    66,    69,   105,    58,    -1,    60,    59,
+         4,    -1,    -1,     0,    -1,     3,     5,    -1,    -1,   104,
+       104,   104,   104,    -1,    16,    17,    18,     1,    72,    73,
+        74,    26,     7,    20,    21,    22,    24,     9,    10,    11,
+       104,    13,    -1,    71,    -1,    -1,    -1,    19,    -1,    12,
+        14,    80,    76,    77,    30,    -1,    27,     8,    -1,     2,
+        15,    -1,    79,    83,    35,    25,    -1,    -1,   107,   109,
+        -1,    75,    80,    89,    -1,     6,    29,    31,    -1,    28,
+        23,   108,    78,    99,    91,    87,    -1,    -1,    47,   110,
+        81,   100,    -1,    88,    92,    38,    -1,    85,    -1,    -1,
+        -1,    -1,   101,   102,   103,    -1,    98,    90,    95,    96,
+        82,    -1,    47,    37,    47,   112,    -1,    -1,    84,    -1,
+        33,    38,    -1,    42,    -1,    44,    45,    -1,    -1,    97,
+        94,    32,    36,    -1,    40,    37,    53,    63,   104,    43,
+        46,   108,   104,    34,    48,    53,    52,    -1,    65,    68,
+        69,    41,   105,    -1,    53,    51,    58,    47,    64,    -1,
+        62,    -1,    -1,    -1,    39,    53,    54,    55,    56,    57,
+        -1,    66,    -1,    67,    70,   106,    59,    -1,    61,    60,
+    
 ]; 
 /*
     compressed goto table: goto = jjpgoto[jjdisgoto[STATE-NUM] + NON_TERMINAL]
 */
 var jjpgoto = [ 
-         5,    90,   121,     7,   144,    33,    97,   121,    83,    81,
-        21,    22,   143,   135,   154,   143,   135,   141,   111,    92,
-        61,   139,    78,    79,    39,    35,    20,   165,   136,   137,
-       161,   159,   120,   121,    84,   122,   116,    96,    87,   124,
-       122,   116,   151,   140,    56,    58,    56,    58,    89,   114,
-       116,    23,   114,   116,    71,    72,    64,   131,    66,   108,
-       105,    75,    70,    51,    52,    23,   122,   116,    47,    43,
-        32,    30,    27,   116,    16,    17,    18,     1,    77,     2,
-       158,   124,   153,   134,   135,   132,   133,   134,   135,   110,
-       124,   107,   124,    49,    50,    51,    37,   116,    36,    29,
-       116,    26,   116,    -1,    31,    18,    -1,    -1,    -1,    -1,
+         5,    92,   123,     7,   146,    85,    83,    35,    22,    23,
+       145,   137,   156,   145,   137,   143,   113,    94,    63,   141,
+        41,    99,   123,    80,    81,    37,    21,   167,   138,   139,
+       163,   161,   122,   123,   133,   124,   118,   153,   110,    58,
+        60,    58,    60,    91,    89,   126,   107,   116,   118,    24,
+       116,   118,    98,    73,    74,   124,   118,    66,    86,    68,
+        77,    72,    53,    54,    49,    24,   124,   118,    45,    34,
+        32,    30,   118,    17,    18,    19,     1,   142,     2,   160,
+       126,   155,   136,   137,   134,   135,   136,   137,   112,   126,
+       109,   126,    79,    51,    52,    53,    39,   118,    38,    29,
+       118,    28,   118,    33,    19,    27,   118,    -1,    -1,    -1,
         -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
         -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
         -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
@@ -1440,57 +1481,58 @@ var jjpgoto = [
     displacement of the goto table
 */
 var jjdisgoto = [ 
-        76,   -59,    -4,   -59,    40,   -59,    21,     2,   -59,    49,
-        20,   -59,    47,   -59,   -59,   -59,    69,   -59,   -59,    33,
-        -6,    16,   -59,   -59,   -59,    88,   -59,   -59,   -59,    44,
-       -59,   -59,   -14,   -59,    57,   -59,   -59,   -59,    62,    54,
-       -59,   -59,    51,   -59,   -59,   -59,   -59,   -59,   -59,   -59,
-       -59,   -22,    42,   -59,   -59,   -59,   -59,   -59,   -59,   -59,
-        22,    10,   -59,   -59,   -59,    46,   -59,   -59,   -59,    23,
-       -59,   -28,   -38,   -59,    -9,   -59,    16,   -10,   -59,   -17,
-       -30,   -59,   -59,   -12,   -59,   -59,   -59,   -59,   -59,   -59,
-       -59,   -59,   -59,   -59,   -59,    12,   -59,   -59,   -59,   -59,
-        69,    42,    67,   -59,   -59,   -59,   -59,   -59,   -59,    14,
-       -59,   -59,   -59,   -59,   -59,   -59,   -59,   -59,   -59,   -59,
-       -59,   -59,   -59,    40,    61,   -59,     0,   -59,   -59,   -12,
-        -3,   -59,   -59,   -11,   -59,   -25,   -59,   -59,   -59,   -59,
-       -12,   -59,    57,   -59,   -14,    58,     1,   -59,   -59,    -3,
-       -59,   -59,   -59,   -14,   -59,   -59,   -59,   -59,   -59,    -4,
-       -59,   -59,   -59,   -59,   -59,   -59,   -59,   -59,
+        75,   -59,    -4,   -59,    39,   -59,    21,     0,   -59,    53,
+        49,    47,    19,   -59,   -59,   -59,   -59,    68,   -59,   -59,
+        32,    -4,    16,   -59,   -59,   -59,    88,   -59,   -59,   -59,
+        44,   -59,   -59,   -59,   -18,   -59,    56,   -59,   -59,   -59,
+        58,    54,   -59,   -59,    50,   -59,   -59,   -59,   -59,   -59,
+       -59,   -59,   -59,   -24,    43,   -59,   -59,   -59,   -59,   -59,
+       -59,   -59,    21,     9,   -59,   -59,   -59,    45,   -59,   -59,
+       -59,    37,   -59,   -27,   -41,   -59,    15,   -59,    22,   -15,
+       -59,   -17,   -32,   -59,   -59,     3,   -59,   -59,   -59,   -59,
+       -59,   -59,   -59,   -59,   -59,   -59,   -59,    -2,   -59,   -59,
+       -59,   -59,    68,    21,    66,   -59,   -59,   -59,   -59,   -59,
+       -59,    14,   -59,   -59,   -59,   -59,   -59,   -59,   -59,   -59,
+       -59,   -59,   -59,   -59,   -59,    17,    60,   -59,    -2,   -59,
+       -59,    22,    -5,   -59,   -59,   -13,   -59,   -25,   -59,   -59,
+       -59,   -59,   -17,   -59,    56,   -59,   -16,    57,     1,   -59,
+       -59,    -3,   -59,   -59,   -59,   -16,   -59,   -59,   -59,   -59,
+       -59,    -4,   -59,   -59,   -59,   -59,   -59,   -59,   -59,   -59,
+    
 ]; 
 /*
     length of each rule: rule length = jjruleLen[RULE-NUM]
 */
 var jjruleLen = [ 
          2,     0,     6,     2,     0,     0,     6,     2,     4,     2,
-         2,     2,     3,     0,     1,     1,     1,     1,     2,     1,
-         1,     1,     4,     0,     3,     0,     1,     3,     2,     0,
-         0,     6,     5,     7,     0,     2,     0,     0,     4,     1,
-         3,     1,     2,     1,     1,     2,     0,     2,     3,     1,
-         2,     1,     0,     3,     1,     1,     1,     0,     3,     4,
-         3,     1,     1,     0,     1,     0,     3,     1,     1,     3,
-         2,     1,     1,     0,     5,     1,     1,     3,     1,     0,
-         4,     4,     0,     3,     1,     1,     1,     2,     0,     2,
-         0,     1,     0,     4,     2,     2,     3,     1,     0,     1,
-         2,     2,     2,     0,     0,     5,     2,     0,     1,     0,
-         0,     5,
+         2,     2,     3,     2,     0,     1,     1,     1,     1,     2,
+         1,     1,     1,     4,     0,     3,     0,     1,     3,     2,
+         0,     0,     6,     5,     7,     0,     2,     0,     0,     4,
+         1,     3,     1,     2,     1,     1,     2,     0,     2,     3,
+         1,     2,     1,     0,     3,     1,     1,     1,     0,     3,
+         4,     3,     1,     1,     0,     1,     0,     3,     1,     1,
+         3,     2,     1,     1,     0,     5,     1,     1,     3,     1,
+         0,     4,     4,     0,     3,     1,     1,     1,     2,     0,
+         2,     0,     1,     0,     4,     2,     2,     3,     1,     0,
+         1,     2,     2,     2,     0,     0,     5,     2,     0,     1,
+         0,     0,     5,
 ]; 
 /*
     index of the LHS of each rule
 */
 var jjlhs = [ 
          0,     2,     1,     3,     3,     5,     4,     4,     4,     4,
-         4,     4,     4,     6,     6,     7,     7,     7,     8,     8,
-         9,     9,    10,    10,    11,    11,    12,    12,    13,    13,
-        15,    14,    14,    14,    16,    17,    17,    19,    18,    18,
-        20,    20,    21,    21,    21,    21,    23,    22,    24,    24,
-        25,    25,    27,    26,    28,    28,    28,    28,    29,    29,
-        29,    29,    30,    30,    31,    31,    32,    32,    33,    33,
-        34,    34,    35,    37,    36,    38,    38,    39,    39,    41,
-        40,    42,    42,    43,    43,    44,    44,    45,    45,    46,
-        46,    47,    48,    47,    47,    47,    49,    49,    50,    50,
-        50,    51,    51,    53,    54,    52,    55,    55,    56,    57,
-        58,    56,
+         4,     4,     4,     4,     6,     6,     7,     7,     7,     8,
+         8,     9,     9,    10,    10,    11,    11,    12,    12,    13,
+        13,    15,    14,    14,    14,    16,    17,    17,    19,    18,
+        18,    20,    20,    21,    21,    21,    21,    23,    22,    24,
+        24,    25,    25,    27,    26,    28,    28,    28,    28,    29,
+        29,    29,    29,    30,    30,    31,    31,    32,    32,    33,
+        33,    34,    34,    35,    37,    36,    38,    38,    39,    39,
+        41,    40,    42,    42,    43,    43,    44,    44,    45,    45,
+        46,    46,    47,    48,    47,    47,    47,    49,    49,    50,
+        50,    50,    51,    51,    53,    54,    52,    55,    55,    56,
+        57,    58,    56,
 ]; 
 /*
     token names
@@ -1501,14 +1543,14 @@ var jjtokenNames = [
                "LEX_DIR",          "LEFT_DIR",         "RIGHT_DIR",
           "NONASSOC_DIR",           "USE_DIR",        "HEADER_DIR",
          "EXTRA_ARG_DIR",             "EMPTY",          "TYPE_DIR",
-              "PREC_DIR",          "INIT_DIR",                "GT",
-                    "LT",               "BRA",               "KET",
-                   "EQU",              "CBRA",              "CKET",
-              "QUESTION",              "STAR",              "PLUS",
-                  "DASH",             "COLON",             "ARROW",
-                   "EOL",         "SEPERATOR",                "OR",
-                 "WEDGE",             "COMMA",          "ANY_CODE",
-      "ANY_EPLOGUE_CODE",
+              "PREC_DIR",          "INIT_DIR",        "OUTPUT_DIR",
+                    "GT",                "LT",               "BRA",
+                   "KET",               "EQU",              "CBRA",
+                  "CKET",          "QUESTION",              "STAR",
+                  "PLUS",              "DASH",             "COLON",
+                 "ARROW",               "EOL",         "SEPERATOR",
+                    "OR",             "WEDGE",             "COMMA",
+              "ANY_CODE",  "ANY_EPLOGUE_CODE",
 ]; 
 /*
     token alias
@@ -1519,14 +1561,14 @@ var jjtokenAlias = [
                   "%lex",             "%left",            "%right",
              "%nonassoc",              "%use",           "%header",
             "%extra_arg",            "%empty",             "%type",
-                 "%prec",             "%init",                 ">",
-                     "<",                 "(",                 ")",
-                     "=",                 "[",                 "]",
-                     "?",                 "*",                 "+",
-                     "-",                 ":",                "=>",
-                     ";",                "%%",                 "|",
-                     "^",                 ",",                null,
-                    null,
+                 "%prec",             "%init",           "%output",
+                     ">",                 "<",                 "(",
+                     ")",                 "=",                 "[",
+                     "]",                 "?",                 "*",
+                     "+",                 "-",                 ":",
+                    "=>",                 ";",                "%%",
+                     "|",                 "^",                 ",",
+                    null,                null,
 ]; 
 
 
@@ -1560,7 +1602,7 @@ class Token {
     }
 }
 interface Parser{
-    init(b: GBuilder);
+    init(ctx1: Context, b: GBuilder);
     accept(s: string);
     end();
     halt();
@@ -1600,15 +1642,15 @@ function createParser(): Parser {
 
 
     
-    function init(b: GBuilder){
+    function init(ctx1: Context, b: GBuilder){
         _lexState = [ 0 ];// DEFAULT
         _state = 0;
         _matched = '';
         _token = new Token(-1, null, 0, 0, 0, 0);
         _marker.state = -1;
         _backupCount = 0;
-        _line = _tline = 1;
-        _column = _tcolumn = 1;
+        _line = _tline = 0;
+        _column = _tcolumn = 0;
         
         _lrState = [ 0 ];
         _sematicS = [];
@@ -1617,6 +1659,7 @@ function createParser(): Parser {
         _stop = false;
         
     gb = b;
+    ctx = ctx1;
 
     }
     /**
@@ -1633,7 +1676,7 @@ function createParser(): Parser {
         _token.startLine = _tline;
         _token.startColumn = _tcolumn;
         _token.endLine = _line;
-        _token.endColumn = _column;
+        _token.endColumn = _column - 1;
 
         _matched = '';
         _tline = _line;
@@ -1687,10 +1730,10 @@ function createParser(): Parser {
             case 45:
                 _setImg("");
                 break;
-            case 65:
+            case 66:
                 _setImg("");
                 break;
-            case 82:
+            case 84:
                 _setImg("");
                 break;
             default:;
@@ -1904,288 +1947,293 @@ function createParser(): Parser {
             case 9:
                 /* 9: option => "%header" block */
                 var b = _sematicS[jjsp - 1];
-                { gb.setHeader(b.val); }
+                { gb.setHeader(b); }
                 break;
             case 10:
                 /* 10: option => "%extra_arg" block */
                 var b = _sematicS[jjsp - 1];
-                { gb.setExtraArg(b.val); }
+                { gb.setExtraArg(b); }
                 break;
             case 11:
-                /* 11: option => "%type" <NAME> */
+                /* 11: option => "%type" block */
                 var t = _sematicS[jjsp - 1];
-                { gb.setType(t.val); }
+                { gb.setType(t); }
                 break;
             case 12:
                 /* 12: option => "%init" block block */
                 var args = _sematicS[jjsp - 2];
                 var b = _sematicS[jjsp - 1];
-                { gb.setInit(args.val, b.val); }
+                { gb.setInit(args, b); }
                 break;
-            case 14:
-                /* 14: epilogue => <ANY_EPLOGUE_CODE> */
+            case 13:
+                /* 13: option => "%output" <STRING> */
+                var op = _sematicS[jjsp - 1];
+                { gb.setOutput(op); }
+                break;
+            case 15:
+                /* 15: epilogue => <ANY_EPLOGUE_CODE> */
                 var ep = _sematicS[jjsp - 1];
                 { gb.setEpilogue(ep); }
                 break;
-            case 15:
-                /* 15: associativeDir => "%left" */
+            case 16:
+                /* 16: associativeDir => "%left" */
                 { assoc = Assoc.LEFT; }
                 break;
-            case 16:
-                /* 16: associativeDir => "%right" */
+            case 17:
+                /* 17: associativeDir => "%right" */
                 { assoc = Assoc.RIGHT; }
                 break;
-            case 17:
-                /* 17: associativeDir => "%nonassoc" */
+            case 18:
+                /* 18: associativeDir => "%nonassoc" */
                 { assoc = Assoc.NON; }
                 break;
-            case 20:
-                /* 20: assocToken => tokenRef */
-                var t = _sematicS[jjsp - 1];
-                { gb.defineTokenPrec(t.val, assoc, t.ext, t.startLine); }
-                break;
             case 21:
-                /* 21: assocToken => <NAME> */
+                /* 21: assocToken => tokenRef */
                 var t = _sematicS[jjsp - 1];
-                { gb.defineTokenPrec(t.val, assoc, TokenRefType.NAME, t.startLine); }
+                { gb.defineTokenPrec(t, assoc, t.ext); }
                 break;
             case 22:
-                /* 22: optionBody => optionBody <NAME> "=" <STRING> */
+                /* 22: assocToken => <NAME> */
+                var t = _sematicS[jjsp - 1];
+                { gb.defineTokenPrec(t, assoc, TokenRefType.NAME); }
+                break;
+            case 23:
+                /* 23: optionBody => optionBody <NAME> "=" <STRING> */
                 var name = _sematicS[jjsp - 3];
                 var val = _sematicS[jjsp - 1];
-                { gb.setOpt(name.val, val.val); }
-                break;
-            case 25:
-                /* 25: states_ => */
-                { gb.lexBuilder.selectState('DEFAULT'); }
+                { gb.setOpt(name, val); }
                 break;
             case 26:
-                /* 26: states => <NAME> */
-                var s = _sematicS[jjsp - 1];
-                { gb.lexBuilder.selectState(s.val); }
+                /* 26: states_ => */
+                { gb.lexBuilder.selectState('DEFAULT'); }
                 break;
             case 27:
-                /* 27: states => states "," <NAME> */
+                /* 27: states => <NAME> */
                 var s = _sematicS[jjsp - 1];
                 { gb.lexBuilder.selectState(s.val); }
                 break;
-            case 30:
-                /* 30: @2 => */
+            case 28:
+                /* 28: states => states "," <NAME> */
+                var s = _sematicS[jjsp - 1];
+                { gb.lexBuilder.selectState(s.val); }
+                break;
+            case 31:
+                /* 31: @2 => */
                 var v = _sematicS[jjsp - 1];
                 { gb.lexBuilder.prepareVar(v.val, v.startLine); }
                 break;
-            case 31:
-                /* 31: lexBodyItem => <NAME> @2 "=" "<" regexp ">" */
+            case 32:
+                /* 32: lexBodyItem => <NAME> @2 "=" "<" regexp ">" */
                 var v = _sematicS[jjsp - 6];
                 { gb.lexBuilder.endVar(); }
                 break;
-            case 32:
-                /* 32: lexBodyItem => newState "<" regexp ">" lexAction_ */
+            case 33:
+                /* 33: lexBodyItem => newState "<" regexp ">" lexAction_ */
                 { gb.lexBuilder.end(lexacts, '(untitled)'); }
                 break;
-            case 33:
-                /* 33: lexBodyItem => newState "<" <NAME> ":" regexp ">" lexAction_ */
+            case 34:
+                /* 34: lexBodyItem => newState "<" <NAME> ":" regexp ">" lexAction_ */
                 var tn = _sematicS[jjsp - 5];
                 { 
-    let tdef = gb.defToken(tn.val, gb.lexBuilder.getPossibleAlias(), tn.startLine);
+    let tdef = gb.defToken(tn, gb.lexBuilder.getPossibleAlias());
     lexacts.push(returnToken(tdef));
     gb.lexBuilder.end(lexacts, tn.val);
 }
                 break;
-            case 34:
-                /* 34: newState => */
+            case 35:
+                /* 35: newState => */
                 { gb.lexBuilder.newState(); }
                 break;
-            case 36:
-                /* 36: lexAction_ => */
-                { lexacts = []; }
-                break;
             case 37:
-                /* 37: @3 => */
+                /* 37: lexAction_ => */
                 { lexacts = []; }
                 break;
-            case 39:
-                /* 39: lexAction => block */
+            case 38:
+                /* 38: @3 => */
+                { lexacts = []; }
+                break;
+            case 40:
+                /* 40: lexAction => block */
                 var b = _sematicS[jjsp - 1];
                 { lexacts = [blockAction(b.val, b.startLine)]; }
                 break;
-            case 42:
-                /* 42: lexActionItem => "+" <NAME> */
-                var vn = _sematicS[jjsp - 1];
-                { gb.addPushStateAction(lexacts, vn.val, vn.startLine); }
-                break;
             case 43:
-                /* 43: lexActionItem => "-" */
-                { lexacts.push(popState()); }
+                /* 43: lexActionItem => "+" <NAME> */
+                var vn = _sematicS[jjsp - 1];
+                { gb.addPushStateAction(lexacts, vn); }
                 break;
             case 44:
-                /* 44: lexActionItem => block */
+                /* 44: lexActionItem => "-" */
+                { lexacts.push(popState()); }
+                break;
+            case 45:
+                /* 45: lexActionItem => block */
                 var b = _sematicS[jjsp - 1];
                 { lexacts.push(blockAction(b.val, b.startLine)); }
                 break;
-            case 45:
-                /* 45: lexActionItem => "=" <STRING> */
+            case 46:
+                /* 46: lexActionItem => "=" <STRING> */
                 var s = _sematicS[jjsp - 1];
                 { lexacts.push(setImg(s.val)); }
                 break;
-            case 46:
-                /* 46: @4 => */
+            case 47:
+                /* 47: @4 => */
                 { gb.lexBuilder.enterUnion(); }
                 break;
-            case 47:
-                /* 47: regexp => @4 union */
+            case 48:
+                /* 48: regexp => @4 union */
                 { gb.lexBuilder.leaveUnion(); }
                 break;
-            case 48:
-                /* 48: union => union "|" simpleRE */
-                { gb.lexBuilder.endUnionItem(); }
-                break;
             case 49:
-                /* 49: union => simpleRE */
+                /* 49: union => union "|" simpleRE */
                 { gb.lexBuilder.endUnionItem(); }
                 break;
-            case 52:
-                /* 52: @5 => */
-                { gb.lexBuilder.enterSimple(); }
+            case 50:
+                /* 50: union => simpleRE */
+                { gb.lexBuilder.endUnionItem(); }
                 break;
             case 53:
-                /* 53: basicRE => @5 primitiveRE rePostfix */
+                /* 53: @5 => */
+                { gb.lexBuilder.enterSimple(); }
+                break;
+            case 54:
+                /* 54: basicRE => @5 primitiveRE rePostfix */
                 var suffix = _sematicS[jjsp - 1];
                 { gb.lexBuilder.simplePostfix(suffix.val as (''|'?'|'+'|'*')); }
                 break;
-            case 54:
-                /* 54: rePostfix => "+" */
+            case 55:
+                /* 55: rePostfix => "+" */
                 { jjtop = newNode('+'); }
                 break;
-            case 55:
-                /* 55: rePostfix => "?" */
+            case 56:
+                /* 56: rePostfix => "?" */
                 { jjtop = newNode('?'); }
                 break;
-            case 56:
-                /* 56: rePostfix => "*" */
+            case 57:
+                /* 57: rePostfix => "*" */
                 { jjtop = newNode('*'); }
                 break;
-            case 57:
-                /* 57: rePostfix => */
+            case 58:
+                /* 58: rePostfix => */
                 { jjtop = newNode(''); }
                 break;
-            case 60:
-                /* 60: primitiveRE => "<" <NAME> ">" */
+            case 61:
+                /* 61: primitiveRE => "<" <NAME> ">" */
                 var n = _sematicS[jjsp - 2];
                 { gb.lexBuilder.addVar(n.val, n.startLine); }
                 break;
-            case 61:
-                /* 61: primitiveRE => <STRING> */
+            case 62:
+                /* 62: primitiveRE => <STRING> */
                 var s = _sematicS[jjsp - 1];
                 { gb.lexBuilder.addString(s.val); }
                 break;
-            case 62:
-                /* 62: inverse_ => "^" */
+            case 63:
+                /* 63: inverse_ => "^" */
                 { gb.lexBuilder.beginSet(true); }
                 break;
-            case 63:
-                /* 63: inverse_ => */
+            case 64:
+                /* 64: inverse_ => */
                 { gb.lexBuilder.beginSet(false); }
                 break;
-            case 68:
-                /* 68: setREItem => <STRING> */
+            case 69:
+                /* 69: setREItem => <STRING> */
                 var s = _sematicS[jjsp - 1];
                 { gb.lexBuilder.addSetItem(s.val, s.val, s.startLine, s.startLine); }
                 break;
-            case 69:
-                /* 69: setREItem => <STRING> "-" <STRING> */
+            case 70:
+                /* 70: setREItem => <STRING> "-" <STRING> */
                 var from = _sematicS[jjsp - 3];
                 var to = _sematicS[jjsp - 1];
                 { gb.lexBuilder.addSetItem(from.val, to.val, from.startLine, to.startLine); }
                 break;
-            case 73:
-                /* 73: @6 => */
+            case 74:
+                /* 74: @6 => */
                 var n = _sematicS[jjsp - 1];
                 { ruleLhs = n; }
                 break;
-            case 79:
-                /* 79: @7 => */
-                { gb.prepareRule(ruleLhs.val,ruleLhs.startLine); }
-                break;
             case 80:
-                /* 80: rule => @7 ruleHead ruleBody ruleTrailer */
+                /* 80: @7 => */
+                { gb.prepareRule(ruleLhs); }
+                break;
+            case 81:
+                /* 81: rule => @7 ruleHead ruleBody ruleTrailer */
                 { gb.commitRule(); }
                 break;
-            case 83:
-                /* 83: varUseList => varUseList "," <NAME> */
-                var vn = _sematicS[jjsp - 1];
-                { gb.addRuleUseVar(vn.val, vn.startLine); }
-                break;
             case 84:
-                /* 84: varUseList => <NAME> */
+                /* 84: varUseList => varUseList "," <NAME> */
                 var vn = _sematicS[jjsp - 1];
-                { gb.addRuleUseVar(vn.val, vn.startLine); }
+                { gb.addRuleUseVar(vn); }
                 break;
-            case 89:
-                /* 89: itemName => <NAME> "=" */
+            case 85:
+                /* 85: varUseList => <NAME> */
+                var vn = _sematicS[jjsp - 1];
+                { gb.addRuleUseVar(vn); }
+                break;
+            case 90:
+                /* 90: itemName => <NAME> "=" */
                 var itn = _sematicS[jjsp - 2];
-                { gb.addRuleSematicVar(itn.val, itn.startLine); }
-                break;
-            case 91:
-                /* 91: ruleItem => <NAME> */
-                var t = _sematicS[jjsp - 1];
-                { gb.addRuleItem(t.val,TokenRefType.NAME,t.startLine); }
+                { gb.addRuleSematicVar(itn); }
                 break;
             case 92:
-                /* 92: @8 => */
-                var vn = _sematicS[jjsp - 2];
-                { gb.addRuleSematicVar(vn.val, vn.startLine); }
+                /* 92: ruleItem => <NAME> */
+                var t = _sematicS[jjsp - 1];
+                { gb.addRuleItem(t, TokenRefType.NAME); }
                 break;
             case 93:
-                /* 93: ruleItem => <NAME> "=" @8 <NAME> */
-                var vn = _sematicS[jjsp - 4];
-                var t = _sematicS[jjsp - 1];
-                { gb.addRuleItem(t.val,TokenRefType.NAME,t.startLine); }
+                /* 93: @8 => */
+                var vn = _sematicS[jjsp - 2];
+                { gb.addRuleSematicVar(vn); }
                 break;
             case 94:
-                /* 94: ruleItem => itemName tokenRef */
+                /* 94: ruleItem => <NAME> "=" @8 <NAME> */
+                var vn = _sematicS[jjsp - 4];
                 var t = _sematicS[jjsp - 1];
-                { gb.addRuleItem(t.val, t.ext, t.startLine); }
+                { gb.addRuleItem(t, TokenRefType.NAME); }
                 break;
             case 95:
-                /* 95: ruleItem => itemName lexAction */
-                { gb.addAction(lexacts); }
+                /* 95: ruleItem => itemName tokenRef */
+                var t = _sematicS[jjsp - 1];
+                { gb.addRuleItem(t, t.ext); }
                 break;
             case 96:
-                /* 96: tokenRef => "<" <NAME> ">" */
+                /* 96: ruleItem => itemName lexAction */
+                { gb.addAction(lexacts); }
+                break;
+            case 97:
+                /* 97: tokenRef => "<" <NAME> ">" */
                 var t = _sematicS[jjsp - 2];
                 { jjtop = t; jjtop.ext = TokenRefType.TOKEN; }
                 break;
-            case 97:
-                /* 97: tokenRef => <STRING> */
+            case 98:
+                /* 98: tokenRef => <STRING> */
                 { jjtop.ext = TokenRefType.STRING; }
                 break;
-            case 100:
-                /* 100: ruleTrailer => rulePrec lexAction */
+            case 101:
+                /* 101: ruleTrailer => rulePrec lexAction */
                 { gb.addAction(lexacts); }
                 break;
-            case 101:
-                /* 101: rulePrec => "%prec" <NAME> */
-                var t = _sematicS[jjsp - 1];
-                { gb.defineRulePr(t.val, TokenRefType.NAME, t.startLine); }
-                break;
             case 102:
-                /* 102: rulePrec => "%prec" tokenRef */
+                /* 102: rulePrec => "%prec" <NAME> */
                 var t = _sematicS[jjsp - 1];
-                { gb.defineRulePr(t.val, t.ext, t.startLine); }
+                { gb.defineRulePr(t, TokenRefType.NAME); }
                 break;
             case 103:
-                /* 103: @9 => */
-                _lexState.push(1);
+                /* 103: rulePrec => "%prec" tokenRef */
+                var t = _sematicS[jjsp - 1];
+                { gb.defineRulePr(t, t.ext); }
                 break;
             case 104:
-                /* 104: @10 => */
+                /* 104: @9 => */
+                _lexState.push(1);
+                break;
+            case 105:
+                /* 105: @10 => */
                 var open = _sematicS[jjsp - 2];
                 var bl = _sematicS[jjsp - 1];
                 _lexState.pop();
                 break;
-            case 105:
-                /* 105: block => @9 "{" innerBlock @10 "}" */
+            case 106:
+                /* 106: block => @9 "{" innerBlock @10 "}" */
                 var open = _sematicS[jjsp - 4];
                 var bl = _sematicS[jjsp - 3];
                 var close = _sematicS[jjsp - 1];
@@ -2198,26 +2246,26 @@ function createParser(): Parser {
     jjtop.endColumn = close.endColumn;
 }
                 break;
-            case 106:
-                /* 106: innerBlock => innerBlock innerBlockItem */
+            case 107:
+                /* 107: innerBlock => innerBlock innerBlockItem */
                 var b = _sematicS[jjsp - 1];
                 { jjtop.val += b.val; }
                 break;
-            case 107:
-                /* 107: innerBlock => */
+            case 108:
+                /* 108: innerBlock => */
                 { jjtop = newNode(''); }
                 break;
-            case 109:
-                /* 109: @11 => */
+            case 110:
+                /* 110: @11 => */
                 _lexState.push(1);
                 break;
-            case 110:
-                /* 110: @12 => */
+            case 111:
+                /* 111: @12 => */
                 var b = _sematicS[jjsp - 1];
                 _lexState.pop();
                 break;
-            case 111:
-                /* 111: innerBlockItem => @11 "{" innerBlock @12 "}" */
+            case 112:
+                /* 112: innerBlockItem => @11 "{" innerBlock @12 "}" */
                 var b = _sematicS[jjsp - 3];
                 { jjtop = newNode(''); jjtop.val = '{' + b.val + '}'; }
                 break;
@@ -2304,22 +2352,37 @@ function createParser(): Parser {
     };
 }
 
-
+function charPosition(line: number, column: number): Position{
+    return {
+        startLine: line,
+        startColumn: column,
+        endLine: line,
+        endColumn: column
+    }
+}
 export function parse(ctx: Context, source: string): File{
     let parser = createParser();
     let err = false;
     parser.on('lexicalerror', (msg, line, column) => {
-        ctx.err(new CompilationError(msg, line));
+        ctx.requireLines((ctx, lines) => {
+            let msg2 = msg + ' ' + markPosition(charPosition(line, column), lines);
+            ctx.err(new JsccError(msg2, 'LexicalError'));
+        });
+        // ctx.err(new CompilationError(msg, line));
         parser.halt();
         err = true;
     });
     parser.on('syntaxerror', (msg, token) => {
-        ctx.err(new CompilationError(msg, token.startLine));
+        // ctx.err(new CompilationError(msg, token.startLine));
+        ctx.requireLines((ctx, lines) => {
+            let msg2 = markPosition(token, lines) + endl + msg;
+            ctx.err(new JsccError(msg2, 'SyntaxError'));
+        });
         parser.halt();
         err = true;
     });
     let gb = createFileBuilder(ctx);
-    parser.init(gb);
+    parser.init(ctx, gb);
     parser.accept(source);
     parser.end();
     if(err){

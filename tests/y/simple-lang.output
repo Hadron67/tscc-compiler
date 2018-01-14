@@ -289,7 +289,7 @@ state 0
     [ 1: topstmtlist => . topstmtlist topstmt ]
     [ 2: topstmtlist => . ]
     default action: reduce with rule 2
-    topstmtlist : goto state 1
+    topstmtlist : go to state 1
 
 
 state 1
@@ -339,29 +339,29 @@ state 1
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <EOF> : shift, and goto state 2
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "{" : shift, and goto state 101
-    ";" : shift, and goto state 100
-    "!" : shift, and goto state 28
-    "if" : shift, and goto state 103
-    "while" : shift, and goto state 104
-    "do" : shift, and goto state 105
-    "for" : shift, and goto state 106
-    "function" : shift, and goto state 5
-    topstmt : goto state 3
-    stmt : goto state 4
-    exprlist : goto state 102
-    expr : goto state 37
-    const : goto state 29
-    var : goto state 24
+    <EOF> : shift, and go to state 2
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "{" : shift, and go to state 101
+    ";" : shift, and go to state 100
+    "!" : shift, and go to state 28
+    "if" : shift, and go to state 103
+    "while" : shift, and go to state 104
+    "do" : shift, and go to state 105
+    "for" : shift, and go to state 106
+    "function" : shift, and go to state 5
+    topstmt : go to state 3
+    stmt : go to state 4
+    exprlist : go to state 102
+    expr : go to state 37
+    const : go to state 29
+    var : go to state 24
 
 
 state 2
@@ -382,7 +382,7 @@ state 4
 state 5
     [ 4: topstmt => "function" . "(" argdeflist ")" "{" stmtlist "}" ]*
     no default action
-    "(" : shift, and goto state 6
+    "(" : shift, and go to state 6
 
 
 state 6
@@ -392,9 +392,9 @@ state 6
     [ 7: neargdeflist => . neargdeflist "," <NAME> ]
     [ 8: neargdeflist => . <NAME> ]
     default action: reduce with rule 6
-    <NAME> : shift, and goto state 35
-    argdeflist : goto state 33
-    neargdeflist : goto state 34
+    <NAME> : shift, and go to state 35
+    argdeflist : go to state 33
+    neargdeflist : go to state 34
 
 
 state 7
@@ -499,20 +499,20 @@ state 24
     [ 60: aoptr => . "<<=" ]
     [ 61: aoptr => . "%=" ]
     default action: reduce with rule 48
-    "=" : shift, and goto state 13
-    "+=" : shift, and goto state 14
-    "-=" : shift, and goto state 15
-    "*=" : shift, and goto state 16
-    "/=" : shift, and goto state 17
-    "&=" : shift, and goto state 18
-    "|=" : shift, and goto state 19
-    "^=" : shift, and goto state 20
-    ">>=" : shift, and goto state 21
-    "<<=" : shift, and goto state 22
-    "%=" : shift, and goto state 23
-    "++" : shift, and goto state 63
-    "--" : shift, and goto state 64
-    aoptr : goto state 62
+    "=" : shift, and go to state 13
+    "+=" : shift, and go to state 14
+    "-=" : shift, and go to state 15
+    "*=" : shift, and go to state 16
+    "/=" : shift, and go to state 17
+    "&=" : shift, and go to state 18
+    "|=" : shift, and go to state 19
+    "^=" : shift, and go to state 20
+    ">>=" : shift, and go to state 21
+    "<<=" : shift, and go to state 22
+    "%=" : shift, and go to state 23
+    "++" : shift, and go to state 63
+    "--" : shift, and go to state 64
+    aoptr : go to state 62
 
 
 state 25
@@ -550,18 +550,18 @@ state 25
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 65
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 65
+    const : go to state 29
+    var : go to state 24
 
 
 state 26
@@ -599,18 +599,18 @@ state 26
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 66
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 66
+    const : go to state 29
+    var : go to state 24
 
 
 state 27
@@ -648,18 +648,18 @@ state 27
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 67
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 67
+    const : go to state 29
+    var : go to state 24
 
 
 state 28
@@ -697,18 +697,18 @@ state 28
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 68
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 68
+    const : go to state 29
+    var : go to state 24
 
 
 state 29
@@ -751,18 +751,18 @@ state 30
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 69
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 69
+    const : go to state 29
+    var : go to state 24
 
 
 state 31
@@ -783,23 +783,23 @@ state 31
     [ 60: aoptr => . "<<=" ]
     [ 61: aoptr => . "%=" ]
     default action: reduce with rule 48
-    "=" : shift, and goto state 13
-    "+=" : shift, and goto state 14
-    "-=" : shift, and goto state 15
-    "*=" : shift, and goto state 16
-    "/=" : shift, and goto state 17
-    "&=" : shift, and goto state 18
-    "|=" : shift, and goto state 19
-    "^=" : shift, and goto state 20
-    ">>=" : shift, and goto state 21
-    "<<=" : shift, and goto state 22
-    "%=" : shift, and goto state 23
-    "++" : shift, and goto state 63
-    "--" : shift, and goto state 64
+    "=" : shift, and go to state 13
+    "+=" : shift, and go to state 14
+    "-=" : shift, and go to state 15
+    "*=" : shift, and go to state 16
+    "/=" : shift, and go to state 17
+    "&=" : shift, and go to state 18
+    "|=" : shift, and go to state 19
+    "^=" : shift, and go to state 20
+    ">>=" : shift, and go to state 21
+    "<<=" : shift, and go to state 22
+    "%=" : shift, and go to state 23
+    "++" : shift, and go to state 63
+    "--" : shift, and go to state 64
     ")" : reduce with rule 77
     "," : reduce with rule 77
     ";" : reduce with rule 77
-    aoptr : goto state 62
+    aoptr : go to state 62
 
 
 state 32
@@ -820,36 +820,36 @@ state 32
     [ 60: aoptr => . "<<=" ]
     [ 61: aoptr => . "%=" ]
     default action: reduce with rule 48
-    "=" : shift, and goto state 13
-    "+=" : shift, and goto state 14
-    "-=" : shift, and goto state 15
-    "*=" : shift, and goto state 16
-    "/=" : shift, and goto state 17
-    "&=" : shift, and goto state 18
-    "|=" : shift, and goto state 19
-    "^=" : shift, and goto state 20
-    ">>=" : shift, and goto state 21
-    "<<=" : shift, and goto state 22
-    "%=" : shift, and goto state 23
-    "++" : shift, and goto state 63
-    "--" : shift, and goto state 64
+    "=" : shift, and go to state 13
+    "+=" : shift, and go to state 14
+    "-=" : shift, and go to state 15
+    "*=" : shift, and go to state 16
+    "/=" : shift, and go to state 17
+    "&=" : shift, and go to state 18
+    "|=" : shift, and go to state 19
+    "^=" : shift, and go to state 20
+    ">>=" : shift, and go to state 21
+    "<<=" : shift, and go to state 22
+    "%=" : shift, and go to state 23
+    "++" : shift, and go to state 63
+    "--" : shift, and go to state 64
     ")" : reduce with rule 78
     "," : reduce with rule 78
     ";" : reduce with rule 78
-    aoptr : goto state 62
+    aoptr : go to state 62
 
 
 state 33
     [ 4: topstmt => "function" "(" argdeflist . ")" "{" stmtlist "}" ]*
     no default action
-    ")" : shift, and goto state 70
+    ")" : shift, and go to state 70
 
 
 state 34
     [ 5: argdeflist => neargdeflist . ]*
     [ 7: neargdeflist => neargdeflist . "," <NAME> ]*
     default action: reduce with rule 5
-    "," : shift, and goto state 71
+    "," : shift, and go to state 71
 
 
 state 35
@@ -889,30 +889,30 @@ state 37
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     default action: reduce with rule 23
-    "+" : shift, and goto state 54
-    "-" : shift, and goto state 55
-    "*" : shift, and goto state 56
-    "/" : shift, and goto state 57
-    "**" : shift, and goto state 59
-    "?" : shift, and goto state 44
-    "%" : shift, and goto state 58
-    ">" : shift, and goto state 7
-    "<" : shift, and goto state 8
-    ">=" : shift, and goto state 9
-    "<=" : shift, and goto state 10
-    "==" : shift, and goto state 11
-    "!=" : shift, and goto state 12
-    "&" : shift, and goto state 49
-    "|" : shift, and goto state 47
-    "^" : shift, and goto state 48
-    "<<" : shift, and goto state 52
-    ">>" : shift, and goto state 51
-    ">>>" : shift, and goto state 53
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    "&&" : shift, and goto state 46
-    "||" : shift, and goto state 45
-    coptr : goto state 50
+    "+" : shift, and go to state 54
+    "-" : shift, and go to state 55
+    "*" : shift, and go to state 56
+    "/" : shift, and go to state 57
+    "**" : shift, and go to state 59
+    "?" : shift, and go to state 44
+    "%" : shift, and go to state 58
+    ">" : shift, and go to state 7
+    "<" : shift, and go to state 8
+    ">=" : shift, and go to state 9
+    "<=" : shift, and go to state 10
+    "==" : shift, and go to state 11
+    "!=" : shift, and go to state 12
+    "&" : shift, and go to state 49
+    "|" : shift, and go to state 47
+    "^" : shift, and go to state 48
+    "<<" : shift, and go to state 52
+    ">>" : shift, and go to state 51
+    ">>>" : shift, and go to state 53
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    "&&" : shift, and go to state 46
+    "||" : shift, and go to state 45
+    coptr : go to state 50
 
 
 state 38
@@ -955,18 +955,18 @@ state 39
     [ 50: expr => . var "--" ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 74
-    const : goto state 29
-    var : goto state 73
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 74
+    const : go to state 29
+    var : go to state 73
 
 
 state 40
@@ -1004,18 +1004,18 @@ state 40
     [ 50: expr => . var "--" ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 74
-    const : goto state 29
-    var : goto state 75
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 74
+    const : go to state 29
+    var : go to state 75
 
 
 state 41
@@ -1029,8 +1029,8 @@ state 42
     [ 72: possibleComma => . "," ]
     [ 73: possibleComma => . ]
     default action: reduce with rule 73
-    "," : shift, and goto state 77
-    possibleComma : goto state 76
+    "," : shift, and go to state 77
+    possibleComma : go to state 76
 
 
 state 43
@@ -1060,30 +1060,30 @@ state 43
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     default action: reduce with rule 71
-    "+" : shift, and goto state 54
-    "-" : shift, and goto state 55
-    "*" : shift, and goto state 56
-    "/" : shift, and goto state 57
-    "**" : shift, and goto state 59
-    "?" : shift, and goto state 44
-    "%" : shift, and goto state 58
-    ">" : shift, and goto state 7
-    "<" : shift, and goto state 8
-    ">=" : shift, and goto state 9
-    "<=" : shift, and goto state 10
-    "==" : shift, and goto state 11
-    "!=" : shift, and goto state 12
-    "&" : shift, and goto state 49
-    "|" : shift, and goto state 47
-    "^" : shift, and goto state 48
-    "<<" : shift, and goto state 52
-    ">>" : shift, and goto state 51
-    ">>>" : shift, and goto state 53
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    "&&" : shift, and goto state 46
-    "||" : shift, and goto state 45
-    coptr : goto state 50
+    "+" : shift, and go to state 54
+    "-" : shift, and go to state 55
+    "*" : shift, and go to state 56
+    "/" : shift, and go to state 57
+    "**" : shift, and go to state 59
+    "?" : shift, and go to state 44
+    "%" : shift, and go to state 58
+    ">" : shift, and go to state 7
+    "<" : shift, and go to state 8
+    ">=" : shift, and go to state 9
+    "<=" : shift, and go to state 10
+    "==" : shift, and go to state 11
+    "!=" : shift, and go to state 12
+    "&" : shift, and go to state 49
+    "|" : shift, and go to state 47
+    "^" : shift, and go to state 48
+    "<<" : shift, and go to state 52
+    ">>" : shift, and go to state 51
+    ">>>" : shift, and go to state 53
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    "&&" : shift, and go to state 46
+    "||" : shift, and go to state 45
+    coptr : go to state 50
 
 
 state 44
@@ -1121,18 +1121,18 @@ state 44
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 78
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 78
+    const : go to state 29
+    var : go to state 24
 
 
 state 45
@@ -1170,18 +1170,18 @@ state 45
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 79
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 79
+    const : go to state 29
+    var : go to state 24
 
 
 state 46
@@ -1219,18 +1219,18 @@ state 46
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 80
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 80
+    const : go to state 29
+    var : go to state 24
 
 
 state 47
@@ -1268,18 +1268,18 @@ state 47
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 81
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 81
+    const : go to state 29
+    var : go to state 24
 
 
 state 48
@@ -1317,18 +1317,18 @@ state 48
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 82
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 82
+    const : go to state 29
+    var : go to state 24
 
 
 state 49
@@ -1366,18 +1366,18 @@ state 49
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 83
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 83
+    const : go to state 29
+    var : go to state 24
 
 
 state 50
@@ -1415,18 +1415,18 @@ state 50
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 84
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 84
+    const : go to state 29
+    var : go to state 24
 
 
 state 51
@@ -1464,18 +1464,18 @@ state 51
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 85
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 85
+    const : go to state 29
+    var : go to state 24
 
 
 state 52
@@ -1513,18 +1513,18 @@ state 52
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 86
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 86
+    const : go to state 29
+    var : go to state 24
 
 
 state 53
@@ -1562,18 +1562,18 @@ state 53
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 87
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 87
+    const : go to state 29
+    var : go to state 24
 
 
 state 54
@@ -1611,18 +1611,18 @@ state 54
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 88
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 88
+    const : go to state 29
+    var : go to state 24
 
 
 state 55
@@ -1660,18 +1660,18 @@ state 55
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 89
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 89
+    const : go to state 29
+    var : go to state 24
 
 
 state 56
@@ -1709,18 +1709,18 @@ state 56
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 90
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 90
+    const : go to state 29
+    var : go to state 24
 
 
 state 57
@@ -1758,18 +1758,18 @@ state 57
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 91
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 91
+    const : go to state 29
+    var : go to state 24
 
 
 state 58
@@ -1807,18 +1807,18 @@ state 58
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 92
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 92
+    const : go to state 29
+    var : go to state 24
 
 
 state 59
@@ -1856,18 +1856,18 @@ state 59
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 93
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 93
+    const : go to state 29
+    var : go to state 24
 
 
 state 60
@@ -1909,20 +1909,20 @@ state 60
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     default action: reduce with rule 69
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 43
-    arglist : goto state 94
-    narglist : goto state 42
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 43
+    arglist : go to state 94
+    narglist : go to state 42
+    const : go to state 29
+    var : go to state 24
 
 
 state 61
@@ -1962,19 +1962,19 @@ state 61
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    exprlist : goto state 95
-    expr : goto state 37
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    exprlist : go to state 95
+    expr : go to state 37
+    const : go to state 29
+    var : go to state 24
 
 
 state 62
@@ -2012,18 +2012,18 @@ state 62
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 96
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 96
+    const : go to state 29
+    var : go to state 24
 
 
 state 63
@@ -2063,10 +2063,10 @@ state 65
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     default action: reduce with rule 41
-    "**" : shift, and goto state 59
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    coptr : goto state 50
+    "**" : shift, and go to state 59
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    coptr : go to state 50
 
 
 state 66
@@ -2096,10 +2096,10 @@ state 66
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     default action: reduce with rule 42
-    "**" : shift, and goto state 59
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    coptr : goto state 50
+    "**" : shift, and go to state 59
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    coptr : go to state 50
 
 
 state 67
@@ -2129,10 +2129,10 @@ state 67
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     default action: reduce with rule 43
-    "**" : shift, and goto state 59
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    coptr : goto state 50
+    "**" : shift, and go to state 59
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    coptr : go to state 50
 
 
 state 68
@@ -2162,10 +2162,10 @@ state 68
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     default action: reduce with rule 44
-    "**" : shift, and goto state 59
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    coptr : goto state 50
+    "**" : shift, and go to state 59
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    coptr : go to state 50
 
 
 state 69
@@ -2195,43 +2195,43 @@ state 69
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     no default action
-    "+" : shift, and goto state 54
-    "-" : shift, and goto state 55
-    "*" : shift, and goto state 56
-    "/" : shift, and goto state 57
-    "**" : shift, and goto state 59
-    "?" : shift, and goto state 44
-    "%" : shift, and goto state 58
-    ">" : shift, and goto state 7
-    "<" : shift, and goto state 8
-    ">=" : shift, and goto state 9
-    "<=" : shift, and goto state 10
-    "==" : shift, and goto state 11
-    "!=" : shift, and goto state 12
-    "&" : shift, and goto state 49
-    "|" : shift, and goto state 47
-    "^" : shift, and goto state 48
-    "<<" : shift, and goto state 52
-    ">>" : shift, and goto state 51
-    ">>>" : shift, and goto state 53
-    "(" : shift, and goto state 60
-    ")" : shift, and goto state 97
-    "[" : shift, and goto state 61
-    "&&" : shift, and goto state 46
-    "||" : shift, and goto state 45
-    coptr : goto state 50
+    "+" : shift, and go to state 54
+    "-" : shift, and go to state 55
+    "*" : shift, and go to state 56
+    "/" : shift, and go to state 57
+    "**" : shift, and go to state 59
+    "?" : shift, and go to state 44
+    "%" : shift, and go to state 58
+    ">" : shift, and go to state 7
+    "<" : shift, and go to state 8
+    ">=" : shift, and go to state 9
+    "<=" : shift, and go to state 10
+    "==" : shift, and go to state 11
+    "!=" : shift, and go to state 12
+    "&" : shift, and go to state 49
+    "|" : shift, and go to state 47
+    "^" : shift, and go to state 48
+    "<<" : shift, and go to state 52
+    ">>" : shift, and go to state 51
+    ">>>" : shift, and go to state 53
+    "(" : shift, and go to state 60
+    ")" : shift, and go to state 97
+    "[" : shift, and go to state 61
+    "&&" : shift, and go to state 46
+    "||" : shift, and go to state 45
+    coptr : go to state 50
 
 
 state 70
     [ 4: topstmt => "function" "(" argdeflist ")" . "{" stmtlist "}" ]*
     no default action
-    "{" : shift, and goto state 98
+    "{" : shift, and go to state 98
 
 
 state 71
     [ 7: neargdeflist => neargdeflist "," . <NAME> ]*
     no default action
-    <NAME> : shift, and goto state 99
+    <NAME> : shift, and go to state 99
 
 
 state 72
@@ -2269,18 +2269,18 @@ state 72
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 107
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 107
+    const : go to state 29
+    var : go to state 24
 
 
 state 73
@@ -2301,25 +2301,25 @@ state 73
     [ 60: aoptr => . "<<=" ]
     [ 61: aoptr => . "%=" ]
     default action: reduce with rule 48
-    "=" : shift, and goto state 13
-    "+=" : shift, and goto state 14
-    "-=" : shift, and goto state 15
-    "*=" : shift, and goto state 16
-    "/=" : shift, and goto state 17
-    "&=" : shift, and goto state 18
-    "|=" : shift, and goto state 19
-    "^=" : shift, and goto state 20
-    ">>=" : shift, and goto state 21
-    "<<=" : shift, and goto state 22
-    "%=" : shift, and goto state 23
-    "++" : shift, and goto state 63
-    "--" : shift, and goto state 64
+    "=" : shift, and go to state 13
+    "+=" : shift, and go to state 14
+    "-=" : shift, and go to state 15
+    "*=" : shift, and go to state 16
+    "/=" : shift, and go to state 17
+    "&=" : shift, and go to state 18
+    "|=" : shift, and go to state 19
+    "^=" : shift, and go to state 20
+    ">>=" : shift, and go to state 21
+    "<<=" : shift, and go to state 22
+    "%=" : shift, and go to state 23
+    "++" : shift, and go to state 63
+    "--" : shift, and go to state 64
     ":" : reduce with rule 77
     ")" : reduce with rule 77
     "]" : reduce with rule 77
     "," : reduce with rule 77
     ";" : reduce with rule 77
-    aoptr : goto state 62
+    aoptr : go to state 62
 
 
 state 74
@@ -2348,30 +2348,30 @@ state 74
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     no default action
-    "+" : shift, and goto state 54
-    "-" : shift, and goto state 55
-    "*" : shift, and goto state 56
-    "/" : shift, and goto state 57
-    "**" : shift, and goto state 59
-    "?" : shift, and goto state 44
-    "%" : shift, and goto state 58
-    ">" : shift, and goto state 7
-    "<" : shift, and goto state 8
-    ">=" : shift, and goto state 9
-    "<=" : shift, and goto state 10
-    "==" : shift, and goto state 11
-    "!=" : shift, and goto state 12
-    "&" : shift, and goto state 49
-    "|" : shift, and goto state 47
-    "^" : shift, and goto state 48
-    "<<" : shift, and goto state 52
-    ">>" : shift, and goto state 51
-    ">>>" : shift, and goto state 53
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    "&&" : shift, and goto state 46
-    "||" : shift, and goto state 45
-    coptr : goto state 50
+    "+" : shift, and go to state 54
+    "-" : shift, and go to state 55
+    "*" : shift, and go to state 56
+    "/" : shift, and go to state 57
+    "**" : shift, and go to state 59
+    "?" : shift, and go to state 44
+    "%" : shift, and go to state 58
+    ">" : shift, and go to state 7
+    "<" : shift, and go to state 8
+    ">=" : shift, and go to state 9
+    "<=" : shift, and go to state 10
+    "==" : shift, and go to state 11
+    "!=" : shift, and go to state 12
+    "&" : shift, and go to state 49
+    "|" : shift, and go to state 47
+    "^" : shift, and go to state 48
+    "<<" : shift, and go to state 52
+    ">>" : shift, and go to state 51
+    ">>>" : shift, and go to state 53
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    "&&" : shift, and go to state 46
+    "||" : shift, and go to state 45
+    coptr : go to state 50
 
 
 state 75
@@ -2392,25 +2392,25 @@ state 75
     [ 60: aoptr => . "<<=" ]
     [ 61: aoptr => . "%=" ]
     default action: reduce with rule 48
-    "=" : shift, and goto state 13
-    "+=" : shift, and goto state 14
-    "-=" : shift, and goto state 15
-    "*=" : shift, and goto state 16
-    "/=" : shift, and goto state 17
-    "&=" : shift, and goto state 18
-    "|=" : shift, and goto state 19
-    "^=" : shift, and goto state 20
-    ">>=" : shift, and goto state 21
-    "<<=" : shift, and goto state 22
-    "%=" : shift, and goto state 23
-    "++" : shift, and goto state 63
-    "--" : shift, and goto state 64
+    "=" : shift, and go to state 13
+    "+=" : shift, and go to state 14
+    "-=" : shift, and go to state 15
+    "*=" : shift, and go to state 16
+    "/=" : shift, and go to state 17
+    "&=" : shift, and go to state 18
+    "|=" : shift, and go to state 19
+    "^=" : shift, and go to state 20
+    ">>=" : shift, and go to state 21
+    "<<=" : shift, and go to state 22
+    "%=" : shift, and go to state 23
+    "++" : shift, and go to state 63
+    "--" : shift, and go to state 64
     ":" : reduce with rule 78
     ")" : reduce with rule 78
     "]" : reduce with rule 78
     "," : reduce with rule 78
     ";" : reduce with rule 78
-    aoptr : goto state 62
+    aoptr : go to state 62
 
 
 state 76
@@ -2454,18 +2454,18 @@ state 77
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     default action: reduce with rule 72
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 108
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 108
+    const : go to state 29
+    var : go to state 24
 
 
 state 78
@@ -2495,31 +2495,31 @@ state 78
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     no default action
-    "+" : shift, and goto state 54
-    "-" : shift, and goto state 55
-    "*" : shift, and goto state 56
-    "/" : shift, and goto state 57
-    "**" : shift, and goto state 59
-    "?" : shift, and goto state 44
-    ":" : shift, and goto state 109
-    "%" : shift, and goto state 58
-    ">" : shift, and goto state 7
-    "<" : shift, and goto state 8
-    ">=" : shift, and goto state 9
-    "<=" : shift, and goto state 10
-    "==" : shift, and goto state 11
-    "!=" : shift, and goto state 12
-    "&" : shift, and goto state 49
-    "|" : shift, and goto state 47
-    "^" : shift, and goto state 48
-    "<<" : shift, and goto state 52
-    ">>" : shift, and goto state 51
-    ">>>" : shift, and goto state 53
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    "&&" : shift, and goto state 46
-    "||" : shift, and goto state 45
-    coptr : goto state 50
+    "+" : shift, and go to state 54
+    "-" : shift, and go to state 55
+    "*" : shift, and go to state 56
+    "/" : shift, and go to state 57
+    "**" : shift, and go to state 59
+    "?" : shift, and go to state 44
+    ":" : shift, and go to state 109
+    "%" : shift, and go to state 58
+    ">" : shift, and go to state 7
+    "<" : shift, and go to state 8
+    ">=" : shift, and go to state 9
+    "<=" : shift, and go to state 10
+    "==" : shift, and go to state 11
+    "!=" : shift, and go to state 12
+    "&" : shift, and go to state 49
+    "|" : shift, and go to state 47
+    "^" : shift, and go to state 48
+    "<<" : shift, and go to state 52
+    ">>" : shift, and go to state 51
+    ">>>" : shift, and go to state 53
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    "&&" : shift, and go to state 46
+    "||" : shift, and go to state 45
+    coptr : go to state 50
 
 
 state 79
@@ -2549,10 +2549,10 @@ state 79
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     default action: reduce with rule 26
-    "**" : shift, and goto state 59
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    coptr : goto state 50
+    "**" : shift, and go to state 59
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    coptr : go to state 50
 
 
 state 80
@@ -2582,10 +2582,10 @@ state 80
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     default action: reduce with rule 27
-    "**" : shift, and goto state 59
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    coptr : goto state 50
+    "**" : shift, and go to state 59
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    coptr : go to state 50
 
 
 state 81
@@ -2615,10 +2615,10 @@ state 81
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     default action: reduce with rule 28
-    "**" : shift, and goto state 59
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    coptr : goto state 50
+    "**" : shift, and go to state 59
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    coptr : go to state 50
 
 
 state 82
@@ -2648,10 +2648,10 @@ state 82
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     default action: reduce with rule 29
-    "**" : shift, and goto state 59
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    coptr : goto state 50
+    "**" : shift, and go to state 59
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    coptr : go to state 50
 
 
 state 83
@@ -2681,10 +2681,10 @@ state 83
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     default action: reduce with rule 30
-    "**" : shift, and goto state 59
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    coptr : goto state 50
+    "**" : shift, and go to state 59
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    coptr : go to state 50
 
 
 state 84
@@ -2714,10 +2714,10 @@ state 84
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     default action: reduce with rule 31
-    "**" : shift, and goto state 59
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    coptr : goto state 50
+    "**" : shift, and go to state 59
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    coptr : go to state 50
 
 
 state 85
@@ -2747,10 +2747,10 @@ state 85
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     default action: reduce with rule 32
-    "**" : shift, and goto state 59
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    coptr : goto state 50
+    "**" : shift, and go to state 59
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    coptr : go to state 50
 
 
 state 86
@@ -2780,10 +2780,10 @@ state 86
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     default action: reduce with rule 33
-    "**" : shift, and goto state 59
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    coptr : goto state 50
+    "**" : shift, and go to state 59
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    coptr : go to state 50
 
 
 state 87
@@ -2813,10 +2813,10 @@ state 87
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     default action: reduce with rule 34
-    "**" : shift, and goto state 59
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    coptr : goto state 50
+    "**" : shift, and go to state 59
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    coptr : go to state 50
 
 
 state 88
@@ -2846,10 +2846,10 @@ state 88
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     default action: reduce with rule 35
-    "**" : shift, and goto state 59
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    coptr : goto state 50
+    "**" : shift, and go to state 59
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    coptr : go to state 50
 
 
 state 89
@@ -2879,10 +2879,10 @@ state 89
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     default action: reduce with rule 36
-    "**" : shift, and goto state 59
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    coptr : goto state 50
+    "**" : shift, and go to state 59
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    coptr : go to state 50
 
 
 state 90
@@ -2912,10 +2912,10 @@ state 90
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     default action: reduce with rule 37
-    "**" : shift, and goto state 59
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    coptr : goto state 50
+    "**" : shift, and go to state 59
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    coptr : go to state 50
 
 
 state 91
@@ -2945,10 +2945,10 @@ state 91
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     default action: reduce with rule 38
-    "**" : shift, and goto state 59
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    coptr : goto state 50
+    "**" : shift, and go to state 59
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    coptr : go to state 50
 
 
 state 92
@@ -2978,10 +2978,10 @@ state 92
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     default action: reduce with rule 39
-    "**" : shift, and goto state 59
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    coptr : goto state 50
+    "**" : shift, and go to state 59
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    coptr : go to state 50
 
 
 state 93
@@ -3011,24 +3011,24 @@ state 93
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     default action: reduce with rule 40
-    "**" : shift, and goto state 59
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    coptr : goto state 50
+    "**" : shift, and go to state 59
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    coptr : go to state 50
 
 
 state 94
     [ 47: expr => expr "(" arglist . ")" ]*
     no default action
-    ")" : shift, and goto state 110
+    ")" : shift, and go to state 110
 
 
 state 95
     [ 76: var => expr "[" exprlist . "]" ]*
     [ 22: exprlist => exprlist . "," expr ]*
     no default action
-    "]" : shift, and goto state 111
-    "," : shift, and goto state 72
+    "]" : shift, and go to state 111
+    "," : shift, and go to state 72
 
 
 state 96
@@ -3058,10 +3058,10 @@ state 96
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     default action: reduce with rule 24
-    "**" : shift, and goto state 59
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    coptr : goto state 50
+    "**" : shift, and go to state 59
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    coptr : go to state 50
 
 
 state 97
@@ -3074,7 +3074,7 @@ state 98
     [ 9: stmtlist => . stmtlist stmt ]
     [ 10: stmtlist => . ]
     default action: reduce with rule 10
-    stmtlist : goto state 112
+    stmtlist : go to state 112
 
 
 state 99
@@ -3092,27 +3092,27 @@ state 101
     [ 9: stmtlist => . stmtlist stmt ]
     [ 10: stmtlist => . ]
     default action: reduce with rule 10
-    stmtlist : goto state 113
+    stmtlist : go to state 113
 
 
 state 102
     [ 13: stmt => exprlist . ";" ]*
     [ 22: exprlist => exprlist . "," expr ]*
     no default action
-    "," : shift, and goto state 72
-    ";" : shift, and goto state 114
+    "," : shift, and go to state 72
+    ";" : shift, and go to state 114
 
 
 state 103
     [ 14: stmt => "if" . "(" exprlist ")" stmt elsestmt ]*
     no default action
-    "(" : shift, and goto state 115
+    "(" : shift, and go to state 115
 
 
 state 104
     [ 15: stmt => "while" . "(" exprlist ")" stmt ]*
     no default action
-    "(" : shift, and goto state 116
+    "(" : shift, and go to state 116
 
 
 state 105
@@ -3159,32 +3159,32 @@ state 105
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "{" : shift, and goto state 101
-    ";" : shift, and goto state 100
-    "!" : shift, and goto state 28
-    "if" : shift, and goto state 103
-    "while" : shift, and goto state 104
-    "do" : shift, and goto state 105
-    "for" : shift, and goto state 106
-    stmt : goto state 117
-    exprlist : goto state 102
-    expr : goto state 37
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "{" : shift, and go to state 101
+    ";" : shift, and go to state 100
+    "!" : shift, and go to state 28
+    "if" : shift, and go to state 103
+    "while" : shift, and go to state 104
+    "do" : shift, and go to state 105
+    "for" : shift, and go to state 106
+    stmt : go to state 117
+    exprlist : go to state 102
+    expr : go to state 37
+    const : go to state 29
+    var : go to state 24
 
 
 state 106
     [ 17: stmt => "for" . "(" forexpr ";" forexpr ";" forexpr ")" stmt ]*
     no default action
-    "(" : shift, and goto state 118
+    "(" : shift, and go to state 118
 
 
 state 107
@@ -3214,30 +3214,30 @@ state 107
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     default action: reduce with rule 22
-    "+" : shift, and goto state 54
-    "-" : shift, and goto state 55
-    "*" : shift, and goto state 56
-    "/" : shift, and goto state 57
-    "**" : shift, and goto state 59
-    "?" : shift, and goto state 44
-    "%" : shift, and goto state 58
-    ">" : shift, and goto state 7
-    "<" : shift, and goto state 8
-    ">=" : shift, and goto state 9
-    "<=" : shift, and goto state 10
-    "==" : shift, and goto state 11
-    "!=" : shift, and goto state 12
-    "&" : shift, and goto state 49
-    "|" : shift, and goto state 47
-    "^" : shift, and goto state 48
-    "<<" : shift, and goto state 52
-    ">>" : shift, and goto state 51
-    ">>>" : shift, and goto state 53
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    "&&" : shift, and goto state 46
-    "||" : shift, and goto state 45
-    coptr : goto state 50
+    "+" : shift, and go to state 54
+    "-" : shift, and go to state 55
+    "*" : shift, and go to state 56
+    "/" : shift, and go to state 57
+    "**" : shift, and go to state 59
+    "?" : shift, and go to state 44
+    "%" : shift, and go to state 58
+    ">" : shift, and go to state 7
+    "<" : shift, and go to state 8
+    ">=" : shift, and go to state 9
+    "<=" : shift, and go to state 10
+    "==" : shift, and go to state 11
+    "!=" : shift, and go to state 12
+    "&" : shift, and go to state 49
+    "|" : shift, and go to state 47
+    "^" : shift, and go to state 48
+    "<<" : shift, and go to state 52
+    ">>" : shift, and go to state 51
+    ">>>" : shift, and go to state 53
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    "&&" : shift, and go to state 46
+    "||" : shift, and go to state 45
+    coptr : go to state 50
 
 
 state 108
@@ -3267,30 +3267,30 @@ state 108
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     default action: reduce with rule 70
-    "+" : shift, and goto state 54
-    "-" : shift, and goto state 55
-    "*" : shift, and goto state 56
-    "/" : shift, and goto state 57
-    "**" : shift, and goto state 59
-    "?" : shift, and goto state 44
-    "%" : shift, and goto state 58
-    ">" : shift, and goto state 7
-    "<" : shift, and goto state 8
-    ">=" : shift, and goto state 9
-    "<=" : shift, and goto state 10
-    "==" : shift, and goto state 11
-    "!=" : shift, and goto state 12
-    "&" : shift, and goto state 49
-    "|" : shift, and goto state 47
-    "^" : shift, and goto state 48
-    "<<" : shift, and goto state 52
-    ">>" : shift, and goto state 51
-    ">>>" : shift, and goto state 53
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    "&&" : shift, and goto state 46
-    "||" : shift, and goto state 45
-    coptr : goto state 50
+    "+" : shift, and go to state 54
+    "-" : shift, and go to state 55
+    "*" : shift, and go to state 56
+    "/" : shift, and go to state 57
+    "**" : shift, and go to state 59
+    "?" : shift, and go to state 44
+    "%" : shift, and go to state 58
+    ">" : shift, and go to state 7
+    "<" : shift, and go to state 8
+    ">=" : shift, and go to state 9
+    "<=" : shift, and go to state 10
+    "==" : shift, and go to state 11
+    "!=" : shift, and go to state 12
+    "&" : shift, and go to state 49
+    "|" : shift, and go to state 47
+    "^" : shift, and go to state 48
+    "<<" : shift, and go to state 52
+    ">>" : shift, and go to state 51
+    ">>>" : shift, and go to state 53
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    "&&" : shift, and go to state 46
+    "||" : shift, and go to state 45
+    coptr : go to state 50
 
 
 state 109
@@ -3328,18 +3328,18 @@ state 109
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    expr : goto state 119
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    expr : go to state 119
+    const : go to state 29
+    var : go to state 24
 
 
 state 110
@@ -3397,27 +3397,27 @@ state 112
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "{" : shift, and goto state 101
-    "}" : shift, and goto state 120
-    ";" : shift, and goto state 100
-    "!" : shift, and goto state 28
-    "if" : shift, and goto state 103
-    "while" : shift, and goto state 104
-    "do" : shift, and goto state 105
-    "for" : shift, and goto state 106
-    stmt : goto state 36
-    exprlist : goto state 102
-    expr : goto state 37
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "{" : shift, and go to state 101
+    "}" : shift, and go to state 120
+    ";" : shift, and go to state 100
+    "!" : shift, and go to state 28
+    "if" : shift, and go to state 103
+    "while" : shift, and go to state 104
+    "do" : shift, and go to state 105
+    "for" : shift, and go to state 106
+    stmt : go to state 36
+    exprlist : go to state 102
+    expr : go to state 37
+    const : go to state 29
+    var : go to state 24
 
 
 state 113
@@ -3465,27 +3465,27 @@ state 113
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "{" : shift, and goto state 101
-    "}" : shift, and goto state 121
-    ";" : shift, and goto state 100
-    "!" : shift, and goto state 28
-    "if" : shift, and goto state 103
-    "while" : shift, and goto state 104
-    "do" : shift, and goto state 105
-    "for" : shift, and goto state 106
-    stmt : goto state 36
-    exprlist : goto state 102
-    expr : goto state 37
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "{" : shift, and go to state 101
+    "}" : shift, and go to state 121
+    ";" : shift, and go to state 100
+    "!" : shift, and go to state 28
+    "if" : shift, and go to state 103
+    "while" : shift, and go to state 104
+    "do" : shift, and go to state 105
+    "for" : shift, and go to state 106
+    stmt : go to state 36
+    exprlist : go to state 102
+    expr : go to state 37
+    const : go to state 29
+    var : go to state 24
 
 
 state 114
@@ -3530,19 +3530,19 @@ state 115
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    exprlist : goto state 122
-    expr : goto state 37
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    exprlist : go to state 122
+    expr : go to state 37
+    const : go to state 29
+    var : go to state 24
 
 
 state 116
@@ -3582,25 +3582,25 @@ state 116
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    exprlist : goto state 123
-    expr : goto state 37
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    exprlist : go to state 123
+    expr : go to state 37
+    const : go to state 29
+    var : go to state 24
 
 
 state 117
     [ 16: stmt => "do" stmt . "while" "(" exprlist ")" ";" ]*
     no default action
-    "while" : shift, and goto state 124
+    "while" : shift, and go to state 124
 
 
 state 118
@@ -3642,20 +3642,20 @@ state 118
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     default action: reduce with rule 20
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    forexpr : goto state 125
-    exprlist : goto state 126
-    expr : goto state 37
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    forexpr : go to state 125
+    exprlist : go to state 126
+    expr : go to state 37
+    const : go to state 29
+    var : go to state 24
 
 
 state 119
@@ -3685,10 +3685,10 @@ state 119
     [ 66: coptr => . "==" ]
     [ 67: coptr => . "!=" ]
     default action: reduce with rule 25
-    "**" : shift, and goto state 59
-    "(" : shift, and goto state 60
-    "[" : shift, and goto state 61
-    coptr : goto state 50
+    "**" : shift, and go to state 59
+    "(" : shift, and go to state 60
+    "[" : shift, and go to state 61
+    coptr : go to state 50
 
 
 state 120
@@ -3705,35 +3705,35 @@ state 122
     [ 14: stmt => "if" "(" exprlist . ")" stmt elsestmt ]*
     [ 22: exprlist => exprlist . "," expr ]*
     no default action
-    ")" : shift, and goto state 127
-    "," : shift, and goto state 72
+    ")" : shift, and go to state 127
+    "," : shift, and go to state 72
 
 
 state 123
     [ 15: stmt => "while" "(" exprlist . ")" stmt ]*
     [ 22: exprlist => exprlist . "," expr ]*
     no default action
-    ")" : shift, and goto state 128
-    "," : shift, and goto state 72
+    ")" : shift, and go to state 128
+    "," : shift, and go to state 72
 
 
 state 124
     [ 16: stmt => "do" stmt "while" . "(" exprlist ")" ";" ]*
     no default action
-    "(" : shift, and goto state 129
+    "(" : shift, and go to state 129
 
 
 state 125
     [ 17: stmt => "for" "(" forexpr . ";" forexpr ";" forexpr ")" stmt ]*
     no default action
-    ";" : shift, and goto state 130
+    ";" : shift, and go to state 130
 
 
 state 126
     [ 21: forexpr => exprlist . ]*
     [ 22: exprlist => exprlist . "," expr ]*
     default action: reduce with rule 21
-    "," : shift, and goto state 72
+    "," : shift, and go to state 72
 
 
 state 127
@@ -3780,26 +3780,26 @@ state 127
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "{" : shift, and goto state 101
-    ";" : shift, and goto state 100
-    "!" : shift, and goto state 28
-    "if" : shift, and goto state 103
-    "while" : shift, and goto state 104
-    "do" : shift, and goto state 105
-    "for" : shift, and goto state 106
-    stmt : goto state 131
-    exprlist : goto state 102
-    expr : goto state 37
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "{" : shift, and go to state 101
+    ";" : shift, and go to state 100
+    "!" : shift, and go to state 28
+    "if" : shift, and go to state 103
+    "while" : shift, and go to state 104
+    "do" : shift, and go to state 105
+    "for" : shift, and go to state 106
+    stmt : go to state 131
+    exprlist : go to state 102
+    expr : go to state 37
+    const : go to state 29
+    var : go to state 24
 
 
 state 128
@@ -3846,26 +3846,26 @@ state 128
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "{" : shift, and goto state 101
-    ";" : shift, and goto state 100
-    "!" : shift, and goto state 28
-    "if" : shift, and goto state 103
-    "while" : shift, and goto state 104
-    "do" : shift, and goto state 105
-    "for" : shift, and goto state 106
-    stmt : goto state 132
-    exprlist : goto state 102
-    expr : goto state 37
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "{" : shift, and go to state 101
+    ";" : shift, and go to state 100
+    "!" : shift, and go to state 28
+    "if" : shift, and go to state 103
+    "while" : shift, and go to state 104
+    "do" : shift, and go to state 105
+    "for" : shift, and go to state 106
+    stmt : go to state 132
+    exprlist : go to state 102
+    expr : go to state 37
+    const : go to state 29
+    var : go to state 24
 
 
 state 129
@@ -3905,19 +3905,19 @@ state 129
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    exprlist : goto state 133
-    expr : goto state 37
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    exprlist : go to state 133
+    expr : go to state 37
+    const : go to state 29
+    var : go to state 24
 
 
 state 130
@@ -3959,20 +3959,20 @@ state 130
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     default action: reduce with rule 20
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    forexpr : goto state 134
-    exprlist : goto state 126
-    expr : goto state 37
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    forexpr : go to state 134
+    exprlist : go to state 126
+    expr : go to state 37
+    const : go to state 29
+    var : go to state 24
 
 
 state 131
@@ -3980,8 +3980,8 @@ state 131
     [ 18: elsestmt => . ]
     [ 19: elsestmt => . "else" stmt ]
     default action: reduce with rule 18
-    "else" : shift, and goto state 136
-    elsestmt : goto state 135
+    "else" : shift, and go to state 136
+    elsestmt : go to state 135
 
 
 state 132
@@ -3993,14 +3993,14 @@ state 133
     [ 16: stmt => "do" stmt "while" "(" exprlist . ")" ";" ]*
     [ 22: exprlist => exprlist . "," expr ]*
     no default action
-    ")" : shift, and goto state 137
-    "," : shift, and goto state 72
+    ")" : shift, and go to state 137
+    "," : shift, and go to state 72
 
 
 state 134
     [ 17: stmt => "for" "(" forexpr ";" forexpr . ";" forexpr ")" stmt ]*
     no default action
-    ";" : shift, and goto state 138
+    ";" : shift, and go to state 138
 
 
 state 135
@@ -4052,32 +4052,32 @@ state 136
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "{" : shift, and goto state 101
-    ";" : shift, and goto state 100
-    "!" : shift, and goto state 28
-    "if" : shift, and goto state 103
-    "while" : shift, and goto state 104
-    "do" : shift, and goto state 105
-    "for" : shift, and goto state 106
-    stmt : goto state 139
-    exprlist : goto state 102
-    expr : goto state 37
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "{" : shift, and go to state 101
+    ";" : shift, and go to state 100
+    "!" : shift, and go to state 28
+    "if" : shift, and go to state 103
+    "while" : shift, and go to state 104
+    "do" : shift, and go to state 105
+    "for" : shift, and go to state 106
+    stmt : go to state 139
+    exprlist : go to state 102
+    expr : go to state 37
+    const : go to state 29
+    var : go to state 24
 
 
 state 137
     [ 16: stmt => "do" stmt "while" "(" exprlist ")" . ";" ]*
     no default action
-    ";" : shift, and goto state 140
+    ";" : shift, and go to state 140
 
 
 state 138
@@ -4119,20 +4119,20 @@ state 138
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     default action: reduce with rule 20
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "!" : shift, and goto state 28
-    forexpr : goto state 141
-    exprlist : goto state 126
-    expr : goto state 37
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "!" : shift, and go to state 28
+    forexpr : go to state 141
+    exprlist : go to state 126
+    expr : go to state 37
+    const : go to state 29
+    var : go to state 24
 
 
 state 139
@@ -4148,7 +4148,7 @@ state 140
 state 141
     [ 17: stmt => "for" "(" forexpr ";" forexpr ";" forexpr . ")" stmt ]*
     no default action
-    ")" : shift, and goto state 142
+    ")" : shift, and go to state 142
 
 
 state 142
@@ -4195,26 +4195,26 @@ state 142
     [ 78: var => . "--" var ]
     [ 74: const => . <NUM> ]
     no default action
-    <NAME> : shift, and goto state 38
-    <NUM> : shift, and goto state 41
-    "+" : shift, and goto state 25
-    "-" : shift, and goto state 26
-    "~" : shift, and goto state 27
-    "++" : shift, and goto state 39
-    "--" : shift, and goto state 40
-    "(" : shift, and goto state 30
-    "{" : shift, and goto state 101
-    ";" : shift, and goto state 100
-    "!" : shift, and goto state 28
-    "if" : shift, and goto state 103
-    "while" : shift, and goto state 104
-    "do" : shift, and goto state 105
-    "for" : shift, and goto state 106
-    stmt : goto state 143
-    exprlist : goto state 102
-    expr : goto state 37
-    const : goto state 29
-    var : goto state 24
+    <NAME> : shift, and go to state 38
+    <NUM> : shift, and go to state 41
+    "+" : shift, and go to state 25
+    "-" : shift, and go to state 26
+    "~" : shift, and go to state 27
+    "++" : shift, and go to state 39
+    "--" : shift, and go to state 40
+    "(" : shift, and go to state 30
+    "{" : shift, and go to state 101
+    ";" : shift, and go to state 100
+    "!" : shift, and go to state 28
+    "if" : shift, and go to state 103
+    "while" : shift, and go to state 104
+    "do" : shift, and go to state 105
+    "for" : shift, and go to state 106
+    stmt : go to state 143
+    exprlist : go to state 102
+    expr : go to state 37
+    const : go to state 29
+    var : go to state 24
 
 
 state 143

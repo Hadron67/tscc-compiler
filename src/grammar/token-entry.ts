@@ -1,4 +1,5 @@
 import { Locatable } from "../util/located";
+import { Position } from "../parser/node";
 
 export enum Assoc {
     UNDEFINED = 0,
@@ -6,13 +7,14 @@ export enum Assoc {
     RIGHT,
     NON
 };
-export interface TokenDef extends Locatable{
+export interface TokenDef {
     index: number,
     sym: string,
     alias: string,
     pr: number,
     assoc: Assoc,
     used: boolean,
+    appears: Position[]
 }
 export interface TokenEntry{
     tokenCount: number;

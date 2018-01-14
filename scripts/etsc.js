@@ -188,6 +188,7 @@ compileFiles('./src/codegen/templates', 'ets', '.ts', {
         `import { LexAction } from '../../lexer/action';`,
         `import { State, Arc } from '../../lexer/state';`,
         `import { Inf } from '../../util/interval-set';`,
+        `import { JNode } from '../../parser/node'`,
         ''
     ].join(endl),
     args: [

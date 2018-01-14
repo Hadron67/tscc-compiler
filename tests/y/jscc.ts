@@ -4,7 +4,7 @@
 */
 
 import { GBuilder } from '../../src/parser/gbuilder';
-import { Context } from '../../src/util/context';
+import { Reporter } from '../../src/util/context';
 import { JsccError, JsccWarning } from '../../src/util/E';
 
 
@@ -1185,7 +1185,7 @@ export class Parser {
     // extra members, defined by %extra_arg
     
     gb: GBuilder;
-    ctx: Context;
+    ctx: Reporter;
 
 
     init(){
