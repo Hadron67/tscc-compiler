@@ -8,9 +8,7 @@ export type Coroutine<T> = (success: boolean, data: T) => any;
 export class CoroutineMgr<T>{
     private _blocked: {[s: string]: Coroutine<T>[]} = {};
 
-    constructor(public getRes: (s: string) => T){
-
-    }
+    constructor(public getRes: (s: string) => T){}
 
     wait(s: string, cr: Coroutine<T>){
         let r = this.getRes(s);

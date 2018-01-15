@@ -9,6 +9,7 @@ import { File } from '../parser/file';
 export interface TemplateInput{
     endl: string;
     file: File;
+    output: string;
     // grammar
     pt: CompressedPTable;
 };

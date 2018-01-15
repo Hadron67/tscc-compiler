@@ -20,8 +20,9 @@ export default function(input: TemplateInput, output: TemplateOutput){
     }
 let prefix = input.file.prefix;
 let tab = getOpt('tab', '    ');
+let ists = input.output === 'typescript';
 function ts(s: string, s2?: string){
-    return input.file.output.val === 'typescript' ? s : s2 || '';
+    return ists ? s : (s2 || '');
 }
 function n(t: JNode, def: string = ''){
     return t === null ? def : t.val;
@@ -127,7 +128,11 @@ function printDFA(dfa: DFA<LexAction[]>, n: number){
     echoLine("");
     echo("function moveDFA");
     echo(n );
-    echoLine("(c: number, ret: { state: number, hasArc: boolean, isEnd: boolean }){");
+    echo("(c");
+    echo(ts(": number") );
+    echo(", ret");
+    echo(ts(": { state: number, hasArc: boolean, isEnd: boolean }") );
+    echoLine("){");
     echo("    switch(ret.state){");
     for(let state of dfa.states){
         printState(state);
@@ -341,8 +346,8 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echo("    function _doLexAction");
     echo(n );
     echo("(");
-    echo(statevn );
-    echoLine(": number){");
+    echo(statevn + ts(": number"));
+    echoLine("){");
     echo("        let ");
     echo(prefix );
     echo("tk = ");
@@ -379,6 +384,7 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echo("    }");
     } 
     echoLine("");
+    if(ists){ 
     echoLine("");
     echoLine("function tokenToString(tk: number){");
     echo("    return ");
@@ -388,7 +394,20 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echo("tokenNames[tk]}>` : `\"${");
     echo(prefix );
     echoLine("tokenAlias[tk]}\"`;");
-    echoLine("}");
+    echo("}");
+    } else { 
+    echoLine("");
+    echoLine("function tokenToString(tk){");
+    echo("    return ");
+    echo(prefix );
+    echo("tokenAlias[tk] === null ? \"<\" + ");
+    echo(prefix );
+    echo("tokenNames[tk] + \">\" : '\"' + ");
+    echo(prefix );
+    echoLine("tokenAlias[tk] + '\"';");
+    echo("}");
+    } 
+    if(ists){ 
     echoLine("");
     echoLine("class Token {");
     echoLine("    constructor(");
@@ -432,44 +451,120 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("    halt();");
     echoLine("    on(ent: string, cb: (a1?, a2?, a3?) => any);");
     echo("}");
+    } else { 
+    echoLine("");
+    echoLine("function Token(id, val, startLine, startColumn, endLine, endColumn){");
+    echoLine("    this.id = id;");
+    echoLine("    this.val = val;");
+    echoLine("    this.startLine = startLine;");
+    echoLine("    this.startColumn = startColumn;");
+    echoLine("    this.endLine = endLine;");
+    echoLine("    this.endColumn = endColumn;");
+    echoLine("}");
+    echoLine("Token.prototype.clone = function(){");
+    echoLine("    return new Token(");
+    echoLine("        this.id,");
+    echoLine("        this.val,");
+    echoLine("        this.startLine,");
+    echoLine("        this.startColumn,");
+    echoLine("        this.endLine,");
+    echoLine("        this.endColumn");
+    echoLine("    );");
+    echoLine("}");
+    echoLine("Token.prototype.toString = function(){");
+    echo("    return (");
+    echo(prefix );
+    echoLine("tokenAlias[this.id] === null ? ");
+    echo("        '<' + ");
+    echo(prefix );
+    echoLine("tokenNames[this.id] + '>' :");
+    echo("        '\"' + ");
+    echo(prefix );
+    echoLine("tokenAlias[this.id] + '\"') + \"(\" + this.val + \")\";");
+    echo("}");
+    } 
     let stype = n(input.file.sematicType, 'any'); 
     echoLine("");
-    echo("function createParser(): ");
+    echo("function create");
     echo(className );
+    echo("()");
+    echo(ts(': ' + className) );
     echoLine(" {");
     echoLine("    // members for lexer");
-    echoLine("    var _lexState: number[];");
-    echoLine("    var _state: number;");
-    echoLine("    var _matched: string;");
-    echoLine("    var _token: Token;");
+    echo("    var _lexState");
+    echo(ts(": number[]") );
+    echoLine(";");
+    echo("    var _state");
+    echo(ts(": number") );
+    echoLine(";");
+    echo("    var _matched");
+    echo(ts(": string") );
+    echoLine(";");
+    echo("    var _token");
+    echo(ts(": Token") );
+    echoLine(";");
     echoLine("    ");
-    echoLine("    var _marker: { state: number, line: number, column: number } = { state: -1, line: 0, column: 0 };");
-    echoLine("    var _backupCount: number;");
+    echo("    var _marker");
+    echo(ts(": { state: number, line: number, column: number }") );
+    echoLine(" = { state: -1, line: 0, column: 0 };");
+    echo("    var _backupCount");
+    echo(ts(": number") );
+    echoLine(";");
     echoLine("");
-    echoLine("    var _line: number;");
-    echoLine("    var _column: number;");
-    echoLine("    var _tline: number;");
-    echoLine("    var _tcolumn: number;");
+    echo("    var _line");
+    echo(ts(": number") );
+    echoLine(";");
+    echo("    var _column");
+    echo(ts(": number") );
+    echoLine(";");
+    echo("    var _tline");
+    echo(ts(": number") );
+    echoLine(";");
+    echo("    var _tcolumn");
+    echo(ts(": number") );
+    echoLine(";");
     echoLine("");
     echoLine("    // members for parser");
-    echoLine("    var _lrState: number[] = [];");
-    echo("    var _sematicS: ");
-    echo(stype );
-    echoLine("[] = [];");
-    echo("    var _sematicVal: ");
-    echo(stype );
+    echo("    var _lrState");
+    echo(ts(": number[]") );
+    echoLine(";");
+    echo("    var _sematicS");
+    echo(ts(': ' + stype + '[]') );
+    echoLine(" = [];");
+    echo("    var _sematicVal");
+    echo(ts(': ' + stype) );
     echoLine(";");
     echoLine("");
     echoLine("    var _stop;");
     echoLine("");
-    echoLine("    var _handlers: {[s: string]: ((a1?, a2?, a3?) => any)[]} = {};");
+    echo("    var _handlers");
+    echo(ts(": {[s: string]: ((a1?, a2?, a3?) => any)[]}") );
+    echoLine(" = {};");
     echoLine("");
     echoLine("    // extra members, defined by %extra_arg");
     echo("    ");
     echo(n(input.file.extraArgs) );
     echoLine("");
+    if(ists) { 
     echoLine("");
-    echoLine("    ");
+    echoLine("    return {");
+    echoLine("        init,");
+    echoLine("        on,");
+    echoLine("        accept,");
+    echoLine("        end,");
+    echoLine("        halt");
+    echo("    };");
+    } else { 
+    echoLine("");
+    echoLine("    return {");
+    echoLine("        init: init,");
+    echoLine("        on: on,");
+    echoLine("        accept: accept,");
+    echoLine("        end: end,");
+    echoLine("        halt: halt");
+    echo("    };");
+    } 
+    echoLine("");
     echo("    function init(");
     echo(n(input.file.initArg) );
     echoLine("){");
@@ -494,12 +589,16 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("    /**");
     echoLine("     *  set ");
     echoLine("     */");
-    echoLine("    function _setImg(s: string){");
+    echo("    function _setImg(s");
+    echo(ts(": string") );
+    echoLine("){");
     echoLine("        _matched = s;");
     echoLine("        _tline = _line;");
     echoLine("        _tcolumn = _column;");
     echoLine("    }");
-    echoLine("    function _prepareToken(tid: number){");
+    echo("    function _prepareToken(tid");
+    echo(ts(": number") );
+    echoLine("){");
     echoLine("        _token.id = tid;");
     echoLine("        _token.val = _matched;");
     echoLine("        _token.startLine = _tline;");
@@ -518,7 +617,9 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("        while(!_stop && !_acceptToken(_token));");
     echoLine("        _token.id = -1;");
     echoLine("    }");
-    echoLine("    function _emit(name: string, a1?, a2?, a3?){");
+    echo("    function _emit(name");
+    echo(ts(": string") + ts(", a1?, a2?, a3?", ", a1, a2, a3") );
+    echoLine("){");
     echoLine("        var cbs = _handlers[name];");
     echoLine("        if(cbs){");
     echoLine("            for(var i = 0; i < cbs.length; i++){");
@@ -526,7 +627,11 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("            }");
     echoLine("        }");
     echoLine("    }");
-    echoLine("    function on(name: string, cb: (a1?, a2?, a3?) => any){");
+    echo("    function on(name");
+    echo(ts(": string") );
+    echo(", cb");
+    echo(ts(": (a1?, a2?, a3?) => any") );
+    echoLine("){");
     echoLine("        _handlers[name] || (_handlers[name] = []);");
     echoLine("        _handlers[name].push(cb);");
     echo("    }");
@@ -539,7 +644,11 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("     *  @api private");
     echoLine("     *  @internal");
     echoLine("     */");
-    echoLine("    function _doLexAction(lexstate: number, state: number){");
+    echo("    function _doLexAction(lexstate");
+    echo(ts(": number") );
+    echo(", state");
+    echo(ts(": number") );
+    echoLine("){");
     echo("        switch(lexstate){");
     for(let i = 0;i < dfas.length;i++){ 
     echoLine("");
@@ -556,7 +665,9 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("        }");
     echoLine("        _token.id !== -1 && _returnToken();");
     echoLine("    }");
-    echoLine("    function _rollback(): string{");
+    echo("    function _rollback()");
+    echo(ts(": string") );
+    echoLine("{");
     echoLine("        let ret = _matched.substr(_matched.length - _backupCount, _backupCount);");
     echoLine("        _matched = _matched.substr(0, _matched.length - _backupCount);");
     echoLine("        _backupCount = 0;");
@@ -572,7 +683,9 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("        _marker.column = _column;");
     echoLine("        _backupCount = 0;");
     echoLine("    }");
-    echoLine("    function _consume(c: string){");
+    echo("    function _consume(c");
+    echo(ts(": string") );
+    echoLine("){");
     echoLine("        c === '\\n' ? (_line++, _column = 0) : (_column++);");
     echoLine("        _matched += c;");
     echoLine("        _marker.state !== -1 && (_backupCount++);");
@@ -584,7 +697,9 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("     *  @api private");
     echoLine("     *  @internal");
     echoLine("     */");
-    echoLine("    function _acceptChar(c: string){");
+    echo("    function _acceptChar(c");
+    echo(ts(": string") );
+    echoLine("){");
     echoLine("        var lexstate = _lexState[_lexState.length - 1];");
     echoLine("        var retn = { state: _state, hasArc: false, isEnd: false };");
     echo("        ");
@@ -639,7 +754,7 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("                }");
     echoLine("                else {");
     echoLine("                    // error occurs");
-    echoLine("                    _emit('lexicalerror', `unexpected character \"${c}\"`, _line, _column);");
+    echoLine("                    _emit('lexicalerror', \"unexpected character \" + c, _line, _column);");
     echoLine("                    // force consume");
     echoLine("                    return true;");
     echoLine("                }");
@@ -687,7 +802,9 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("     *  input a string");
     echoLine("     *  @api public");
     echoLine("     */");
-    echoLine("    function accept(s: string){");
+    echo("    function accept(s");
+    echo(ts(": string") );
+    echoLine("){");
     echoLine("        for(let i = 0; i < s.length && !_stop;){");
     echoLine("            _acceptChar(s.charAt(i)) && i++;");
     echoLine("        }");
@@ -727,15 +844,9 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echo(n );
     echo("\");");
     },
-        returnToken(t: TokenDef){ 
-    echoLine("");
-    echoLine("                _token = {");
-    echo("                    id: ");
-    echo(t.index );
-    echoLine(",");
-    echoLine("                    val: _matched.join('')");
-    echo("                };");
-    }
+        returnToken(t: TokenDef){
+            // should not happen
+        }
     };
     for(let rule of input.file.grammar.rules){
         if(rule.action !== null){ 
@@ -777,18 +888,20 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("");
     echo("    function _doReduction(");
     echo(prefix );
-    echoLine("rulenum: number){");
-    echo("        let ");
+    echo("rulenum");
+    echo(ts(": number") );
+    echoLine("){");
+    echo("        var ");
     echo(prefix );
     echo("nt = ");
     echo(prefix );
     echo("lhs[");
     echo(prefix );
     echoLine("rulenum];");
-    echo("        let ");
+    echo("        var ");
     echo(prefix );
     echoLine("sp = _sematicS.length;");
-    echo("        let ");
+    echo("        var ");
     echo(prefix );
     echo("top = _sematicS[");
     echo(prefix );
@@ -808,7 +921,7 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echo("ruleLen[");
     echo(prefix );
     echoLine("rulenum];");
-    echo("        let ");
+    echo("        var ");
     echo(prefix );
     echoLine("cstate = _lrState[_lrState.length - 1];");
     echo("        _lrState.push(");
@@ -831,13 +944,15 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("top);");
     echoLine("    }");
     echoLine("");
-    echoLine("    function _acceptToken(t: Token){");
+    echo("    function _acceptToken(t");
+    echo(ts(": Token") );
+    echoLine("){");
     echoLine("        // look up action table");
-    echoLine("        let cstate = _lrState[_lrState.length - 1];");
-    echo("        let ind = ");
+    echoLine("        var cstate = _lrState[_lrState.length - 1];");
+    echo("        var ind = ");
     echo(prefix );
     echoLine("disact[cstate] + t.id;");
-    echoLine("        let act = 0;");
+    echoLine("        var act = 0;");
     echo("        if(ind < 0 || ind >= ");
     echo(prefix );
     echo("pact.length || ");
@@ -886,18 +1001,24 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("            return true;");
     echoLine("        }");
     echoLine("    }");
-    echoLine("    function _syntaxError(t: Token){");
-    echoLine("        let msg = `unexpected token ${t.toString()}, expecting one of the following token(s):\\n`");
+    echo("    function _syntaxError(t");
+    echo(ts(": Token") );
+    echoLine("){");
+    echoLine("        var msg = \"unexpected token \" + t.toString() + \", expecting one of the following token(s):\\n\"");
     echoLine("        msg += _expected(_lrState[_lrState.length - 1]);");
     echoLine("        _emit(\"syntaxerror\", msg, t);");
     echoLine("    }");
-    echoLine("    function _expected(state: number){");
-    echo("        let dis = ");
+    echo("    function _expected(state");
+    echo(ts(": number") );
+    echoLine("){");
+    echo("        var dis = ");
     echo(prefix );
     echoLine("disact[state];");
-    echoLine("        let ret = '';");
-    echoLine("        function expect(tk: number){");
-    echoLine("            let ind = dis + tk;");
+    echoLine("        var ret = '';");
+    echo("        function expect(tk");
+    echo(ts(": number") );
+    echoLine("){");
+    echoLine("            var ind = dis + tk;");
     echo("            if(ind < 0 || ind >= ");
     echo(prefix );
     echo("pact.length || state !== ");
@@ -911,21 +1032,14 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("                return true;");
     echoLine("            }");
     echoLine("        }");
-    echo("        for(let tk = 0; tk < ");
+    echo("        for(var tk = 0; tk < ");
     echo(prefix );
     echoLine("tokenCount; tk++){");
-    echoLine("            expect(tk) && (ret += `    ${tokenToString(tk)} ...` + '\\n');");
+    echoLine("            expect(tk) && (ret += \"    \" + tokenToString(tk) + \" ...\" + '\\n');");
     echoLine("        }");
     echoLine("        return ret;");
     echoLine("    }");
-    echoLine("    return {");
-    echoLine("        init,");
-    echoLine("        on,");
-    echoLine("        accept,");
-    echoLine("        end,");
-    echoLine("        halt");
-    echoLine("    };");
     echoLine("}");
-    echo(input.file.epilogue.val );
+    echo(n(input.file.epilogue) );
 
 }

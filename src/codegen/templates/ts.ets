@@ -7,8 +7,9 @@
 <% }
 let prefix = input.file.prefix;
 let tab = getOpt('tab', '    ');
+let ists = input.output === 'typescript';
 function ts(s: string, s2?: string){
-    return input.file.output.val === 'typescript' ? s : s2 || '';
+    return ists ? s : (s2 || '');
 }
 function n(t: JNode, def: string = ''){
     return t === null ? def : t.val;
@@ -88,7 +89,7 @@ function printState(state: State<LexAction[]>){
             break;
 <% } 
 function printDFA(dfa: DFA<LexAction[]>, n: number){ %>
-function moveDFA<%- n %>(c: number, ret: { state: number, hasArc: boolean, isEnd: boolean }){
+function moveDFA<%- n %>(c<%- ts(": number") %>, ret<%- ts(": { state: number, hasArc: boolean, isEnd: boolean }") %>){
     switch(ret.state){
     <% for(let state of dfa.states){
         printState(state);
@@ -237,7 +238,7 @@ var <%- prefix %>actERR = <%- pt.stateCount + 1 %>;
         return false;
     }
     let statevn = prefix + 'staten'; %>
-    function _doLexAction<%- n %>(<%- statevn %>: number){
+    function _doLexAction<%- n %>(<%- statevn + ts(": number")%>){
         let <%- prefix %>tk = <%- prefix %>lexTokens<%- n %>[<%- statevn %>];
         <%- prefix %>tk !== -1 && _prepareToken(<%- prefix %>tk);
         switch(<%- statevn %>){
@@ -255,10 +256,16 @@ var <%- prefix %>actERR = <%- pt.stateCount + 1 %>;
     }
 <% } %>
 
+<% if(ists){ %>
 function tokenToString(tk: number){
     return <%- prefix %>tokenAlias[tk] === null ? `<${<%- prefix %>tokenNames[tk]}>` : `"${<%- prefix %>tokenAlias[tk]}"`;
 }
-
+<% } else { %>
+function tokenToString(tk){
+    return <%- prefix %>tokenAlias[tk] === null ? "<" + <%- prefix %>tokenNames[tk] + ">" : '"' + <%- prefix %>tokenAlias[tk] + '"';
+}
+<% } %>
+<% if(ists){ %>
 class Token {
     constructor(
         public id: number,
@@ -291,35 +298,76 @@ interface <%- className %>{
     halt();
     on(ent: string, cb: (a1?, a2?, a3?) => any);
 }
+<% } else { %>
+function Token(id, val, startLine, startColumn, endLine, endColumn){
+    this.id = id;
+    this.val = val;
+    this.startLine = startLine;
+    this.startColumn = startColumn;
+    this.endLine = endLine;
+    this.endColumn = endColumn;
+}
+Token.prototype.clone = function(){
+    return new Token(
+        this.id,
+        this.val,
+        this.startLine,
+        this.startColumn,
+        this.endLine,
+        this.endColumn
+    );
+}
+Token.prototype.toString = function(){
+    return (<%- prefix %>tokenAlias[this.id] === null ? 
+        '<' + <%- prefix %>tokenNames[this.id] + '>' :
+        '"' + <%- prefix %>tokenAlias[this.id] + '"') + "(" + this.val + ")";
+}
+<% } %>
 <% let stype = n(input.file.sematicType, 'any'); %>
-function createParser(): <%- className %> {
+function create<%- className %>()<%- ts(': ' + className) %> {
     // members for lexer
-    var _lexState: number[];
-    var _state: number;
-    var _matched: string;
-    var _token: Token;
+    var _lexState<%- ts(": number[]") %>;
+    var _state<%- ts(": number") %>;
+    var _matched<%- ts(": string") %>;
+    var _token<%- ts(": Token") %>;
     
-    var _marker: { state: number, line: number, column: number } = { state: -1, line: 0, column: 0 };
-    var _backupCount: number;
+    var _marker<%- ts(": { state: number, line: number, column: number }") %> = { state: -1, line: 0, column: 0 };
+    var _backupCount<%- ts(": number") %>;
 
-    var _line: number;
-    var _column: number;
-    var _tline: number;
-    var _tcolumn: number;
+    var _line<%- ts(": number") %>;
+    var _column<%- ts(": number") %>;
+    var _tline<%- ts(": number") %>;
+    var _tcolumn<%- ts(": number") %>;
 
     // members for parser
-    var _lrState: number[] = [];
-    var _sematicS: <%- stype %>[] = [];
-    var _sematicVal: <%- stype %>;
+    var _lrState<%- ts(": number[]") %>;
+    var _sematicS<%- ts(': ' + stype + '[]') %> = [];
+    var _sematicVal<%- ts(': ' + stype) %>;
 
     var _stop;
 
-    var _handlers: {[s: string]: ((a1?, a2?, a3?) => any)[]} = {};
+    var _handlers<%- ts(": {[s: string]: ((a1?, a2?, a3?) => any)[]}") %> = {};
 
     // extra members, defined by %extra_arg
     <%- n(input.file.extraArgs) %>
 
-    
+<% if(ists) { %>
+    return {
+        init,
+        on,
+        accept,
+        end,
+        halt
+    };
+<% } else { %>
+    return {
+        init: init,
+        on: on,
+        accept: accept,
+        end: end,
+        halt: halt
+    };
+<% } %>
     function init(<%- n(input.file.initArg) %>){
         _lexState = [ 0 ];// DEFAULT
         _state = 0;
@@ -340,12 +388,12 @@ function createParser(): <%- className %> {
     /**
      *  set 
      */
-    function _setImg(s: string){
+    function _setImg(s<%- ts(": string") %>){
         _matched = s;
         _tline = _line;
         _tcolumn = _column;
     }
-    function _prepareToken(tid: number){
+    function _prepareToken(tid<%- ts(": number") %>){
         _token.id = tid;
         _token.val = _matched;
         _token.startLine = _tline;
@@ -362,7 +410,7 @@ function createParser(): <%- className %> {
         while(!_stop && !_acceptToken(_token));
         _token.id = -1;
     }
-    function _emit(name: string, a1?, a2?, a3?){
+    function _emit(name<%- ts(": string") + ts(", a1?, a2?, a3?", ", a1, a2, a3") %>){
         var cbs = _handlers[name];
         if(cbs){
             for(var i = 0; i < cbs.length; i++){
@@ -370,7 +418,7 @@ function createParser(): <%- className %> {
             }
         }
     }
-    function on(name: string, cb: (a1?, a2?, a3?) => any){
+    function on(name<%- ts(": string") %>, cb<%- ts(": (a1?, a2?, a3?) => any") %>){
         _handlers[name] || (_handlers[name] = []);
         _handlers[name].push(cb);
     }
@@ -382,7 +430,7 @@ function createParser(): <%- className %> {
      *  @api private
      *  @internal
      */
-    function _doLexAction(lexstate: number, state: number){
+    function _doLexAction(lexstate<%- ts(": number") %>, state<%- ts(": number") %>){
         switch(lexstate){
 <% for(let i = 0;i < dfas.length;i++){ %>
             case <%- i %>:
@@ -393,7 +441,7 @@ function createParser(): <%- className %> {
         }
         _token.id !== -1 && _returnToken();
     }
-    function _rollback(): string{
+    function _rollback()<%- ts(": string") %>{
         let ret = _matched.substr(_matched.length - _backupCount, _backupCount);
         _matched = _matched.substr(0, _matched.length - _backupCount);
         _backupCount = 0;
@@ -409,7 +457,7 @@ function createParser(): <%- className %> {
         _marker.column = _column;
         _backupCount = 0;
     }
-    function _consume(c: string){
+    function _consume(c<%- ts(": string") %>){
         c === '\n' ? (_line++, _column = 0) : (_column++);
         _matched += c;
         _marker.state !== -1 && (_backupCount++);
@@ -421,7 +469,7 @@ function createParser(): <%- className %> {
      *  @api private
      *  @internal
      */
-    function _acceptChar(c: string){
+    function _acceptChar(c<%- ts(": string") %>){
         var lexstate = _lexState[_lexState.length - 1];
         var retn = { state: _state, hasArc: false, isEnd: false };
         <%- prefix %>lexers[lexstate](c.charCodeAt(0), retn);
@@ -474,7 +522,7 @@ function createParser(): <%- className %> {
                 }
                 else {
                     // error occurs
-                    _emit('lexicalerror', `unexpected character "${c}"`, _line, _column);
+                    _emit('lexicalerror', "unexpected character " + c, _line, _column);
                     // force consume
                     return true;
                 }
@@ -520,7 +568,7 @@ function createParser(): <%- className %> {
      *  input a string
      *  @api public
      */
-    function accept(s: string){
+    function accept(s<%- ts(": string") %>){
         for(let i = 0; i < s.length && !_stop;){
             _acceptChar(s.charAt(i)) && i++;
         }
@@ -550,12 +598,9 @@ function createParser(): <%- className %> {
         setImg(n: string){ %>
                 _setImg("<%- n %>");
         <% },
-        returnToken(t: TokenDef){ %>
-                _token = {
-                    id: <%- t.index %>,
-                    val: _matched.join('')
-                };
-        <% }
+        returnToken(t: TokenDef){
+            // should not happen
+        }
     };
     for(let rule of input.file.grammar.rules){
         if(rule.action !== null){ %>
@@ -574,26 +619,26 @@ function createParser(): <%- className %> {
         <% }
     }
 } %>
-    function _doReduction(<%- prefix %>rulenum: number){
-        let <%- prefix %>nt = <%- prefix %>lhs[<%- prefix %>rulenum];
-        let <%- prefix %>sp = _sematicS.length;
-        let <%- prefix %>top = _sematicS[<%- prefix %>sp - <%- prefix %>ruleLen[<%- prefix %>rulenum]] || null;
+    function _doReduction(<%- prefix %>rulenum<%- ts(": number") %>){
+        var <%- prefix %>nt = <%- prefix %>lhs[<%- prefix %>rulenum];
+        var <%- prefix %>sp = _sematicS.length;
+        var <%- prefix %>top = _sematicS[<%- prefix %>sp - <%- prefix %>ruleLen[<%- prefix %>rulenum]] || null;
         switch(<%- prefix %>rulenum){
 <% printReduceActions(); %>
         }
         _lrState.length -= <%- prefix %>ruleLen[<%- prefix %>rulenum];
-        let <%- prefix %>cstate = _lrState[_lrState.length - 1];
+        var <%- prefix %>cstate = _lrState[_lrState.length - 1];
         _lrState.push(<%- prefix %>pgoto[<%- prefix %>disgoto[<%- prefix %>cstate] + <%- prefix %>nt]);
 
         _sematicS.length -= <%- prefix %>ruleLen[<%- prefix %>rulenum];
         _sematicS.push(<%- prefix %>top);
     }
 
-    function _acceptToken(t: Token){
+    function _acceptToken(t<%- ts(": Token") %>){
         // look up action table
-        let cstate = _lrState[_lrState.length - 1];
-        let ind = <%- prefix %>disact[cstate] + t.id;
-        let act = 0;
+        var cstate = _lrState[_lrState.length - 1];
+        var ind = <%- prefix %>disact[cstate] + t.id;
+        var act = 0;
         if(ind < 0 || ind >= <%- prefix %>pact.length || <%- prefix %>checkact[ind] !== cstate){
             act = -<%- prefix %>defred[cstate] - 1;
         }
@@ -632,16 +677,16 @@ function createParser(): <%- className %> {
             return true;
         }
     }
-    function _syntaxError(t: Token){
-        let msg = `unexpected token ${t.toString()}, expecting one of the following token(s):\n`
+    function _syntaxError(t<%- ts(": Token") %>){
+        var msg = "unexpected token " + t.toString() + ", expecting one of the following token(s):\n"
         msg += _expected(_lrState[_lrState.length - 1]);
         _emit("syntaxerror", msg, t);
     }
-    function _expected(state: number){
-        let dis = <%- prefix %>disact[state];
-        let ret = '';
-        function expect(tk: number){
-            let ind = dis + tk;
+    function _expected(state<%- ts(": number") %>){
+        var dis = <%- prefix %>disact[state];
+        var ret = '';
+        function expect(tk<%- ts(": number") %>){
+            var ind = dis + tk;
             if(ind < 0 || ind >= <%- prefix %>pact.length || state !== <%- prefix %>checkact[ind]){
                 return <%- prefix %>defred[state] !== -1;
             }
@@ -649,17 +694,10 @@ function createParser(): <%- className %> {
                 return true;
             }
         }
-        for(let tk = 0; tk < <%- prefix %>tokenCount; tk++){
-            expect(tk) && (ret += `    ${tokenToString(tk)} ...` + '\n');
+        for(var tk = 0; tk < <%- prefix %>tokenCount; tk++){
+            expect(tk) && (ret += "    " + tokenToString(tk) + " ..." + '\n');
         }
         return ret;
     }
-    return {
-        init,
-        on,
-        accept,
-        end,
-        halt
-    };
 }
-<%- input.file.epilogue.val %>
+<%- n(input.file.epilogue) %>

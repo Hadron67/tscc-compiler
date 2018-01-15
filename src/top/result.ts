@@ -15,7 +15,7 @@ import { JsccError, JsccWarning, Option } from '../util/E';
 import { CompressedPTable } from '../grammar/ptable-compress';
 import { TemplateInput } from '../codegen/def';
 import { parse } from '../parser/parser';
-import { templateExists } from '../codegen/template';
+import { templateExists, listTemplates } from '../codegen/template';
 import { markPosition } from '../parser/node';
 
 export interface Result extends Context{
@@ -33,7 +33,7 @@ export interface Result extends Context{
     getTemplateInput(): TemplateInput;
     isTerminated(): boolean;
 }
-export function genResult(source: string): Result{
+export function genResult(source: string, fname: string): Result{
     let file: File;
     let itemSets: List<ItemSet>;
     let iterationCount: number;
@@ -62,6 +62,7 @@ export function genResult(source: string): Result{
     };
 
     var f = parse(ret, source);
+    f.name = fname;
     let lines = source.split('\n');
     for(let cb of needLinecbs){
         cb(ret, lines);
@@ -88,7 +89,9 @@ export function genResult(source: string): Result{
         }
     }
     if(!templateExists(f.output.val)){
-        err(new JsccError(`template for '${f.output.val}' is not implemented yet ` + markPosition(f.output, lines)));
+        let msg = `template for '${f.output.val}' is not implemented yet ` + markPosition(f.output, lines) + endl;
+        msg += 'available templates are: ' + listTemplates().join(', ');
+        err(new JsccError(msg));
     }
 
     if(hasError()){
@@ -161,6 +164,7 @@ export function genResult(source: string): Result{
     function getTemplateInput(): TemplateInput{
         return {
             endl: '\n',
+            output: f.output.val,
             pt: parseTable,
             file: file
         };

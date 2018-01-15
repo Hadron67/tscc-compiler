@@ -4,6 +4,7 @@ import { DFA } from '../lexer/dfa';
 import { JNode, newNode } from './node';
 
 export class File{
+    name: string;
     grammar: Grammar = null;
     lexDFA: DFA<LexAction[]>[] = [];
     opt: {[s: string]: { name: JNode, val: JNode }} = {};
@@ -13,6 +14,6 @@ export class File{
     extraArgs: JNode = null;
     initArg: JNode = null;
     initBody: JNode = null;
-    epilogue: JNode = newNode('');
+    epilogue: JNode = null;
     sematicType: JNode = null;
 }

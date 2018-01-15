@@ -2406,7 +2406,7 @@ var File = (function () {
         this.extraArgs = null;
         this.initArg = null;
         this.initBody = null;
-        this.epilogue = newNode('');
+        this.epilogue = null;
         this.sematicType = null;
     }
     return File;
@@ -2754,8 +2754,8 @@ var TokenRefType;
 })(TokenRefType || (TokenRefType = {}));
 
 function createFileBuilder(ctx) {
-    var _f = new File();
-    var _g = new Grammar();
+    var file = new File();
+    var grammar = new Grammar();
     var _tokenNameTable = {};
     var _tokenAliasTable = {};
     var _ruleStack = [];
@@ -2769,7 +2769,7 @@ function createFileBuilder(ctx) {
     var _onDone = [];
     var lexBuilder;
     var _pseudoTokens = {};
-    _f.grammar = _g;
+    file.grammar = grammar;
     lexBuilder = createLexBuilder(ctx);
     _requiringNt = new CoroutineMgr(function (s) { return _ntTable[s]; });
     defToken(newNode('EOF'), null);
@@ -2830,6 +2830,13 @@ function createFileBuilder(ctx) {
             ctx.err(new JsccError(msg + ' ' + markPosition(pos, lines), 'CompilationError'));
         });
     }
+    function redefineWarn(what, prev, current) {
+        ctx.requireLines(function (ctx, lines) {
+            var msg = what + ' ' + markPosition(current, lines) + endl;
+            msg += 'previous defination was at ' + markPosition(prev, lines);
+            ctx.warn(new JsccWarning(msg));
+        });
+    }
     function defToken(name, alias) {
         var tkdef = _tokenNameTable[name.val];
         if (tkdef !== undefined) {
@@ -2838,7 +2845,7 @@ function createFileBuilder(ctx) {
         }
         else {
             tkdef = {
-                index: _g.tokens.length,
+                index: grammar.tokens.length,
                 sym: name.val,
                 alias: alias,
                 pr: 0,
@@ -2851,7 +2858,7 @@ function createFileBuilder(ctx) {
                 _tokenAliasTable[alias].push(tkdef);
             }
             _tokenNameTable[name.val] = tkdef;
-            _g.tokens.push(tkdef);
+            grammar.tokens.push(tkdef);
             return tkdef;
         }
     }
@@ -2904,29 +2911,41 @@ function createFileBuilder(ctx) {
         }
     }
     function setOpt(name, value) {
-        _f.opt[name.val] = { name: name, val: value };
+        file.opt[name.val] = { name: name, val: value };
     }
     function setOutput(n) {
-        _f.output = n;
+        if (file.output !== null) {
+            redefineWarn('redefine of output', file.output, n);
+        }
+        file.output = n;
     }
     function setHeader(h) {
-        _f.header.push(h);
+        file.header.push(h);
     }
     function setExtraArg(a) {
-        _f.extraArgs = a;
+        if (file.extraArgs !== null) {
+            redefineWarn('redefine of extra arguments', file.extraArgs, a);
+        }
+        file.extraArgs = a;
     }
     function setType(t) {
-        _f.sematicType = t;
+        if (file.sematicType !== null) {
+            redefineWarn('redefine of sematic type', file.sematicType, t);
+        }
+        file.sematicType = t;
     }
     function setInit(arg, body) {
-        _f.initArg = arg;
-        _f.initBody = body;
+        if (file.initArg !== null) {
+            redefineWarn('redefine of initializing block', file.initArg, arg);
+        }
+        file.initArg = arg;
+        file.initBody = body;
     }
     function incPr() {
         _pr++;
     }
     function setEpilogue(ep) {
-        _f.epilogue = ep;
+        file.epilogue = ep;
     }
     function prepareRule(lhs) {
         if (_first) {
@@ -2939,17 +2958,17 @@ function createFileBuilder(ctx) {
         var nt = _ntTable[lhs.val];
         if (nt === undefined) {
             nt = _ntTable[lhs.val] = {
-                index: _g.nts.length,
+                index: grammar.nts.length,
                 sym: lhs.val,
                 firstSet: null,
                 used: false,
                 rules: [],
                 parents: []
             };
-            _g.nts.push(nt);
+            grammar.nts.push(nt);
             _requiringNt.signal(lhs.val, nt);
         }
-        var nr = new Rule(_g, nt, lhs);
+        var nr = new Rule(grammar, nt, lhs);
         _ruleStack.push(nr);
     }
     function addRuleUseVar(vname) {
@@ -3051,9 +3070,9 @@ function createFileBuilder(ctx) {
     }
     function commitRule() {
         var t = _ruleStack.pop();
-        t.index = _g.rules.length;
+        t.index = grammar.rules.length;
         t.lhs.rules.push(t);
-        _g.rules.push(t);
+        grammar.rules.push(t);
         for (var _i = 0, _onCommit_1 = _onCommit; _i < _onCommit_1.length; _i++) {
             var cb = _onCommit_1[_i];
             cb();
@@ -3071,12 +3090,12 @@ function createFileBuilder(ctx) {
         });
     }
     function build() {
-        _g.tokenCount = _g.tokens.length;
-        _g.tokens[0].used = true;
-        _g.nts[0].used = true;
-        for (var _i = 0, _a = _g.nts; _i < _a.length; _i++) {
+        grammar.tokenCount = grammar.tokens.length;
+        grammar.tokens[0].used = true;
+        grammar.nts[0].used = true;
+        for (var _i = 0, _a = grammar.nts; _i < _a.length; _i++) {
             var nt = _a[_i];
-            nt.firstSet = new TokenSet(_g.tokenCount);
+            nt.firstSet = new TokenSet(grammar.tokenCount);
             for (var _b = 0, _c = nt.rules; _b < _c.length; _b++) {
                 var rule = _c[_b];
                 rule.calcPr();
@@ -3091,13 +3110,13 @@ function createFileBuilder(ctx) {
                 }
             }
         }
-        _f.lexDFA = lexBuilder.build();
+        file.lexDFA = lexBuilder.build();
         for (var _d = 0, _onDone_1 = _onDone; _d < _onDone_1.length; _d++) {
             var cb = _onDone_1[_d];
             cb();
         }
         _requiringNt.fail();
-        return _f;
+        return file;
     }
 }
 
@@ -4639,7 +4658,7 @@ function createParser() {
     var _column;
     var _tline;
     var _tcolumn;
-    var _lrState = [];
+    var _lrState;
     var _sematicS = [];
     var _sematicVal;
     var _stop;
@@ -4648,6 +4667,13 @@ function createParser() {
     var assoc;
     var lexacts;
     var ruleLhs;
+    return {
+        init: init,
+        on: on,
+        accept: accept,
+        end: end,
+        halt: halt
+    };
     function init(ctx1, b) {
         _lexState = [0];
         _state = 0;
@@ -4843,7 +4869,7 @@ function createParser() {
                     return false;
                 }
                 else {
-                    _emit('lexicalerror', "unexpected character \"" + c + "\"", _line, _column);
+                    _emit('lexicalerror', "unexpected character " + c, _line, _column);
                     return true;
                 }
             }
@@ -5355,13 +5381,6 @@ function createParser() {
         }
         return ret;
     }
-    return {
-        init: init,
-        on: on,
-        accept: accept,
-        end: end,
-        halt: halt
-    };
 }
 function charPosition(line, column) {
     return {
@@ -5414,6 +5433,10 @@ var tsRenderer = function (input, output) {
     }
     var prefix = input.file.prefix;
     var tab = getOpt('tab', '    ');
+    var ists = input.output === 'typescript';
+    function ts(s, s2) {
+        return ists ? s : (s2 || '');
+    }
     function n(t, def) {
         if (def === void 0) { def = ''; }
         return t === null ? def : t.val;
@@ -5522,7 +5545,11 @@ var tsRenderer = function (input, output) {
         echoLine("");
         echo("function moveDFA");
         echo(n);
-        echoLine("(c: number, ret: { state: number, hasArc: boolean, isEnd: boolean }){");
+        echo("(c");
+        echo(ts(": number"));
+        echo(", ret");
+        echo(ts(": { state: number, hasArc: boolean, isEnd: boolean }"));
+        echoLine("){");
         echo("    switch(ret.state){");
         for (var _i = 0, _b = dfa.states; _i < _b.length; _i++) {
             var state = _b[_i];
@@ -5739,8 +5766,8 @@ var tsRenderer = function (input, output) {
         echo("    function _doLexAction");
         echo(n);
         echo("(");
-        echo(statevn);
-        echoLine(": number){");
+        echo(statevn + ts(": number"));
+        echoLine("){");
         echo("        let ");
         echo(prefix);
         echo("tk = ");
@@ -5778,97 +5805,190 @@ var tsRenderer = function (input, output) {
         echo("    }");
     }
     echoLine("");
-    echoLine("");
-    echoLine("function tokenToString(tk: number){");
-    echo("    return ");
-    echo(prefix);
-    echo("tokenAlias[tk] === null ? `<${");
-    echo(prefix);
-    echo("tokenNames[tk]}>` : `\"${");
-    echo(prefix);
-    echoLine("tokenAlias[tk]}\"`;");
-    echoLine("}");
-    echoLine("");
-    echoLine("class Token {");
-    echoLine("    constructor(");
-    echoLine("        public id: number,");
-    echoLine("        public val: string,");
-    echoLine("        public startLine: number,");
-    echoLine("        public startColumn: number,");
-    echoLine("        public endLine: number,");
-    echoLine("        public endColumn: number");
-    echoLine("    ){}");
-    echoLine("    clone(){");
-    echoLine("        return new Token(");
-    echoLine("            this.id,");
-    echoLine("            this.val,");
-    echoLine("            this.startLine,");
-    echoLine("            this.startColumn,");
-    echoLine("            this.endLine,");
-    echoLine("            this.endColumn");
-    echoLine("        );");
-    echoLine("    }");
-    echoLine("    toString(){");
-    echo("        return (");
-    echo(prefix);
-    echoLine("tokenAlias[this.id] === null ? ");
-    echo("            `<${");
-    echo(prefix);
-    echoLine("tokenNames[this.id]}>` :");
-    echo("            `\"${");
-    echo(prefix);
-    echoLine("tokenAlias[this.id]}\"`) + `(\"${this.val}\")`;");
-    echoLine("    }");
-    echoLine("}");
-    echo("interface ");
-    echo(className);
-    echoLine("{");
-    echo("    init(");
-    echo(n(input.file.initArg));
-    echoLine(");");
-    echoLine("    accept(s: string);");
-    echoLine("    end();");
-    echoLine("    halt();");
-    echoLine("    on(ent: string, cb: (a1?, a2?, a3?) => any);");
-    echo("}");
+    if (ists) {
+        echoLine("");
+        echoLine("function tokenToString(tk: number){");
+        echo("    return ");
+        echo(prefix);
+        echo("tokenAlias[tk] === null ? `<${");
+        echo(prefix);
+        echo("tokenNames[tk]}>` : `\"${");
+        echo(prefix);
+        echoLine("tokenAlias[tk]}\"`;");
+        echo("}");
+    }
+    else {
+        echoLine("");
+        echoLine("function tokenToString(tk){");
+        echo("    return ");
+        echo(prefix);
+        echo("tokenAlias[tk] === null ? \"<\" + ");
+        echo(prefix);
+        echo("tokenNames[tk] + \">\" : '\"' + ");
+        echo(prefix);
+        echoLine("tokenAlias[tk] + '\"';");
+        echo("}");
+    }
+    if (ists) {
+        echoLine("");
+        echoLine("class Token {");
+        echoLine("    constructor(");
+        echoLine("        public id: number,");
+        echoLine("        public val: string,");
+        echoLine("        public startLine: number,");
+        echoLine("        public startColumn: number,");
+        echoLine("        public endLine: number,");
+        echoLine("        public endColumn: number");
+        echoLine("    ){}");
+        echoLine("    clone(){");
+        echoLine("        return new Token(");
+        echoLine("            this.id,");
+        echoLine("            this.val,");
+        echoLine("            this.startLine,");
+        echoLine("            this.startColumn,");
+        echoLine("            this.endLine,");
+        echoLine("            this.endColumn");
+        echoLine("        );");
+        echoLine("    }");
+        echoLine("    toString(){");
+        echo("        return (");
+        echo(prefix);
+        echoLine("tokenAlias[this.id] === null ? ");
+        echo("            `<${");
+        echo(prefix);
+        echoLine("tokenNames[this.id]}>` :");
+        echo("            `\"${");
+        echo(prefix);
+        echoLine("tokenAlias[this.id]}\"`) + `(\"${this.val}\")`;");
+        echoLine("    }");
+        echoLine("}");
+        echo("interface ");
+        echo(className);
+        echoLine("{");
+        echo("    init(");
+        echo(n(input.file.initArg));
+        echoLine(");");
+        echoLine("    accept(s: string);");
+        echoLine("    end();");
+        echoLine("    halt();");
+        echoLine("    on(ent: string, cb: (a1?, a2?, a3?) => any);");
+        echo("}");
+    }
+    else {
+        echoLine("");
+        echoLine("function Token(id, val, startLine, startColumn, endLine, endColumn){");
+        echoLine("    this.id = id;");
+        echoLine("    this.val = val;");
+        echoLine("    this.startLine = startLine;");
+        echoLine("    this.startColumn = startColumn;");
+        echoLine("    this.endLine = endLine;");
+        echoLine("    this.endColumn = endColumn;");
+        echoLine("}");
+        echoLine("Token.prototype.clone = function(){");
+        echoLine("    return new Token(");
+        echoLine("        this.id,");
+        echoLine("        this.val,");
+        echoLine("        this.startLine,");
+        echoLine("        this.startColumn,");
+        echoLine("        this.endLine,");
+        echoLine("        this.endColumn");
+        echoLine("    );");
+        echoLine("}");
+        echoLine("Token.prototype.toString = function(){");
+        echo("    return (");
+        echo(prefix);
+        echoLine("tokenAlias[this.id] === null ? ");
+        echo("        '<' + ");
+        echo(prefix);
+        echoLine("tokenNames[this.id] + '>' :");
+        echo("        '\"' + ");
+        echo(prefix);
+        echoLine("tokenAlias[this.id] + '\"') + \"(\" + this.val + \")\";");
+        echo("}");
+    }
     var stype = n(input.file.sematicType, 'any');
     echoLine("");
-    echo("function createParser(): ");
+    echo("function create");
     echo(className);
+    echo("()");
+    echo(ts(': ' + className));
     echoLine(" {");
     echoLine("    // members for lexer");
-    echoLine("    var _lexState: number[];");
-    echoLine("    var _state: number;");
-    echoLine("    var _matched: string;");
-    echoLine("    var _token: Token;");
+    echo("    var _lexState");
+    echo(ts(": number[]"));
+    echoLine(";");
+    echo("    var _state");
+    echo(ts(": number"));
+    echoLine(";");
+    echo("    var _matched");
+    echo(ts(": string"));
+    echoLine(";");
+    echo("    var _token");
+    echo(ts(": Token"));
+    echoLine(";");
     echoLine("    ");
-    echoLine("    var _marker: { state: number, line: number, column: number } = { state: -1, line: 0, column: 0 };");
-    echoLine("    var _backupCount: number;");
+    echo("    var _marker");
+    echo(ts(": { state: number, line: number, column: number }"));
+    echoLine(" = { state: -1, line: 0, column: 0 };");
+    echo("    var _backupCount");
+    echo(ts(": number"));
+    echoLine(";");
     echoLine("");
-    echoLine("    var _line: number;");
-    echoLine("    var _column: number;");
-    echoLine("    var _tline: number;");
-    echoLine("    var _tcolumn: number;");
+    echo("    var _line");
+    echo(ts(": number"));
+    echoLine(";");
+    echo("    var _column");
+    echo(ts(": number"));
+    echoLine(";");
+    echo("    var _tline");
+    echo(ts(": number"));
+    echoLine(";");
+    echo("    var _tcolumn");
+    echo(ts(": number"));
+    echoLine(";");
     echoLine("");
     echoLine("    // members for parser");
-    echoLine("    var _lrState: number[] = [];");
-    echo("    var _sematicS: ");
-    echo(stype);
-    echoLine("[] = [];");
-    echo("    var _sematicVal: ");
-    echo(stype);
+    echo("    var _lrState");
+    echo(ts(": number[]"));
+    echoLine(";");
+    echo("    var _sematicS");
+    echo(ts(': ' + stype + '[]'));
+    echoLine(" = [];");
+    echo("    var _sematicVal");
+    echo(ts(': ' + stype));
     echoLine(";");
     echoLine("");
     echoLine("    var _stop;");
     echoLine("");
-    echoLine("    var _handlers: {[s: string]: ((a1?, a2?, a3?) => any)[]} = {};");
+    echo("    var _handlers");
+    echo(ts(": {[s: string]: ((a1?, a2?, a3?) => any)[]}"));
+    echoLine(" = {};");
     echoLine("");
     echoLine("    // extra members, defined by %extra_arg");
     echo("    ");
     echo(n(input.file.extraArgs));
     echoLine("");
+    if (ists) {
+        echoLine("");
+        echoLine("    return {");
+        echoLine("        init,");
+        echoLine("        on,");
+        echoLine("        accept,");
+        echoLine("        end,");
+        echoLine("        halt");
+        echo("    };");
+    }
+    else {
+        echoLine("");
+        echoLine("    return {");
+        echoLine("        init: init,");
+        echoLine("        on: on,");
+        echoLine("        accept: accept,");
+        echoLine("        end: end,");
+        echoLine("        halt: halt");
+        echo("    };");
+    }
     echoLine("");
-    echoLine("    ");
     echo("    function init(");
     echo(n(input.file.initArg));
     echoLine("){");
@@ -5893,12 +6013,16 @@ var tsRenderer = function (input, output) {
     echoLine("    /**");
     echoLine("     *  set ");
     echoLine("     */");
-    echoLine("    function _setImg(s: string){");
+    echo("    function _setImg(s");
+    echo(ts(": string"));
+    echoLine("){");
     echoLine("        _matched = s;");
     echoLine("        _tline = _line;");
     echoLine("        _tcolumn = _column;");
     echoLine("    }");
-    echoLine("    function _prepareToken(tid: number){");
+    echo("    function _prepareToken(tid");
+    echo(ts(": number"));
+    echoLine("){");
     echoLine("        _token.id = tid;");
     echoLine("        _token.val = _matched;");
     echoLine("        _token.startLine = _tline;");
@@ -5917,7 +6041,9 @@ var tsRenderer = function (input, output) {
     echoLine("        while(!_stop && !_acceptToken(_token));");
     echoLine("        _token.id = -1;");
     echoLine("    }");
-    echoLine("    function _emit(name: string, a1?, a2?, a3?){");
+    echo("    function _emit(name");
+    echo(ts(": string") + ts(", a1?, a2?, a3?", ", a1, a2, a3"));
+    echoLine("){");
     echoLine("        var cbs = _handlers[name];");
     echoLine("        if(cbs){");
     echoLine("            for(var i = 0; i < cbs.length; i++){");
@@ -5925,7 +6051,11 @@ var tsRenderer = function (input, output) {
     echoLine("            }");
     echoLine("        }");
     echoLine("    }");
-    echoLine("    function on(name: string, cb: (a1?, a2?, a3?) => any){");
+    echo("    function on(name");
+    echo(ts(": string"));
+    echo(", cb");
+    echo(ts(": (a1?, a2?, a3?) => any"));
+    echoLine("){");
     echoLine("        _handlers[name] || (_handlers[name] = []);");
     echoLine("        _handlers[name].push(cb);");
     echo("    }");
@@ -5938,7 +6068,11 @@ var tsRenderer = function (input, output) {
     echoLine("     *  @api private");
     echoLine("     *  @internal");
     echoLine("     */");
-    echoLine("    function _doLexAction(lexstate: number, state: number){");
+    echo("    function _doLexAction(lexstate");
+    echo(ts(": number"));
+    echo(", state");
+    echo(ts(": number"));
+    echoLine("){");
     echo("        switch(lexstate){");
     for (var i = 0; i < dfas.length; i++) {
         echoLine("");
@@ -5955,7 +6089,9 @@ var tsRenderer = function (input, output) {
     echoLine("        }");
     echoLine("        _token.id !== -1 && _returnToken();");
     echoLine("    }");
-    echoLine("    function _rollback(): string{");
+    echo("    function _rollback()");
+    echo(ts(": string"));
+    echoLine("{");
     echoLine("        let ret = _matched.substr(_matched.length - _backupCount, _backupCount);");
     echoLine("        _matched = _matched.substr(0, _matched.length - _backupCount);");
     echoLine("        _backupCount = 0;");
@@ -5971,7 +6107,9 @@ var tsRenderer = function (input, output) {
     echoLine("        _marker.column = _column;");
     echoLine("        _backupCount = 0;");
     echoLine("    }");
-    echoLine("    function _consume(c: string){");
+    echo("    function _consume(c");
+    echo(ts(": string"));
+    echoLine("){");
     echoLine("        c === '\\n' ? (_line++, _column = 0) : (_column++);");
     echoLine("        _matched += c;");
     echoLine("        _marker.state !== -1 && (_backupCount++);");
@@ -5983,7 +6121,9 @@ var tsRenderer = function (input, output) {
     echoLine("     *  @api private");
     echoLine("     *  @internal");
     echoLine("     */");
-    echoLine("    function _acceptChar(c: string){");
+    echo("    function _acceptChar(c");
+    echo(ts(": string"));
+    echoLine("){");
     echoLine("        var lexstate = _lexState[_lexState.length - 1];");
     echoLine("        var retn = { state: _state, hasArc: false, isEnd: false };");
     echo("        ");
@@ -6038,7 +6178,7 @@ var tsRenderer = function (input, output) {
     echoLine("                }");
     echoLine("                else {");
     echoLine("                    // error occurs");
-    echoLine("                    _emit('lexicalerror', `unexpected character \"${c}\"`, _line, _column);");
+    echoLine("                    _emit('lexicalerror', \"unexpected character \" + c, _line, _column);");
     echoLine("                    // force consume");
     echoLine("                    return true;");
     echoLine("                }");
@@ -6086,7 +6226,9 @@ var tsRenderer = function (input, output) {
     echoLine("     *  input a string");
     echoLine("     *  @api public");
     echoLine("     */");
-    echoLine("    function accept(s: string){");
+    echo("    function accept(s");
+    echo(ts(": string"));
+    echoLine("){");
     echoLine("        for(let i = 0; i < s.length && !_stop;){");
     echoLine("            _acceptChar(s.charAt(i)) && i++;");
     echoLine("        }");
@@ -6127,13 +6269,6 @@ var tsRenderer = function (input, output) {
                 echo("\");");
             },
             returnToken: function (t) {
-                echoLine("");
-                echoLine("                _token = {");
-                echo("                    id: ");
-                echo(t.index);
-                echoLine(",");
-                echoLine("                    val: _matched.join('')");
-                echo("                };");
             }
         };
         for (var _i = 0, _b = input.file.grammar.rules; _i < _b.length; _i++) {
@@ -6178,18 +6313,20 @@ var tsRenderer = function (input, output) {
     echoLine("");
     echo("    function _doReduction(");
     echo(prefix);
-    echoLine("rulenum: number){");
-    echo("        let ");
+    echo("rulenum");
+    echo(ts(": number"));
+    echoLine("){");
+    echo("        var ");
     echo(prefix);
     echo("nt = ");
     echo(prefix);
     echo("lhs[");
     echo(prefix);
     echoLine("rulenum];");
-    echo("        let ");
+    echo("        var ");
     echo(prefix);
     echoLine("sp = _sematicS.length;");
-    echo("        let ");
+    echo("        var ");
     echo(prefix);
     echo("top = _sematicS[");
     echo(prefix);
@@ -6209,7 +6346,7 @@ var tsRenderer = function (input, output) {
     echo("ruleLen[");
     echo(prefix);
     echoLine("rulenum];");
-    echo("        let ");
+    echo("        var ");
     echo(prefix);
     echoLine("cstate = _lrState[_lrState.length - 1];");
     echo("        _lrState.push(");
@@ -6232,13 +6369,15 @@ var tsRenderer = function (input, output) {
     echoLine("top);");
     echoLine("    }");
     echoLine("");
-    echoLine("    function _acceptToken(t: Token){");
+    echo("    function _acceptToken(t");
+    echo(ts(": Token"));
+    echoLine("){");
     echoLine("        // look up action table");
-    echoLine("        let cstate = _lrState[_lrState.length - 1];");
-    echo("        let ind = ");
+    echoLine("        var cstate = _lrState[_lrState.length - 1];");
+    echo("        var ind = ");
     echo(prefix);
     echoLine("disact[cstate] + t.id;");
-    echoLine("        let act = 0;");
+    echoLine("        var act = 0;");
     echo("        if(ind < 0 || ind >= ");
     echo(prefix);
     echo("pact.length || ");
@@ -6287,18 +6426,24 @@ var tsRenderer = function (input, output) {
     echoLine("            return true;");
     echoLine("        }");
     echoLine("    }");
-    echoLine("    function _syntaxError(t: Token){");
-    echoLine("        let msg = `unexpected token ${t.toString()}, expecting one of the following token(s):\\n`");
+    echo("    function _syntaxError(t");
+    echo(ts(": Token"));
+    echoLine("){");
+    echoLine("        var msg = \"unexpected token \" + t.toString() + \", expecting one of the following token(s):\\n\"");
     echoLine("        msg += _expected(_lrState[_lrState.length - 1]);");
     echoLine("        _emit(\"syntaxerror\", msg, t);");
     echoLine("    }");
-    echoLine("    function _expected(state: number){");
-    echo("        let dis = ");
+    echo("    function _expected(state");
+    echo(ts(": number"));
+    echoLine("){");
+    echo("        var dis = ");
     echo(prefix);
     echoLine("disact[state];");
-    echoLine("        let ret = '';");
-    echoLine("        function expect(tk: number){");
-    echoLine("            let ind = dis + tk;");
+    echoLine("        var ret = '';");
+    echo("        function expect(tk");
+    echo(ts(": number"));
+    echoLine("){");
+    echoLine("            var ind = dis + tk;");
     echo("            if(ind < 0 || ind >= ");
     echo(prefix);
     echo("pact.length || state !== ");
@@ -6312,22 +6457,15 @@ var tsRenderer = function (input, output) {
     echoLine("                return true;");
     echoLine("            }");
     echoLine("        }");
-    echo("        for(let tk = 0; tk < ");
+    echo("        for(var tk = 0; tk < ");
     echo(prefix);
     echoLine("tokenCount; tk++){");
-    echoLine("            expect(tk) && (ret += `    ${tokenToString(tk)} ...` + '\\n');");
+    echoLine("            expect(tk) && (ret += \"    \" + tokenToString(tk) + \" ...\" + '\\n');");
     echoLine("        }");
     echoLine("        return ret;");
     echoLine("    }");
-    echoLine("    return {");
-    echoLine("        init,");
-    echoLine("        on,");
-    echoLine("        accept,");
-    echoLine("        end,");
-    echoLine("        halt");
-    echoLine("    };");
     echoLine("}");
-    echo(input.file.epilogue.val);
+    echo(n(input.file.epilogue));
 };
 
 var templates = {};
@@ -6346,12 +6484,19 @@ function generateCode(lang, input, fc, cb) {
 function templateExists(t) {
     return templates[t] !== undefined;
 }
+function listTemplates() {
+    return Object.keys(templates);
+}
 defineTemplate('typescript', function (input, fc) {
     tsRenderer(input, fc);
-    fc.save('.ts');
+    fc.save(input.file.name + ".ts");
+});
+defineTemplate('javascript', function (input, fc) {
+    tsRenderer(input, fc);
+    fc.save(input.file.name + ".js");
 });
 
-function genResult(source) {
+function genResult(source, fname) {
     var file;
     var itemSets;
     var iterationCount;
@@ -6377,6 +6522,7 @@ function genResult(source) {
         isTerminated: function () { return terminated; }
     };
     var f = parse(ret, source);
+    f.name = fname;
     var lines = source.split('\n');
     for (var _i = 0, needLinecbs_1 = needLinecbs; _i < needLinecbs_1.length; _i++) {
         var cb = needLinecbs_1[_i];
@@ -6406,7 +6552,9 @@ function genResult(source) {
         }
     }
     if (!templateExists(f.output.val)) {
-        err(new JsccError("template for '" + f.output.val + "' is not implemented yet " + markPosition(f.output, lines)));
+        var msg = "template for '" + f.output.val + "' is not implemented yet " + markPosition(f.output, lines) + endl;
+        msg += 'available templates are: ' + listTemplates().join(', ');
+        err(new JsccError(msg));
     }
     if (hasError()) {
         terminated = true;
@@ -6476,6 +6624,7 @@ function genResult(source) {
     function getTemplateInput() {
         return {
             endl: '\n',
+            output: f.output.val,
             pt: parseTable,
             file: file
         };

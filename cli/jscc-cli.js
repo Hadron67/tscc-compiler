@@ -19,6 +19,10 @@ function changeSuffix(s,suf){
     var i = s.lastIndexOf('.');
     return (i === -1 ? s : s.substr(0,i)) + suf;
 }
+function deleteSuffix(s){
+    var i = s.lastIndexOf('.');
+    return i === -1 ? s : s.substr(0,i);
+}
 
 function stream(st){
     return {
@@ -58,9 +62,9 @@ function genCode(result, arg){
     var tempIn = result.getTemplateInput();
     var files = [];
     var current = new jscc.io.StringOS();
-    jscc.generateCode(tempIn.file.output.val, tempIn, {
-        save: function(ext){
-            files.push(writeFile(changeSuffix(arg.input, ext), current.s));
+    jscc.generateCode(tempIn.output, tempIn, {
+        save: function(fname){
+            files.push(writeFile(fname, current.s));
             current.reset();
         },
         write: function(s){
@@ -88,7 +92,7 @@ function generate(arg){
     // var input = fs.readFileSync(arg.input,'utf-8');
     return readFile(arg.input)
     .then(function(input){
-        var result = jscc.genResult(input);
+        var result = jscc.genResult(input, deleteSuffix(arg.input));
         if(result.hasWarning()){
             result.printWarning(consoleStream);
         }

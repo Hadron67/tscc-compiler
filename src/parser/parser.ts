@@ -1575,7 +1575,6 @@ var jjtokenAlias = [
 function tokenToString(tk: number){
     return jjtokenAlias[tk] === null ? `<${jjtokenNames[tk]}>` : `"${jjtokenAlias[tk]}"`;
 }
-
 class Token {
     constructor(
         public id: number,
@@ -1624,7 +1623,7 @@ function createParser(): Parser {
     var _tcolumn: number;
 
     // members for parser
-    var _lrState: number[] = [];
+    var _lrState: number[];
     var _sematicS: JNode[] = [];
     var _sematicVal: JNode;
 
@@ -1641,7 +1640,13 @@ function createParser(): Parser {
     let ruleLhs: JNode;
 
 
-    
+    return {
+        init,
+        on,
+        accept,
+        end,
+        halt
+    };
     function init(ctx1: Context, b: GBuilder){
         _lexState = [ 0 ];// DEFAULT
         _state = 0;
@@ -1869,7 +1874,7 @@ function createParser(): Parser {
                 }
                 else {
                     // error occurs
-                    _emit('lexicalerror', `unexpected character "${c}"`, _line, _column);
+                    _emit('lexicalerror', "unexpected character " + c, _line, _column);
                     // force consume
                     return true;
                 }
@@ -1932,9 +1937,9 @@ function createParser(): Parser {
         _stop = true;
     }
     function _doReduction(jjrulenum: number){
-        let jjnt = jjlhs[jjrulenum];
-        let jjsp = _sematicS.length;
-        let jjtop = _sematicS[jjsp - jjruleLen[jjrulenum]] || null;
+        var jjnt = jjlhs[jjrulenum];
+        var jjsp = _sematicS.length;
+        var jjtop = _sematicS[jjsp - jjruleLen[jjrulenum]] || null;
         switch(jjrulenum){
             case 1:
                 /* 1: @0 => */
@@ -2271,7 +2276,7 @@ function createParser(): Parser {
                 break;
         }
         _lrState.length -= jjruleLen[jjrulenum];
-        let jjcstate = _lrState[_lrState.length - 1];
+        var jjcstate = _lrState[_lrState.length - 1];
         _lrState.push(jjpgoto[jjdisgoto[jjcstate] + jjnt]);
 
         _sematicS.length -= jjruleLen[jjrulenum];
@@ -2280,9 +2285,9 @@ function createParser(): Parser {
 
     function _acceptToken(t: Token){
         // look up action table
-        let cstate = _lrState[_lrState.length - 1];
-        let ind = jjdisact[cstate] + t.id;
-        let act = 0;
+        var cstate = _lrState[_lrState.length - 1];
+        var ind = jjdisact[cstate] + t.id;
+        var act = 0;
         if(ind < 0 || ind >= jjpact.length || jjcheckact[ind] !== cstate){
             act = -jjdefred[cstate] - 1;
         }
@@ -2322,15 +2327,15 @@ function createParser(): Parser {
         }
     }
     function _syntaxError(t: Token){
-        let msg = `unexpected token ${t.toString()}, expecting one of the following token(s):\n`
+        var msg = "unexpected token " + t.toString() + ", expecting one of the following token(s):\n"
         msg += _expected(_lrState[_lrState.length - 1]);
         _emit("syntaxerror", msg, t);
     }
     function _expected(state: number){
-        let dis = jjdisact[state];
-        let ret = '';
+        var dis = jjdisact[state];
+        var ret = '';
         function expect(tk: number){
-            let ind = dis + tk;
+            var ind = dis + tk;
             if(ind < 0 || ind >= jjpact.length || state !== jjcheckact[ind]){
                 return jjdefred[state] !== -1;
             }
@@ -2338,18 +2343,11 @@ function createParser(): Parser {
                 return true;
             }
         }
-        for(let tk = 0; tk < jjtokenCount; tk++){
-            expect(tk) && (ret += `    ${tokenToString(tk)} ...` + '\n');
+        for(var tk = 0; tk < jjtokenCount; tk++){
+            expect(tk) && (ret += "    " + tokenToString(tk) + " ..." + '\n');
         }
         return ret;
     }
-    return {
-        init,
-        on,
-        accept,
-        end,
-        halt
-    };
 }
 
 function charPosition(line: number, column: number): Position{

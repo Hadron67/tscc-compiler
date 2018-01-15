@@ -57,13 +57,13 @@ export interface GBuilder{
     defineRulePr(token: JNode, type: TokenRefType);
     commitRule();
     addPushStateAction(acts: LexAction[], vn: JNode);
-    build();
+    build(): File;
     readonly lexBuilder: LexBuilder<LexAction[]>;
 }
 
 export function createFileBuilder(ctx: Context): GBuilder{
-    let _f: File = new File();
-    let _g: Grammar = new Grammar();
+    let file: File = new File();
+    let grammar: Grammar = new Grammar();
 
     let _tokenNameTable: { [s: string]: TokenDef } = {};
     let _tokenAliasTable: { [s: string]: TokenDef[] } = {};
@@ -83,7 +83,7 @@ export function createFileBuilder(ctx: Context): GBuilder{
     let lexBuilder: LexBuilder<LexAction[]>;
     let _pseudoTokens: { [tname: string]: PseudoToken } = {};
 
-    _f.grammar = _g;
+    file.grammar = grammar;
     lexBuilder = createLexBuilder(ctx);
     _requiringNt = new CoroutineMgr<NtDef>(s => _ntTable[s]);
     defToken(newNode('EOF'), null);
@@ -152,7 +152,14 @@ export function createFileBuilder(ctx: Context): GBuilder{
     }
     function singlePosWarn(msg: string, pos: Position){
         ctx.requireLines((ctx, lines) => {
-            ctx.warn(new JsccError(msg + ' ' + markPosition(pos, lines), 'Warning'));
+            ctx.warn(new JsccWarning(msg + ' ' + markPosition(pos, lines)));
+        });
+    }
+    function redefineWarn(what: string, prev: Position, current: Position){
+        ctx.requireLines((ctx, lines) => {
+            let msg = what + ' ' + markPosition(current, lines) + endl;
+            msg += 'previous defination was at ' + markPosition(prev, lines);
+            ctx.warn(new JsccWarning(msg));
         });
     }
     function defToken(name: JNode, alias: string): TokenDef{
@@ -163,7 +170,7 @@ export function createFileBuilder(ctx: Context): GBuilder{
         }
         else {
             tkdef = { 
-                index: _g.tokens.length,
+                index: grammar.tokens.length,
                 sym: name.val,
                 alias: alias,
                 pr: 0,
@@ -176,7 +183,7 @@ export function createFileBuilder(ctx: Context): GBuilder{
                 _tokenAliasTable[alias].push(tkdef);
             }
             _tokenNameTable[name.val] = tkdef;
-            _g.tokens.push(tkdef);
+            grammar.tokens.push(tkdef);
             return tkdef;
         }
     }
@@ -229,29 +236,41 @@ export function createFileBuilder(ctx: Context): GBuilder{
         }
     }
     function setOpt(name: JNode, value: JNode){
-        _f.opt[name.val] = { name: name, val: value };
+        file.opt[name.val] = { name: name, val: value };
     }
     function setOutput(n: JNode){
-        _f.output = n;
+        if(file.output !== null){
+            redefineWarn('redefine of output', file.output, n);
+        }
+        file.output = n;
     }
     function setHeader(h: JNode){
-        _f.header.push(h);
+        file.header.push(h);
     }
     function setExtraArg(a: JNode){
-        _f.extraArgs = a;
+        if(file.extraArgs !== null){
+            redefineWarn('redefine of extra arguments', file.extraArgs, a);
+        }
+        file.extraArgs = a;
     }
     function setType(t: JNode){
-        _f.sematicType = t;
+        if(file.sematicType !== null){
+            redefineWarn('redefine of sematic type', file.sematicType, t);
+        }
+        file.sematicType = t;
     }
     function setInit(arg: JNode, body: JNode){
-        _f.initArg = arg;
-        _f.initBody = body;
+        if(file.initArg !== null){
+            redefineWarn('redefine of initializing block', file.initArg, arg);
+        }
+        file.initArg = arg;
+        file.initBody = body;
     }
     function incPr(){
         _pr++;
     }
     function setEpilogue(ep: JNode){
-        _f.epilogue = ep;
+        file.epilogue = ep;
     }
     function prepareRule(lhs: JNode){
         if(_first){
@@ -265,17 +284,17 @@ export function createFileBuilder(ctx: Context): GBuilder{
         var nt = _ntTable[lhs.val];
         if(nt === undefined){
             nt = _ntTable[lhs.val] = {
-                index: _g.nts.length,
+                index: grammar.nts.length,
                 sym: lhs.val,
                 firstSet: null,
                 used: false,
                 rules: [],
                 parents: []
             }
-            _g.nts.push(nt);
+            grammar.nts.push(nt);
             _requiringNt.signal(lhs.val, nt);
         }
-        let nr = new Rule(_g, nt, lhs);
+        let nr = new Rule(grammar, nt, lhs);
         _ruleStack.push(nr);
     }
     function addRuleUseVar(vname: JNode){
@@ -378,9 +397,9 @@ export function createFileBuilder(ctx: Context): GBuilder{
     }
     function commitRule(){
         var t = _ruleStack.pop();
-        t.index = _g.rules.length;
+        t.index = grammar.rules.length;
         t.lhs.rules.push(t);
-        _g.rules.push(t);
+        grammar.rules.push(t);
         for(let cb of _onCommit){
             cb();
         }
@@ -397,12 +416,12 @@ export function createFileBuilder(ctx: Context): GBuilder{
         });
     }
     function build(){
-        _g.tokenCount = _g.tokens.length;
-        _g.tokens[0].used = true;// end of file
-        _g.nts[0].used = true;// (accept)
+        grammar.tokenCount = grammar.tokens.length;
+        grammar.tokens[0].used = true;// end of file
+        grammar.nts[0].used = true;// (accept)
 
-        for(let nt of _g.nts){
-            nt.firstSet = new TokenSet(_g.tokenCount);
+        for(let nt of grammar.nts){
+            nt.firstSet = new TokenSet(grammar.tokenCount);
             for(let rule of nt.rules){
                 rule.calcPr();
                 for(let vname in rule.usedVars){
@@ -413,13 +432,13 @@ export function createFileBuilder(ctx: Context): GBuilder{
                 }
             }
         }
-        _f.lexDFA = lexBuilder.build();
+        file.lexDFA = lexBuilder.build();
 
         for(let cb of _onDone){
             cb();
         }
         _requiringNt.fail();
-        return _f;
+        return file;
     }
 
     

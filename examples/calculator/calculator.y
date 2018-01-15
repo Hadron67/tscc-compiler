@@ -1,8 +1,16 @@
-%extra_arg{
-    val: number;
+%header {
+'use strict';
 }
 
-%lex [
+%extra_arg {
+    var out;
+}
+
+%init {out1}{
+    out = out1;
+}
+
+%lex {
     DIGIT = <['0'-'9']>
     LETTER = <['a'-'z', 'A'-'Z']>
 
@@ -19,18 +27,17 @@
     < BRA: '(' >
     < KET: ')' >
     < SIN: 'sin' >
-    < SINH: 'sinh' >
-]
+}
 
 %left '+' '-'
 %left '*' '/'
 %left POS NEG
 
-%type number
+%output "javascript"
 
 %%
 
-start: a = expr { this.val = a; } ;
+start: a = expr { out.val = a; } ;
 expr:
     a = expr '+' b = expr { $$ = a + b; }
 |   a = expr '-' b = expr { $$ = a - b; }
@@ -45,6 +52,25 @@ expr:
 
 funcs:
     'sin' '(' a = expr ')' { $$ = Math.sin(a); }
-|   <SINH> '(' a = expr ')' { $$ = (Math as any).sinh(a); }
 ;
 %%
+
+module.exports = function calc(s){
+    var parser = createParser();
+    var out = { val: null };
+    parser.init(out);
+    parser.on('lexicalerror', function(msg, line, column){
+        console.log(msg + ' at line ' + (line + 1) + ' column ' + (column + 1));
+        parser.halt();
+    });
+    parser.on('syntaxerror', function(msg, token){
+        console.log('syntax error: line ' + (token.startLine + 1) + ' column ' + (token.startColumn + 1) + ': ' + msg);
+        parser.halt();
+    });
+    parser.on('accept', function(){
+        // console.log('result: ' + out.val);
+    });
+    parser.accept(s);
+    parser.end();
+    return out.val;
+};

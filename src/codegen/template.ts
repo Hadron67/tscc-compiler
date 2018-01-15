@@ -4,7 +4,7 @@ import { OutputStream } from '../util/io';
 import tsRenderer from './templates/ts';
 
 interface FileCreator extends TemplateOutput{
-    save(ext: string);
+    save(fname: string);
     write(s: string);
     writeln(s: string);
 };
@@ -28,8 +28,15 @@ export function generateCode(lang: string, input: TemplateInput, fc: FileCreator
 export function templateExists(t: string){
     return templates[t] !== undefined;
 }
+export function listTemplates(): string[]{
+    return Object.keys(templates);
+}
 
 defineTemplate('typescript', (input, fc) => {
     tsRenderer(input, fc);
-    fc.save('.ts');
+    fc.save(`${input.file.name}.ts`);
+});
+defineTemplate('javascript', (input, fc) => {
+    tsRenderer(input, fc);
+    fc.save(`${input.file.name}.js`);
 });
