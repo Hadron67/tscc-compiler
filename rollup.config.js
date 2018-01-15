@@ -7,8 +7,8 @@ export default {
     output:[
         {
             format: 'umd',
-            name: 'jscc',
-            file: 'lib/jscc.js',
+            name: 'tscc',
+            file: 'lib/tscc.js',
             sourcemap: true
         }
     ],

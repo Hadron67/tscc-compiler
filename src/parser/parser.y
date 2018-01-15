@@ -39,7 +39,9 @@ let escapes: {[s: string]: string} = {
     'b': '\b',
     'r': '\r',
     't': '\t',
-    '\\': '\\'
+    '\\': '\\',
+    '"': '"',
+    "'": "'"
 };
 function unescape(s: string){
     let ret = '';
@@ -106,6 +108,7 @@ function unescape(s: string){
     < CLOSE_BLOCK: "}" >: { $$ = nodeFromTrivalToken($token); }
     < OPT_DIR: "%option" >
     < LEX_DIR: "%lex" >
+    < TOKEN_DIR: '%token' >
     < LEFT_DIR: "%left" >
     < RIGHT_DIR: "%right" >
     < NONASSOC_DIR: "%nonassoc" >
@@ -152,16 +155,21 @@ function unescape(s: string){
 %%
 
 start: options '%%' body [+IN_EPILOGUE] '%%' epilogue;
-options: options option | ;
+options: options option | /* empty */;
 option:
     '%lex' { gb.lexBuilder.prepareLex(); } states_ '{' lexBody '}'
-|   associativeDir assocTokens
+|   associativeDir assocTokens { gb.incPr(); }
 |   '%option' '{' optionBody '}'
 |   '%header' b = block { gb.setHeader(b); }
 |   '%extra_arg' b = block { gb.setExtraArg(b); }
 |   '%type' ty = block { gb.setType(ty); }
 |   '%init' args = block b = block { gb.setInit(args, b); }
 |   '%output' op = <STRING> { gb.setOutput(op); }
+|   '%token' tokenDefs
+;
+tokenDefs: 
+    tokenDefs '<' t = <NAME> '>' { gb.defToken(t, null); }
+|   '<' t = <NAME> '>' { gb.defToken(t, null); }
 ;
 epilogue:
     /* empty */

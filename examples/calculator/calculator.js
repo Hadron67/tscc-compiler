@@ -4,6 +4,63 @@
 */
 
 'use strict';
+var Mathx = {};
+function Quaternion(a, b, c, d){
+    // this = a + bi + cj + dk
+    this.a = a;
+    this.b = b || 0;
+    this.c = c || 0;
+    this.d = d || 0;
+}
+Quaternion.prototype.toString = function(){
+    return [this.a, this.b + 'i', this.c + 'j', this.d + 'k'].join(' + ');
+}
+Quaternion.prototype.neg = function(){
+    return new Quaternion(-this.a, -this.b, -this.c, -this.d);
+}
+Quaternion.prototype.dagger = function(){
+    return new Quaternion(this.a, -this.b, -this.c, -this.d);
+}
+Quaternion.prototype.inv = function(){
+    var m2 = this.module2().a;
+    return new Quaternion(this.a / m2, -this.b / m2, -this.c / m2, -this.d / m2);
+}
+Quaternion.prototype.module2 = function(){
+    return new Quaternion(this.a * this.a + this.b * this.b + this.c * this.c + this.d * this.d);
+}
+Quaternion.prototype.module = function(){
+    return new Quaternion(Math.sqrt(this.module2().a));
+}
+Mathx.Quaternion = Quaternion;
+
+Quaternion.addQ = function(x, y){
+    return new Quaternion(x.a + y.a, x.b + y.b, x.c + y.c, x.d + y.d);
+}
+Quaternion.minusQ = function(x, y){
+    return new Quaternion(x.a - y.a, x.b - y.b, x.c - y.c, x.d - y.d);
+}
+Quaternion.multiQ = function(x, y){
+    return new Quaternion(
+        x.a * y.a - x.b * y.b - x.c * y.c - x.d * y.d,
+        x.a * y.b + x.b * y.a + x.c * y.d - x.d * y.c,
+        x.a * y.c - x.b * y.d + x.c * y.a + x.d * y.b,
+        x.a * y.d + x.b * y.c - x.c * y.b + x.d * y.a
+    );
+}
+Quaternion.exp = function(x){
+    var fc = Math.exp(x.a);
+    var mod2 = Math.sqrt(x.b * x.b + x.c * x.c + x.d * x.d);
+    return new Quaternion(
+        fc * Math.cos(mod2),
+        fc * x.b * Math.sin(mod2) / mod2,
+        fc * x.c * Math.sin(mod2) / mod2,
+        fc * x.d * Math.sin(mod2) / mod2
+    );
+}
+
+function cut(s){
+    return s.substr(0, s.length - 1);
+}
 
 /*
     find the next state to go in the dfa
@@ -40,8 +97,11 @@ function moveDFA0(c, ret){
             else if((c >= 48 && c <= 57)){
                 ret.state = 9;
             }
-            else if(c === 115){
+            else if(c === 101){
                 ret.state = 10;
+            }
+            else if(c === 124){
+                ret.state = 11;
             }
             else {
                 ret.state = -1;
@@ -86,7 +146,7 @@ function moveDFA0(c, ret){
             ret.hasArc = true;
             ret.isEnd = false;
             if((c >= 48 && c <= 57)){
-                ret.state = 11;
+                ret.state = 12;
             }
             else {
                 ret.state = -1;
@@ -101,13 +161,22 @@ function moveDFA0(c, ret){
             ret.hasArc = true;
             ret.isEnd = true;
             if(c === 46){
-                ret.state = 12;
+                ret.state = 13;
             }
             else if((c >= 48 && c <= 57)){
                 ret.state = 9;
             }
             else if(c === 69 || c === 101){
-                ret.state = 13;
+                ret.state = 14;
+            }
+            else if(c === 73 || c === 105){
+                ret.state = 15;
+            }
+            else if(c === 74 || c === 106){
+                ret.state = 16;
+            }
+            else if(c === 75 || c === 107){
+                ret.state = 17;
             }
             else {
                 ret.state = -1;
@@ -116,34 +185,35 @@ function moveDFA0(c, ret){
         case 10:
             ret.hasArc = true;
             ret.isEnd = false;
-            if(c === 105){
-                ret.state = 14;
+            if(c === 120){
+                ret.state = 18;
             }
             else {
                 ret.state = -1;
             } 
             break;
         case 11:
-            ret.hasArc = true;
+            ret.hasArc = false;
             ret.isEnd = true;
-            if((c >= 48 && c <= 57)){
-                ret.state = 11;
-            }
-            else if(c === 69 || c === 101){
-                ret.state = 13;
-            }
-            else {
-                ret.state = -1;
-            } 
+            ret.state = -1;
             break;
         case 12:
             ret.hasArc = true;
             ret.isEnd = true;
             if((c >= 48 && c <= 57)){
-                ret.state = 15;
+                ret.state = 12;
             }
             else if(c === 69 || c === 101){
-                ret.state = 13;
+                ret.state = 14;
+            }
+            else if(c === 73 || c === 105){
+                ret.state = 15;
+            }
+            else if(c === 74 || c === 106){
+                ret.state = 16;
+            }
+            else if(c === 75 || c === 107){
+                ret.state = 17;
             }
             else {
                 ret.state = -1;
@@ -151,9 +221,21 @@ function moveDFA0(c, ret){
             break;
         case 13:
             ret.hasArc = true;
-            ret.isEnd = false;
+            ret.isEnd = true;
             if((c >= 48 && c <= 57)){
+                ret.state = 19;
+            }
+            else if(c === 69 || c === 101){
+                ret.state = 14;
+            }
+            else if(c === 73 || c === 105){
+                ret.state = 15;
+            }
+            else if(c === 74 || c === 106){
                 ret.state = 16;
+            }
+            else if(c === 75 || c === 107){
+                ret.state = 17;
             }
             else {
                 ret.state = -1;
@@ -162,37 +244,80 @@ function moveDFA0(c, ret){
         case 14:
             ret.hasArc = true;
             ret.isEnd = false;
-            if(c === 110){
-                ret.state = 17;
+            if((c >= 48 && c <= 57)){
+                ret.state = 20;
             }
             else {
                 ret.state = -1;
             } 
             break;
         case 15:
-            ret.hasArc = true;
+            ret.hasArc = false;
             ret.isEnd = true;
-            if((c >= 48 && c <= 57)){
-                ret.state = 15;
-            }
-            else if(c === 69 || c === 101){
-                ret.state = 13;
-            }
-            else {
-                ret.state = -1;
-            } 
+            ret.state = -1;
             break;
         case 16:
-            ret.hasArc = true;
+            ret.hasArc = false;
             ret.isEnd = true;
-            if((c >= 48 && c <= 57)){
-                ret.state = 16;
+            ret.state = -1;
+            break;
+        case 17:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 18:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c === 112){
+                ret.state = 21;
             }
             else {
                 ret.state = -1;
             } 
             break;
-        case 17:
+        case 19:
+            ret.hasArc = true;
+            ret.isEnd = true;
+            if((c >= 48 && c <= 57)){
+                ret.state = 19;
+            }
+            else if(c === 69 || c === 101){
+                ret.state = 14;
+            }
+            else if(c === 73 || c === 105){
+                ret.state = 15;
+            }
+            else if(c === 74 || c === 106){
+                ret.state = 16;
+            }
+            else if(c === 75 || c === 107){
+                ret.state = 17;
+            }
+            else {
+                ret.state = -1;
+            } 
+            break;
+        case 20:
+            ret.hasArc = true;
+            ret.isEnd = true;
+            if((c >= 48 && c <= 57)){
+                ret.state = 20;
+            }
+            else if(c === 73 || c === 105){
+                ret.state = 15;
+            }
+            else if(c === 74 || c === 106){
+                ret.state = 16;
+            }
+            else if(c === 75 || c === 107){
+                ret.state = 17;
+            }
+            else {
+                ret.state = -1;
+            } 
+            break;
+        case 21:
             ret.hasArc = false;
             ret.isEnd = true;
             ret.state = -1;
@@ -214,13 +339,14 @@ var jjlexers = [
     tokens that a lexical dfa state can return
 */
 var jjlexTokens0 = [ 
-        -1,    -1,     6,     7,     4,     2,     3,    -1,     5,     1,
-        -1,     1,     1,    -1,    -1,     1,     1,     8,
+        -1,    -1,    10,    11,     7,     5,     6,    -1,     8,     1,
+        -1,     9,     1,     1,    -1,     2,     3,     4,    -1,     1,
+         1,    12,
 ]; 
 
-var jjstateCount = 25;
-var jjtokenCount = 9;
-var jjactERR = 26;
+var jjstateCount = 31;
+var jjtokenCount = 13;
+var jjactERR = 32;
 /*
     compressed action table: action = jjpact[jjdisact[STATE-NUM] + TOKEN]
     when action > 0, shift the token and goto state (action - 1);
@@ -228,96 +354,112 @@ var jjactERR = 26;
     when action = 0, do default action.
 */
 var jjpact = [ 
-        12,    13,    14,    15,    11,    25,    12,    13,    14,    15,
-         7,    24,     4,     8,     9,     0,     0,    10,     0,     6,
-         4,     8,     9,     0,     0,    10,     0,     6,     4,     8,
-         9,     0,     0,    10,     0,     6,     4,     8,     9,     0,
-         0,    10,     0,     6,     4,     8,     9,     0,     0,    10,
-         0,     6,     4,     8,     9,     0,     0,    10,     0,     6,
-         4,     8,     9,     0,     0,    10,     0,     6,     4,     8,
-         9,     0,     0,    10,     0,     6,     4,     8,     9,     0,
-         0,    10,     0,     6,    12,    13,    14,    15,     0,     0,
-         0,
+         4,     5,     6,     7,    11,    12,    18,    19,    14,    13,
+        15,     9,     4,     5,     6,     7,    11,    12,    18,    19,
+        14,    13,    10,     9,     4,     5,     6,     7,    11,    12,
+         0,     0,    14,    13,     0,     9,     4,     5,     6,     7,
+        11,    12,     0,     0,    14,    13,     0,     9,     4,     5,
+         6,     7,    11,    12,     0,     0,    14,    13,     0,     9,
+         4,     5,     6,     7,    11,    12,     0,     0,    14,    13,
+         0,     9,     4,     5,     6,     7,    11,    12,     0,     0,
+        14,    13,     0,     9,     4,     5,     6,     7,    11,    12,
+         0,     0,    14,    13,     0,     9,     4,     5,     6,     7,
+        11,    12,     0,     0,    14,    13,     0,     9,     4,     5,
+         6,     7,    16,    17,    18,    19,    14,    13,    31,     9,
+        16,    17,    18,    19,    30,    16,    17,    18,    19,     0,
+         0,    29,    16,    17,    18,    19,     0,     0,     0,     0,
+    
 ]; 
 /*
     displacement of action table.
 */
 var jjdisact = [ 
-        75,    10,    82,    -9,    -9,    -2,    -9,    67,    59,    51,
-        43,    35,    27,    19,    11,    -9,    -9,     4,    -2,    -9,
-        -9,    -9,    -9,    -9,    -9,
+        95,    22,   127,   -13,   -13,   -13,   -13,   -13,     0,   -13,
+        83,    71,    59,    47,    35,    23,    11,   107,    -1,   -13,
+       -13,   120,   115,   107,    11,    -1,   -13,   -13,   -13,   -13,
+       -13,
 ]; 
 /*
     used to check if a position in jjpact is out of bouds.
     if jjcheckact[jjdisact[STATE-NUM] + TOKEN] = STATE-NUM, this position is not out of bounds.
 */
 var jjcheckact = [ 
-        18,    18,    18,    18,     5,    18,    17,    17,    17,    17,
-         1,    17,    14,    14,    14,     0,     0,    14,     0,    14,
-        13,    13,    13,     0,     0,    13,     0,    13,    12,    12,
-        12,     0,     0,    12,     0,    12,    11,    11,    11,     0,
-         0,    11,     0,    11,    10,    10,    10,     0,     0,    10,
-         0,    10,     9,     9,     9,     0,     0,     9,     0,     9,
-         8,     8,     8,     0,     0,     8,     0,     8,     7,     7,
-         7,     0,     0,     7,     0,     7,     0,     0,     0,     0,
-         0,     0,     0,     0,     2,     2,     2,     2,     0,     0,
-         0,
+        18,    18,    18,    18,    18,    18,    25,    25,    18,    18,
+         8,    18,    16,    16,    16,    16,    16,    16,    24,    24,
+        16,    16,     1,    16,    15,    15,    15,    15,    15,    15,
+         0,     0,    15,    15,     0,    15,    14,    14,    14,    14,
+        14,    14,     0,     0,    14,    14,     0,    14,    13,    13,
+        13,    13,    13,    13,     0,     0,    13,    13,     0,    13,
+        12,    12,    12,    12,    12,    12,     0,     0,    12,    12,
+         0,    12,    11,    11,    11,    11,    11,    11,     0,     0,
+        11,    11,     0,    11,    10,    10,    10,    10,    10,    10,
+         0,     0,    10,    10,     0,    10,     0,     0,     0,     0,
+         0,     0,     0,     0,     0,     0,     0,     0,    17,    17,
+        17,    17,    23,    23,    23,    23,    17,    17,    23,    17,
+        22,    22,    22,    22,    22,    21,    21,    21,    21,     0,
+         0,    21,     2,     2,     2,     2,     0,     0,     0,     0,
+    
 ]; 
 /*
     default action table. action = jjdefred[STATE-NUM],
     where action is the number of the rule to reduce with.
 */
 var jjdefred = [ 
-        -1,    -1,     1,     9,    10,    -1,     0,    -1,    -1,    -1,
-        -1,    -1,    -1,    -1,    -1,     6,     7,    -1,    -1,     2,
-         3,     4,     5,     8,    11,
+        -1,    -1,     1,    11,    12,    13,    14,    15,    -1,     0,
+        -1,    -1,    -1,    -1,    -1,    -1,    -1,     8,    -1,     6,
+         7,    -1,    -1,    -1,     2,     3,     4,     5,     9,    10,
+        16,
 ]; 
 /*
     compressed goto table: goto = jjpgoto[jjdisgoto[STATE-NUM] + NON_TERMINAL]
 */
 var jjpgoto = [ 
-        22,     4,    21,     4,    20,     4,    19,     4,    18,     4,
-        17,     4,    16,     4,    15,     4,     1,     2,     4,
+        27,     7,    26,     7,    25,     7,    24,     7,    23,     7,
+        22,     7,    21,     7,    20,     7,    19,     7,     1,     2,
+         7,
 ]; 
 /*
     displacement of the goto table
 */
 var jjdisgoto = [ 
-        15,    -4,    -4,    -4,    -4,    -4,    -4,    12,    10,     8,
-         6,     4,     2,     0,    -2,    -4,    -4,    -4,    -4,    -4,
-        -4,    -4,    -4,    -4,    -4,
+        17,    -4,    -4,    -4,    -4,    -4,    -4,    -4,    -4,    -4,
+        14,    12,    10,     8,     6,     4,     2,     0,    -2,    -4,
+        -4,    -4,    -4,    -4,    -4,    -4,    -4,    -4,    -4,    -4,
+        -4,
 ]; 
 /*
     length of each rule: rule length = jjruleLen[RULE-NUM]
 */
 var jjruleLen = [ 
-         2,     1,     3,     3,     3,     3,     2,     2,     3,     1,
-         1,     4,
+         2,     1,     3,     3,     3,     3,     2,     2,     2,     3,
+         3,     1,     1,     1,     1,     1,     4,
 ]; 
 /*
     index of the LHS of each rule
 */
 var jjlhs = [ 
          0,     1,     2,     2,     2,     2,     2,     2,     2,     2,
-         2,     3,
+         2,     2,     2,     2,     2,     2,     3,
 ]; 
 /*
     token names
 */
 var jjtokenNames = [ 
-                   "EOF",               "NUM",              "PLUS",
+                   "EOF",             "CONST",                 "I",
+                     "J",                 "K",              "PLUS",
                  "MINUS",             "TIMES",            "DIVIDE",
-                   "BRA",               "KET",               "SIN",
-    
+                   "ABS",               "BRA",               "KET",
+                   "EXP",
 ]; 
 /*
     token alias
 */
 var jjtokenAlias = [ 
+                    null,                null,                null,
                     null,                null,                 "+",
                      "-",                 "*",                 "/",
-                     "(",                 ")",               "sin",
-    
+                     "|",                 "(",                 ")",
+                   "exp",
 ]; 
 
 
@@ -447,19 +589,28 @@ function createParser() {
                 _setImg("");
                 break;
             case 9:
-                 _sematicVal = Number(_token.val); 
-                break;
-            case 11:
-                 _sematicVal = Number(_token.val); 
+                 _sematicVal = new Quaternion(Number(_token.val), 0, 0, 0); 
                 break;
             case 12:
-                 _sematicVal = Number(_token.val); 
+                 _sematicVal = new Quaternion(Number(_token.val), 0, 0, 0); 
+                break;
+            case 13:
+                 _sematicVal = new Quaternion(Number(_token.val), 0, 0, 0); 
                 break;
             case 15:
-                 _sematicVal = Number(_token.val); 
+                 _sematicVal = new Quaternion(0, Number(cut(_token.val)), 0, 0); 
                 break;
             case 16:
-                 _sematicVal = Number(_token.val); 
+                 _sematicVal = new Quaternion(0, 0, Number(cut(_token.val)), 0); 
+                break;
+            case 17:
+                 _sematicVal = new Quaternion(0, 0, 0, Number(cut(_token.val))); 
+                break;
+            case 19:
+                 _sematicVal = new Quaternion(Number(_token.val), 0, 0, 0); 
+                break;
+            case 20:
+                 _sematicVal = new Quaternion(Number(_token.val), 0, 0, 0); 
                 break;
             default:;
         }
@@ -495,7 +646,7 @@ function createParser() {
         _backupCount = 0;
     }
     function _consume(c){
-        c === '\n' ? (_line++, _column = 0) : (_column++);
+        c === '\n' ? (_line++, _column = 0) : (_column += c.charCodeAt(0) > 0xff ? 2 : 1);
         _matched += c;
         _marker.state !== -1 && (_backupCount++);
         return true;
@@ -635,25 +786,25 @@ function createParser() {
                 /* 2: expr => expr "+" expr */
                 var a = _sematicS[jjsp - 3];
                 var b = _sematicS[jjsp - 1];
-                { jjtop = a + b; }
+                { jjtop = Quaternion.addQ(a, b); }
                 break;
             case 3:
                 /* 3: expr => expr "-" expr */
                 var a = _sematicS[jjsp - 3];
                 var b = _sematicS[jjsp - 1];
-                { jjtop = a - b; }
+                { jjtop = Quaternion.minusQ(a, b); }
                 break;
             case 4:
                 /* 4: expr => expr "*" expr */
                 var a = _sematicS[jjsp - 3];
                 var b = _sematicS[jjsp - 1];
-                { jjtop = a * b; }
+                { jjtop = Quaternion.multiQ(a, b); }
                 break;
             case 5:
                 /* 5: expr => expr "/" expr */
                 var a = _sematicS[jjsp - 3];
                 var b = _sematicS[jjsp - 1];
-                { jjtop = a / b; }
+                { jjtop = Quaternion.multiQ(a, b.inv()) }
                 break;
             case 6:
                 /* 6: expr => "+" expr */
@@ -663,17 +814,27 @@ function createParser() {
             case 7:
                 /* 7: expr => "-" expr */
                 var a = _sematicS[jjsp - 1];
-                { jjtop = -a; }
+                { jjtop = a.neg(); }
                 break;
             case 8:
-                /* 8: expr => "(" expr ")" */
+                /* 8: expr => expr "*" */
+                var a = _sematicS[jjsp - 2];
+                { jjtop = a.dagger(); }
+                break;
+            case 9:
+                /* 9: expr => "(" expr ")" */
                 var a = _sematicS[jjsp - 2];
                 { jjtop = a; }
                 break;
-            case 11:
-                /* 11: funcs => "sin" "(" expr ")" */
+            case 10:
+                /* 10: expr => "|" expr "|" */
                 var a = _sematicS[jjsp - 2];
-                { jjtop = Math.sin(a); }
+                { jjtop = a.module(); }
+                break;
+            case 16:
+                /* 16: funcs => "exp" "(" expr ")" */
+                var a = _sematicS[jjsp - 2];
+                { jjtop = Quaternion.exp(a); }
                 break;
         }
         _lrState.length -= jjruleLen[jjrulenum];
@@ -752,16 +913,17 @@ function createParser() {
 }
 
 
-module.exports = function calc(s){
+module.exports = function (s, args){
     var parser = createParser();
     var out = { val: null };
+    var errMsg = null;
     parser.init(out);
     parser.on('lexicalerror', function(msg, line, column){
-        console.log(msg + ' at line ' + (line + 1) + ' column ' + (column + 1));
+        errMsg = (msg + ' at line ' + (line + 1) + ' column ' + (column + 1));
         parser.halt();
     });
     parser.on('syntaxerror', function(msg, token){
-        console.log('syntax error: line ' + (token.startLine + 1) + ' column ' + (token.startColumn + 1) + ': ' + msg);
+        errMsg = ('syntax error: line ' + (token.startLine + 1) + ' column ' + (token.startColumn + 1) + ': ' + msg);
         parser.halt();
     });
     parser.on('accept', function(){
@@ -769,5 +931,8 @@ module.exports = function calc(s){
     });
     parser.accept(s);
     parser.end();
-    return out.val;
+    if(errMsg !== null){
+        throw errMsg;
+    }
+    return out.val.toString();
 };

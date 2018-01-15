@@ -1,21 +1,21 @@
-all: jscc copy-jscc
+all: tscc copy-tscc
 
-jscc: rollup.config.js src/** templates
+tscc: rollup.config.js src/** templates
 	@rollup -c
 
-jscc-min: jscc
-	@uglifyjs lib/jscc.js -cm --preamble > lib/jscc.min.js
-	@echo "created jscc.min.js"
+tscc-min: tscc
+	@uglifyjs lib/tscc.js -cm --preamble > lib/tscc.min.js
+	@echo "created tscc.min.js"
 
-copy-jscc: jscc
-	@cp lib/jscc.js web-demo/src/jscc.js
-	@echo "copied jscc.js";
+copy-tscc: tscc
+	@cp lib/tscc.js web-demo/src/tscc.js
+	@echo "copied tscc.js";
 
 templates: $(wildcard src/templates/*.ets)
 	@node scripts/etsc.js
 	@echo "templates created"
 
-install: jscc
+install: tscc
 	@npm install -g
 
 .PHONY: sandwitch

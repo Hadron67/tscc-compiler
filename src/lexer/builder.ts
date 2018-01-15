@@ -40,6 +40,7 @@ export interface LexBuilder<T>{
     addVar(vname: JNode);
     beginSet(inverse: boolean);
     addSetItem(from: JNode, to: JNode);
+    addSetItemRaw(from: number, to: number);
     endSet();
     importVar(n: JNode);
     build(): DFA<T>[];
@@ -95,6 +96,7 @@ export function createLexBuilder<T>(ctx: Context): LexBuilder<T>{
         addVar,
         beginSet,
         addSetItem,
+        addSetItemRaw,
         endSet,
         build,
         importVar,
@@ -357,7 +359,5 @@ export function createLexBuilder<T>(ctx: Context): LexBuilder<T>{
         }
         cb();
     }
-
     //#endregion
-    
 }

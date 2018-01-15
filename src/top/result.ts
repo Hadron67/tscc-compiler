@@ -88,7 +88,7 @@ export function genResult(source: string, fname: string): Result{
             warn(new JsccWarning(`non terminal "${s2.sym}" is unreachable`));
         }
     }
-    if(!templateExists(f.output.val)){
+    if(f.output !== null && !templateExists(f.output.val)){
         let msg = `template for '${f.output.val}' is not implemented yet ` + markPosition(f.output, lines) + endl;
         msg += 'available templates are: ' + listTemplates().join(', ');
         err(new JsccError(msg));
@@ -164,7 +164,7 @@ export function genResult(source: string, fname: string): Result{
     function getTemplateInput(): TemplateInput{
         return {
             endl: '\n',
-            output: f.output.val,
+            output: f.output === null ? 'typescript' : f.output.val,
             pt: parseTable,
             file: file
         };

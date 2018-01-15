@@ -8,56 +8,80 @@ state 0(start)
     '.' -> state 7
     '/' -> state 8
     ['0','9'] -> state 9
-    's' -> state 10
+    'e' -> state 10
+    '|' -> state 11
 
 state 1(end 0)
     [\x9,\xa],\xd,' ' -> state 1
 
-state 2(end 6)
+state 2(end 10)
 
-state 3(end 7)
+state 3(end 11)
 
-state 4(end 4)
+state 4(end 7)
 
-state 5(end 2)
+state 5(end 5)
 
-state 6(end 3)
+state 6(end 6)
 
 state 7
-    ['0','9'] -> state 11
+    ['0','9'] -> state 12
 
-state 8(end 5)
+state 8(end 8)
 
 state 9(end 1)
-    '.' -> state 12
+    '.' -> state 13
     ['0','9'] -> state 9
-    'E','e' -> state 13
+    'E','e' -> state 14
+    'I','i' -> state 15
+    'J','j' -> state 16
+    'K','k' -> state 17
 
 state 10
-    'i' -> state 14
+    'x' -> state 18
 
-state 11(end 1)
-    ['0','9'] -> state 11
-    'E','e' -> state 13
+state 11(end 9)
 
 state 12(end 1)
-    ['0','9'] -> state 15
-    'E','e' -> state 13
+    ['0','9'] -> state 12
+    'E','e' -> state 14
+    'I','i' -> state 15
+    'J','j' -> state 16
+    'K','k' -> state 17
 
-state 13
-    ['0','9'] -> state 16
+state 13(end 1)
+    ['0','9'] -> state 19
+    'E','e' -> state 14
+    'I','i' -> state 15
+    'J','j' -> state 16
+    'K','k' -> state 17
 
 state 14
-    'n' -> state 17
+    ['0','9'] -> state 20
 
-state 15(end 1)
-    ['0','9'] -> state 15
-    'E','e' -> state 13
+state 15(end 2)
 
-state 16(end 1)
-    ['0','9'] -> state 16
+state 16(end 3)
 
-state 17(end 8)
+state 17(end 4)
+
+state 18
+    'p' -> state 21
+
+state 19(end 1)
+    ['0','9'] -> state 19
+    'E','e' -> state 14
+    'I','i' -> state 15
+    'J','j' -> state 16
+    'K','k' -> state 17
+
+state 20(end 1)
+    ['0','9'] -> state 20
+    'I','i' -> state 15
+    'J','j' -> state 16
+    'K','k' -> state 17
+
+state 21(end 12)
 
 
 
@@ -70,25 +94,34 @@ state 0
     [ 5: expr => . expr "/" expr ]
     [ 6: expr => . "+" expr ]
     [ 7: expr => . "-" expr ]
-    [ 8: expr => . "(" expr ")" ]
-    [ 9: expr => . <NUM> ]
-    [ 10: expr => . funcs ]
-    [ 11: funcs => . "sin" "(" expr ")" ]
+    [ 8: expr => . expr "*" ]
+    [ 9: expr => . "(" expr ")" ]
+    [ 10: expr => . "|" expr "|" ]
+    [ 11: expr => . <CONST> ]
+    [ 12: expr => . <I> ]
+    [ 13: expr => . <J> ]
+    [ 14: expr => . <K> ]
+    [ 15: expr => . funcs ]
+    [ 16: funcs => . "exp" "(" expr ")" ]
     no default action
-    <NUM> : shift, and go to state 3
-    "+" : shift, and go to state 7
-    "-" : shift, and go to state 8
-    "(" : shift, and go to state 9
-    "sin" : shift, and go to state 5
+    <CONST> : shift, and go to state 3
+    <I> : shift, and go to state 4
+    <J> : shift, and go to state 5
+    <K> : shift, and go to state 6
+    "+" : shift, and go to state 10
+    "-" : shift, and go to state 11
+    "|" : shift, and go to state 13
+    "(" : shift, and go to state 12
+    "exp" : shift, and go to state 8
     start : go to state 1
     expr : go to state 2
-    funcs : go to state 4
+    funcs : go to state 7
 
 
 state 1
     [ 0: (accept) => start . <EOF> ]*
     no default action
-    <EOF> : shift, and go to state 6
+    <EOF> : shift, and go to state 9
 
 
 state 2
@@ -97,35 +130,51 @@ state 2
     [ 3: expr => expr . "-" expr ]*
     [ 4: expr => expr . "*" expr ]*
     [ 5: expr => expr . "/" expr ]*
+    [ 8: expr => expr . "*" ]*
     default action: reduce with rule 1
-    "+" : shift, and go to state 11
-    "-" : shift, and go to state 12
-    "*" : shift, and go to state 13
-    "/" : shift, and go to state 14
+    "+" : shift, and go to state 15
+    "-" : shift, and go to state 16
+    "*" : shift, and go to state 17
+    "/" : shift, and go to state 18
 
 
 state 3
-    [ 9: expr => <NUM> . ]*
-    default action: reduce with rule 9
+    [ 11: expr => <CONST> . ]*
+    default action: reduce with rule 11
 
 
 state 4
-    [ 10: expr => funcs . ]*
-    default action: reduce with rule 10
+    [ 12: expr => <I> . ]*
+    default action: reduce with rule 12
 
 
 state 5
-    [ 11: funcs => "sin" . "(" expr ")" ]*
-    no default action
-    "(" : shift, and go to state 10
+    [ 13: expr => <J> . ]*
+    default action: reduce with rule 13
 
 
 state 6
+    [ 14: expr => <K> . ]*
+    default action: reduce with rule 14
+
+
+state 7
+    [ 15: expr => funcs . ]*
+    default action: reduce with rule 15
+
+
+state 8
+    [ 16: funcs => "exp" . "(" expr ")" ]*
+    no default action
+    "(" : shift, and go to state 14
+
+
+state 9
     [ 0: (accept) => start <EOF> . ]*
     default action: reduce with rule 0
 
 
-state 7
+state 10
     [ 6: expr => "+" . expr ]*
     [ 2: expr => . expr "+" expr ]
     [ 3: expr => . expr "-" expr ]
@@ -133,21 +182,30 @@ state 7
     [ 5: expr => . expr "/" expr ]
     [ 6: expr => . "+" expr ]
     [ 7: expr => . "-" expr ]
-    [ 8: expr => . "(" expr ")" ]
-    [ 9: expr => . <NUM> ]
-    [ 10: expr => . funcs ]
-    [ 11: funcs => . "sin" "(" expr ")" ]
+    [ 8: expr => . expr "*" ]
+    [ 9: expr => . "(" expr ")" ]
+    [ 10: expr => . "|" expr "|" ]
+    [ 11: expr => . <CONST> ]
+    [ 12: expr => . <I> ]
+    [ 13: expr => . <J> ]
+    [ 14: expr => . <K> ]
+    [ 15: expr => . funcs ]
+    [ 16: funcs => . "exp" "(" expr ")" ]
     no default action
-    <NUM> : shift, and go to state 3
-    "+" : shift, and go to state 7
-    "-" : shift, and go to state 8
-    "(" : shift, and go to state 9
-    "sin" : shift, and go to state 5
-    expr : go to state 15
-    funcs : go to state 4
+    <CONST> : shift, and go to state 3
+    <I> : shift, and go to state 4
+    <J> : shift, and go to state 5
+    <K> : shift, and go to state 6
+    "+" : shift, and go to state 10
+    "-" : shift, and go to state 11
+    "|" : shift, and go to state 13
+    "(" : shift, and go to state 12
+    "exp" : shift, and go to state 8
+    expr : go to state 19
+    funcs : go to state 7
 
 
-state 8
+state 11
     [ 7: expr => "-" . expr ]*
     [ 2: expr => . expr "+" expr ]
     [ 3: expr => . expr "-" expr ]
@@ -155,65 +213,123 @@ state 8
     [ 5: expr => . expr "/" expr ]
     [ 6: expr => . "+" expr ]
     [ 7: expr => . "-" expr ]
-    [ 8: expr => . "(" expr ")" ]
-    [ 9: expr => . <NUM> ]
-    [ 10: expr => . funcs ]
-    [ 11: funcs => . "sin" "(" expr ")" ]
+    [ 8: expr => . expr "*" ]
+    [ 9: expr => . "(" expr ")" ]
+    [ 10: expr => . "|" expr "|" ]
+    [ 11: expr => . <CONST> ]
+    [ 12: expr => . <I> ]
+    [ 13: expr => . <J> ]
+    [ 14: expr => . <K> ]
+    [ 15: expr => . funcs ]
+    [ 16: funcs => . "exp" "(" expr ")" ]
     no default action
-    <NUM> : shift, and go to state 3
-    "+" : shift, and go to state 7
-    "-" : shift, and go to state 8
-    "(" : shift, and go to state 9
-    "sin" : shift, and go to state 5
-    expr : go to state 16
-    funcs : go to state 4
+    <CONST> : shift, and go to state 3
+    <I> : shift, and go to state 4
+    <J> : shift, and go to state 5
+    <K> : shift, and go to state 6
+    "+" : shift, and go to state 10
+    "-" : shift, and go to state 11
+    "|" : shift, and go to state 13
+    "(" : shift, and go to state 12
+    "exp" : shift, and go to state 8
+    expr : go to state 20
+    funcs : go to state 7
 
 
-state 9
-    [ 8: expr => "(" . expr ")" ]*
+state 12
+    [ 9: expr => "(" . expr ")" ]*
     [ 2: expr => . expr "+" expr ]
     [ 3: expr => . expr "-" expr ]
     [ 4: expr => . expr "*" expr ]
     [ 5: expr => . expr "/" expr ]
     [ 6: expr => . "+" expr ]
     [ 7: expr => . "-" expr ]
-    [ 8: expr => . "(" expr ")" ]
-    [ 9: expr => . <NUM> ]
-    [ 10: expr => . funcs ]
-    [ 11: funcs => . "sin" "(" expr ")" ]
+    [ 8: expr => . expr "*" ]
+    [ 9: expr => . "(" expr ")" ]
+    [ 10: expr => . "|" expr "|" ]
+    [ 11: expr => . <CONST> ]
+    [ 12: expr => . <I> ]
+    [ 13: expr => . <J> ]
+    [ 14: expr => . <K> ]
+    [ 15: expr => . funcs ]
+    [ 16: funcs => . "exp" "(" expr ")" ]
     no default action
-    <NUM> : shift, and go to state 3
-    "+" : shift, and go to state 7
-    "-" : shift, and go to state 8
-    "(" : shift, and go to state 9
-    "sin" : shift, and go to state 5
-    expr : go to state 17
-    funcs : go to state 4
+    <CONST> : shift, and go to state 3
+    <I> : shift, and go to state 4
+    <J> : shift, and go to state 5
+    <K> : shift, and go to state 6
+    "+" : shift, and go to state 10
+    "-" : shift, and go to state 11
+    "|" : shift, and go to state 13
+    "(" : shift, and go to state 12
+    "exp" : shift, and go to state 8
+    expr : go to state 21
+    funcs : go to state 7
 
 
-state 10
-    [ 11: funcs => "sin" "(" . expr ")" ]*
+state 13
+    [ 10: expr => "|" . expr "|" ]*
     [ 2: expr => . expr "+" expr ]
     [ 3: expr => . expr "-" expr ]
     [ 4: expr => . expr "*" expr ]
     [ 5: expr => . expr "/" expr ]
     [ 6: expr => . "+" expr ]
     [ 7: expr => . "-" expr ]
-    [ 8: expr => . "(" expr ")" ]
-    [ 9: expr => . <NUM> ]
-    [ 10: expr => . funcs ]
-    [ 11: funcs => . "sin" "(" expr ")" ]
+    [ 8: expr => . expr "*" ]
+    [ 9: expr => . "(" expr ")" ]
+    [ 10: expr => . "|" expr "|" ]
+    [ 11: expr => . <CONST> ]
+    [ 12: expr => . <I> ]
+    [ 13: expr => . <J> ]
+    [ 14: expr => . <K> ]
+    [ 15: expr => . funcs ]
+    [ 16: funcs => . "exp" "(" expr ")" ]
     no default action
-    <NUM> : shift, and go to state 3
-    "+" : shift, and go to state 7
-    "-" : shift, and go to state 8
-    "(" : shift, and go to state 9
-    "sin" : shift, and go to state 5
-    expr : go to state 18
-    funcs : go to state 4
+    <CONST> : shift, and go to state 3
+    <I> : shift, and go to state 4
+    <J> : shift, and go to state 5
+    <K> : shift, and go to state 6
+    "+" : shift, and go to state 10
+    "-" : shift, and go to state 11
+    "|" : shift, and go to state 13
+    "(" : shift, and go to state 12
+    "exp" : shift, and go to state 8
+    expr : go to state 22
+    funcs : go to state 7
 
 
-state 11
+state 14
+    [ 16: funcs => "exp" "(" . expr ")" ]*
+    [ 2: expr => . expr "+" expr ]
+    [ 3: expr => . expr "-" expr ]
+    [ 4: expr => . expr "*" expr ]
+    [ 5: expr => . expr "/" expr ]
+    [ 6: expr => . "+" expr ]
+    [ 7: expr => . "-" expr ]
+    [ 8: expr => . expr "*" ]
+    [ 9: expr => . "(" expr ")" ]
+    [ 10: expr => . "|" expr "|" ]
+    [ 11: expr => . <CONST> ]
+    [ 12: expr => . <I> ]
+    [ 13: expr => . <J> ]
+    [ 14: expr => . <K> ]
+    [ 15: expr => . funcs ]
+    [ 16: funcs => . "exp" "(" expr ")" ]
+    no default action
+    <CONST> : shift, and go to state 3
+    <I> : shift, and go to state 4
+    <J> : shift, and go to state 5
+    <K> : shift, and go to state 6
+    "+" : shift, and go to state 10
+    "-" : shift, and go to state 11
+    "|" : shift, and go to state 13
+    "(" : shift, and go to state 12
+    "exp" : shift, and go to state 8
+    expr : go to state 23
+    funcs : go to state 7
+
+
+state 15
     [ 2: expr => expr "+" . expr ]*
     [ 2: expr => . expr "+" expr ]
     [ 3: expr => . expr "-" expr ]
@@ -221,21 +337,30 @@ state 11
     [ 5: expr => . expr "/" expr ]
     [ 6: expr => . "+" expr ]
     [ 7: expr => . "-" expr ]
-    [ 8: expr => . "(" expr ")" ]
-    [ 9: expr => . <NUM> ]
-    [ 10: expr => . funcs ]
-    [ 11: funcs => . "sin" "(" expr ")" ]
+    [ 8: expr => . expr "*" ]
+    [ 9: expr => . "(" expr ")" ]
+    [ 10: expr => . "|" expr "|" ]
+    [ 11: expr => . <CONST> ]
+    [ 12: expr => . <I> ]
+    [ 13: expr => . <J> ]
+    [ 14: expr => . <K> ]
+    [ 15: expr => . funcs ]
+    [ 16: funcs => . "exp" "(" expr ")" ]
     no default action
-    <NUM> : shift, and go to state 3
-    "+" : shift, and go to state 7
-    "-" : shift, and go to state 8
-    "(" : shift, and go to state 9
-    "sin" : shift, and go to state 5
-    expr : go to state 19
-    funcs : go to state 4
+    <CONST> : shift, and go to state 3
+    <I> : shift, and go to state 4
+    <J> : shift, and go to state 5
+    <K> : shift, and go to state 6
+    "+" : shift, and go to state 10
+    "-" : shift, and go to state 11
+    "|" : shift, and go to state 13
+    "(" : shift, and go to state 12
+    "exp" : shift, and go to state 8
+    expr : go to state 24
+    funcs : go to state 7
 
 
-state 12
+state 16
     [ 3: expr => expr "-" . expr ]*
     [ 2: expr => . expr "+" expr ]
     [ 3: expr => . expr "-" expr ]
@@ -243,43 +368,60 @@ state 12
     [ 5: expr => . expr "/" expr ]
     [ 6: expr => . "+" expr ]
     [ 7: expr => . "-" expr ]
-    [ 8: expr => . "(" expr ")" ]
-    [ 9: expr => . <NUM> ]
-    [ 10: expr => . funcs ]
-    [ 11: funcs => . "sin" "(" expr ")" ]
+    [ 8: expr => . expr "*" ]
+    [ 9: expr => . "(" expr ")" ]
+    [ 10: expr => . "|" expr "|" ]
+    [ 11: expr => . <CONST> ]
+    [ 12: expr => . <I> ]
+    [ 13: expr => . <J> ]
+    [ 14: expr => . <K> ]
+    [ 15: expr => . funcs ]
+    [ 16: funcs => . "exp" "(" expr ")" ]
     no default action
-    <NUM> : shift, and go to state 3
-    "+" : shift, and go to state 7
-    "-" : shift, and go to state 8
-    "(" : shift, and go to state 9
-    "sin" : shift, and go to state 5
-    expr : go to state 20
-    funcs : go to state 4
+    <CONST> : shift, and go to state 3
+    <I> : shift, and go to state 4
+    <J> : shift, and go to state 5
+    <K> : shift, and go to state 6
+    "+" : shift, and go to state 10
+    "-" : shift, and go to state 11
+    "|" : shift, and go to state 13
+    "(" : shift, and go to state 12
+    "exp" : shift, and go to state 8
+    expr : go to state 25
+    funcs : go to state 7
 
 
-state 13
+state 17
     [ 4: expr => expr "*" . expr ]*
+    [ 8: expr => expr "*" . ]*
     [ 2: expr => . expr "+" expr ]
     [ 3: expr => . expr "-" expr ]
     [ 4: expr => . expr "*" expr ]
     [ 5: expr => . expr "/" expr ]
     [ 6: expr => . "+" expr ]
     [ 7: expr => . "-" expr ]
-    [ 8: expr => . "(" expr ")" ]
-    [ 9: expr => . <NUM> ]
-    [ 10: expr => . funcs ]
-    [ 11: funcs => . "sin" "(" expr ")" ]
-    no default action
-    <NUM> : shift, and go to state 3
-    "+" : shift, and go to state 7
-    "-" : shift, and go to state 8
-    "(" : shift, and go to state 9
-    "sin" : shift, and go to state 5
-    expr : go to state 21
-    funcs : go to state 4
+    [ 8: expr => . expr "*" ]
+    [ 9: expr => . "(" expr ")" ]
+    [ 10: expr => . "|" expr "|" ]
+    [ 11: expr => . <CONST> ]
+    [ 12: expr => . <I> ]
+    [ 13: expr => . <J> ]
+    [ 14: expr => . <K> ]
+    [ 15: expr => . funcs ]
+    [ 16: funcs => . "exp" "(" expr ")" ]
+    default action: reduce with rule 8
+    <CONST> : shift, and go to state 3
+    <I> : shift, and go to state 4
+    <J> : shift, and go to state 5
+    <K> : shift, and go to state 6
+    "|" : shift, and go to state 13
+    "(" : shift, and go to state 12
+    "exp" : shift, and go to state 8
+    expr : go to state 26
+    funcs : go to state 7
 
 
-state 14
+state 18
     [ 5: expr => expr "/" . expr ]*
     [ 2: expr => . expr "+" expr ]
     [ 3: expr => . expr "-" expr ]
@@ -287,109 +429,150 @@ state 14
     [ 5: expr => . expr "/" expr ]
     [ 6: expr => . "+" expr ]
     [ 7: expr => . "-" expr ]
-    [ 8: expr => . "(" expr ")" ]
-    [ 9: expr => . <NUM> ]
-    [ 10: expr => . funcs ]
-    [ 11: funcs => . "sin" "(" expr ")" ]
+    [ 8: expr => . expr "*" ]
+    [ 9: expr => . "(" expr ")" ]
+    [ 10: expr => . "|" expr "|" ]
+    [ 11: expr => . <CONST> ]
+    [ 12: expr => . <I> ]
+    [ 13: expr => . <J> ]
+    [ 14: expr => . <K> ]
+    [ 15: expr => . funcs ]
+    [ 16: funcs => . "exp" "(" expr ")" ]
     no default action
-    <NUM> : shift, and go to state 3
-    "+" : shift, and go to state 7
-    "-" : shift, and go to state 8
-    "(" : shift, and go to state 9
-    "sin" : shift, and go to state 5
-    expr : go to state 22
-    funcs : go to state 4
+    <CONST> : shift, and go to state 3
+    <I> : shift, and go to state 4
+    <J> : shift, and go to state 5
+    <K> : shift, and go to state 6
+    "+" : shift, and go to state 10
+    "-" : shift, and go to state 11
+    "|" : shift, and go to state 13
+    "(" : shift, and go to state 12
+    "exp" : shift, and go to state 8
+    expr : go to state 27
+    funcs : go to state 7
 
 
-state 15
+state 19
     [ 6: expr => "+" expr . ]*
     [ 2: expr => expr . "+" expr ]*
     [ 3: expr => expr . "-" expr ]*
     [ 4: expr => expr . "*" expr ]*
     [ 5: expr => expr . "/" expr ]*
+    [ 8: expr => expr . "*" ]*
     default action: reduce with rule 6
 
 
-state 16
+state 20
     [ 7: expr => "-" expr . ]*
     [ 2: expr => expr . "+" expr ]*
     [ 3: expr => expr . "-" expr ]*
     [ 4: expr => expr . "*" expr ]*
     [ 5: expr => expr . "/" expr ]*
+    [ 8: expr => expr . "*" ]*
     default action: reduce with rule 7
 
 
-state 17
-    [ 8: expr => "(" expr . ")" ]*
+state 21
+    [ 9: expr => "(" expr . ")" ]*
     [ 2: expr => expr . "+" expr ]*
     [ 3: expr => expr . "-" expr ]*
     [ 4: expr => expr . "*" expr ]*
     [ 5: expr => expr . "/" expr ]*
+    [ 8: expr => expr . "*" ]*
     no default action
-    "+" : shift, and go to state 11
-    "-" : shift, and go to state 12
-    "*" : shift, and go to state 13
-    "/" : shift, and go to state 14
-    ")" : shift, and go to state 23
+    "+" : shift, and go to state 15
+    "-" : shift, and go to state 16
+    "*" : shift, and go to state 17
+    "/" : shift, and go to state 18
+    ")" : shift, and go to state 28
 
 
-state 18
-    [ 11: funcs => "sin" "(" expr . ")" ]*
+state 22
+    [ 10: expr => "|" expr . "|" ]*
     [ 2: expr => expr . "+" expr ]*
     [ 3: expr => expr . "-" expr ]*
     [ 4: expr => expr . "*" expr ]*
     [ 5: expr => expr . "/" expr ]*
+    [ 8: expr => expr . "*" ]*
     no default action
-    "+" : shift, and go to state 11
-    "-" : shift, and go to state 12
-    "*" : shift, and go to state 13
-    "/" : shift, and go to state 14
-    ")" : shift, and go to state 24
+    "+" : shift, and go to state 15
+    "-" : shift, and go to state 16
+    "*" : shift, and go to state 17
+    "/" : shift, and go to state 18
+    "|" : shift, and go to state 29
 
 
-state 19
+state 23
+    [ 16: funcs => "exp" "(" expr . ")" ]*
+    [ 2: expr => expr . "+" expr ]*
+    [ 3: expr => expr . "-" expr ]*
+    [ 4: expr => expr . "*" expr ]*
+    [ 5: expr => expr . "/" expr ]*
+    [ 8: expr => expr . "*" ]*
+    no default action
+    "+" : shift, and go to state 15
+    "-" : shift, and go to state 16
+    "*" : shift, and go to state 17
+    "/" : shift, and go to state 18
+    ")" : shift, and go to state 30
+
+
+state 24
     [ 2: expr => expr "+" expr . ]*
     [ 2: expr => expr . "+" expr ]*
     [ 3: expr => expr . "-" expr ]*
     [ 4: expr => expr . "*" expr ]*
     [ 5: expr => expr . "/" expr ]*
+    [ 8: expr => expr . "*" ]*
     default action: reduce with rule 2
+    "*" : shift, and go to state 17
+    "/" : shift, and go to state 18
 
 
-state 20
+state 25
     [ 3: expr => expr "-" expr . ]*
     [ 2: expr => expr . "+" expr ]*
     [ 3: expr => expr . "-" expr ]*
     [ 4: expr => expr . "*" expr ]*
     [ 5: expr => expr . "/" expr ]*
+    [ 8: expr => expr . "*" ]*
     default action: reduce with rule 3
+    "*" : shift, and go to state 17
+    "/" : shift, and go to state 18
 
 
-state 21
+state 26
     [ 4: expr => expr "*" expr . ]*
     [ 2: expr => expr . "+" expr ]*
     [ 3: expr => expr . "-" expr ]*
     [ 4: expr => expr . "*" expr ]*
     [ 5: expr => expr . "/" expr ]*
+    [ 8: expr => expr . "*" ]*
     default action: reduce with rule 4
 
 
-state 22
+state 27
     [ 5: expr => expr "/" expr . ]*
     [ 2: expr => expr . "+" expr ]*
     [ 3: expr => expr . "-" expr ]*
     [ 4: expr => expr . "*" expr ]*
     [ 5: expr => expr . "/" expr ]*
+    [ 8: expr => expr . "*" ]*
     default action: reduce with rule 5
 
 
-state 23
-    [ 8: expr => "(" expr ")" . ]*
-    default action: reduce with rule 8
+state 28
+    [ 9: expr => "(" expr ")" . ]*
+    default action: reduce with rule 9
 
 
-state 24
-    [ 11: funcs => "sin" "(" expr ")" . ]*
-    default action: reduce with rule 11
+state 29
+    [ 10: expr => "|" expr "|" . ]*
+    default action: reduce with rule 10
+
+
+state 30
+    [ 16: funcs => "exp" "(" expr ")" . ]*
+    default action: reduce with rule 16
 
 

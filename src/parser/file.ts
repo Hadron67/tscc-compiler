@@ -10,7 +10,7 @@ export class File{
     opt: {[s: string]: { name: JNode, val: JNode }} = {};
     prefix: string = 'jj';
     header: JNode[] = [];
-    output: JNode = newNode('typescript');
+    output: JNode = null;
     extraArgs: JNode = null;
     initArg: JNode = null;
     initBody: JNode = null;

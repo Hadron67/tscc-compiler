@@ -2,7 +2,7 @@
 
 var fs = require('fs');
 // var Promise = require('bluebird');
-var jscc = require('../lib/jscc.js');
+var jscc = require('../lib/tscc.js');
 var parseArgs = require('./arg.js');
 var pkg = require('../package.json');
 
@@ -89,7 +89,6 @@ function generate(arg){
     jscc.setDebugger(console);
     var consoleStream = stream(process.stdout);
 
-    // var input = fs.readFileSync(arg.input,'utf-8');
     return readFile(arg.input)
     .then(function(input){
         var result = jscc.genResult(input, deleteSuffix(arg.input));
