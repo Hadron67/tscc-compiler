@@ -8,8 +8,8 @@
 
 %%
 
-start: topstmtlist;
-topstmtlist: topstmtlist topstmt | /* empty */;
+开始: 外层语句块;
+外层语句块: 外层语句块 外层语句 | /* empty */;
 
 
 %%

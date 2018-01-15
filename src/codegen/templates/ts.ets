@@ -201,11 +201,11 @@ var <%- prefix %>actERR = <%- pt.stateCount + 1 %>;
 /*
     token names
 */
-<% printTable<TokenDef>('tokenNames', pt.g.tokens, 20, 3, t => `"${t.sym}"`); %>
+<% printTable<TokenDef>('tokenNames', pt.g.tokens, 20, 3, t => `"${t.sym.replace(/"/g, '\\"')}"`); %>
 /*
     token alias
 */
-<% printTable<TokenDef>('tokenAlias', pt.g.tokens, 20, 3, t => t.alias ? `"${t.alias}"` : "null"); %>
+<% printTable<TokenDef>('tokenAlias', pt.g.tokens, 20, 3, t => t.alias ? `"${t.alias.replace(/"/g, '\\"')}"` : "null"); %>
 <% let className = getOpt('className', 'Parser'); %>
 
 <% function printLexActionsFunc(dfa: DFA<LexAction[]>, n: number){
@@ -458,7 +458,7 @@ function create<%- className %>()<%- ts(': ' + className) %> {
         _backupCount = 0;
     }
     function _consume(c<%- ts(": string") %>){
-        c === '\n' ? (_line++, _column = 0) : (_column++);
+        c === '\n' ? (_line++, _column = 0) : (_column += c.charCodeAt(0) > 0xff ? 2 : 1);
         _matched += c;
         _marker.state !== -1 && (_backupCount++);
         return true;

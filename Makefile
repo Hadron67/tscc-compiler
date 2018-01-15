@@ -1,4 +1,4 @@
-all: jscc jscc-min copy-jscc
+all: jscc copy-jscc
 
 jscc: rollup.config.js src/** templates
 	@rollup -c

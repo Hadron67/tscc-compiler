@@ -62,7 +62,6 @@ export function genResult(source: string, fname: string): Result{
     };
 
     var f = parse(ret, source);
-    f.name = fname;
     let lines = source.split('\n');
     for(let cb of needLinecbs){
         cb(ret, lines);
@@ -71,6 +70,7 @@ export function genResult(source: string, fname: string): Result{
         terminated = true;
         return ret;
     }
+    f.name = fname;
     var g = f.grammar;
     file = f;
     // we still could have error here

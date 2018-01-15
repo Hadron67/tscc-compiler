@@ -292,12 +292,12 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("/*");
     echoLine("    token names");
     echo("*/");
-    printTable<TokenDef>('tokenNames', pt.g.tokens, 20, 3, t => `"${t.sym}"`); 
+    printTable<TokenDef>('tokenNames', pt.g.tokens, 20, 3, t => `"${t.sym.replace(/"/g, '\\"')}"`); 
     echoLine("");
     echoLine("/*");
     echoLine("    token alias");
     echo("*/");
-    printTable<TokenDef>('tokenAlias', pt.g.tokens, 20, 3, t => t.alias ? `"${t.alias}"` : "null"); 
+    printTable<TokenDef>('tokenAlias', pt.g.tokens, 20, 3, t => t.alias ? `"${t.alias.replace(/"/g, '\\"')}"` : "null"); 
     let className = getOpt('className', 'Parser'); 
     echoLine("");
     function printLexActionsFunc(dfa: DFA<LexAction[]>, n: number){
@@ -686,7 +686,7 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echo("    function _consume(c");
     echo(ts(": string") );
     echoLine("){");
-    echoLine("        c === '\\n' ? (_line++, _column = 0) : (_column++);");
+    echoLine("        c === '\\n' ? (_line++, _column = 0) : (_column += c.charCodeAt(0) > 0xff ? 2 : 1);");
     echoLine("        _matched += c;");
     echoLine("        _marker.state !== -1 && (_backupCount++);");
     echoLine("        return true;");

@@ -10,7 +10,7 @@ import { CompilationError as E, JsccError } from '../util/E';
 import { InputStream, endl } from '../util/io';
 import { Context } from '../util/context';
 import { LexAction, returnToken, blockAction, pushState, popState, setImg } from '../lexer/action';
-import { Position, JNode, newNode, markPosition } from './node';
+import { Position, JNode, newNode, markPosition, nodeBetween } from './node';
 import { File } from './file';
 
 function nodeFromToken(t: Token): JNode{
@@ -33,13 +33,41 @@ function nodeFromTrivalToken(t: Token): JNode{
         endColumn: t.endColumn
     };
 }
-
+let escapes: {[s: string]: string} = {
+    'n': '\n',
+    'f': '\f',
+    'b': '\b',
+    'r': '\r',
+    't': '\t',
+    '\\': '\\'
+};
 function unescape(s: string){
-    return s
-    .replace(/\\n/g, '\n')
-    .replace(/\\t/g, '\t')
-    .replace(/\\r/g, '\r')
-    .replace(/\\\\/g, '\\');
+    let ret = '';
+    let i = 0;
+    while(i < s.length){
+        let c = s.charAt(i);
+        if(c === '\\'){
+            c = s.charAt(++i);
+            if(escapes[c]){
+                ret += escapes[c];
+                i++;
+            }
+            else if(c === 'u' || c === 'x'){
+                c = s.charAt(++i);
+                let hex = '';
+                while(/[0-9a-fA-F]/.test(c)){
+                    hex += c;
+                    c = s.charAt(++i);
+                }
+                ret += String.fromCharCode(parseInt(hex, 16));
+            }
+        }
+        else {
+            ret += c;
+            i++;
+        }
+    }
+    return ret;
 }
 }
 
@@ -57,8 +85,10 @@ function unescape(s: string){
 }
 
 %lex {
-    LETTER = < ['a'-'z', 'A'-'Z', '$', '_'] >
-    DIGIT = < ['0'-'9'] >
+
+    LETTER = < ['a'-'z', 'A'-'Z', '$', '_'] | %import('es5UnicodeIDStart') >
+    DIGIT = < ['a'-'z', 'A'-'Z', '0'-'9', '$', '_'] | %import('es5UnicodeIDPart') >
+
     HEX = < ['0'-'9', 'a'-'f', 'A'-'F'] >
     ESCAPE_CHAR = < "\\" (['n', 't', 'b', 'r', 'f', '"', "'", "\\"] | <UNICODE>) >
     UNICODE = < ['x', 'u'] <HEX>+ >
@@ -71,7 +101,7 @@ function unescape(s: string){
     < STRING: 
         '"' ( [^'"', '\n', '\\'] | <ESCAPE_CHAR> )* '"' 
     |   "'" ( [^"'", '\n', '\\'] | <ESCAPE_CHAR> )* "'"
-    >: { $$ = nodeFromToken($token);$$.val = unescape($$.val.substr(1, $$.val.length - 2)); }
+    >: { $$ = nodeFromToken($token); $$.val = unescape($$.val.substr(1, $$.val.length - 2)); }
     < OPEN_BLOCK: "{" >: { $$ = nodeFromTrivalToken($token); }
     < CLOSE_BLOCK: "}" >: { $$ = nodeFromTrivalToken($token); }
     < OPT_DIR: "%option" >
@@ -87,6 +117,7 @@ function unescape(s: string){
     < PREC_DIR: '%prec' >
     < INIT_DIR: '%init' >
     < OUTPUT_DIR: '%output' >
+    < IMPORT_DIR: '%import' >
     < GT: ">" >
     < LT: "<" >
     < BRA: "(" >
@@ -128,7 +159,7 @@ option:
 |   '%option' '{' optionBody '}'
 |   '%header' b = block { gb.setHeader(b); }
 |   '%extra_arg' b = block { gb.setExtraArg(b); }
-|   '%type' t = block { gb.setType(t); }
+|   '%type' ty = block { gb.setType(ty); }
 |   '%init' args = block b = block { gb.setInit(args, b); }
 |   '%output' op = <STRING> { gb.setOutput(op); }
 ;
@@ -162,7 +193,7 @@ states:
 
 lexBody: lexBody lexBodyItem | ;
 lexBodyItem: 
-    v = <NAME> { gb.lexBuilder.prepareVar(v.val, v.startLine); } 
+    v = <NAME> { gb.lexBuilder.prepareVar(v); } 
     '=' '<' regexp '>' { gb.lexBuilder.endVar(); }
 |   newState '<' regexp '>' lexAction_ { gb.lexBuilder.end(lexacts, '(untitled)'); }
 |   newState '<' tn = <NAME> ':' regexp '>' lexAction_ { 
@@ -171,6 +202,7 @@ lexBodyItem:
     gb.lexBuilder.end(lexacts, tn.val);
 }
 ;
+
 newState: { gb.lexBuilder.newState(); };
 lexAction_: ':' lexAction | { lexacts = []; };
 lexAction: 
@@ -208,16 +240,17 @@ rePostfix:
 primitiveRE: 
     '(' regexp ')'
 |   '[' inverse_ setRE_ ']'
-|   '<' n = <NAME> '>' { gb.lexBuilder.addVar(n.val, n.startLine); }
+|   '<' n = <NAME> '>' { gb.lexBuilder.addVar(n); }
+|   '%import' '(' i = <STRING> ')' { gb.lexBuilder.importVar(i); }
 |   s = <STRING> { gb.lexBuilder.addString(s.val); }
 ;
 inverse_: '^' { gb.lexBuilder.beginSet(true); } | { gb.lexBuilder.beginSet(false); };
 setRE_: setRE |;
 setRE: setRE ',' setREItem | setREItem;
 setREItem: 
-    s = <STRING> { gb.lexBuilder.addSetItem(s.val, s.val, s.startLine, s.startLine); }
+    s = <STRING> { gb.lexBuilder.addSetItem(s, s); }
 |   from = <STRING> '-' to = <STRING> 
-    { gb.lexBuilder.addSetItem(from.val, to.val, from.startLine, to.startLine); }
+    { gb.lexBuilder.addSetItem(from, to); }
 ;
 
 body: body bodyItem | bodyItem;
@@ -263,14 +296,8 @@ rulePrec:
 |   '%prec' t = tokenRef { gb.defineRulePr(t, t.ext); }
 ;
 
-block: [+IN_BLOCK] open = "{" bl = innerBlock [-] close = "}" { 
-    $$ = newNode('');
-    $$.val = bl.val;
-    $$.startLine = open.startLine;
-    $$.startColumn = open.startColumn;
-    $$.endLine = close.endLine;
-    $$.endColumn = close.endColumn;
-}
+block: [+IN_BLOCK] open = "{" bl = innerBlock [-] close = "}" 
+    { $$ = nodeBetween(open, close, bl.val); }
 ;
 innerBlock: innerBlock b = innerBlockItem { $$.val += b.val; } | { $$ = newNode(''); };
 innerBlockItem: 
