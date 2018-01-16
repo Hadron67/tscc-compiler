@@ -126,8 +126,8 @@ module.exports = function (s, args){
     var out = { val: null };
     var errMsg = null;
     parser.init(out);
-    parser.on('lexicalerror', function(msg, line, column){
-        errMsg = (msg + ' at line ' + (line + 1) + ' column ' + (column + 1));
+    parser.on('lexicalerror', function(c, line, column){
+        errMsg = ('invalid character "' + c + '" at line ' + (line + 1) + ' column ' + (column + 1));
         parser.halt();
     });
     parser.on('syntaxerror', function(msg, token){
@@ -142,5 +142,5 @@ module.exports = function (s, args){
     if(errMsg !== null){
         throw errMsg;
     }
-    return out.val.toString();
+    return out.val;
 };

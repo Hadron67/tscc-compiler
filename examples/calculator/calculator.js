@@ -491,27 +491,27 @@ Token.prototype.toString = function(){
 }
 function createParser() {
     // members for lexer
-    var _lexState;
-    var _state;
-    var _matched;
-    var _token;
+    var jjlexState;
+    var jjstate;
+    var jjmatched;
+    var jjtoken;
     
-    var _marker = { state: -1, line: 0, column: 0 };
-    var _backupCount;
+    var jjmarker = { state: -1, line: 0, column: 0 };
+    var jjbackupCount;
 
-    var _line;
-    var _column;
-    var _tline;
-    var _tcolumn;
+    var jjline;
+    var jjcolumn;
+    var jjtline;
+    var jjtcolumn;
 
     // members for parser
-    var _lrState;
-    var _sematicS = [];
-    var _sematicVal;
+    var jjlrState;
+    var jjsematicS = [];
+    var jjsematicVal;
 
-    var _stop;
+    var jjstop;
 
-    var _handlers = {};
+    var jjhandlers = {};
 
     // extra members, defined by %extra_arg
     
@@ -526,20 +526,20 @@ function createParser() {
         halt: halt
     };
     function init(out1){
-        _lexState = [ 0 ];// DEFAULT
-        _state = 0;
-        _matched = '';
-        _token = new Token(-1, null, 0, 0, 0, 0);
-        _marker.state = -1;
-        _backupCount = 0;
-        _line = _tline = 0;
-        _column = _tcolumn = 0;
+        jjlexState = [ 0 ];// DEFAULT
+        jjstate = 0;
+        jjmatched = '';
+        jjtoken = new Token(-1, null, 0, 0, 0, 0);
+        jjmarker.state = -1;
+        jjbackupCount = 0;
+        jjline = jjtline = 0;
+        jjcolumn = jjtcolumn = 0;
         
-        _lrState = [ 0 ];
-        _sematicS = [];
-        _sematicVal = null;
+        jjlrState = [ 0 ];
+        jjsematicS = [];
+        jjsematicVal = null;
 
-        _stop = false;
+        jjstop = false;
         
     out = out1;
 
@@ -547,30 +547,30 @@ function createParser() {
     /**
      *  set 
      */
-    function _setImg(s){
-        _matched = s;
-        _tline = _line;
-        _tcolumn = _column;
+    function jjsetImg(s){
+        jjmatched = s;
+        jjtline = jjline;
+        jjtcolumn = jjcolumn;
     }
-    function _prepareToken(tid){
-        _token.id = tid;
-        _token.val = _matched;
-        _token.startLine = _tline;
-        _token.startColumn = _tcolumn;
-        _token.endLine = _line;
-        _token.endColumn = _column - 1;
+    function jjprepareToken(tid){
+        jjtoken.id = tid;
+        jjtoken.val = jjmatched;
+        jjtoken.startLine = jjtline;
+        jjtoken.startColumn = jjtcolumn;
+        jjtoken.endLine = jjline;
+        jjtoken.endColumn = jjcolumn - 1;
 
-        _matched = '';
-        _tline = _line;
-        _tcolumn = _column;
+        jjmatched = '';
+        jjtline = jjline;
+        jjtcolumn = jjcolumn;
     }
-    function _returnToken(){
-        _emit('token', jjtokenNames[_token.id], _token.val);
-        while(!_stop && !_acceptToken(_token));
-        _token.id = -1;
+    function jjreturnToken(){
+        jjemit('token', jjtokenNames[jjtoken.id], jjtoken.val);
+        while(!jjstop && !jjacceptToken(jjtoken));
+        jjtoken.id = -1;
     }
-    function _emit(name, a1, a2, a3){
-        var cbs = _handlers[name];
+    function jjemit(name, a1, a2, a3){
+        var cbs = jjhandlers[name];
         if(cbs){
             for(var i = 0; i < cbs.length; i++){
                 cbs[i](a1, a2, a3);
@@ -578,39 +578,39 @@ function createParser() {
         }
     }
     function on(name, cb){
-        _handlers[name] || (_handlers[name] = []);
-        _handlers[name].push(cb);
+        jjhandlers[name] || (jjhandlers[name] = []);
+        jjhandlers[name].push(cb);
     }
-    function _doLexAction0(jjstaten){
+    function jjdoLexAction0(jjstaten){
         let jjtk = jjlexTokens0[jjstaten];
-        jjtk !== -1 && _prepareToken(jjtk);
+        jjtk !== -1 && jjprepareToken(jjtk);
         switch(jjstaten){
             case 1:
-                _setImg("");
+                jjsetImg("");
                 break;
             case 9:
-                 _sematicVal = new Quaternion(Number(_token.val), 0, 0, 0); 
+                 jjsematicVal = new Quaternion(Number(jjtoken.val), 0, 0, 0); 
                 break;
             case 12:
-                 _sematicVal = new Quaternion(Number(_token.val), 0, 0, 0); 
+                 jjsematicVal = new Quaternion(Number(jjtoken.val), 0, 0, 0); 
                 break;
             case 13:
-                 _sematicVal = new Quaternion(Number(_token.val), 0, 0, 0); 
+                 jjsematicVal = new Quaternion(Number(jjtoken.val), 0, 0, 0); 
                 break;
             case 15:
-                 _sematicVal = new Quaternion(0, Number(cut(_token.val)), 0, 0); 
+                 jjsematicVal = new Quaternion(0, Number(cut(jjtoken.val)), 0, 0); 
                 break;
             case 16:
-                 _sematicVal = new Quaternion(0, 0, Number(cut(_token.val)), 0); 
+                 jjsematicVal = new Quaternion(0, 0, Number(cut(jjtoken.val)), 0); 
                 break;
             case 17:
-                 _sematicVal = new Quaternion(0, 0, 0, Number(cut(_token.val))); 
+                 jjsematicVal = new Quaternion(0, 0, 0, Number(cut(jjtoken.val))); 
                 break;
             case 19:
-                 _sematicVal = new Quaternion(Number(_token.val), 0, 0, 0); 
+                 jjsematicVal = new Quaternion(Number(jjtoken.val), 0, 0, 0); 
                 break;
             case 20:
-                 _sematicVal = new Quaternion(Number(_token.val), 0, 0, 0); 
+                 jjsematicVal = new Quaternion(Number(jjtoken.val), 0, 0, 0); 
                 break;
             default:;
         }
@@ -620,35 +620,35 @@ function createParser() {
      *  @api private
      *  @internal
      */
-    function _doLexAction(lexstate, state){
+    function jjdoLexAction(lexstate, state){
         switch(lexstate){
             case 0:
-                _doLexAction0(state);
+                jjdoLexAction0(state);
                 break;
             default:;
         }
-        _token.id !== -1 && _returnToken();
+        jjtoken.id !== -1 && jjreturnToken();
     }
-    function _rollback(){
-        let ret = _matched.substr(_matched.length - _backupCount, _backupCount);
-        _matched = _matched.substr(0, _matched.length - _backupCount);
-        _backupCount = 0;
-        _line = _marker.line;
-        _column = _marker.column;
-        _state = _marker.state;
-        _marker.state = -1;
+    function jjrollback(){
+        let ret = jjmatched.substr(jjmatched.length - jjbackupCount, jjbackupCount);
+        jjmatched = jjmatched.substr(0, jjmatched.length - jjbackupCount);
+        jjbackupCount = 0;
+        jjline = jjmarker.line;
+        jjcolumn = jjmarker.column;
+        jjstate = jjmarker.state;
+        jjmarker.state = -1;
         return ret;
     }
-    function _mark(){
-        _marker.state = _state;
-        _marker.line = _line;
-        _marker.column = _column;
-        _backupCount = 0;
+    function jjmark(){
+        jjmarker.state = jjstate;
+        jjmarker.line = jjline;
+        jjmarker.column = jjcolumn;
+        jjbackupCount = 0;
     }
-    function _consume(c){
-        c === '\n' ? (_line++, _column = 0) : (_column += c.charCodeAt(0) > 0xff ? 2 : 1);
-        _matched += c;
-        _marker.state !== -1 && (_backupCount++);
+    function jjconsume(c){
+        c === '\n' ? (jjline++, jjcolumn = 0) : (jjcolumn += c.charCodeAt(0) > 0xff ? 2 : 1);
+        jjmatched += c;
+        jjmarker.state !== -1 && (jjbackupCount++);
         return true;
     }
     /**
@@ -657,20 +657,20 @@ function createParser() {
      *  @api private
      *  @internal
      */
-    function _acceptChar(c){
-        var lexstate = _lexState[_lexState.length - 1];
-        var retn = { state: _state, hasArc: false, isEnd: false };
+    function jjacceptChar(c){
+        var lexstate = jjlexState[jjlexState.length - 1];
+        var retn = { state: jjstate, hasArc: false, isEnd: false };
         jjlexers[lexstate](c.charCodeAt(0), retn);
         if(retn.isEnd){
             // if current state is a terminate state, be careful
             if(retn.hasArc){
                 if(retn.state === -1){
                     // nowhere to go, stay where we are
-                    _doLexAction(lexstate, _state);
+                    jjdoLexAction(lexstate, jjstate);
                     // recover
-                    _marker.state = -1;
-                    _backupCount = 0;
-                    _state = 0;                    
+                    jjmarker.state = -1;
+                    jjbackupCount = 0;
+                    jjstate = 0;                    
                     // character not consumed
                     return false;
                 }
@@ -679,18 +679,18 @@ function createParser() {
                     // it is prefered to move forward, but that could lead to errors,
                     // so we need to memorize this state before move on, in case if 
                     // an error occurs later, we could just return to this state.
-                    _mark();
-                    _state = retn.state;
-                    return _consume(c);
+                    jjmark();
+                    jjstate = retn.state;
+                    return jjconsume(c);
                 }
             }
             else {
                 // current state doesn't lead to any state, just stay here.
-                _doLexAction(lexstate, _state);
+                jjdoLexAction(lexstate, jjstate);
                 // recover
-                _marker.state = -1;
-                _backupCount = 0;
-                _state = 0;
+                jjmarker.state = -1;
+                jjbackupCount = 0;
+                jjstate = 0;
                 // character not consumed
                 return false;
             }
@@ -699,55 +699,55 @@ function createParser() {
             if(retn.state === -1){
                 // nowhere to go at current state, error may have occured.
                 // check marker to verify that
-                if(_marker.state !== -1){
+                if(jjmarker.state !== -1){
                     // we have a previously marked state, which is a terminate state.
-                    var s = _rollback();
-                    _doLexAction(lexstate, _state);
-                    _state = 0;
+                    var s = jjrollback();
+                    jjdoLexAction(lexstate, jjstate);
+                    jjstate = 0;
                     accept(s);
                     // character not consumed
                     return false;
                 }
                 else {
                     // error occurs
-                    _emit('lexicalerror', "unexpected character " + c, _line, _column);
+                    jjemit('lexicalerror', c, jjline, jjcolumn);
                     // force consume
                     return true;
                 }
             }
             else {
-                _state = retn.state;
+                jjstate = retn.state;
                 // character consumed
-                return _consume(c);
+                return jjconsume(c);
             }
         }
     }
-    function _acceptEOF(){
-        if(_state === 0){
+    function jjacceptEOF(){
+        if(jjstate === 0){
             // recover
-            _prepareToken(0);
-            _returnToken();
+            jjprepareToken(0);
+            jjreturnToken();
             return true;
         }
         else {
-            let lexstate = _lexState[_lexState.length - 1];
-            let retn = { state: _state, hasArc: false, isEnd: false };
+            let lexstate = jjlexState[jjlexState.length - 1];
+            let retn = { state: jjstate, hasArc: false, isEnd: false };
             jjlexers[lexstate](-1, retn);
             if(retn.isEnd){
-                _doLexAction(lexstate, _state);
-                _state = 0;
-                _marker.state = -1;
+                jjdoLexAction(lexstate, jjstate);
+                jjstate = 0;
+                jjmarker.state = -1;
                 return false;
             }
-            else if(_marker.state !== -1){
-                let s = _rollback();
-                _doLexAction(lexstate, _state);
-                _state = 0;
+            else if(jjmarker.state !== -1){
+                let s = jjrollback();
+                jjdoLexAction(lexstate, jjstate);
+                jjstate = 0;
                 accept(s);
                 return false;
             }
             else {
-                _emit('lexicalerror', 'unexpected end of file');
+                jjemit('lexicalerror', '', jjline, jjcolumn);
                 return true;
             }
         }
@@ -757,8 +757,8 @@ function createParser() {
      *  @api public
      */
     function accept(s){
-        for(let i = 0; i < s.length && !_stop;){
-            _acceptChar(s.charAt(i)) && i++;
+        for(let i = 0; i < s.length && !jjstop;){
+            jjacceptChar(s.charAt(i)) && i++;
         }
     }
     /**
@@ -766,88 +766,88 @@ function createParser() {
      *  @api public
      */
     function end(){
-        while(!_stop && !_acceptEOF());
-        _stop = true;
+        while(!jjstop && !jjacceptEOF());
+        jjstop = true;
     }
     function halt(){
-        _stop = true;
+        jjstop = true;
     }
-    function _doReduction(jjrulenum){
+    function jjdoReduction(jjrulenum){
         var jjnt = jjlhs[jjrulenum];
-        var jjsp = _sematicS.length;
-        var jjtop = _sematicS[jjsp - jjruleLen[jjrulenum]] || null;
+        var jjsp = jjsematicS.length;
+        var jjtop = jjsematicS[jjsp - jjruleLen[jjrulenum]] || null;
         switch(jjrulenum){
             case 1:
                 /* 1: start => expr */
-                var a = _sematicS[jjsp - 1];
+                var a = jjsematicS[jjsp - 1];
                 { out.val = a; }
                 break;
             case 2:
                 /* 2: expr => expr "+" expr */
-                var a = _sematicS[jjsp - 3];
-                var b = _sematicS[jjsp - 1];
+                var a = jjsematicS[jjsp - 3];
+                var b = jjsematicS[jjsp - 1];
                 { jjtop = Quaternion.addQ(a, b); }
                 break;
             case 3:
                 /* 3: expr => expr "-" expr */
-                var a = _sematicS[jjsp - 3];
-                var b = _sematicS[jjsp - 1];
+                var a = jjsematicS[jjsp - 3];
+                var b = jjsematicS[jjsp - 1];
                 { jjtop = Quaternion.minusQ(a, b); }
                 break;
             case 4:
                 /* 4: expr => expr "*" expr */
-                var a = _sematicS[jjsp - 3];
-                var b = _sematicS[jjsp - 1];
+                var a = jjsematicS[jjsp - 3];
+                var b = jjsematicS[jjsp - 1];
                 { jjtop = Quaternion.multiQ(a, b); }
                 break;
             case 5:
                 /* 5: expr => expr "/" expr */
-                var a = _sematicS[jjsp - 3];
-                var b = _sematicS[jjsp - 1];
+                var a = jjsematicS[jjsp - 3];
+                var b = jjsematicS[jjsp - 1];
                 { jjtop = Quaternion.multiQ(a, b.inv()) }
                 break;
             case 6:
                 /* 6: expr => "+" expr */
-                var a = _sematicS[jjsp - 1];
+                var a = jjsematicS[jjsp - 1];
                 { jjtop = a; }
                 break;
             case 7:
                 /* 7: expr => "-" expr */
-                var a = _sematicS[jjsp - 1];
+                var a = jjsematicS[jjsp - 1];
                 { jjtop = a.neg(); }
                 break;
             case 8:
                 /* 8: expr => expr "*" */
-                var a = _sematicS[jjsp - 2];
+                var a = jjsematicS[jjsp - 2];
                 { jjtop = a.dagger(); }
                 break;
             case 9:
                 /* 9: expr => "(" expr ")" */
-                var a = _sematicS[jjsp - 2];
+                var a = jjsematicS[jjsp - 2];
                 { jjtop = a; }
                 break;
             case 10:
                 /* 10: expr => "|" expr "|" */
-                var a = _sematicS[jjsp - 2];
+                var a = jjsematicS[jjsp - 2];
                 { jjtop = a.module(); }
                 break;
             case 16:
                 /* 16: funcs => "exp" "(" expr ")" */
-                var a = _sematicS[jjsp - 2];
+                var a = jjsematicS[jjsp - 2];
                 { jjtop = Quaternion.exp(a); }
                 break;
         }
-        _lrState.length -= jjruleLen[jjrulenum];
-        var jjcstate = _lrState[_lrState.length - 1];
-        _lrState.push(jjpgoto[jjdisgoto[jjcstate] + jjnt]);
+        jjlrState.length -= jjruleLen[jjrulenum];
+        var jjcstate = jjlrState[jjlrState.length - 1];
+        jjlrState.push(jjpgoto[jjdisgoto[jjcstate] + jjnt]);
 
-        _sematicS.length -= jjruleLen[jjrulenum];
-        _sematicS.push(jjtop);
+        jjsematicS.length -= jjruleLen[jjrulenum];
+        jjsematicS.push(jjtop);
     }
 
-    function _acceptToken(t){
+    function jjacceptToken(t){
         // look up action table
-        var cstate = _lrState[_lrState.length - 1];
+        var cstate = jjlrState[jjlrState.length - 1];
         var ind = jjdisact[cstate] + t.id;
         var act = 0;
         if(ind < 0 || ind >= jjpact.length || jjcheckact[ind] !== cstate){
@@ -858,42 +858,42 @@ function createParser() {
         }
         if(act === jjactERR){
             // explicit error
-            _syntaxError(t);
+            jjsyntaxError(t);
             return true;
         }
         else if(act > 0){
             // shift
             if(t.id === 0){
                 // end of file
-                _stop = true;
-                _emit('accept');
+                jjstop = true;
+                jjemit('accept');
                 return true;
             }
             else {
-                _lrState.push(act - 1);
-                _sematicS.push(_sematicVal);
-                _sematicVal = null;
+                jjlrState.push(act - 1);
+                jjsematicS.push(jjsematicVal);
+                jjsematicVal = null;
                 // token consumed
                 return true;
             }
         }
         else if(act < 0){
-            _doReduction(-act - 1);
+            jjdoReduction(-act - 1);
             return false;
         }
         else {
             // error
-            _syntaxError(t);
+            jjsyntaxError(t);
             // force consume
             return true;
         }
     }
-    function _syntaxError(t){
+    function jjsyntaxError(t){
         var msg = "unexpected token " + t.toString() + ", expecting one of the following token(s):\n"
-        msg += _expected(_lrState[_lrState.length - 1]);
-        _emit("syntaxerror", msg, t);
+        msg += jjexpected(jjlrState[jjlrState.length - 1]);
+        jjemit("syntaxerror", msg, t);
     }
-    function _expected(state){
+    function jjexpected(state){
         var dis = jjdisact[state];
         var ret = '';
         function expect(tk){
@@ -918,8 +918,8 @@ module.exports = function (s, args){
     var out = { val: null };
     var errMsg = null;
     parser.init(out);
-    parser.on('lexicalerror', function(msg, line, column){
-        errMsg = (msg + ' at line ' + (line + 1) + ' column ' + (column + 1));
+    parser.on('lexicalerror', function(c, line, column){
+        errMsg = ('invalid character "' + c + '" at line ' + (line + 1) + ' column ' + (column + 1));
         parser.halt();
     });
     parser.on('syntaxerror', function(msg, token){
@@ -934,5 +934,5 @@ module.exports = function (s, args){
     if(errMsg !== null){
         throw errMsg;
     }
-    return out.val.toString();
+    return out.val;
 };

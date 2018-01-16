@@ -1,6 +1,6 @@
 import { State, Arc, EndAction } from './state';
 import { Context } from '../util/context';
-import { CompilationError, JsccError } from '../util/E';
+import { JsccError } from '../util/E';
 import { DFA } from './dfa';
 import { Coroutine, CoroutineMgr } from '../util/coroutine';
 import { LexAction } from './action';
@@ -67,7 +67,7 @@ export function createLexBuilder<T>(ctx: Context): LexBuilder<T>{
     let requiringState: CoroutineMgr<number>;
     let _selectedStates: CmdArray[] = [];
     let _selectedVar: CmdArray = null;
-
+    
     // exec
     let _ar: { pc: number, cmds: CmdArray }[] = [];
 
@@ -141,7 +141,7 @@ export function createLexBuilder<T>(ctx: Context): LexBuilder<T>{
     }
     function singlePosErr(msg: string, pos: Position){
         ctx.requireLines((ctx, lines) => {
-            ctx.err(new JsccError(msg + ' ' + markPosition(pos, lines), 'CompilationError'));
+            ctx.err(new JsccError(msg + ' ' + markPosition(pos, lines), 'Compilation error'));
         });
     }
     function redefineErr(what: string, prev: Position, current: Position){

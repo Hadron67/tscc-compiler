@@ -1466,14 +1466,17 @@ function moveDFA1(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
         case 0:
             ret.hasArc = true;
             ret.isEnd = true;
-            if(c <= 122 || c === 124 || c >= 126){
+            if(c <= 91 || (c >= 93 && c <= 122) || c === 124 || c >= 126){
                 ret.state = 1;
             }
-            else if(c === 123){
+            else if(c === 92){
                 ret.state = 2;
             }
-            else if(c === 125){
+            else if(c === 123){
                 ret.state = 3;
+            }
+            else if(c === 125){
+                ret.state = 4;
             }
             else {
                 ret.state = -1;
@@ -1482,19 +1485,63 @@ function moveDFA1(c: number, ret: { state: number, hasArc: boolean, isEnd: boole
         case 1:
             ret.hasArc = true;
             ret.isEnd = true;
-            if(c <= 122 || c === 124 || c >= 126){
+            if(c <= 91 || (c >= 93 && c <= 122) || c === 124 || c >= 126){
                 ret.state = 1;
+            }
+            else if(c === 92){
+                ret.state = 5;
             }
             else {
                 ret.state = -1;
             } 
             break;
         case 2:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c <= 122 || c === 124 || c >= 126){
+                ret.state = 6;
+            }
+            else if(c === 123 || c === 125){
+                ret.state = 7;
+            }
+            else {
+                ret.state = -1;
+            } 
+            break;
+        case 3:
             ret.hasArc = false;
             ret.isEnd = true;
             ret.state = -1;
             break;
-        case 3:
+        case 4:
+            ret.hasArc = false;
+            ret.isEnd = true;
+            ret.state = -1;
+            break;
+        case 5:
+            ret.hasArc = true;
+            ret.isEnd = false;
+            if(c <= 122 || c === 124 || c >= 126){
+                ret.state = 6;
+            }
+            else {
+                ret.state = -1;
+            } 
+            break;
+        case 6:
+            ret.hasArc = true;
+            ret.isEnd = true;
+            if(c <= 91 || (c >= 93 && c <= 122) || c === 124 || c >= 126){
+                ret.state = 1;
+            }
+            else if(c === 92){
+                ret.state = 5;
+            }
+            else {
+                ret.state = -1;
+            } 
+            break;
+        case 7:
             ret.hasArc = false;
             ret.isEnd = true;
             ret.state = -1;
@@ -1550,15 +1597,15 @@ var jjlexTokens0 = [
         -1,     5,    18,    -1,    -1,    -1,    10,    13,
 ]; 
 var jjlexTokens1 = [ 
-        38,    38,     3,     4,
+        38,    38,    -1,     3,     4,    -1,    38,    39,
 ]; 
 var jjlexTokens2 = [ 
-        -1,    39,
+        -1,    40,
 ]; 
 
-var jjstateCount = 182;
-var jjtokenCount = 40;
-var jjactERR = 183;
+var jjstateCount = 183;
+var jjtokenCount = 41;
+var jjactERR = 184;
 /*
     compressed action table: action = jjpact[jjdisact[STATE-NUM] + TOKEN]
     when action > 0, shift the token and goto state (action - 1);
@@ -1566,70 +1613,72 @@ var jjactERR = 183;
     when action = 0, do default action.
 */
 var jjpact = [ 
-         9,     7,    15,    16,    17,    18,    93,    10,    11,   182,
-        12,   160,    13,    14,   168,   169,   167,   -53,   126,  -115,
-       -53,   -91,   -54,   123,   124,   -54,   105,  -109,   159,     5,
-       158,   156,   -53,  -109,   157,  -116,   126,   -54,   -91,   164,
-       -91,   123,   124,   102,   105,   104,    27,   105,    27,   105,
-       137,   109,   181,    76,    67,   -42,    74,    70,    63,    71,
-       180,    54,   179,   104,    53,   110,   104,   149,   104,    67,
-        48,    49,   177,   176,   175,    64,   149,   173,   172,   136,
-       162,   161,   153,   120,   141,   140,   139,   138,   134,  -109,
-       130,   129,   128,   120,   117,   -98,   115,   114,   113,   112,
-       111,   106,    99,    97,    96,    91,    87,    85,    84,    80,
-        79,    78,    73,    69,    65,    58,    56,    55,    52,    50,
-        46,    45,    44,    40,    22,    35,    33,    28,    22,     4,
+         9,     7,    15,    16,    17,    18,    94,    10,    11,  -116,
+        12,   161,    13,    14,   169,   170,   168,   -53,   127,  -117,
+       -53,   -91,   -54,   124,   125,   -54,    48,    49,   160,     5,
+       159,   157,   -53,    71,   158,    72,   127,   -54,   -91,  -109,
+       -91,   124,   125,   110,    67,    68,   106,  -109,   103,   106,
+        27,   106,   165,    67,    68,    27,   106,   111,   183,    77,
+        63,   -42,    75,   138,    54,   105,   182,    53,   105,   181,
+       105,   180,   150,   178,   177,   105,   176,    64,   150,   174,
+       173,   137,   163,   162,   154,   121,   142,   141,   140,   139,
+       135,  -109,   131,   130,   129,   121,   118,   -98,   116,   115,
+       114,   113,   112,   107,   100,    98,    97,    92,    88,    86,
+        85,    81,    80,    79,    74,    70,    65,    58,    56,    55,
+        52,    50,    46,    45,    44,    40,    22,    35,    33,    28,
+        22,     4,     0,     0,     0,     0,     0,     0,     0,     0,
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-         0,     0,     0,     0,     0,     0,     0,     0,     0,
+         0,     0,
 ]; 
 /*
     displacement of action table.
 */
 var jjdisact = [ 
-       -40,   129,    -5,   -40,   127,   -40,   -40,    47,   124,   -40,
-       -40,   -40,   -40,   124,   104,   -40,   -40,   -40,   123,   -40,
-       -40,   -40,   102,    45,   -40,   -40,   -40,   -40,   -40,   -40,
-       -40,   -40,   -40,   101,   120,    86,   -40,    39,   116,   117,
-       -40,    60,   -40,   116,    96,    76,   -40,   -40,   -40,   -40,
-        38,   -40,   -40,    90,    93,   -40,   -40,   -40,    24,   -40,
-       101,    52,   -40,   110,   108,   -40,   -40,   106,   -40,   -40,
-       -40,    94,    85,   -40,   -40,   -40,    85,   -40,   -40,   -40,
-       -40,    89,     5,   -40,   103,    79,   101,    31,   -40,    30,
-        42,   -40,    77,    24,    28,   -40,    79,    79,    67,    93,
-       -40,   -40,   -40,    95,   -40,    94,   -40,   -40,   -40,    93,
-       -40,    62,   -40,   -40,    72,    90,   -40,    70,   -40,    86,
-        68,   -40,    86,   -40,   -40,    84,    82,   -40,   -40,   -40,
-       -40,    59,   -40,    52,   -40,   -40,    12,   -40,   -40,   -40,
-        -6,   -40,    47,     2,   -40,     9,    44,   -40,    50,   -40,
-        16,    13,   -40,   -40,   -13,   -40,    43,    77,    55,   -40,
-        74,    72,    69,   -40,    -3,   -40,   -40,   -40,   -40,    49,
-        65,    42,    58,   -40,   -40,   -40,   -40,    26,   -40,   -14,
-       -40,   -40,
+       -41,   131,    -5,   -41,   129,   -41,   -41,    54,   126,   -41,
+       -41,   -41,   -41,   126,   106,   -41,   -41,   -41,   125,   -41,
+       -41,   -41,   104,    49,   -41,   -41,   -41,   -41,   -41,   -41,
+       -41,   -41,   -41,   103,   122,    88,   -41,    -5,   118,   119,
+       -41,    63,   -41,   118,    98,    77,   -41,   -41,   -41,   -41,
+        40,   -41,   -41,    92,    95,   -41,   -41,   -41,     0,   -41,
+       103,    58,   -41,   112,   110,   -41,   -41,   -41,   108,   -41,
+       -41,   -41,    96,    87,   -41,   -41,   -41,    87,   -41,   -41,
+       -41,   -41,    91,     5,   -41,   105,    81,   103,    15,   -41,
+        36,    47,   -41,    79,    44,    20,   -41,    81,    81,    69,
+        95,   -41,   -41,   -41,    97,   -41,    96,   -41,   -41,   -41,
+        95,   -41,    64,   -41,   -41,    74,    92,   -41,    72,   -41,
+        88,    70,   -41,    88,   -41,   -41,    86,    84,   -41,   -41,
+       -41,   -41,    61,   -41,    54,   -41,   -41,    12,   -41,   -41,
+       -41,    -6,   -41,    49,     2,   -41,     9,    46,   -41,    52,
+       -41,     6,    26,   -41,   -41,   -13,   -41,    45,    79,    57,
+       -41,    76,    74,    70,   -41,    -3,   -41,   -41,   -41,   -41,
+        50,    70,    51,    67,   -41,   -41,   -41,   -41,    40,   -41,
+        35,   -41,   -41,
 ]; 
 /*
     used to check if a position in jjpact is out of bouds.
     if jjcheckact[jjdisact[STATE-NUM] + TOKEN] = STATE-NUM, this position is not out of bounds.
 */
 var jjcheckact = [ 
-         2,     2,     2,     2,     2,     2,    82,     2,     2,   179,
-         2,   145,     2,     2,   154,   154,   154,   164,   140,   150,
-       164,    82,   143,   140,   140,   143,    93,    93,   145,     2,
-       145,   145,   164,    89,   145,    87,   136,   143,    82,   151,
-        82,   136,   136,    90,    90,    93,    23,    23,     7,     7,
-       151,    94,   177,    61,   150,    89,    61,    58,    50,    58,
-       172,    41,   171,    90,    41,    94,    23,   170,     7,    87,
-        37,    37,   169,   162,   161,    50,   160,   158,   157,   156,
-       148,   146,   142,   133,   131,   126,   125,   122,   120,   119,
-       117,   115,   114,   111,   109,   105,   103,    99,    98,    97,
-        96,    92,    86,    85,    84,    81,    76,    72,    71,    67,
-        64,    63,    60,    54,    53,    45,    44,    43,    39,    38,
-        35,    34,    33,    22,    18,    14,    13,     8,     4,     1,
+         2,     2,     2,     2,     2,     2,    83,     2,     2,   151,
+         2,   146,     2,     2,   155,   155,   155,   165,   141,    88,
+       165,    83,   144,   141,   141,   144,    37,    37,   146,     2,
+       146,   146,   165,    58,   146,    58,   137,   144,    83,    90,
+        83,   137,   137,    95,   151,   151,    94,    94,    91,    91,
+        23,    23,   152,    88,    88,     7,     7,    95,   180,    61,
+        50,    90,    61,   152,    41,    94,   178,    41,    91,   173,
+        23,   172,   171,   170,   163,     7,   162,    50,   161,   159,
+       158,   157,   149,   147,   143,   134,   132,   127,   126,   123,
+       121,   120,   118,   116,   115,   112,   110,   106,   104,   100,
+        99,    98,    97,    93,    87,    86,    85,    82,    77,    73,
+        72,    68,    64,    63,    60,    54,    53,    45,    44,    43,
+        39,    38,    35,    34,    33,    22,    18,    14,    13,     8,
+         4,     1,     0,     0,     0,     0,     0,     0,     0,     0,
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-         0,     0,     0,     0,     0,     0,     0,     0,     0,
+         0,     0,
 ]; 
 /*
     default action table. action = jjdefred[STATE-NUM],
@@ -1642,63 +1691,63 @@ var jjdefred = [
         11,   108,    13,    14,    -1,    -1,    75,    -1,    -1,    -1,
         22,    -1,    12,    -1,    -1,    17,    84,    80,    81,    33,
         -1,    30,     8,    -1,    -1,    16,     2,    18,    -1,    83,
-        87,    38,    28,    -1,    -1,   111,   113,    -1,    15,    79,
-        84,    93,    -1,     6,    32,    34,    -1,    31,    26,   112,
-        82,   103,    95,    91,    -1,    -1,    50,   114,    85,   104,
-        -1,    92,    96,    41,    -1,    89,    -1,    -1,    -1,    -1,
-       105,   106,   107,    -1,   102,    94,    99,   100,    86,    -1,
-        50,    40,    50,   116,    -1,    -1,    88,    -1,    36,    41,
-        -1,    45,    -1,    47,    48,    -1,    -1,   101,    98,    35,
-        39,    -1,    43,    40,    56,    67,   108,    46,    49,   112,
-       108,    37,    51,    56,    55,    -1,    69,    72,    73,    44,
-       109,    -1,    56,    54,    61,    50,    68,    -1,    -1,    66,
-        -1,    -1,    -1,    42,    56,    57,    58,    59,    60,    -1,
-        70,    -1,    -1,    71,    74,   110,    62,    -1,    64,    -1,
-        63,    65,
+        87,    38,    28,    -1,    -1,   111,   113,   114,    -1,    15,
+        79,    84,    93,    -1,     6,    32,    34,    -1,    31,    26,
+       112,    82,   103,    95,    91,    -1,    -1,    50,   115,    85,
+       104,    -1,    92,    96,    41,    -1,    89,    -1,    -1,    -1,
+        -1,   105,   106,   107,    -1,   102,    94,    99,   100,    86,
+        -1,    50,    40,    50,   117,    -1,    -1,    88,    -1,    36,
+        41,    -1,    45,    -1,    47,    48,    -1,    -1,   101,    98,
+        35,    39,    -1,    43,    40,    56,    67,   108,    46,    49,
+       112,   108,    37,    51,    56,    55,    -1,    69,    72,    73,
+        44,   109,    -1,    56,    54,    61,    50,    68,    -1,    -1,
+        66,    -1,    -1,    -1,    42,    56,    57,    58,    59,    60,
+        -1,    70,    -1,    -1,    71,    74,   110,    62,    -1,    64,
+        -1,    63,    65,
 ]; 
 /*
     compressed goto table: goto = jjpgoto[jjdisgoto[STATE-NUM] + NON_TERMINAL]
 */
 var jjpgoto = [ 
-         5,   154,   100,   131,     7,    93,    91,    23,    24,   153,
-       145,   165,   153,   145,   151,   121,   102,    71,   149,    46,
-       107,   131,    88,    89,    40,    38,   173,   170,   162,    22,
-        65,    67,    65,    67,    99,   141,   132,   126,    97,   134,
-        74,   118,    76,   177,   146,   147,   124,   126,    25,   124,
-       126,   106,   130,   131,   132,   126,   115,    94,    81,    82,
-        80,    60,    56,    50,    25,    35,    33,    31,   126,    18,
-        19,    20,     1,   150,     2,   169,   134,   164,   144,   145,
-       142,   143,   144,   145,   120,   134,   132,   126,   117,   134,
-        87,    85,    61,    58,    59,    60,    42,   126,    41,    36,
-        20,    37,    30,   126,    29,   126,    28,   126,    -1,    -1,
+         5,   155,   101,   132,     7,    94,    92,    23,    24,   154,
+       146,   166,   163,   150,    65,    68,   154,   146,   152,   122,
+       103,   108,   132,    65,    68,   100,    89,    90,    72,    46,
+        40,    38,   174,   171,    98,   135,   133,   127,    75,    22,
+        77,   178,   147,   148,   125,   127,   142,   119,    25,   116,
+       125,   127,   107,   131,   132,   133,   127,    95,    82,    83,
+        81,    60,    56,    50,    35,    33,    31,   127,   170,   135,
+        25,    18,    19,    20,     1,   151,     2,   165,   145,   146,
+       143,   144,   145,   146,   121,   135,    88,   133,   127,   118,
+       135,    86,    61,    58,    59,    60,    42,   127,    36,    20,
+        41,    37,    30,   127,    29,   127,    28,   127,    -1,    -1,
         -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
         -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
         -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-        -1,    -1,    -1,    -1,    -1,    -1,    -1,
+        -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
 ]; 
 /*
     displacement of the goto table
 */
 var jjdisgoto = [ 
-        71,   -60,    -4,   -60,    34,   -60,    24,    -2,   -60,    53,
-        51,    49,    14,   -60,    60,   -60,   -60,   -60,    63,   -60,
-       -60,    63,    13,    14,   -60,   -60,   -60,    87,   -60,   -60,
-       -60,    43,   -60,   -60,   -60,   -60,   -60,   -20,   -60,    50,
+        73,   -60,    -4,   -60,    36,   -60,    34,    -2,   -60,    53,
+        51,    49,    13,   -60,    59,   -60,   -60,   -60,    62,   -60,
+       -60,    63,    19,    20,   -60,   -60,   -60,    89,   -60,   -60,
+       -60,    43,   -60,   -60,   -60,   -60,   -60,   -10,   -60,    50,
        -60,   -60,   -60,   -60,   -60,    55,    53,   -60,   -60,    78,
        -60,   -60,   -60,   -60,   -60,   -60,   -60,   -60,   -60,   -60,
-       -26,    25,   -60,   -60,   -60,   -60,   -60,   -60,   -60,   -60,
-        19,    13,   -60,   -60,   -60,    75,   -60,   -60,   -60,    34,
-       -60,   -29,   -42,   -60,    13,   -60,    15,   -25,   -60,   -17,
-       -34,   -60,   -60,     1,   -60,   -60,   -60,   -60,   -60,   -60,
-       -60,   -60,   -60,   -60,   -60,     7,   -60,   -60,   -60,   -60,
-        65,    23,    61,   -60,   -60,   -60,   -60,   -60,   -60,    33,
-       -60,   -60,   -60,   -60,   -60,   -60,   -60,   -60,   -60,   -60,
-       -60,   -60,   -60,    17,    55,   -60,    -4,   -60,   -60,    17,
-        -7,   -60,   -60,   -15,   -60,   -29,   -60,   -60,   -60,   -60,
-       -27,   -60,    51,   -60,   -18,    52,    -4,   -60,   -60,   -60,
-        -8,   -60,   -60,   -60,   -18,   -60,   -60,   -60,   -60,   -60,
-        11,   -60,   -60,   -60,   -60,   -60,   -60,   -60,   -60,   -60,
-       -60,   -60,
+       -15,    23,   -60,   -60,   -60,   -60,   -60,   -60,   -60,   -60,
+       -60,    19,    13,   -60,   -60,   -60,    75,   -60,   -60,   -60,
+        30,   -60,   -25,   -42,   -60,    13,   -60,    11,   -34,   -60,
+       -17,   -30,   -60,   -60,     2,   -60,   -60,   -60,   -60,   -60,
+       -60,   -60,   -60,   -60,   -60,   -60,     0,   -60,   -60,   -60,
+       -60,    66,    29,    61,   -60,   -60,   -60,   -60,   -60,   -60,
+        34,   -60,   -60,   -60,   -60,   -60,   -60,   -60,   -60,   -60,
+       -60,   -60,   -60,   -60,    28,    55,   -60,    -9,   -60,   -60,
+        19,    -3,   -60,   -60,   -11,   -60,   -29,   -60,   -60,   -60,
+       -60,   -43,   -60,    51,   -60,   -18,    45,     2,   -60,   -60,
+       -60,    -2,   -60,   -60,   -60,   -18,   -60,   -60,   -60,   -60,
+       -60,     9,   -60,   -60,   -60,   -60,   -60,   -60,   -60,   -60,
+       -60,   -60,   -60,
 ]; 
 /*
     length of each rule: rule length = jjruleLen[RULE-NUM]
@@ -1715,7 +1764,7 @@ var jjruleLen = [
          1,     1,     3,     1,     0,     4,     4,     0,     3,     1,
          1,     1,     2,     0,     2,     0,     1,     0,     4,     2,
          2,     3,     1,     0,     1,     2,     2,     2,     0,     0,
-         5,     2,     0,     1,     0,     0,     5,
+         5,     2,     0,     1,     1,     0,     0,     5,
 ]; 
 /*
     index of the LHS of each rule
@@ -1732,7 +1781,7 @@ var jjlhs = [
         39,    39,    40,    40,    42,    41,    43,    43,    44,    44,
         45,    45,    46,    46,    47,    47,    48,    49,    48,    48,
         48,    50,    50,    51,    51,    51,    52,    52,    54,    55,
-        53,    56,    56,    57,    58,    59,    57,
+        53,    56,    56,    57,    57,    58,    59,    57,
 ]; 
 /*
     token names
@@ -1751,7 +1800,7 @@ var jjtokenNames = [
                   "DASH",             "COLON",             "ARROW",
                    "EOL",         "SEPERATOR",                "OR",
                  "WEDGE",             "COMMA",          "ANY_CODE",
-      "ANY_EPLOGUE_CODE",
+    "ESCAPED_CHAR_IN_BLOCK",  "ANY_EPLOGUE_CODE",
 ]; 
 /*
     token alias
@@ -1770,7 +1819,7 @@ var jjtokenAlias = [
                      "-",                 ":",                "=>",
                      ";",                "%%",                 "|",
                      "^",                 ",",                null,
-                    null,
+                    null,                null,
 ]; 
 
 
@@ -1811,27 +1860,27 @@ interface Parser{
 }
 function createParser(): Parser {
     // members for lexer
-    var _lexState: number[];
-    var _state: number;
-    var _matched: string;
-    var _token: Token;
+    var jjlexState: number[];
+    var jjstate: number;
+    var jjmatched: string;
+    var jjtoken: Token;
     
-    var _marker: { state: number, line: number, column: number } = { state: -1, line: 0, column: 0 };
-    var _backupCount: number;
+    var jjmarker: { state: number, line: number, column: number } = { state: -1, line: 0, column: 0 };
+    var jjbackupCount: number;
 
-    var _line: number;
-    var _column: number;
-    var _tline: number;
-    var _tcolumn: number;
+    var jjline: number;
+    var jjcolumn: number;
+    var jjtline: number;
+    var jjtcolumn: number;
 
     // members for parser
-    var _lrState: number[];
-    var _sematicS: JNode[] = [];
-    var _sematicVal: JNode;
+    var jjlrState: number[];
+    var jjsematicS: JNode[] = [];
+    var jjsematicVal: JNode;
 
-    var _stop;
+    var jjstop;
 
-    var _handlers: {[s: string]: ((a1?, a2?, a3?) => any)[]} = {};
+    var jjhandlers: {[s: string]: ((a1?, a2?, a3?) => any)[]} = {};
 
     // extra members, defined by %extra_arg
     
@@ -1850,20 +1899,20 @@ function createParser(): Parser {
         halt
     };
     function init(ctx1: Context, b: GBuilder){
-        _lexState = [ 0 ];// DEFAULT
-        _state = 0;
-        _matched = '';
-        _token = new Token(-1, null, 0, 0, 0, 0);
-        _marker.state = -1;
-        _backupCount = 0;
-        _line = _tline = 0;
-        _column = _tcolumn = 0;
+        jjlexState = [ 0 ];// DEFAULT
+        jjstate = 0;
+        jjmatched = '';
+        jjtoken = new Token(-1, null, 0, 0, 0, 0);
+        jjmarker.state = -1;
+        jjbackupCount = 0;
+        jjline = jjtline = 0;
+        jjcolumn = jjtcolumn = 0;
         
-        _lrState = [ 0 ];
-        _sematicS = [];
-        _sematicVal = null;
+        jjlrState = [ 0 ];
+        jjsematicS = [];
+        jjsematicVal = null;
 
-        _stop = false;
+        jjstop = false;
         
     gb = b;
     ctx = ctx1;
@@ -1872,30 +1921,30 @@ function createParser(): Parser {
     /**
      *  set 
      */
-    function _setImg(s: string){
-        _matched = s;
-        _tline = _line;
-        _tcolumn = _column;
+    function jjsetImg(s: string){
+        jjmatched = s;
+        jjtline = jjline;
+        jjtcolumn = jjcolumn;
     }
-    function _prepareToken(tid: number){
-        _token.id = tid;
-        _token.val = _matched;
-        _token.startLine = _tline;
-        _token.startColumn = _tcolumn;
-        _token.endLine = _line;
-        _token.endColumn = _column - 1;
+    function jjprepareToken(tid: number){
+        jjtoken.id = tid;
+        jjtoken.val = jjmatched;
+        jjtoken.startLine = jjtline;
+        jjtoken.startColumn = jjtcolumn;
+        jjtoken.endLine = jjline;
+        jjtoken.endColumn = jjcolumn - 1;
 
-        _matched = '';
-        _tline = _line;
-        _tcolumn = _column;
+        jjmatched = '';
+        jjtline = jjline;
+        jjtcolumn = jjcolumn;
     }
-    function _returnToken(){
-        _emit('token', jjtokenNames[_token.id], _token.val);
-        while(!_stop && !_acceptToken(_token));
-        _token.id = -1;
+    function jjreturnToken(){
+        jjemit('token', jjtokenNames[jjtoken.id], jjtoken.val);
+        while(!jjstop && !jjacceptToken(jjtoken));
+        jjtoken.id = -1;
     }
-    function _emit(name: string, a1?, a2?, a3?){
-        var cbs = _handlers[name];
+    function jjemit(name: string, a1?, a2?, a3?){
+        var cbs = jjhandlers[name];
         if(cbs){
             for(var i = 0; i < cbs.length; i++){
                 cbs[i](a1, a2, a3);
@@ -1903,83 +1952,89 @@ function createParser(): Parser {
         }
     }
     function on(name: string, cb: (a1?, a2?, a3?) => any){
-        _handlers[name] || (_handlers[name] = []);
-        _handlers[name].push(cb);
+        jjhandlers[name] || (jjhandlers[name] = []);
+        jjhandlers[name].push(cb);
     }
-    function _doLexAction0(jjstaten: number){
+    function jjdoLexAction0(jjstaten: number){
         let jjtk = jjlexTokens0[jjstaten];
-        jjtk !== -1 && _prepareToken(jjtk);
+        jjtk !== -1 && jjprepareToken(jjtk);
         switch(jjstaten){
             case 1:
-                _setImg("");
+                jjsetImg("");
                 break;
             case 3:
-                 _sematicVal = nodeFromToken(_token); 
+                 jjsematicVal = nodeFromToken(jjtoken); 
                 break;
             case 22:
-                 _sematicVal = nodeFromTrivalToken(_token); 
+                 jjsematicVal = nodeFromTrivalToken(jjtoken); 
                 break;
             case 24:
-                 _sematicVal = nodeFromTrivalToken(_token); 
+                 jjsematicVal = nodeFromTrivalToken(jjtoken); 
                 break;
             case 25:
-                 _sematicVal = nodeFromToken(_token); 
+                 jjsematicVal = nodeFromToken(jjtoken); 
                 break;
             case 27:
-                 _sematicVal = nodeFromToken(_token); _sematicVal.val = unescape(_sematicVal.val.substr(1, _sematicVal.val.length - 2)); 
+                 jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = unescape(jjsematicVal.val.substr(1, jjsematicVal.val.length - 2)); 
                 break;
             case 29:
-                 _sematicVal = nodeFromToken(_token); 
+                 jjsematicVal = nodeFromToken(jjtoken); 
                 break;
             case 30:
-                 _sematicVal = nodeFromToken(_token); 
+                 jjsematicVal = nodeFromToken(jjtoken); 
                 break;
             case 31:
-                 _sematicVal = nodeFromToken(_token); 
+                 jjsematicVal = nodeFromToken(jjtoken); 
                 break;
             case 32:
-                 _sematicVal = nodeFromToken(_token); 
+                 jjsematicVal = nodeFromToken(jjtoken); 
                 break;
             case 45:
-                 _sematicVal = nodeFromToken(_token); _sematicVal.val = unescape(_sematicVal.val.substr(1, _sematicVal.val.length - 2)); 
+                 jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = unescape(jjsematicVal.val.substr(1, jjsematicVal.val.length - 2)); 
                 break;
             case 48:
-                _setImg("");
+                jjsetImg("");
                 break;
             case 71:
-                _setImg("");
+                jjsetImg("");
                 break;
             case 91:
-                _setImg("");
+                jjsetImg("");
                 break;
             default:;
         }
     }
-    function _doLexAction1(jjstaten: number){
+    function jjdoLexAction1(jjstaten: number){
         let jjtk = jjlexTokens1[jjstaten];
-        jjtk !== -1 && _prepareToken(jjtk);
+        jjtk !== -1 && jjprepareToken(jjtk);
         switch(jjstaten){
             case 0:
-                 _sematicVal = newNode(_token.val); 
+                 jjsematicVal = newNode(jjtoken.val); 
                 break;
             case 1:
-                 _sematicVal = newNode(_token.val); 
-                break;
-            case 2:
-                 _sematicVal = nodeFromTrivalToken(_token); 
+                 jjsematicVal = newNode(jjtoken.val); 
                 break;
             case 3:
-                 _sematicVal = nodeFromTrivalToken(_token); 
+                 jjsematicVal = nodeFromTrivalToken(jjtoken); 
+                break;
+            case 4:
+                 jjsematicVal = nodeFromTrivalToken(jjtoken); 
+                break;
+            case 6:
+                 jjsematicVal = newNode(jjtoken.val); 
+                break;
+            case 7:
+                 jjsematicVal = newNode(jjtoken.val.charAt(1)); 
                 break;
             default:;
         }
     }
-    function _doLexAction2(jjstaten: number){
+    function jjdoLexAction2(jjstaten: number){
         let jjtk = jjlexTokens2[jjstaten];
-        jjtk !== -1 && _prepareToken(jjtk);
+        jjtk !== -1 && jjprepareToken(jjtk);
         switch(jjstaten){
             case 1:
-                 _sematicVal = nodeFromToken(_token); 
+                 jjsematicVal = nodeFromToken(jjtoken); 
                 break;
             default:;
         }
@@ -1989,41 +2044,41 @@ function createParser(): Parser {
      *  @api private
      *  @internal
      */
-    function _doLexAction(lexstate: number, state: number){
+    function jjdoLexAction(lexstate: number, state: number){
         switch(lexstate){
             case 0:
-                _doLexAction0(state);
+                jjdoLexAction0(state);
                 break;
             case 1:
-                _doLexAction1(state);
+                jjdoLexAction1(state);
                 break;
             case 2:
-                _doLexAction2(state);
+                jjdoLexAction2(state);
                 break;
             default:;
         }
-        _token.id !== -1 && _returnToken();
+        jjtoken.id !== -1 && jjreturnToken();
     }
-    function _rollback(): string{
-        let ret = _matched.substr(_matched.length - _backupCount, _backupCount);
-        _matched = _matched.substr(0, _matched.length - _backupCount);
-        _backupCount = 0;
-        _line = _marker.line;
-        _column = _marker.column;
-        _state = _marker.state;
-        _marker.state = -1;
+    function jjrollback(): string{
+        let ret = jjmatched.substr(jjmatched.length - jjbackupCount, jjbackupCount);
+        jjmatched = jjmatched.substr(0, jjmatched.length - jjbackupCount);
+        jjbackupCount = 0;
+        jjline = jjmarker.line;
+        jjcolumn = jjmarker.column;
+        jjstate = jjmarker.state;
+        jjmarker.state = -1;
         return ret;
     }
-    function _mark(){
-        _marker.state = _state;
-        _marker.line = _line;
-        _marker.column = _column;
-        _backupCount = 0;
+    function jjmark(){
+        jjmarker.state = jjstate;
+        jjmarker.line = jjline;
+        jjmarker.column = jjcolumn;
+        jjbackupCount = 0;
     }
-    function _consume(c: string){
-        c === '\n' ? (_line++, _column = 0) : (_column += c.charCodeAt(0) > 0xff ? 2 : 1);
-        _matched += c;
-        _marker.state !== -1 && (_backupCount++);
+    function jjconsume(c: string){
+        c === '\n' ? (jjline++, jjcolumn = 0) : (jjcolumn += c.charCodeAt(0) > 0xff ? 2 : 1);
+        jjmatched += c;
+        jjmarker.state !== -1 && (jjbackupCount++);
         return true;
     }
     /**
@@ -2032,20 +2087,20 @@ function createParser(): Parser {
      *  @api private
      *  @internal
      */
-    function _acceptChar(c: string){
-        var lexstate = _lexState[_lexState.length - 1];
-        var retn = { state: _state, hasArc: false, isEnd: false };
+    function jjacceptChar(c: string){
+        var lexstate = jjlexState[jjlexState.length - 1];
+        var retn = { state: jjstate, hasArc: false, isEnd: false };
         jjlexers[lexstate](c.charCodeAt(0), retn);
         if(retn.isEnd){
             // if current state is a terminate state, be careful
             if(retn.hasArc){
                 if(retn.state === -1){
                     // nowhere to go, stay where we are
-                    _doLexAction(lexstate, _state);
+                    jjdoLexAction(lexstate, jjstate);
                     // recover
-                    _marker.state = -1;
-                    _backupCount = 0;
-                    _state = 0;                    
+                    jjmarker.state = -1;
+                    jjbackupCount = 0;
+                    jjstate = 0;                    
                     // character not consumed
                     return false;
                 }
@@ -2054,18 +2109,18 @@ function createParser(): Parser {
                     // it is prefered to move forward, but that could lead to errors,
                     // so we need to memorize this state before move on, in case if 
                     // an error occurs later, we could just return to this state.
-                    _mark();
-                    _state = retn.state;
-                    return _consume(c);
+                    jjmark();
+                    jjstate = retn.state;
+                    return jjconsume(c);
                 }
             }
             else {
                 // current state doesn't lead to any state, just stay here.
-                _doLexAction(lexstate, _state);
+                jjdoLexAction(lexstate, jjstate);
                 // recover
-                _marker.state = -1;
-                _backupCount = 0;
-                _state = 0;
+                jjmarker.state = -1;
+                jjbackupCount = 0;
+                jjstate = 0;
                 // character not consumed
                 return false;
             }
@@ -2074,55 +2129,55 @@ function createParser(): Parser {
             if(retn.state === -1){
                 // nowhere to go at current state, error may have occured.
                 // check marker to verify that
-                if(_marker.state !== -1){
+                if(jjmarker.state !== -1){
                     // we have a previously marked state, which is a terminate state.
-                    var s = _rollback();
-                    _doLexAction(lexstate, _state);
-                    _state = 0;
+                    var s = jjrollback();
+                    jjdoLexAction(lexstate, jjstate);
+                    jjstate = 0;
                     accept(s);
                     // character not consumed
                     return false;
                 }
                 else {
                     // error occurs
-                    _emit('lexicalerror', "unexpected character " + c, _line, _column);
+                    jjemit('lexicalerror', c, jjline, jjcolumn);
                     // force consume
                     return true;
                 }
             }
             else {
-                _state = retn.state;
+                jjstate = retn.state;
                 // character consumed
-                return _consume(c);
+                return jjconsume(c);
             }
         }
     }
-    function _acceptEOF(){
-        if(_state === 0){
+    function jjacceptEOF(){
+        if(jjstate === 0){
             // recover
-            _prepareToken(0);
-            _returnToken();
+            jjprepareToken(0);
+            jjreturnToken();
             return true;
         }
         else {
-            let lexstate = _lexState[_lexState.length - 1];
-            let retn = { state: _state, hasArc: false, isEnd: false };
+            let lexstate = jjlexState[jjlexState.length - 1];
+            let retn = { state: jjstate, hasArc: false, isEnd: false };
             jjlexers[lexstate](-1, retn);
             if(retn.isEnd){
-                _doLexAction(lexstate, _state);
-                _state = 0;
-                _marker.state = -1;
+                jjdoLexAction(lexstate, jjstate);
+                jjstate = 0;
+                jjmarker.state = -1;
                 return false;
             }
-            else if(_marker.state !== -1){
-                let s = _rollback();
-                _doLexAction(lexstate, _state);
-                _state = 0;
+            else if(jjmarker.state !== -1){
+                let s = jjrollback();
+                jjdoLexAction(lexstate, jjstate);
+                jjstate = 0;
                 accept(s);
                 return false;
             }
             else {
-                _emit('lexicalerror', 'unexpected end of file');
+                jjemit('lexicalerror', '', jjline, jjcolumn);
                 return true;
             }
         }
@@ -2132,8 +2187,8 @@ function createParser(): Parser {
      *  @api public
      */
     function accept(s: string){
-        for(let i = 0; i < s.length && !_stop;){
-            _acceptChar(s.charAt(i)) && i++;
+        for(let i = 0; i < s.length && !jjstop;){
+            jjacceptChar(s.charAt(i)) && i++;
         }
     }
     /**
@@ -2141,20 +2196,20 @@ function createParser(): Parser {
      *  @api public
      */
     function end(){
-        while(!_stop && !_acceptEOF());
-        _stop = true;
+        while(!jjstop && !jjacceptEOF());
+        jjstop = true;
     }
     function halt(){
-        _stop = true;
+        jjstop = true;
     }
-    function _doReduction(jjrulenum: number){
+    function jjdoReduction(jjrulenum: number){
         var jjnt = jjlhs[jjrulenum];
-        var jjsp = _sematicS.length;
-        var jjtop = _sematicS[jjsp - jjruleLen[jjrulenum]] || null;
+        var jjsp = jjsematicS.length;
+        var jjtop = jjsematicS[jjsp - jjruleLen[jjrulenum]] || null;
         switch(jjrulenum){
             case 1:
                 /* 1: @0 => */
-                _lexState.push(2);
+                jjlexState.push(2);
                 break;
             case 5:
                 /* 5: @1 => */
@@ -2166,43 +2221,43 @@ function createParser(): Parser {
                 break;
             case 9:
                 /* 9: option => "%header" block */
-                var b = _sematicS[jjsp - 1];
+                var b = jjsematicS[jjsp - 1];
                 { gb.setHeader(b); }
                 break;
             case 10:
                 /* 10: option => "%extra_arg" block */
-                var b = _sematicS[jjsp - 1];
+                var b = jjsematicS[jjsp - 1];
                 { gb.setExtraArg(b); }
                 break;
             case 11:
                 /* 11: option => "%type" block */
-                var ty = _sematicS[jjsp - 1];
+                var ty = jjsematicS[jjsp - 1];
                 { gb.setType(ty); }
                 break;
             case 12:
                 /* 12: option => "%init" block block */
-                var args = _sematicS[jjsp - 2];
-                var b = _sematicS[jjsp - 1];
+                var args = jjsematicS[jjsp - 2];
+                var b = jjsematicS[jjsp - 1];
                 { gb.setInit(args, b); }
                 break;
             case 13:
                 /* 13: option => "%output" <STRING> */
-                var op = _sematicS[jjsp - 1];
+                var op = jjsematicS[jjsp - 1];
                 { gb.setOutput(op); }
                 break;
             case 15:
                 /* 15: tokenDefs => tokenDefs "<" <NAME> ">" */
-                var t = _sematicS[jjsp - 2];
+                var t = jjsematicS[jjsp - 2];
                 { gb.defToken(t, null); }
                 break;
             case 16:
                 /* 16: tokenDefs => "<" <NAME> ">" */
-                var t = _sematicS[jjsp - 2];
+                var t = jjsematicS[jjsp - 2];
                 { gb.defToken(t, null); }
                 break;
             case 18:
                 /* 18: epilogue => <ANY_EPLOGUE_CODE> */
-                var ep = _sematicS[jjsp - 1];
+                var ep = jjsematicS[jjsp - 1];
                 { gb.setEpilogue(ep); }
                 break;
             case 19:
@@ -2219,18 +2274,18 @@ function createParser(): Parser {
                 break;
             case 24:
                 /* 24: assocToken => tokenRef */
-                var t = _sematicS[jjsp - 1];
+                var t = jjsematicS[jjsp - 1];
                 { gb.defineTokenPrec(t, assoc, t.ext); }
                 break;
             case 25:
                 /* 25: assocToken => <NAME> */
-                var t = _sematicS[jjsp - 1];
+                var t = jjsematicS[jjsp - 1];
                 { gb.defineTokenPrec(t, assoc, TokenRefType.NAME); }
                 break;
             case 26:
                 /* 26: optionBody => optionBody <NAME> "=" <STRING> */
-                var name = _sematicS[jjsp - 3];
-                var val = _sematicS[jjsp - 1];
+                var name = jjsematicS[jjsp - 3];
+                var val = jjsematicS[jjsp - 1];
                 { gb.setOpt(name, val); }
                 break;
             case 29:
@@ -2239,22 +2294,22 @@ function createParser(): Parser {
                 break;
             case 30:
                 /* 30: states => <NAME> */
-                var s = _sematicS[jjsp - 1];
+                var s = jjsematicS[jjsp - 1];
                 { gb.lexBuilder.selectState(s.val); }
                 break;
             case 31:
                 /* 31: states => states "," <NAME> */
-                var s = _sematicS[jjsp - 1];
+                var s = jjsematicS[jjsp - 1];
                 { gb.lexBuilder.selectState(s.val); }
                 break;
             case 34:
                 /* 34: @2 => */
-                var v = _sematicS[jjsp - 1];
+                var v = jjsematicS[jjsp - 1];
                 { gb.lexBuilder.prepareVar(v); }
                 break;
             case 35:
                 /* 35: lexBodyItem => <NAME> @2 "=" "<" regexp ">" */
-                var v = _sematicS[jjsp - 6];
+                var v = jjsematicS[jjsp - 6];
                 { gb.lexBuilder.endVar(); }
                 break;
             case 36:
@@ -2263,7 +2318,7 @@ function createParser(): Parser {
                 break;
             case 37:
                 /* 37: lexBodyItem => newState "<" <NAME> ":" regexp ">" lexAction_ */
-                var tn = _sematicS[jjsp - 5];
+                var tn = jjsematicS[jjsp - 5];
                 { 
     let tdef = gb.defToken(tn, gb.lexBuilder.getPossibleAlias());
     lexacts.push(returnToken(tdef));
@@ -2284,12 +2339,12 @@ function createParser(): Parser {
                 break;
             case 43:
                 /* 43: lexAction => block */
-                var b = _sematicS[jjsp - 1];
+                var b = jjsematicS[jjsp - 1];
                 { lexacts = [blockAction(b.val, b.startLine)]; }
                 break;
             case 46:
                 /* 46: lexActionItem => "+" <NAME> */
-                var vn = _sematicS[jjsp - 1];
+                var vn = jjsematicS[jjsp - 1];
                 { gb.addPushStateAction(lexacts, vn); }
                 break;
             case 47:
@@ -2298,12 +2353,12 @@ function createParser(): Parser {
                 break;
             case 48:
                 /* 48: lexActionItem => block */
-                var b = _sematicS[jjsp - 1];
+                var b = jjsematicS[jjsp - 1];
                 { lexacts.push(blockAction(b.val, b.startLine)); }
                 break;
             case 49:
                 /* 49: lexActionItem => "=" <STRING> */
-                var s = _sematicS[jjsp - 1];
+                var s = jjsematicS[jjsp - 1];
                 { lexacts.push(setImg(s.val)); }
                 break;
             case 50:
@@ -2328,7 +2383,7 @@ function createParser(): Parser {
                 break;
             case 57:
                 /* 57: basicRE => @5 primitiveRE rePostfix */
-                var suffix = _sematicS[jjsp - 1];
+                var suffix = jjsematicS[jjsp - 1];
                 { gb.lexBuilder.simplePostfix(suffix.val as (''|'?'|'+'|'*')); }
                 break;
             case 58:
@@ -2349,17 +2404,17 @@ function createParser(): Parser {
                 break;
             case 64:
                 /* 64: primitiveRE => "<" <NAME> ">" */
-                var n = _sematicS[jjsp - 2];
+                var n = jjsematicS[jjsp - 2];
                 { gb.lexBuilder.addVar(n); }
                 break;
             case 65:
                 /* 65: primitiveRE => "%import" "(" <STRING> ")" */
-                var i = _sematicS[jjsp - 2];
+                var i = jjsematicS[jjsp - 2];
                 { gb.lexBuilder.importVar(i); }
                 break;
             case 66:
                 /* 66: primitiveRE => <STRING> */
-                var s = _sematicS[jjsp - 1];
+                var s = jjsematicS[jjsp - 1];
                 { gb.lexBuilder.addString(s.val); }
                 break;
             case 67:
@@ -2372,18 +2427,18 @@ function createParser(): Parser {
                 break;
             case 73:
                 /* 73: setREItem => <STRING> */
-                var s = _sematicS[jjsp - 1];
+                var s = jjsematicS[jjsp - 1];
                 { gb.lexBuilder.addSetItem(s, s); }
                 break;
             case 74:
                 /* 74: setREItem => <STRING> "-" <STRING> */
-                var from = _sematicS[jjsp - 3];
-                var to = _sematicS[jjsp - 1];
+                var from = jjsematicS[jjsp - 3];
+                var to = jjsematicS[jjsp - 1];
                 { gb.lexBuilder.addSetItem(from, to); }
                 break;
             case 78:
                 /* 78: @6 => */
-                var n = _sematicS[jjsp - 1];
+                var n = jjsematicS[jjsp - 1];
                 { ruleLhs = n; }
                 break;
             case 84:
@@ -2396,38 +2451,38 @@ function createParser(): Parser {
                 break;
             case 88:
                 /* 88: varUseList => varUseList "," <NAME> */
-                var vn = _sematicS[jjsp - 1];
+                var vn = jjsematicS[jjsp - 1];
                 { gb.addRuleUseVar(vn); }
                 break;
             case 89:
                 /* 89: varUseList => <NAME> */
-                var vn = _sematicS[jjsp - 1];
+                var vn = jjsematicS[jjsp - 1];
                 { gb.addRuleUseVar(vn); }
                 break;
             case 94:
                 /* 94: itemName => <NAME> "=" */
-                var itn = _sematicS[jjsp - 2];
+                var itn = jjsematicS[jjsp - 2];
                 { gb.addRuleSematicVar(itn); }
                 break;
             case 96:
                 /* 96: ruleItem => <NAME> */
-                var t = _sematicS[jjsp - 1];
+                var t = jjsematicS[jjsp - 1];
                 { gb.addRuleItem(t, TokenRefType.NAME); }
                 break;
             case 97:
                 /* 97: @8 => */
-                var vn = _sematicS[jjsp - 2];
+                var vn = jjsematicS[jjsp - 2];
                 { gb.addRuleSematicVar(vn); }
                 break;
             case 98:
                 /* 98: ruleItem => <NAME> "=" @8 <NAME> */
-                var vn = _sematicS[jjsp - 4];
-                var t = _sematicS[jjsp - 1];
+                var vn = jjsematicS[jjsp - 4];
+                var t = jjsematicS[jjsp - 1];
                 { gb.addRuleItem(t, TokenRefType.NAME); }
                 break;
             case 99:
                 /* 99: ruleItem => itemName tokenRef */
-                var t = _sematicS[jjsp - 1];
+                var t = jjsematicS[jjsp - 1];
                 { gb.addRuleItem(t, t.ext); }
                 break;
             case 100:
@@ -2436,7 +2491,7 @@ function createParser(): Parser {
                 break;
             case 101:
                 /* 101: tokenRef => "<" <NAME> ">" */
-                var t = _sematicS[jjsp - 2];
+                var t = jjsematicS[jjsp - 2];
                 { jjtop = t; jjtop.ext = TokenRefType.TOKEN; }
                 break;
             case 102:
@@ -2449,66 +2504,66 @@ function createParser(): Parser {
                 break;
             case 106:
                 /* 106: rulePrec => "%prec" <NAME> */
-                var t = _sematicS[jjsp - 1];
+                var t = jjsematicS[jjsp - 1];
                 { gb.defineRulePr(t, TokenRefType.NAME); }
                 break;
             case 107:
                 /* 107: rulePrec => "%prec" tokenRef */
-                var t = _sematicS[jjsp - 1];
+                var t = jjsematicS[jjsp - 1];
                 { gb.defineRulePr(t, t.ext); }
                 break;
             case 108:
                 /* 108: @9 => */
-                _lexState.push(1);
+                jjlexState.push(1);
                 break;
             case 109:
                 /* 109: @10 => */
-                var open = _sematicS[jjsp - 2];
-                var bl = _sematicS[jjsp - 1];
-                _lexState.pop();
+                var open = jjsematicS[jjsp - 2];
+                var bl = jjsematicS[jjsp - 1];
+                jjlexState.pop();
                 break;
             case 110:
                 /* 110: block => @9 "{" innerBlock @10 "}" */
-                var open = _sematicS[jjsp - 4];
-                var bl = _sematicS[jjsp - 3];
-                var close = _sematicS[jjsp - 1];
+                var open = jjsematicS[jjsp - 4];
+                var bl = jjsematicS[jjsp - 3];
+                var close = jjsematicS[jjsp - 1];
                 { jjtop = nodeBetween(open, close, bl.val); }
                 break;
             case 111:
                 /* 111: innerBlock => innerBlock innerBlockItem */
-                var b = _sematicS[jjsp - 1];
+                var b = jjsematicS[jjsp - 1];
                 { jjtop.val += b.val; }
                 break;
             case 112:
                 /* 112: innerBlock => */
                 { jjtop = newNode(''); }
                 break;
-            case 114:
-                /* 114: @11 => */
-                _lexState.push(1);
-                break;
             case 115:
-                /* 115: @12 => */
-                var b = _sematicS[jjsp - 1];
-                _lexState.pop();
+                /* 115: @11 => */
+                jjlexState.push(1);
                 break;
             case 116:
-                /* 116: innerBlockItem => @11 "{" innerBlock @12 "}" */
-                var b = _sematicS[jjsp - 3];
+                /* 116: @12 => */
+                var b = jjsematicS[jjsp - 1];
+                jjlexState.pop();
+                break;
+            case 117:
+                /* 117: innerBlockItem => @11 "{" innerBlock @12 "}" */
+                var b = jjsematicS[jjsp - 3];
                 { jjtop = newNode(''); jjtop.val = '{' + b.val + '}'; }
                 break;
         }
-        _lrState.length -= jjruleLen[jjrulenum];
-        var jjcstate = _lrState[_lrState.length - 1];
-        _lrState.push(jjpgoto[jjdisgoto[jjcstate] + jjnt]);
+        jjlrState.length -= jjruleLen[jjrulenum];
+        var jjcstate = jjlrState[jjlrState.length - 1];
+        jjlrState.push(jjpgoto[jjdisgoto[jjcstate] + jjnt]);
 
-        _sematicS.length -= jjruleLen[jjrulenum];
-        _sematicS.push(jjtop);
+        jjsematicS.length -= jjruleLen[jjrulenum];
+        jjsematicS.push(jjtop);
     }
 
-    function _acceptToken(t: Token){
+    function jjacceptToken(t: Token){
         // look up action table
-        var cstate = _lrState[_lrState.length - 1];
+        var cstate = jjlrState[jjlrState.length - 1];
         var ind = jjdisact[cstate] + t.id;
         var act = 0;
         if(ind < 0 || ind >= jjpact.length || jjcheckact[ind] !== cstate){
@@ -2519,42 +2574,42 @@ function createParser(): Parser {
         }
         if(act === jjactERR){
             // explicit error
-            _syntaxError(t);
+            jjsyntaxError(t);
             return true;
         }
         else if(act > 0){
             // shift
             if(t.id === 0){
                 // end of file
-                _stop = true;
-                _emit('accept');
+                jjstop = true;
+                jjemit('accept');
                 return true;
             }
             else {
-                _lrState.push(act - 1);
-                _sematicS.push(_sematicVal);
-                _sematicVal = null;
+                jjlrState.push(act - 1);
+                jjsematicS.push(jjsematicVal);
+                jjsematicVal = null;
                 // token consumed
                 return true;
             }
         }
         else if(act < 0){
-            _doReduction(-act - 1);
+            jjdoReduction(-act - 1);
             return false;
         }
         else {
             // error
-            _syntaxError(t);
+            jjsyntaxError(t);
             // force consume
             return true;
         }
     }
-    function _syntaxError(t: Token){
+    function jjsyntaxError(t: Token){
         var msg = "unexpected token " + t.toString() + ", expecting one of the following token(s):\n"
-        msg += _expected(_lrState[_lrState.length - 1]);
-        _emit("syntaxerror", msg, t);
+        msg += jjexpected(jjlrState[jjlrState.length - 1]);
+        jjemit("syntaxerror", msg, t);
     }
-    function _expected(state: number){
+    function jjexpected(state: number){
         var dis = jjdisact[state];
         var ret = '';
         function expect(tk: number){
@@ -2573,21 +2628,22 @@ function createParser(): Parser {
     }
 }
 
-function charPosition(line: number, column: number): Position{
+function charPosition(c: string, line: number, column: number): Position{
     return {
         startLine: line,
         startColumn: column,
         endLine: line,
-        endColumn: column
+        endColumn: c.charCodeAt(0) > 0xff ? column + 1 : column
     }
 }
 export function parse(ctx: Context, source: string): File{
     let parser = createParser();
     let err = false;
-    parser.on('lexicalerror', (msg, line, column) => {
+    parser.on('lexicalerror', (c, line, column) => {
         ctx.requireLines((ctx, lines) => {
-            let msg2 = msg + ' ' + markPosition(charPosition(line, column), lines);
-            ctx.err(new JsccError(msg2, 'LexicalError'));
+            let msg2 = `unexpected character ${c}`;
+            msg2 += ' ' + markPosition(charPosition(c, line, column), lines);
+            ctx.err(new JsccError(msg2, 'Lexical error'));
         });
         // ctx.err(new CompilationError(msg, line));
         parser.halt();
@@ -2597,7 +2653,7 @@ export function parse(ctx: Context, source: string): File{
         // ctx.err(new CompilationError(msg, token.startLine));
         ctx.requireLines((ctx, lines) => {
             let msg2 = markPosition(token, lines) + endl + msg;
-            ctx.err(new JsccError(msg2, 'SyntaxError'));
+            ctx.err(new JsccError(msg2, 'Syntax error'));
         });
         parser.halt();
         err = true;

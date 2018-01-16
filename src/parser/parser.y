@@ -90,6 +90,7 @@ function unescape(s: string){
 
     LETTER = < ['a'-'z', 'A'-'Z', '$', '_'] | %import('es5UnicodeIDStart') >
     DIGIT = < ['a'-'z', 'A'-'Z', '0'-'9', '$', '_'] | %import('es5UnicodeIDPart') >
+    ID = < <LETTER> (<LETTER>|<DIGIT>)* >
 
     HEX = < ['0'-'9', 'a'-'f', 'A'-'F'] >
     ESCAPE_CHAR = < "\\" (['n', 't', 'b', 'r', 'f', '"', "'", "\\"] | <UNICODE>) >
@@ -99,7 +100,7 @@ function unescape(s: string){
     < "/*" ([^"*", "/"]|[^"*"]"/"|"*"[^"/"])* "*/" >: [='']
     < "//" [^"\n"]* >: [='']
 
-    < NAME: <LETTER> (<LETTER>|<DIGIT>)* >: { $$ = nodeFromToken($token); }
+    < NAME: <ID> >: { $$ = nodeFromToken($token); }
     < STRING: 
         '"' ( [^'"', '\n', '\\'] | <ESCAPE_CHAR> )* '"' 
     |   "'" ( [^"'", '\n', '\\'] | <ESCAPE_CHAR> )* "'"
@@ -142,9 +143,12 @@ function unescape(s: string){
 }
 
 %lex <IN_BLOCK> {
-    < ANY_CODE: [^"{", "}"]* >: { $$ = newNode($token.val); }
+    < ANY_CODE: ( [^"{", "}", "\\"] | "\\" [^"{", "}"] )* >: { $$ = newNode($token.val); }
+    < ESCAPED_CHAR_IN_BLOCK: "\\" ["{", "}"] >: { $$ = newNode($token.val.charAt(1)); }
     < OPEN_BLOCK: "{" >: { $$ = nodeFromTrivalToken($token); }
     < CLOSE_BLOCK: "}" >: { $$ = nodeFromTrivalToken($token); }
+//    < TOKEN_REF_IN_BLOCK: '<' <ID> '>' >
+//    : { $$ = nodeFromToken($token); $$.val = $$.val.substr(1, $$.val.length - 2); }
 }
 %lex <IN_EPILOGUE> {
     < ANY_EPLOGUE_CODE: [^]+ >: { $$ = nodeFromToken($token); }
@@ -310,26 +314,30 @@ block: [+IN_BLOCK] open = "{" bl = innerBlock [-] close = "}"
 innerBlock: innerBlock b = innerBlockItem { $$.val += b.val; } | { $$ = newNode(''); };
 innerBlockItem: 
     <ANY_CODE> 
+|   <ESCAPED_CHAR_IN_BLOCK>
+// |   t = <TOKEN_REF_IN_BLOCK> 
+//    { $$ = newNode(gb.getTokenID(t)); }
 |   [+IN_BLOCK] '{' b = innerBlock [-] '}' 
     { $$ = newNode(''); $$.val = '{' + b.val + '}'; }
 ;
 
 %%
-function charPosition(line: number, column: number): Position{
+function charPosition(c: string, line: number, column: number): Position{
     return {
         startLine: line,
         startColumn: column,
         endLine: line,
-        endColumn: column
+        endColumn: c.charCodeAt(0) > 0xff ? column + 1 : column
     }
 }
 export function parse(ctx: Context, source: string): File{
     let parser = createParser();
     let err = false;
-    parser.on('lexicalerror', (msg, line, column) => {
+    parser.on('lexicalerror', (c, line, column) => {
         ctx.requireLines((ctx, lines) => {
-            let msg2 = msg + ' ' + markPosition(charPosition(line, column), lines);
-            ctx.err(new JsccError(msg2, 'LexicalError'));
+            let msg2 = `unexpected character ${c}`;
+            msg2 += ' ' + markPosition(charPosition(c, line, column), lines);
+            ctx.err(new JsccError(msg2, 'Lexical error'));
         });
         // ctx.err(new CompilationError(msg, line));
         parser.halt();
@@ -339,7 +347,7 @@ export function parse(ctx: Context, source: string): File{
         // ctx.err(new CompilationError(msg, token.startLine));
         ctx.requireLines((ctx, lines) => {
             let msg2 = markPosition(token, lines) + endl + msg;
-            ctx.err(new JsccError(msg2, 'SyntaxError'));
+            ctx.err(new JsccError(msg2, 'Syntax error'));
         });
         parser.halt();
         err = true;

@@ -8,12 +8,11 @@ export interface Position{
 }
 export interface JNode extends Position{
     val: string;
-    ext: any;
+    ext?: any;
 }
 export function newNode(val: string): JNode{
     return {
         val: val,
-        ext: null,
         startLine: -1,
         startColumn: 0,
         endLine: 0,
@@ -23,7 +22,6 @@ export function newNode(val: string): JNode{
 export function nodeBetween(from: Position, to: Position, val: string){
     return {
         val: val,
-        ext: null,
         startLine: from.startLine,
         startColumn: from.startColumn,
         endLine: to.endLine,

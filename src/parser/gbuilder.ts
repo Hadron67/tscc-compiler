@@ -3,7 +3,7 @@ import { File } from './file';
 import { BitSet } from '../util/bitset';
 import { TokenSet } from '../grammar/token-set';
 import { Assoc, TokenDef } from '../grammar/token-entry';
-import { CompilationError as E, JsccError, JsccWarning, CompilationError } from '../util/E';
+import { JsccError, JsccWarning } from '../util/E';
 import { Context } from '../util/context';
 import { LexBuilder, createLexBuilder } from '../lexer/builder';
 import { LexAction, pushState } from '../lexer/action';
@@ -36,8 +36,8 @@ interface PseudoToken{
 }
 
 export interface GBuilder{
-    err(msg: string, line: number);
     defToken(name: JNode, alias: string): TokenDef;
+    getTokenID(t: JNode);
     getTokenByAlias(a: JNode): TokenDef;
     getTokenByName(t: JNode): TokenDef;
     defineTokenPrec(tid: JNode, assoc: Assoc, type: TokenRefType);
@@ -89,8 +89,8 @@ export function createFileBuilder(ctx: Context): GBuilder{
     defToken(newNode('EOF'), null);
 
     return {
-        err,
         defToken,
+        getTokenID,
         getTokenByAlias,
         getTokenByName,
         defineTokenPrec,
@@ -142,12 +142,10 @@ export function createFileBuilder(ctx: Context): GBuilder{
             gen.usedVars[vname] = { val: v.val, pos: v.pos };
         }
     }
-    function err(msg: string, line: number){
-        ctx.err(new E(msg, line));
-    }
+
     function singlePosErr(msg: string, pos: Position){
         ctx.requireLines((ctx, lines) => {
-            ctx.err(new JsccError(msg + ' ' + markPosition(pos, lines), 'CompilationError'));
+            ctx.err(new JsccError(msg + ' ' + markPosition(pos, lines), 'Compilation error'));
         });
     }
     function singlePosWarn(msg: string, pos: Position){
@@ -211,6 +209,10 @@ export function createFileBuilder(ctx: Context): GBuilder{
             return null;
         }
         return ret;
+    }
+    function getTokenID(t: JNode){
+        let tk = getTokenByName(t);
+        return tk === null ? '0' : String(tk.index);
     }
     function defineTokenPrec(tid: JNode, assoc: Assoc, type: TokenRefType){
         if(type === TokenRefType.TOKEN){

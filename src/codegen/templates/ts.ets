@@ -211,21 +211,21 @@ var <%- prefix %>actERR = <%- pt.stateCount + 1 %>;
 <% function printLexActionsFunc(dfa: DFA<LexAction[]>, n: number){
     let codegen = {
         addBlock(b: string, line: number){ %>
-                <%- b.replace(/\$token/g, '_token').replace(/\$\$/g, '_sematicVal') %>
+                <%- b.replace(/\$token/g, prefix + 'token').replace(/\$\$/g, prefix + 'sematicVal') %>
         <% },
         pushLexState(n: number){ %>
-                _lexState.push(<%- n %>);
+                <%- prefix %>lexState.push(<%- n %>);
         <% },
         popLexState(){ %>
-                _lexState.pop();
+                <%- prefix %>lexState.pop();
         <% },
         setImg(n: string){ %>
-                _setImg("<%- n %>");
+                <%- prefix %>setImg("<%- n %>");
         <% },
         returnToken(t: TokenDef){ %>
-                this._token = {
+                this.<%- prefix %>token = {
                     id: <%- t.index %>,
-                    val: this._matched.join('')
+                    val: this.<%- prefix %>matched.join('')
                 };
         <% }
     }; 
@@ -238,9 +238,9 @@ var <%- prefix %>actERR = <%- pt.stateCount + 1 %>;
         return false;
     }
     let statevn = prefix + 'staten'; %>
-    function _doLexAction<%- n %>(<%- statevn + ts(": number")%>){
+    function <%- prefix %>doLexAction<%- n %>(<%- statevn + ts(": number")%>){
         let <%- prefix %>tk = <%- prefix %>lexTokens<%- n %>[<%- statevn %>];
-        <%- prefix %>tk !== -1 && _prepareToken(<%- prefix %>tk);
+        <%- prefix %>tk !== -1 && <%- prefix %>prepareToken(<%- prefix %>tk);
         switch(<%- statevn %>){
     <% for(let i = 0, _a = dfa.states; i < _a.length; i++){ 
         if(_a[i].endAction !== null && hasNormalAction(_a[i].endAction.data)){ %>
@@ -326,27 +326,27 @@ Token.prototype.toString = function(){
 <% let stype = n(input.file.sematicType, 'any'); %>
 function create<%- className %>()<%- ts(': ' + className) %> {
     // members for lexer
-    var _lexState<%- ts(": number[]") %>;
-    var _state<%- ts(": number") %>;
-    var _matched<%- ts(": string") %>;
-    var _token<%- ts(": Token") %>;
+    var <%- prefix %>lexState<%- ts(": number[]") %>;
+    var <%- prefix %>state<%- ts(": number") %>;
+    var <%- prefix %>matched<%- ts(": string") %>;
+    var <%- prefix %>token<%- ts(": Token") %>;
     
-    var _marker<%- ts(": { state: number, line: number, column: number }") %> = { state: -1, line: 0, column: 0 };
-    var _backupCount<%- ts(": number") %>;
+    var <%- prefix %>marker<%- ts(": { state: number, line: number, column: number }") %> = { state: -1, line: 0, column: 0 };
+    var <%- prefix %>backupCount<%- ts(": number") %>;
 
-    var _line<%- ts(": number") %>;
-    var _column<%- ts(": number") %>;
-    var _tline<%- ts(": number") %>;
-    var _tcolumn<%- ts(": number") %>;
+    var <%- prefix %>line<%- ts(": number") %>;
+    var <%- prefix %>column<%- ts(": number") %>;
+    var <%- prefix %>tline<%- ts(": number") %>;
+    var <%- prefix %>tcolumn<%- ts(": number") %>;
 
     // members for parser
-    var _lrState<%- ts(": number[]") %>;
-    var _sematicS<%- ts(': ' + stype + '[]') %> = [];
-    var _sematicVal<%- ts(': ' + stype) %>;
+    var <%- prefix %>lrState<%- ts(": number[]") %>;
+    var <%- prefix %>sematicS<%- ts(': ' + stype + '[]') %> = [];
+    var <%- prefix %>sematicVal<%- ts(': ' + stype) %>;
 
-    var _stop;
+    var <%- prefix %>stop;
 
-    var _handlers<%- ts(": {[s: string]: ((a1?, a2?, a3?) => any)[]}") %> = {};
+    var <%- prefix %>handlers<%- ts(": {[s: string]: ((a1?, a2?, a3?) => any)[]}") %> = {};
 
     // extra members, defined by %extra_arg
     <%- n(input.file.extraArgs) %>
@@ -369,49 +369,49 @@ function create<%- className %>()<%- ts(': ' + className) %> {
     };
 <% } %>
     function init(<%- n(input.file.initArg) %>){
-        _lexState = [ 0 ];// DEFAULT
-        _state = 0;
-        _matched = '';
-        _token = new Token(-1, null, 0, 0, 0, 0);
-        _marker.state = -1;
-        _backupCount = 0;
-        _line = _tline = 0;
-        _column = _tcolumn = 0;
+        <%- prefix %>lexState = [ 0 ];// DEFAULT
+        <%- prefix %>state = 0;
+        <%- prefix %>matched = '';
+        <%- prefix %>token = new Token(-1, null, 0, 0, 0, 0);
+        <%- prefix %>marker.state = -1;
+        <%- prefix %>backupCount = 0;
+        <%- prefix %>line = <%- prefix %>tline = 0;
+        <%- prefix %>column = <%- prefix %>tcolumn = 0;
         
-        _lrState = [ 0 ];
-        _sematicS = [];
-        _sematicVal = null;
+        <%- prefix %>lrState = [ 0 ];
+        <%- prefix %>sematicS = [];
+        <%- prefix %>sematicVal = null;
 
-        _stop = false;
+        <%- prefix %>stop = false;
         <%- n(input.file.initBody) %>
     }
     /**
      *  set 
      */
-    function _setImg(s<%- ts(": string") %>){
-        _matched = s;
-        _tline = _line;
-        _tcolumn = _column;
+    function <%- prefix %>setImg(s<%- ts(": string") %>){
+        <%- prefix %>matched = s;
+        <%- prefix %>tline = <%- prefix %>line;
+        <%- prefix %>tcolumn = <%- prefix %>column;
     }
-    function _prepareToken(tid<%- ts(": number") %>){
-        _token.id = tid;
-        _token.val = _matched;
-        _token.startLine = _tline;
-        _token.startColumn = _tcolumn;
-        _token.endLine = _line;
-        _token.endColumn = _column - 1;
+    function <%- prefix %>prepareToken(tid<%- ts(": number") %>){
+        <%- prefix %>token.id = tid;
+        <%- prefix %>token.val = <%- prefix %>matched;
+        <%- prefix %>token.startLine = <%- prefix %>tline;
+        <%- prefix %>token.startColumn = <%- prefix %>tcolumn;
+        <%- prefix %>token.endLine = <%- prefix %>line;
+        <%- prefix %>token.endColumn = <%- prefix %>column - 1;
 
-        _matched = '';
-        _tline = _line;
-        _tcolumn = _column;
+        <%- prefix %>matched = '';
+        <%- prefix %>tline = <%- prefix %>line;
+        <%- prefix %>tcolumn = <%- prefix %>column;
     }
-    function _returnToken(){
-        _emit('token', <%- prefix %>tokenNames[_token.id], _token.val);
-        while(!_stop && !_acceptToken(_token));
-        _token.id = -1;
+    function <%- prefix %>returnToken(){
+        <%- prefix %>emit('token', <%- prefix %>tokenNames[<%- prefix %>token.id], <%- prefix %>token.val);
+        while(!<%- prefix %>stop && !<%- prefix %>acceptToken(<%- prefix %>token));
+        <%- prefix %>token.id = -1;
     }
-    function _emit(name<%- ts(": string") + ts(", a1?, a2?, a3?", ", a1, a2, a3") %>){
-        var cbs = _handlers[name];
+    function <%- prefix %>emit(name<%- ts(": string") + ts(", a1?, a2?, a3?", ", a1, a2, a3") %>){
+        var cbs = <%- prefix %>handlers[name];
         if(cbs){
             for(var i = 0; i < cbs.length; i++){
                 cbs[i](a1, a2, a3);
@@ -419,8 +419,8 @@ function create<%- className %>()<%- ts(': ' + className) %> {
         }
     }
     function on(name<%- ts(": string") %>, cb<%- ts(": (a1?, a2?, a3?) => any") %>){
-        _handlers[name] || (_handlers[name] = []);
-        _handlers[name].push(cb);
+        <%- prefix %>handlers[name] || (<%- prefix %>handlers[name] = []);
+        <%- prefix %>handlers[name].push(cb);
     }
 <% for(let i = 0, _a = dfas; i < _a.length; i++){
     printLexActionsFunc(_a[i], i);
@@ -430,37 +430,37 @@ function create<%- className %>()<%- ts(': ' + className) %> {
      *  @api private
      *  @internal
      */
-    function _doLexAction(lexstate<%- ts(": number") %>, state<%- ts(": number") %>){
+    function <%- prefix %>doLexAction(lexstate<%- ts(": number") %>, state<%- ts(": number") %>){
         switch(lexstate){
 <% for(let i = 0;i < dfas.length;i++){ %>
             case <%- i %>:
-                _doLexAction<%- i %>(state);
+                <%- prefix %>doLexAction<%- i %>(state);
                 break;
 <% } %>
             default:;
         }
-        _token.id !== -1 && _returnToken();
+        <%- prefix %>token.id !== -1 && <%- prefix %>returnToken();
     }
-    function _rollback()<%- ts(": string") %>{
-        let ret = _matched.substr(_matched.length - _backupCount, _backupCount);
-        _matched = _matched.substr(0, _matched.length - _backupCount);
-        _backupCount = 0;
-        _line = _marker.line;
-        _column = _marker.column;
-        _state = _marker.state;
-        _marker.state = -1;
+    function <%- prefix %>rollback()<%- ts(": string") %>{
+        let ret = <%- prefix %>matched.substr(<%- prefix %>matched.length - <%- prefix %>backupCount, <%- prefix %>backupCount);
+        <%- prefix %>matched = <%- prefix %>matched.substr(0, <%- prefix %>matched.length - <%- prefix %>backupCount);
+        <%- prefix %>backupCount = 0;
+        <%- prefix %>line = <%- prefix %>marker.line;
+        <%- prefix %>column = <%- prefix %>marker.column;
+        <%- prefix %>state = <%- prefix %>marker.state;
+        <%- prefix %>marker.state = -1;
         return ret;
     }
-    function _mark(){
-        _marker.state = _state;
-        _marker.line = _line;
-        _marker.column = _column;
-        _backupCount = 0;
+    function <%- prefix %>mark(){
+        <%- prefix %>marker.state = <%- prefix %>state;
+        <%- prefix %>marker.line = <%- prefix %>line;
+        <%- prefix %>marker.column = <%- prefix %>column;
+        <%- prefix %>backupCount = 0;
     }
-    function _consume(c<%- ts(": string") %>){
-        c === '\n' ? (_line++, _column = 0) : (_column += c.charCodeAt(0) > 0xff ? 2 : 1);
-        _matched += c;
-        _marker.state !== -1 && (_backupCount++);
+    function <%- prefix %>consume(c<%- ts(": string") %>){
+        c === '\n' ? (<%- prefix %>line++, <%- prefix %>column = 0) : (<%- prefix %>column += c.charCodeAt(0) > 0xff ? 2 : 1);
+        <%- prefix %>matched += c;
+        <%- prefix %>marker.state !== -1 && (<%- prefix %>backupCount++);
         return true;
     }
     /**
@@ -469,20 +469,20 @@ function create<%- className %>()<%- ts(': ' + className) %> {
      *  @api private
      *  @internal
      */
-    function _acceptChar(c<%- ts(": string") %>){
-        var lexstate = _lexState[_lexState.length - 1];
-        var retn = { state: _state, hasArc: false, isEnd: false };
+    function <%- prefix %>acceptChar(c<%- ts(": string") %>){
+        var lexstate = <%- prefix %>lexState[<%- prefix %>lexState.length - 1];
+        var retn = { state: <%- prefix %>state, hasArc: false, isEnd: false };
         <%- prefix %>lexers[lexstate](c.charCodeAt(0), retn);
         if(retn.isEnd){
             // if current state is a terminate state, be careful
             if(retn.hasArc){
                 if(retn.state === -1){
                     // nowhere to go, stay where we are
-                    _doLexAction(lexstate, _state);
+                    <%- prefix %>doLexAction(lexstate, <%- prefix %>state);
                     // recover
-                    _marker.state = -1;
-                    _backupCount = 0;
-                    _state = 0;                    
+                    <%- prefix %>marker.state = -1;
+                    <%- prefix %>backupCount = 0;
+                    <%- prefix %>state = 0;                    
                     // character not consumed
                     return false;
                 }
@@ -491,18 +491,18 @@ function create<%- className %>()<%- ts(': ' + className) %> {
                     // it is prefered to move forward, but that could lead to errors,
                     // so we need to memorize this state before move on, in case if 
                     // an error occurs later, we could just return to this state.
-                    _mark();
-                    _state = retn.state;
-                    return _consume(c);
+                    <%- prefix %>mark();
+                    <%- prefix %>state = retn.state;
+                    return <%- prefix %>consume(c);
                 }
             }
             else {
                 // current state doesn't lead to any state, just stay here.
-                _doLexAction(lexstate, _state);
+                <%- prefix %>doLexAction(lexstate, <%- prefix %>state);
                 // recover
-                _marker.state = -1;
-                _backupCount = 0;
-                _state = 0;
+                <%- prefix %>marker.state = -1;
+                <%- prefix %>backupCount = 0;
+                <%- prefix %>state = 0;
                 // character not consumed
                 return false;
             }
@@ -511,55 +511,55 @@ function create<%- className %>()<%- ts(': ' + className) %> {
             if(retn.state === -1){
                 // nowhere to go at current state, error may have occured.
                 // check marker to verify that
-                if(_marker.state !== -1){
+                if(<%- prefix %>marker.state !== -1){
                     // we have a previously marked state, which is a terminate state.
-                    var s = _rollback();
-                    _doLexAction(lexstate, _state);
-                    _state = 0;
+                    var s = <%- prefix %>rollback();
+                    <%- prefix %>doLexAction(lexstate, <%- prefix %>state);
+                    <%- prefix %>state = 0;
                     accept(s);
                     // character not consumed
                     return false;
                 }
                 else {
                     // error occurs
-                    _emit('lexicalerror', "unexpected character " + c, _line, _column);
+                    <%- prefix %>emit('lexicalerror', c, <%- prefix %>line, <%- prefix %>column);
                     // force consume
                     return true;
                 }
             }
             else {
-                _state = retn.state;
+                <%- prefix %>state = retn.state;
                 // character consumed
-                return _consume(c);
+                return <%- prefix %>consume(c);
             }
         }
     }
-    function _acceptEOF(){
-        if(_state === 0){
+    function <%- prefix %>acceptEOF(){
+        if(<%- prefix %>state === 0){
             // recover
-            _prepareToken(0);
-            _returnToken();
+            <%- prefix %>prepareToken(0);
+            <%- prefix %>returnToken();
             return true;
         }
         else {
-            let lexstate = _lexState[_lexState.length - 1];
-            let retn = { state: _state, hasArc: false, isEnd: false };
+            let lexstate = <%- prefix %>lexState[<%- prefix %>lexState.length - 1];
+            let retn = { state: <%- prefix %>state, hasArc: false, isEnd: false };
             <%- prefix %>lexers[lexstate](-1, retn);
             if(retn.isEnd){
-                _doLexAction(lexstate, _state);
-                _state = 0;
-                _marker.state = -1;
+                <%- prefix %>doLexAction(lexstate, <%- prefix %>state);
+                <%- prefix %>state = 0;
+                <%- prefix %>marker.state = -1;
                 return false;
             }
-            else if(_marker.state !== -1){
-                let s = _rollback();
-                _doLexAction(lexstate, _state);
-                _state = 0;
+            else if(<%- prefix %>marker.state !== -1){
+                let s = <%- prefix %>rollback();
+                <%- prefix %>doLexAction(lexstate, <%- prefix %>state);
+                <%- prefix %>state = 0;
                 accept(s);
                 return false;
             }
             else {
-                _emit('lexicalerror', 'unexpected end of file');
+                <%- prefix %>emit('lexicalerror', '', <%- prefix %>line, <%- prefix %>column);
                 return true;
             }
         }
@@ -569,8 +569,8 @@ function create<%- className %>()<%- ts(': ' + className) %> {
      *  @api public
      */
     function accept(s<%- ts(": string") %>){
-        for(let i = 0; i < s.length && !_stop;){
-            _acceptChar(s.charAt(i)) && i++;
+        for(let i = 0; i < s.length && !<%- prefix %>stop;){
+            <%- prefix %>acceptChar(s.charAt(i)) && i++;
         }
     }
     /**
@@ -578,11 +578,11 @@ function create<%- className %>()<%- ts(': ' + className) %> {
      *  @api public
      */
     function end(){
-        while(!_stop && !_acceptEOF());
-        _stop = true;
+        while(!<%- prefix %>stop && !<%- prefix %>acceptEOF());
+        <%- prefix %>stop = true;
     }
     function halt(){
-        _stop = true;
+        <%- prefix %>stop = true;
     }
 <% function printReduceActions(){
     let codegen = {
@@ -590,13 +590,13 @@ function create<%- className %>()<%- ts(': ' + className) %> {
                 {<%- b.replace(/\$\$/g, prefix + 'top') %>}
         <% },
         pushLexState(n: number){ %>
-                _lexState.push(<%- n %>);
+                <%- prefix %>lexState.push(<%- n %>);
         <% },
         popLexState(){ %>
-                _lexState.pop();
+                <%- prefix %>lexState.pop();
         <% },
         setImg(n: string){ %>
-                _setImg("<%- n %>");
+                <%- prefix %>setImg("<%- n %>");
         <% },
         returnToken(t: TokenDef){
             // should not happen
@@ -607,10 +607,10 @@ function create<%- className %>()<%- ts(': ' + className) %> {
             case <%- rule.index %>:
                 /* <%- rule.toString() %> */
             <% for(let uvar in rule.vars){ %>
-                var <%- uvar %> = _sematicS[<%- prefix %>sp - <%- rule.rhs.length - rule.vars[uvar].val %>];
+                var <%- uvar %> = <%- prefix %>sematicS[<%- prefix %>sp - <%- rule.rhs.length - rule.vars[uvar].val %>];
             <% }
             for(let uvar2 in rule.usedVars){ %>
-                var <%- uvar2 %> = _sematicS[<%- prefix %>sp - <%- rule.usedVars[uvar2].val %>];
+                var <%- uvar2 %> = <%- prefix %>sematicS[<%- prefix %>sp - <%- rule.usedVars[uvar2].val %>];
             <% }
             for(let act of rule.action){
                 act.toCode(codegen);
@@ -619,24 +619,24 @@ function create<%- className %>()<%- ts(': ' + className) %> {
         <% }
     }
 } %>
-    function _doReduction(<%- prefix %>rulenum<%- ts(": number") %>){
+    function <%- prefix %>doReduction(<%- prefix %>rulenum<%- ts(": number") %>){
         var <%- prefix %>nt = <%- prefix %>lhs[<%- prefix %>rulenum];
-        var <%- prefix %>sp = _sematicS.length;
-        var <%- prefix %>top = _sematicS[<%- prefix %>sp - <%- prefix %>ruleLen[<%- prefix %>rulenum]] || null;
+        var <%- prefix %>sp = <%- prefix %>sematicS.length;
+        var <%- prefix %>top = <%- prefix %>sematicS[<%- prefix %>sp - <%- prefix %>ruleLen[<%- prefix %>rulenum]] || null;
         switch(<%- prefix %>rulenum){
 <% printReduceActions(); %>
         }
-        _lrState.length -= <%- prefix %>ruleLen[<%- prefix %>rulenum];
-        var <%- prefix %>cstate = _lrState[_lrState.length - 1];
-        _lrState.push(<%- prefix %>pgoto[<%- prefix %>disgoto[<%- prefix %>cstate] + <%- prefix %>nt]);
+        <%- prefix %>lrState.length -= <%- prefix %>ruleLen[<%- prefix %>rulenum];
+        var <%- prefix %>cstate = <%- prefix %>lrState[<%- prefix %>lrState.length - 1];
+        <%- prefix %>lrState.push(<%- prefix %>pgoto[<%- prefix %>disgoto[<%- prefix %>cstate] + <%- prefix %>nt]);
 
-        _sematicS.length -= <%- prefix %>ruleLen[<%- prefix %>rulenum];
-        _sematicS.push(<%- prefix %>top);
+        <%- prefix %>sematicS.length -= <%- prefix %>ruleLen[<%- prefix %>rulenum];
+        <%- prefix %>sematicS.push(<%- prefix %>top);
     }
 
-    function _acceptToken(t<%- ts(": Token") %>){
+    function <%- prefix %>acceptToken(t<%- ts(": Token") %>){
         // look up action table
-        var cstate = _lrState[_lrState.length - 1];
+        var cstate = <%- prefix %>lrState[<%- prefix %>lrState.length - 1];
         var ind = <%- prefix %>disact[cstate] + t.id;
         var act = 0;
         if(ind < 0 || ind >= <%- prefix %>pact.length || <%- prefix %>checkact[ind] !== cstate){
@@ -647,42 +647,42 @@ function create<%- className %>()<%- ts(': ' + className) %> {
         }
         if(act === <%- prefix %>actERR){
             // explicit error
-            _syntaxError(t);
+            <%- prefix %>syntaxError(t);
             return true;
         }
         else if(act > 0){
             // shift
             if(t.id === 0){
                 // end of file
-                _stop = true;
-                _emit('accept');
+                <%- prefix %>stop = true;
+                <%- prefix %>emit('accept');
                 return true;
             }
             else {
-                _lrState.push(act - 1);
-                _sematicS.push(_sematicVal);
-                _sematicVal = null;
+                <%- prefix %>lrState.push(act - 1);
+                <%- prefix %>sematicS.push(<%- prefix %>sematicVal);
+                <%- prefix %>sematicVal = null;
                 // token consumed
                 return true;
             }
         }
         else if(act < 0){
-            _doReduction(-act - 1);
+            <%- prefix %>doReduction(-act - 1);
             return false;
         }
         else {
             // error
-            _syntaxError(t);
+            <%- prefix %>syntaxError(t);
             // force consume
             return true;
         }
     }
-    function _syntaxError(t<%- ts(": Token") %>){
+    function <%- prefix %>syntaxError(t<%- ts(": Token") %>){
         var msg = "unexpected token " + t.toString() + ", expecting one of the following token(s):\n"
-        msg += _expected(_lrState[_lrState.length - 1]);
-        _emit("syntaxerror", msg, t);
+        msg += <%- prefix %>expected(<%- prefix %>lrState[<%- prefix %>lrState.length - 1]);
+        <%- prefix %>emit("syntaxerror", msg, t);
     }
-    function _expected(state<%- ts(": number") %>){
+    function <%- prefix %>expected(state<%- ts(": number") %>){
         var dis = <%- prefix %>disact[state];
         var ret = '';
         function expect(tk<%- ts(": number") %>){
