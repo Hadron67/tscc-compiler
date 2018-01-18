@@ -1,9 +1,9 @@
-import { Inf, IntervalSet, DataSet } from '../util/interval-set';
+import { Inf, IntervalSet, DataOperator } from '../util/interval-set';
 
 var oo = Inf.oo;
 var _oo = Inf._oo;
 export class CharSet<T> extends IntervalSet<T>{
-    constructor(datac?: () => DataSet<T>){
+    constructor(datac?: DataOperator<T>){
         super(datac);
     }
     addAll(): void{

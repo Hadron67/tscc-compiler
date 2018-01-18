@@ -1,10 +1,17 @@
 import { InputStream,biss, OutputStream } from '../util/io.js';
-import { State, EndAction } from './state';
+import { State, EndAction, Arc } from './state';
 
 export class DFA<T>{
     start: State<T>;
     constructor(public states: State<T>[]){
         this.start = states[0];
+    }
+    forEachArc(cb: (arc: Arc<T>, from: State<T>, to: State<T>) => any){
+        for(let from of this.states){
+            for(let arc of from.arcs){
+                cb(arc, from, arc.to);
+            }
+        }
     }
     print(os: OutputStream){
         for(let s of this.states){

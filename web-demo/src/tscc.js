@@ -146,7 +146,7 @@ var Inf;
 
 var Interval = (function () {
     function Interval(a, b) {
-        this.dataSet = null;
+        this.data = null;
         this.a = a;
         this.b = b;
     }
@@ -187,7 +187,7 @@ var Interval = (function () {
     Interval.prototype.splitLeft = function (a) {
         if (cm(a, this.a) > 0) {
             var ret = this.insertBefore(this.a, a - 1);
-            this.parent.noMerge && ret.dataSet.union(this.dataSet);
+            this.parent.noMerge && this.parent.dataOp.union(ret.data, this.data);
             this.a = a;
             return ret;
         }
@@ -196,7 +196,7 @@ var Interval = (function () {
     Interval.prototype.splitRight = function (b) {
         if (cm(b, this.b) < 0) {
             var ret = this.insertAfter(b + 1, this.b);
-            this.parent.noMerge && ret.dataSet.union(this.dataSet);
+            this.parent.noMerge && this.parent.dataOp.union(ret.data, this.data);
             this.b = b;
             return ret;
         }
@@ -233,7 +233,7 @@ var Interval = (function () {
             ret += ',';
             ret += this.b === Inf.oo ? b + ')' : b + ']';
         }
-        this.dataSet && (ret += this.dataSet.toString());
+        this.data && (ret += this.parent.dataOp.stringify(this.data));
         return ret;
     };
     return Interval;
@@ -244,15 +244,15 @@ function checkArg(a, b) {
     }
 }
 var IntervalSet = (function () {
-    function IntervalSet(dataSetConstructor) {
+    function IntervalSet(dataOp) {
         this.head = new Interval(0, 0);
         this.head.parent = this;
         this.tail = new Interval(null, null);
         this.tail.parent = this;
         this.head.next = this.tail;
         this.tail.prev = this.head;
-        this.noMerge = typeof dataSetConstructor !== 'undefined';
-        this.dataSetConstructor = dataSetConstructor || null;
+        this.noMerge = typeof dataOp !== 'undefined';
+        this.dataOp = dataOp || null;
     }
     IntervalSet.prototype.isValid = function (it) {
         return it !== this.head && it !== this.tail;
@@ -261,8 +261,7 @@ var IntervalSet = (function () {
         if (data === void 0) { data = null; }
         var ret = new Interval(a, b);
         ret.parent = this;
-        this.dataSetConstructor && (ret.dataSet = this.dataSetConstructor());
-        data && ret.dataSet.add(data);
+        this.dataOp && (ret.data = data || this.dataOp.createData());
         return ret;
     };
     IntervalSet.prototype.fitPoint = function (a, b) {
@@ -319,12 +318,12 @@ var IntervalSet = (function () {
                     overlap[1].insertAfter(overlap[1].b + 1, b, data);
                 }
                 for (var it = overlap[0]; it !== overlap[1]; it = it.next) {
-                    it.dataSet.add(data);
+                    this.dataOp.union(it.data, data);
                     if (it.b + 1 < it.next.a) {
                         it.insertAfter(it.b + 1, it.next.a - 1, data);
                     }
                 }
-                overlap[1].dataSet.add(data);
+                this.dataOp.union(overlap[1].data, data);
             }
         }
         return this;
@@ -488,40 +487,6 @@ var Action;
     Action[Action["END"] = 1] = "END";
     Action[Action["NONE"] = 2] = "NONE";
 })(Action || (Action = {}));
-var maxlen = 0;
-var StateArray = (function (_super) {
-    __extends(StateArray, _super);
-    function StateArray() {
-        var _this = _super.call(this, 0) || this;
-        Object.setPrototypeOf(_this, StateArray.prototype);
-        return _this;
-    }
-    StateArray.prototype.add = function (s) {
-        for (var _i = 0, _a = this; _i < _a.length; _i++) {
-            var s2 = _a[_i];
-            if (s === s2) {
-                return;
-            }
-        }
-        this.length > maxlen && (maxlen = this.length);
-        this.push(s);
-    };
-    StateArray.prototype.union = function (s) {
-        for (var _i = 0, s_1 = s; _i < s_1.length; _i++) {
-            var state = s_1[_i];
-            this.add(state);
-        }
-    };
-    StateArray.prototype.toArray = function () {
-        var ret = [];
-        for (var _i = 0, _a = this; _i < _a.length; _i++) {
-            var s = _a[_i];
-            ret.push(s);
-        }
-        return ret;
-    };
-    return StateArray;
-}(Array));
 var Arc = (function () {
     function Arc(from, to) {
         this.chars = new CharSet();
@@ -748,7 +713,7 @@ var State = (function () {
         for (var i = 0; i < this.arcs.length; i++) {
             var arc = this.arcs[i];
             arc.chars.forEach(function (a, b) {
-                set.add(a, b, arc.to);
+                set.add(a, b, [arc.to]);
             });
         }
     };
@@ -771,7 +736,24 @@ var State = (function () {
         var states = [];
         var dfaCount = 0;
         var stateCount = this.count();
-        var set = new CharSet(function () { return new StateArray(); });
+        var set = new CharSet({
+            createData: function () { return []; },
+            union: function (dest, src) {
+                for (var _i = 0, src_1 = src; _i < src_1.length; _i++) {
+                    var s_1 = src_1[_i];
+                    var dup = false;
+                    for (var _a = 0, dest_1 = dest; _a < dest_1.length; _a++) {
+                        var destt = dest_1[_a];
+                        if (s_1 === destt) {
+                            dup = true;
+                            break;
+                        }
+                    }
+                    !dup && dest.push(s_1);
+                }
+            },
+            stringify: function (d) { return ''; }
+        });
         var initState = new CompoundState(stateCount, [this]);
         initState.index = dfaCount++;
         states.push(initState);
@@ -782,7 +764,7 @@ var State = (function () {
             set.removeAll();
             s.allChars(set);
             set.forEach(function (chara, charb, it) {
-                var cpState = new CompoundState(stateCount, it.dataSet.toArray());
+                var cpState = new CompoundState(stateCount, it.data);
                 var cphash = cpState.hash();
                 if (dfaStates[cphash]) {
                     cpState = dfaStates[cphash];
@@ -843,6 +825,15 @@ var DFA = (function () {
         this.states = states;
         this.start = states[0];
     }
+    DFA.prototype.forEachArc = function (cb) {
+        for (var _i = 0, _a = this.states; _i < _a.length; _i++) {
+            var from = _a[_i];
+            for (var _b = 0, _c = from.arcs; _b < _c.length; _b++) {
+                var arc = _c[_b];
+                cb(arc, from, arc.to);
+            }
+        }
+    };
     DFA.prototype.print = function (os) {
         for (var _i = 0, _a = this.states; _i < _a.length; _i++) {
             var s = _a[_i];

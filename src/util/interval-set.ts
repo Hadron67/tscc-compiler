@@ -27,18 +27,13 @@ export enum Inf{
 };
 export type Num = Inf | number;
 
-export interface DataSet<T>{
-    union(set: DataSet<T>): void;
-    add(d: T): void;
-    toArray(): T[];
-}
 class Interval<T>{
     public a: Num;
     public b: Num;
     public prev: Interval<T>;
     public next: Interval<T>;
     public parent: IntervalSet<T>;
-    public dataSet: DataSet<T> = null;
+    public data: T = null;
     constructor(a: Num, b: Num){
         this.a = a;
         this.b = b;
@@ -82,7 +77,8 @@ class Interval<T>{
         //DEBUG && console.assert(this.parent.noMerge);
         if(cm(a, this.a) > 0){
             var ret = this.insertBefore(this.a,(a as number) - 1);
-            this.parent.noMerge && ret.dataSet.union(this.dataSet);
+            // this.parent.noMerge && ret.dataSet.union(this.dataSet);
+            this.parent.noMerge && this.parent.dataOp.union(ret.data, this.data);
             this.a = a;
             return ret;
         }
@@ -92,7 +88,8 @@ class Interval<T>{
         //DEBUG && console.assert(this.parent.noMerge);
         if(cm(b, this.b) < 0){
             var ret = this.insertAfter((b as number) + 1,this.b);
-            this.parent.noMerge && ret.dataSet.union(this.dataSet);
+            // this.parent.noMerge && ret.dataSet.union(this.dataSet);
+            this.parent.noMerge && this.parent.dataOp.union(ret.data, this.data);
             this.b = b;
             return ret;
         }
@@ -129,7 +126,7 @@ class Interval<T>{
             ret += ',';
             ret += this.b === Inf.oo ? b + ')' : b + ']';
         }
-        this.dataSet && (ret += this.dataSet.toString());
+        this.data && (ret += this.parent.dataOp.stringify(this.data));
         return ret;
     }
 }
@@ -138,13 +135,18 @@ function checkArg(a: Num, b: Num){
         throw new Error(`illegal argument: "a"(${a}) must be no more than "b"(${b})`);
     }
 }
+export interface DataOperator<T> {
+    createData(): T;
+    union(dest: T, src: T): void;
+    stringify(d: T): string;
+}
 export class IntervalSet<T>{
     public head: Interval<T>;
     public tail: Interval<T>;
     public noMerge: boolean;
-    public dataSetConstructor: () => DataSet<T>;
+    public dataOp: DataOperator<T>;
 
-    constructor(dataSetConstructor?: () => DataSet<T>){
+    constructor(dataOp?: DataOperator<T>){
         this.head = new Interval(0,0);
         this.head.parent = this;
         this.tail = new Interval(null,null);
@@ -152,8 +154,8 @@ export class IntervalSet<T>{
         this.head.next = this.tail;
         this.tail.prev = this.head;
     
-        this.noMerge = typeof dataSetConstructor !== 'undefined';
-        this.dataSetConstructor = dataSetConstructor || null;
+        this.noMerge = typeof dataOp !== 'undefined';
+        this.dataOp = dataOp || null;
     }
     isValid(it: Interval<T>): boolean{
         return it !== this.head && it !== this.tail;
@@ -161,8 +163,7 @@ export class IntervalSet<T>{
     createInterval(a: Num, b: Num, data: T = null): Interval<T>{
         var ret = new Interval<T>(a,b);
         ret.parent = this;
-        this.dataSetConstructor && (ret.dataSet = this.dataSetConstructor());
-        data && ret.dataSet.add(data);
+        this.dataOp && (ret.data = data || this.dataOp.createData());
         return ret;
     }
     fitPoint(a: Num, b: Num): Interval<T>{
@@ -223,12 +224,14 @@ export class IntervalSet<T>{
                     overlap[1].insertAfter((overlap[1].b as number) + 1,b,data);
                 }
                 for(var it = overlap[0];it !== overlap[1];it = it.next){
-                    it.dataSet.add(data);
+                    // it.dataSet.add(data);
+                    this.dataOp.union(it.data, data);
                     if((it.b as number) + 1 < it.next.a){
                         it.insertAfter((it.b as number) + 1,(it.next.a as number) - 1,data);
                     }
                 }
-                overlap[1].dataSet.add(data);
+                // overlap[1].dataSet.add(data);
+                this.dataOp.union(overlap[1].data, data);
             }
         }
         return this;

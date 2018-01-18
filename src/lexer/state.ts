@@ -3,7 +3,7 @@ import { YYTAB } from '../util/common';
 import { CharSet } from './char-set';
 import { console } from '../util/common';
 import { DFA } from './dfa.js';
-import { DataSet } from '../util/interval-set';
+// import { DataSet } from '../util/interval-set';
 import { OutputStream, StringOS, endl } from '../util/io';
 
 export enum Action{
@@ -12,35 +12,6 @@ export enum Action{
     NONE
 }
 var maxlen = 0;
-class StateArray<T> extends Array<State<T>> implements DataSet<State<T>>{
-    constructor(){
-        super(0);
-        // XXX: a better way to fix prototype chain?
-        (Object as any).setPrototypeOf(this, StateArray.prototype);
-    }
-    add(s: State<T>){
-        for(var s2 of this){
-            if(s === s2){
-                // console.log('hit: ' + s.index);
-                return;
-            }
-        }
-        this.length > maxlen && (maxlen = this.length);
-        this.push(s);
-    }
-    union(s: StateArray<T>){
-        for(var state of s){
-            this.add(state);
-        }
-    }
-    toArray(){
-        var ret: State<T>[] = [];
-        for(let s of this){
-            ret.push(s);
-        }
-        return ret;
-    }
-}
 export class Arc<T>{
     chars: CharSet<any> = new CharSet<any>();
     from: State<T>;
@@ -275,13 +246,13 @@ export class State<T>{
      * get all the characters that this state can accept
      * @param {CharSet} set The set that the resulting characters add into
      */
-    allChars(set: CharSet<State<T>>){
+    allChars(set: CharSet<State<T>[]>){
         var cela = this;
         for(var i = 0;i < this.arcs.length;i++){
             //set.union(this.arcs[i].chars);
             var arc = this.arcs[i];
             arc.chars.forEach(function(a, b){
-                set.add(a, b, arc.to);
+                set.add(a, b, [arc.to]);
             });
         }
     }
@@ -311,7 +282,22 @@ export class State<T>{
         var dfaCount = 0;
         var stateCount = this.count();
     
-        var set = new CharSet<State<T>>(() => new StateArray<T>());
+        var set = new CharSet<State<T>[]>({
+            createData: () => [],
+            union(dest: State<T>[], src: State<T>[]){
+                for(let s of src){
+                    let dup = false;
+                    for(let destt of dest){
+                        if(s === destt){
+                            dup = true;
+                            break;
+                        }
+                    }
+                    !dup && dest.push(s);
+                }
+            },
+            stringify: d => '' // not needed here, actually
+        });
 
         var cela = this;
         
@@ -331,7 +317,7 @@ export class State<T>{
             // find all the characters that this state can accept
             s.allChars(set);
             set.forEach(function(chara,charb,it){
-                var cpState = new CompoundState<T>(stateCount,it.dataSet.toArray());
+                var cpState = new CompoundState<T>(stateCount, it.data);
                 var cphash = cpState.hash();
                 if(dfaStates[cphash]){
                     // this state est deja connu
@@ -374,14 +360,7 @@ class CompoundState<T> extends State<T>{
         return this.stateSet.hash();
     }
 
-    // getStates(char: string, states: BitSet){
-    //     for(var i = 0;i < this.states.length;i++){
-    //         State.prototype.getStates.call(this.states[i],char,states);
-            
-    //     }
-    // }
-
-    allChars(set: CharSet<State<T>>){
+    allChars(set: CharSet<State<T>[]>){
         for(var i = 0;i < this.states.length;i++){
             // State.prototype.allChars.call(this.states[i],set);
             this.states[i].allChars(set);
