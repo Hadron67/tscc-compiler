@@ -51,13 +51,13 @@ function printState(state: State<LexAction[]>){
             if(from === to){
                 ret.push(`c === ${from}`);
             }
-            else if(from === 0 && to !== Inf.oo){
+            else if(from === 0 && to !== oo){
                 ret.push(`c <= ${to}`);
             }
-            else if(from !== 0 && to === Inf.oo){
+            else if(from !== 0 && to === oo){
                 ret.push(`c >= ${from}`);
             }
-            else if(from !== 0 && to !== Inf.oo){
+            else if(from !== 0 && to !== oo){
                 ret.push(`(c >= ${from} && c <= ${to})`);
             }
             else {

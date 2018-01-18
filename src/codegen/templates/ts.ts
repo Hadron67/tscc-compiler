@@ -6,7 +6,7 @@ import { CodeGenerator } from '../code-generator';
 import { DFA } from '../../lexer/dfa';
 import { LexAction } from '../../lexer/action';
 import { State, Arc } from '../../lexer/state';
-import { Inf } from '../../util/interval-set';
+import { oo, _oo } from '../../util/interval-set';
 import { JNode } from '../../parser/node'
 
 export default function(input: TemplateInput, output: TemplateOutput){
@@ -67,13 +67,13 @@ function printState(state: State<LexAction[]>){
             if(from === to){
                 ret.push(`c === ${from}`);
             }
-            else if(from === 0 && to !== Inf.oo){
+            else if(from === 0 && to !== oo){
                 ret.push(`c <= ${to}`);
             }
-            else if(from !== 0 && to === Inf.oo){
+            else if(from !== 0 && to === oo){
                 ret.push(`c >= ${from}`);
             }
-            else if(from !== 0 && to !== Inf.oo){
+            else if(from !== 0 && to !== oo){
                 ret.push(`(c >= ${from} && c <= ${to})`);
             }
             else {

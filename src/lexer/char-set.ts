@@ -1,13 +1,11 @@
-import { Inf, IntervalSet, DataOperator } from '../util/interval-set';
+import { oo, _oo, IntervalSet, DataOperator } from '../util/interval-set';
 
-var oo = Inf.oo;
-var _oo = Inf._oo;
 export class CharSet<T> extends IntervalSet<T>{
     constructor(datac?: DataOperator<T>){
         super(datac);
     }
     addAll(): void{
-        super.add(0, Inf.oo);
+        super.add(0, oo);
     }
     constainsAll(): boolean{
         let c = this.head.next;

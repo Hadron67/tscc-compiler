@@ -10,37 +10,38 @@ function copyArray(a: any[]): any[]{
     return ret;
 }
 
-function cm(a: Num, b: Num): number{
-    if((a === Inf.oo && b !== Inf.oo) || (a !== Inf._oo && b === Inf._oo) || a > b){
-        return 1;
-    }
-    else if((a === Inf._oo && b !== Inf._oo) || (a !== Inf.oo && b === Inf.oo) || a < b ){
-        return -1;
-    }
-    else {
-        return 0;
-    }
-}
-export enum Inf{
-    oo = "oo",
-    _oo = "-oo"
-};
-export type Num = Inf | number;
-
+// function cm(a: Num, b: Num): number{
+//     if((a === Inf.oo && b !== Inf.oo) || (a !== Inf._oo && b === Inf._oo) || a > b){
+//         return 1;
+//     }
+//     else if((a === Inf._oo && b !== Inf._oo) || (a !== Inf.oo && b === Inf.oo) || a < b ){
+//         return -1;
+//     }
+//     else {
+//         return 0;
+//     }
+// }
+// export enum Inf{
+//     oo = "oo",
+//     _oo = "-oo"
+// };
+// export type Num = Inf | number;
+export var oo = Number.POSITIVE_INFINITY;
+export var _oo = Number.NEGATIVE_INFINITY;
 class Interval<T>{
-    public a: Num;
-    public b: Num;
+    public a: number;
+    public b: number;
     public prev: Interval<T>;
     public next: Interval<T>;
     public parent: IntervalSet<T>;
     public data: T = null;
-    constructor(a: Num, b: Num){
+    constructor(a: number, b: number){
         this.a = a;
         this.b = b;
     }
     
-    public insertBefore(a: Num, b: Num, data?: T){
-        if(this.parent.isValid(this) && !this.parent.noMerge && this.a === (b as number) + 1){
+    public insertBefore(a: number, b: number, data?: T){
+        if(this.parent.isValid(this) && !this.parent.noMerge && this.a === b + 1){
             this.a = a;
             return this;
         }
@@ -53,14 +54,15 @@ class Interval<T>{
             return it;
         }
     }
-    public contains(a: Num): boolean{
-        return cm(this.a,a) <= 0 && cm(this.b,a) >= 0;
+    public contains(a: number): boolean{
+        return this.a <= a && this.b >= a;
     }
-    public overlaps(a: Num, b: Num): boolean{
-        return !(cm(a,this.b) > 0 || cm(b,this.a) < 0);
+    public overlaps(a: number, b: number): boolean{
+        // return !(cm(a,this.b) > 0 || cm(b,this.a) < 0);
+        return !(a > this.b || b < this.a);
     }
-    public insertAfter(a: Num, b: Num, data?: T): Interval<T>{
-        if(this.parent.isValid(this) && !this.parent.noMerge && this.b === (a as number) - 1){
+    public insertAfter(a: number, b: number, data?: T): Interval<T>{
+        if(this.parent.isValid(this) && !this.parent.noMerge && this.b === a - 1){
             this.b = b;
             return this;
         }
@@ -73,10 +75,10 @@ class Interval<T>{
             return it;
         }
     }
-    public splitLeft(a: Num): Interval<T>{
+    public splitLeft(a: number): Interval<T>{
         //DEBUG && console.assert(this.parent.noMerge);
-        if(cm(a, this.a) > 0){
-            var ret = this.insertBefore(this.a,(a as number) - 1);
+        if(a > this.a){
+            var ret = this.insertBefore(this.a, a - 1);
             // this.parent.noMerge && ret.dataSet.union(this.dataSet);
             this.parent.noMerge && this.parent.dataOp.union(ret.data, this.data);
             this.a = a;
@@ -84,10 +86,10 @@ class Interval<T>{
         }
         return this;
     }
-    public splitRight(b: Num): Interval<T>{
+    public splitRight(b: number): Interval<T>{
         //DEBUG && console.assert(this.parent.noMerge);
-        if(cm(b, this.b) < 0){
-            var ret = this.insertAfter((b as number) + 1,this.b);
+        if(b < this.b){
+            var ret = this.insertAfter(b + 1, this.b);
             // this.parent.noMerge && ret.dataSet.union(this.dataSet);
             this.parent.noMerge && this.parent.dataOp.union(ret.data, this.data);
             this.b = b;
@@ -101,20 +103,20 @@ class Interval<T>{
         return this;
     }
     public checkMerge(): Interval<T>{
-        if(this.a !== Inf._oo && this.prev.a !== null && this.a === (this.prev.b as number) + 1){
+        if(this.a !== _oo && this.prev.a !== null && this.a === this.prev.b + 1){
             this.a = this.prev.a;
             this.prev.remove();
         }
-        if(this.b !== Inf.oo && this.next.a !== null && this.b === (this.next.a as number) - 1){
+        if(this.b !== oo && this.next.a !== null && this.b === this.next.a - 1){
             this.b = this.next.b;
             this.next.remove();
         }
         return this;
     }
-    public toString(mapper: (a: Num) => string): string{
+    public toString(mapper: (a: number) => string): string{
         var ret = '';
-        function dfmapper(c: Num): string{
-            return c === Inf.oo ? '+oo' : c === Inf._oo ? '-oo' : c.toString();
+        function dfmapper(c: number): string{
+            return c === oo ? '+oo' : c === _oo ? '-oo' : c.toString();
         }
         var a = (mapper || dfmapper)(this.a);
         var b = (mapper || dfmapper)(this.b);
@@ -122,16 +124,16 @@ class Interval<T>{
             ret += a;
         }
         else{
-            ret += this.a === Inf._oo ? '(' + a : '[' + a;
+            ret += this.a === _oo ? '(' + a : '[' + a;
             ret += ',';
-            ret += this.b === Inf.oo ? b + ')' : b + ']';
+            ret += this.b === oo ? b + ')' : b + ']';
         }
         this.data && (ret += this.parent.dataOp.stringify(this.data));
         return ret;
     }
 }
-function checkArg(a: Num, b: Num){
-    if(cm(a,b) > 0){
+function checkArg(a: number, b: number){
+    if(a > b){
         throw new Error(`illegal argument: "a"(${a}) must be no more than "b"(${b})`);
     }
 }
@@ -160,21 +162,21 @@ export class IntervalSet<T>{
     isValid(it: Interval<T>): boolean{
         return it !== this.head && it !== this.tail;
     }
-    createInterval(a: Num, b: Num, data: T = null): Interval<T>{
+    createInterval(a: number, b: number, data: T = null): Interval<T>{
         var ret = new Interval<T>(a,b);
         ret.parent = this;
         this.dataOp && (ret.data = data || this.dataOp.createData());
         return ret;
     }
-    fitPoint(a: Num, b: Num): Interval<T>{
+    fitPoint(a: number, b: number): Interval<T>{
         for(var it = this.head;it !== this.tail;it = it.next){
-            if((it === this.head || cm(a,it.b) > 0) && (it.next === this.tail || cm(b,it.next.a) < 0)){
+            if((it === this.head || a > it.b) && (it.next === this.tail || b < it.next.a)){
                 return it;
             }
         }
         return null;
     }
-    overlaped(a: Num, b: Num): Interval<T>[]{
+    overlaped(a: number, b: number): Interval<T>[]{
         var start = null,end = null;
         var it = this.head.next;
         for(;it !== this.tail && !it.overlaps(a,b);it = it.next);
@@ -192,7 +194,7 @@ export class IntervalSet<T>{
      * @param data - The extra data associated with the added interval, which is only valid when noMerge = true
      * 
      */
-    add(a: Num, b: Num = a, data?: T){
+    add(a: number, b: number = a, data?: T){
         var noMerge = this.noMerge;
         // /b = b || a;
         DEBUG && checkArg(a,b);
@@ -202,8 +204,8 @@ export class IntervalSet<T>{
         }
         else {
             if(!noMerge){
-                var a1 = cm(a,overlap[0].a) < 0 ? a : overlap[0].a;
-                var b1 = cm(b,overlap[1].b) > 0 ? b : overlap[1].b;
+                var a1 = a < overlap[0].a ? a : overlap[0].a;
+                var b1 = b > overlap[1].b ? b : overlap[1].b;
                 overlap[0].a = a1;
                 overlap[0].b = b1;
                 overlap[0].next = overlap[1].next;
@@ -236,7 +238,7 @@ export class IntervalSet<T>{
         }
         return this;
     }
-    remove(a: Num, b: Num): IntervalSet<T>{
+    remove(a: number, b: number): IntervalSet<T>{
         checkArg(a,b);
         var overlap = this.overlaped(a,b);
         if(overlap !== null){
@@ -252,7 +254,7 @@ export class IntervalSet<T>{
         this.tail.prev = this.head;
         return this;
     }
-    forEach(cb: (a: Num, b: Num, it: Interval<T>) => any): IntervalSet<T>{
+    forEach(cb: (a: number, b: number, it: Interval<T>) => any): IntervalSet<T>{
         for(var it = this.head.next;it !== this.tail;it = it.next){
             cb(it.a,it.b,it);
         }
@@ -264,7 +266,7 @@ export class IntervalSet<T>{
         }
         return this;
     }
-    contains(a: Num): boolean{
+    contains(a: number): boolean{
         for(var it = this.head.next;it !== this.tail;it = it.next){
             if(it.contains(a)){
                 return true;
@@ -272,7 +274,7 @@ export class IntervalSet<T>{
         }
         return false;
     }
-    toString(mapper: (a: Num) => string){
+    toString(mapper: (a: number) => string){
         var ret = '';
         var t = false;
         for(var it = this.head.next;it !== this.tail;it = it.next){
