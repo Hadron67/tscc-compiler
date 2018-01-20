@@ -129,7 +129,54 @@ var <%- prefix %>lexers = [
     moveDFA<%- i %>,
 <% } %>
 ];
+<% if(ists){ %>
+interface DFATable{
+    pnext: number[];
+    disnext: number[];
+    checknext: number[];
+    maxAsicii: number;
+    classTable: number[];
+    unicodeClassTable: number[];
+    isEnd: number[];
+    hasArc: number[];
+};
+<% } %>
+<% let dfaTables = input.file.dfaTables; %>
+<% function printDFATable(t: DFATable<LexAction[]>, n: number){
+    function tn(s: string){
+        return prefix + s + String(n);
+    }
+    printTable<Arc<LexAction[]>>('lexpnext' + n, t.pnext, 6, 10, a => a === null ? '-1' :  String(a.to.index));
+    printTable<number>('lexdisnext' + n, t.disnext, 6, 10, a => String(a));
+    printTable<number>('lexchecknext' + n, t.checknext, 6, 10, a => String(a));
+    printTable<number>('lexclassTable' + n, t.classTable, 6, 10, a => String(a));
+    printTable<number>('lexunicodeClassTable' + n, t.unicodeClassTable, 6, 10, a => String(a));
+    printTable<State<LexAction[]>>('lexisEnd' + n, t.states, 1, 15, a => a.endAction === null ? '0' : '1');
+    printTable<State<LexAction[]>>('lexhasArc' + n, t.states, 1, 15, a => a.arcs.length === 0 ? '0' : '1');
+%>
+var <%- prefix %>lextable<%- String(n) + ts(': DFATable') %> = {
+    pnext: <%- tn('lexpnext') %>,
+    disnext: <%- tn('lexdisnext') %>,
+    checknext: <%- tn('lexchecknext') %>,
+    maxAsicii: <%- t.maxAsicii %>,
+    classTable: <%- tn('lexclassTable') %>,
+    unicodeClassTable: <%- tn('lexunicodeClassTable') %>,
+    isEnd: <%- tn('lexisEnd') %>,
+    hasArc: <%- tn('lexhasArc') %>
+};
+<% } %>
 
+<% for(let i = 0, _a = dfaTables; i < _a.length; i++){
+    printDFATable(_a[i], i);
+} %>
+/*
+    dfa tables
+*/
+var <%- prefix %>dfaTables<%- ts(': DFATable[]') %> = [
+<% for(let i = 0;i < dfaTables.length; i++){ %>
+    <%- prefix %>lextable<%- i %>,
+<% } %>
+];
 /*
     tokens that a lexical dfa state can return
 */

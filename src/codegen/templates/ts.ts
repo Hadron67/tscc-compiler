@@ -8,6 +8,7 @@ import { LexAction } from '../../lexer/action';
 import { State, Arc } from '../../lexer/state';
 import { oo, _oo } from '../../util/interval-set';
 import { JNode } from '../../parser/node'
+import { DFATable } from '../../lexer/dfa-table'
 
 export default function(input: TemplateInput, output: TemplateOutput){
     echoLine("/*");
@@ -180,8 +181,88 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echo(",");
     } 
     echoLine("");
-    echoLine("];");
+    echo("];");
+    if(ists){ 
     echoLine("");
+    echoLine("interface DFATable{");
+    echoLine("    pnext: number[];");
+    echoLine("    disnext: number[];");
+    echoLine("    checknext: number[];");
+    echoLine("    maxAsicii: number;");
+    echoLine("    classTable: number[];");
+    echoLine("    unicodeClassTable: number[];");
+    echoLine("    isEnd: number[];");
+    echoLine("    hasArc: number[];");
+    echo("};");
+    } 
+    let dfaTables = input.file.dfaTables; 
+    function printDFATable(t: DFATable<LexAction[]>, n: number){
+    function tn(s: string){
+        return prefix + s + String(n);
+    }
+    printTable<Arc<LexAction[]>>('lexpnext' + n, t.pnext, 6, 10, a => a === null ? '-1' :  String(a.to.index));
+    printTable<number>('lexdisnext' + n, t.disnext, 6, 10, a => String(a));
+    printTable<number>('lexchecknext' + n, t.checknext, 6, 10, a => String(a));
+    printTable<number>('lexclassTable' + n, t.classTable, 6, 10, a => String(a));
+    printTable<number>('lexunicodeClassTable' + n, t.unicodeClassTable, 6, 10, a => String(a));
+    printTable<State<LexAction[]>>('lexisEnd' + n, t.states, 1, 15, a => a.endAction === null ? '0' : '1');
+    printTable<State<LexAction[]>>('lexhasArc' + n, t.states, 1, 15, a => a.arcs.length === 0 ? '0' : '1');
+
+    echoLine("");
+    echo("var ");
+    echo(prefix );
+    echo("lextable");
+    echo(String(n) + ts(': DFATable') );
+    echoLine(" = {");
+    echo("    pnext: ");
+    echo(tn('lexpnext') );
+    echoLine(",");
+    echo("    disnext: ");
+    echo(tn('lexdisnext') );
+    echoLine(",");
+    echo("    checknext: ");
+    echo(tn('lexchecknext') );
+    echoLine(",");
+    echo("    maxAsicii: ");
+    echo(t.maxAsicii );
+    echoLine(",");
+    echo("    classTable: ");
+    echo(tn('lexclassTable') );
+    echoLine(",");
+    echo("    unicodeClassTable: ");
+    echo(tn('lexunicodeClassTable') );
+    echoLine(",");
+    echo("    isEnd: ");
+    echo(tn('lexisEnd') );
+    echoLine(",");
+    echo("    hasArc: ");
+    echo(tn('lexhasArc') );
+    echoLine("");
+    echo("};");
+    } 
+    echoLine("");
+    for(let i = 0, _a = dfaTables; i < _a.length; i++){
+    printDFATable(_a[i], i);
+} 
+    echoLine("");
+    echoLine("/*");
+    echoLine("    dfa tables");
+    echoLine("*/");
+    echo("var ");
+    echo(prefix );
+    echo("dfaTables");
+    echo(ts(': DFATable[]') );
+    echo(" = [");
+    for(let i = 0;i < dfaTables.length; i++){ 
+    echoLine("");
+    echo("    ");
+    echo(prefix );
+    echo("lextable");
+    echo(i );
+    echo(",");
+    } 
+    echoLine("");
+    echoLine("];");
     echoLine("/*");
     echoLine("    tokens that a lexical dfa state can return");
     echo("*/");
