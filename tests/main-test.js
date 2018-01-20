@@ -1,3 +1,3 @@
 'use strict';
 
-require('./js/test2.js')();
+require('./js/detect-class.js')();

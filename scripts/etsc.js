@@ -189,6 +189,7 @@ compileFiles('./src/codegen/templates', 'ets', '.ts', {
         `import { State, Arc } from '../../lexer/state';`,
         `import { oo, _oo } from '../../util/interval-set';`,
         `import { JNode } from '../../parser/node'`,
+        `import { DFATable } from '../../lexer/dfa-table'`,
         ''
     ].join(endl),
     args: [

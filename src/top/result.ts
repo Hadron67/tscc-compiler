@@ -17,6 +17,8 @@ import { TemplateInput } from '../codegen/def';
 import { parse } from '../parser/parser';
 import { templateExists, listTemplates } from '../codegen/template';
 import { markPosition } from '../parser/node';
+import { DFATable } from '../lexer/dfa-table';
+import { LexAction } from '../lexer/action';
 
 export interface Result extends Context{
     warn(w: JsccWarning);
@@ -106,11 +108,13 @@ export function genResult(source: string, fname: string): Result{
     iterationCount = temp.iterations;
     var temp2 = genParseTable(g, itemSets);
     temp2.result.findDefAct();
-    // result.parseTable = temp2.result;
     parseTable = new CompressedPTable(temp2.result);
-
     for(let cf of temp2.conflicts){
         warn(new JsccWarning(cf.toString()));
+    }
+
+    for(let dfa of file.lexDFA){
+        file.dfaTables.push(new DFATable<LexAction[]>(dfa));
     }
 
     return ret;
@@ -131,7 +135,7 @@ export function genResult(source: string, fname: string): Result{
         printParseTable(os, parseTable, itemSets);
     }
     function printDFA(os: OutputStream){
-        for(let s of file.lexDFA){
+        for(let s of file.dfaTables){
             s.print(os);
             os.writeln();
             os.writeln();

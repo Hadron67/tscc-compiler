@@ -171,8 +171,7 @@ var Interval = (function () {
     };
     Interval.prototype.splitLeft = function (a) {
         if (a > this.a) {
-            var ret = this.insertBefore(this.a, a - 1);
-            this.parent.noMerge && this.parent.dataOp.union(ret.data, this.data);
+            var ret = this.insertBefore(this.a, a - 1, this.data);
             this.a = a;
             return ret;
         }
@@ -180,8 +179,7 @@ var Interval = (function () {
     };
     Interval.prototype.splitRight = function (b) {
         if (b < this.b) {
-            var ret = this.insertAfter(b + 1, this.b);
-            this.parent.noMerge && this.parent.dataOp.union(ret.data, this.data);
+            var ret = this.insertAfter(b + 1, this.b, this.data);
             this.b = b;
             return ret;
         }
@@ -246,7 +244,7 @@ var IntervalSet = (function () {
         if (data === void 0) { data = null; }
         var ret = new Interval(a, b);
         ret.parent = this;
-        this.dataOp && (ret.data = data || this.dataOp.createData());
+        this.dataOp && (ret.data = this.dataOp.createData(), data !== null && this.dataOp.union(ret.data, data));
         return ret;
     };
     IntervalSet.prototype.fitPoint = function (a, b) {
@@ -306,6 +304,7 @@ var IntervalSet = (function () {
                     this.dataOp.union(it.data, data);
                     if (it.b + 1 < it.next.a) {
                         it.insertAfter(it.b + 1, it.next.a - 1, data);
+                        it = it.next;
                     }
                 }
                 this.dataOp.union(overlap[1].data, data);
@@ -2061,6 +2060,14 @@ function compress(source) {
     };
 }
 
+function initArray(len, cb) {
+    var ret = new Array(len);
+    for (var i = 0; i < len; i++) {
+        ret[i] = cb(i);
+    }
+    return ret;
+}
+
 function action(pt) {
     var emCount = [];
     for (var state = 0; state < pt.stateCount; state++) {
@@ -2098,13 +2105,6 @@ function gotot(pt) {
             return emCount[nt];
         }
     };
-}
-function initArray(len, cb) {
-    var ret = new Array(len);
-    for (var i = 0; i < len; i++) {
-        ret[i] = cb(i);
-    }
-    return ret;
 }
 var CompressedPTable = (function () {
     function CompressedPTable(ptable) {
@@ -2333,6 +2333,7 @@ var File = (function () {
     function File() {
         this.grammar = null;
         this.lexDFA = [];
+        this.dfaTables = [];
         this.opt = {};
         this.prefix = 'jj';
         this.header = [];
@@ -7205,6 +7206,159 @@ defineTemplate('javascript', function (input, fc) {
     fc.save(input.file.name + ".js");
 });
 
+function createClassFinder() {
+    var classCount = 0;
+    var lastClassCount = 0;
+    var classMap = [];
+    var classSet = new IntervalSet({
+        createData: function () { return ({ id: -1, data: [] }); },
+        stringify: function (n) { return "(" + n.id + ")"; },
+        union: function (dest, src) {
+            if (dest.id === -1) {
+                dest.id = src.id;
+            }
+            else if (dest.id < lastClassCount) {
+                dest.id = classMap[dest.id] !== undefined ? classMap[dest.id] : (classMap[dest.id] = classCount++);
+            }
+            for (var _i = 0, _a = src.data; _i < _a.length; _i++) {
+                var d = _a[_i];
+                dest.data.push(d);
+            }
+        }
+    });
+    return {
+        addClass: addClass,
+        done: done
+    };
+    function addClass(set, data) {
+        var cid = classCount;
+        lastClassCount = classCount++;
+        classMap.length = 0;
+        set.forEach(function (a, b, it) {
+            classSet.add(a, b, { id: cid, data: [data] });
+        });
+    }
+    function done() {
+        classMap.length = 0;
+        classCount = 0;
+        classSet.forEach(function (a, b, it) {
+            it.data.id = classMap[it.data.id] !== undefined ? classMap[it.data.id] : (classMap[it.data.id] = classCount++);
+        });
+        return { classCount: classCount, classSet: classSet };
+    }
+}
+
+function arrayWrapper(stateCount, classCount, rawTable) {
+    var emCount = [];
+    for (var state = 0; state < stateCount; state++) {
+        emCount.push(0);
+        for (var t = 0; t < classCount; t++) {
+            rawTable[state * classCount + t] === null && (emCount[state]++);
+        }
+    }
+    return {
+        rows: stateCount,
+        columns: classCount,
+        isEmpty: function (state, c) {
+            return rawTable[state * classCount + c] === null;
+        },
+        emptyCount: function (c) {
+            return emCount[c];
+        }
+    };
+}
+var DFATable = (function () {
+    function DFATable(dfa, maxAsicii) {
+        if (maxAsicii === void 0) { maxAsicii = 255; }
+        this.maxAsicii = maxAsicii;
+        function emitClassInterval(a, b, cl) {
+            for (; a <= b; a++) {
+                classTable[a] = cl;
+            }
+        }
+        var cf = createClassFinder();
+        dfa.forEachArc(function (arc, from, to) {
+            cf.addClass(arc.chars, arc);
+        });
+        var r = cf.done();
+        this.classCount = r.classCount;
+        this.states = dfa.states;
+        var classTable = this.classTable = initArray(maxAsicii + 1, function (i) { return -1; });
+        var unicodeClassTable = this.unicodeClassTable = [];
+        var rawTable = initArray(r.classCount * dfa.states.length, function (i) { return null; });
+        r.classSet.forEach(function (a, b, it) {
+            if (a > maxAsicii) {
+                unicodeClassTable.push(it.data.id, a, b);
+            }
+            else if (b <= maxAsicii) {
+                emitClassInterval(a, b, it.data.id);
+            }
+            else {
+                emitClassInterval(a, maxAsicii, it.data.id);
+                maxAsicii < b && unicodeClassTable.push(it.data.id, maxAsicii + 1, b);
+            }
+            for (var _i = 0, _b = it.data.data; _i < _b.length; _i++) {
+                var arc = _b[_i];
+                rawTable[arc.from.index * r.classCount + it.data.id] = arc;
+            }
+        });
+        var compressed = compress(arrayWrapper(this.states.length, r.classCount, rawTable));
+        this.disnext = compressed.dps;
+        this.pnext = initArray(compressed.len, function (i) { return null; });
+        this.checknext = initArray(compressed.len, function (i) { return -1; });
+        for (var s = 0; s < this.states.length; s++) {
+            for (var c = 0; c < this.classCount; c++) {
+                var arc = rawTable[s * this.classCount + c];
+                if (arc !== null) {
+                    this.pnext[this.disnext[s] + c] = arc;
+                    this.checknext[this.disnext[s] + c] = s;
+                }
+            }
+        }
+    }
+    DFATable.prototype.lookup = function (s, c) {
+        var ind = this.disnext[s] + c;
+        if (ind >= 0 && ind < this.pnext.length && this.checknext[ind] === s) {
+            return this.pnext[ind];
+        }
+        else {
+            return null;
+        }
+    };
+    DFATable.prototype.print = function (os) {
+        function char(c) {
+            if (c >= 0x20 && c <= 0x7e) {
+                return "'" + String.fromCharCode(c) + "'";
+            }
+            else {
+                return "\\x" + c.toString(16);
+            }
+        }
+        var tl = 0;
+        for (var c = 0; c < this.classTable.length; c++) {
+            this.classTable[c] !== -1 && os.write(char(c) + " -> c" + this.classTable[c] + ", ");
+            tl++ > 9 && (os.writeln(), tl = 0);
+        }
+        os.writeln();
+        tl = 0;
+        for (var c = 0, _a = this.unicodeClassTable; c < _a.length; c += 3) {
+            os.write("\\x" + _a[c + 1] + "-\\x" + _a[c + 2] + " -> c" + _a[c] + ", ");
+            tl++ > 4 && (os.writeln(), tl = 0);
+        }
+        os.writeln();
+        for (var s = 0; s < this.states.length; s++) {
+            os.writeln("state " + s + ":");
+            var state = this.states[s];
+            state.endAction !== null && os.writeln("    end = " + state.endAction.id);
+            for (var c = 0; c < this.classCount; c++) {
+                var arc = this.lookup(s, c);
+                arc !== null && os.writeln("    c" + c + ": state " + arc.to.index);
+            }
+        }
+    };
+    return DFATable;
+}());
+
 function genResult(source, fname) {
     var file;
     var itemSets;
@@ -7280,6 +7434,10 @@ function genResult(source, fname) {
         var cf = _h[_g];
         warn(new JsccWarning(cf.toString()));
     }
+    for (var _j = 0, _k = file.lexDFA; _j < _k.length; _j++) {
+        var dfa = _k[_j];
+        file.dfaTables.push(new DFATable(dfa));
+    }
     return ret;
     function warn(w) {
         warnings.push(w);
@@ -7297,7 +7455,7 @@ function genResult(source, fname) {
         printParseTable(os, parseTable, itemSets);
     }
     function printDFA(os) {
-        for (var _i = 0, _a = file.lexDFA; _i < _a.length; _i++) {
+        for (var _i = 0, _a = file.dfaTables; _i < _a.length; _i++) {
             var s_1 = _a[_i];
             s_1.print(os);
             os.writeln();
@@ -7344,7 +7502,8 @@ function genResult(source, fname) {
 
 var debug = Object.freeze({
 	compress: compress,
-	IntervalSet: IntervalSet
+	IntervalSet: IntervalSet,
+	createClassFinder: createClassFinder
 });
 
 exports.Pattern = pattern;

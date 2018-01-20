@@ -2,30 +2,6 @@
 
 import { DEBUG } from './common';
 
-function copyArray(a: any[]): any[]{
-    var ret = [];
-    for(var i = 0;i < a.length;i++){
-        ret.push(a[i]);
-    }
-    return ret;
-}
-
-// function cm(a: Num, b: Num): number{
-//     if((a === Inf.oo && b !== Inf.oo) || (a !== Inf._oo && b === Inf._oo) || a > b){
-//         return 1;
-//     }
-//     else if((a === Inf._oo && b !== Inf._oo) || (a !== Inf.oo && b === Inf.oo) || a < b ){
-//         return -1;
-//     }
-//     else {
-//         return 0;
-//     }
-// }
-// export enum Inf{
-//     oo = "oo",
-//     _oo = "-oo"
-// };
-// export type Num = Inf | number;
 export var oo = Number.POSITIVE_INFINITY;
 export var _oo = Number.NEGATIVE_INFINITY;
 class Interval<T>{
@@ -46,7 +22,7 @@ class Interval<T>{
             return this;
         }
         else {
-            var it = this.parent.createInterval(a,b,data);
+            var it = this.parent.createInterval(a, b, data);
             it.prev = this.prev;
             it.next = this;
             this.prev.next = it;
@@ -67,7 +43,7 @@ class Interval<T>{
             return this;
         }
         else {
-            var it = this.parent.createInterval(a,b,data);
+            var it = this.parent.createInterval(a, b, data);
             it.prev = this;
             it.next = this.next;
             this.next.prev = it;
@@ -78,9 +54,8 @@ class Interval<T>{
     public splitLeft(a: number): Interval<T>{
         //DEBUG && console.assert(this.parent.noMerge);
         if(a > this.a){
-            var ret = this.insertBefore(this.a, a - 1);
-            // this.parent.noMerge && ret.dataSet.union(this.dataSet);
-            this.parent.noMerge && this.parent.dataOp.union(ret.data, this.data);
+            // don't pass the data, use union instead
+            var ret = this.insertBefore(this.a, a - 1, this.data);
             this.a = a;
             return ret;
         }
@@ -89,9 +64,7 @@ class Interval<T>{
     public splitRight(b: number): Interval<T>{
         //DEBUG && console.assert(this.parent.noMerge);
         if(b < this.b){
-            var ret = this.insertAfter(b + 1, this.b);
-            // this.parent.noMerge && ret.dataSet.union(this.dataSet);
-            this.parent.noMerge && this.parent.dataOp.union(ret.data, this.data);
+            var ret = this.insertAfter(b + 1, this.b, this.data);
             this.b = b;
             return ret;
         }
@@ -165,7 +138,7 @@ export class IntervalSet<T>{
     createInterval(a: number, b: number, data: T = null): Interval<T>{
         var ret = new Interval<T>(a,b);
         ret.parent = this;
-        this.dataOp && (ret.data = data || this.dataOp.createData());
+        this.dataOp && (ret.data = this.dataOp.createData(), data !== null && this.dataOp.union(ret.data, data));
         return ret;
     }
     fitPoint(a: number, b: number): Interval<T>{
@@ -217,19 +190,20 @@ export class IntervalSet<T>{
                     overlap[0].splitLeft(a);
                 }
                 else {
-                    overlap[0].insertBefore(a,(overlap[0].a as number) - 1,data);
+                    overlap[0].insertBefore(a, overlap[0].a - 1, data);
                 }
                 if(overlap[1].contains(b)) {
                     overlap[1].splitRight(b);
                 }
                 else {
-                    overlap[1].insertAfter((overlap[1].b as number) + 1,b,data);
+                    overlap[1].insertAfter(overlap[1].b + 1, b, data);
                 }
                 for(var it = overlap[0];it !== overlap[1];it = it.next){
                     // it.dataSet.add(data);
                     this.dataOp.union(it.data, data);
-                    if((it.b as number) + 1 < it.next.a){
-                        it.insertAfter((it.b as number) + 1,(it.next.a as number) - 1,data);
+                    if(it.b + 1 < it.next.a){
+                        it.insertAfter(it.b + 1, it.next.a - 1, data);
+                        it = it.next;
                     }
                 }
                 // overlap[1].dataSet.add(data);

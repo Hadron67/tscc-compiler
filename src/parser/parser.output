@@ -1,482 +1,1725 @@
-state 0(start)
-    [\x9,\xa],\xd,' ' -> state 1
-    '"' -> state 2
-    '$',['A','Z'],'_',['a','z'] -> state 3
-    '%' -> state 4
-    ''' -> state 5
-    '(' -> state 6
-    ')' -> state 7
-    '*' -> state 8
-    '+' -> state 9
-    ',' -> state 10
-    '-' -> state 11
-    '/' -> state 12
-    ':' -> state 13
-    ';' -> state 14
-    '<' -> state 15
-    '=' -> state 16
-    '>' -> state 17
-    '?' -> state 18
-    '[' -> state 19
-    ']' -> state 20
-    '^' -> state 21
-    '{' -> state 22
-    '|' -> state 23
-    '}' -> state 24
-    \xaa,\xb5,\xba,[\xc0,\xd6],[\xd8,\xf6],[\xf8,\x2c1],[\x2c6,\x2d1],[\x2e0,\x2e4],\x2ec,\x2ee,[\x370,\x374],[\x376,\x377],[\x37a,\x37d],\x386,[\x388,\x38a],\x38c,[\x38e,\x3a1],[\x3a3,\x3f5],[\x3f7,\x481],[\x48a,\x527],[\x531,\x556],\x559,[\x561,\x587],[\x5d0,\x5ea],[\x5f0,\x5f2],[\x620,\x64a],[\x66e,\x66f],[\x671,\x6d3],\x6d5,[\x6e5,\x6e6],[\x6ee,\x6ef],[\x6fa,\x6fc],\x6ff,\x710,[\x712,\x72f],[\x74d,\x7a5],\x7b1,[\x7ca,\x7ea],[\x7f4,\x7f5],\x7fa,[\x800,\x815],\x81a,\x824,\x828,[\x840,\x858],\x8a0,[\x8a2,\x8ac],[\x904,\x939],\x93d,\x950,[\x958,\x961],[\x971,\x977],[\x979,\x97f],[\x985,\x98c],[\x98f,\x990],[\x993,\x9a8],[\x9aa,\x9b0],\x9b2,[\x9b6,\x9b9],\x9bd,\x9ce,[\x9dc,\x9dd],[\x9df,\x9e1],[\x9f0,\x9f1],[\xa05,\xa0a],[\xa0f,\xa10],[\xa13,\xa28],[\xa2a,\xa30],[\xa32,\xa33],[\xa35,\xa36],[\xa38,\xa39],[\xa59,\xa5c],\xa5e,[\xa72,\xa74],[\xa85,\xa8d],[\xa8f,\xa91],[\xa93,\xaa8],[\xaaa,\xab0],[\xab2,\xab3],[\xab5,\xab9],\xabd,\xad0,[\xae0,\xae1],[\xb05,\xb0c],[\xb0f,\xb10],[\xb13,\xb28],[\xb2a,\xb30],[\xb32,\xb33],[\xb35,\xb39],\xb3d,[\xb5c,\xb5d],[\xb5f,\xb61],\xb71,\xb83,[\xb85,\xb8a],[\xb8e,\xb90],[\xb92,\xb95],[\xb99,\xb9a],\xb9c,[\xb9e,\xb9f],[\xba3,\xba4],[\xba8,\xbaa],[\xbae,\xbb9],\xbd0,[\xc05,\xc0c],[\xc0e,\xc10],[\xc12,\xc28],[\xc2a,\xc33],[\xc35,\xc39],\xc3d,[\xc58,\xc59],[\xc60,\xc61],[\xc85,\xc8c],[\xc8e,\xc90],[\xc92,\xca8],[\xcaa,\xcb3],[\xcb5,\xcb9],\xcbd,\xcde,[\xce0,\xce1],[\xcf1,\xcf2],[\xd05,\xd0c],[\xd0e,\xd10],[\xd12,\xd3a],\xd3d,\xd4e,[\xd60,\xd61],[\xd7a,\xd7f],[\xd85,\xd96],[\xd9a,\xdb1],[\xdb3,\xdbb],\xdbd,[\xdc0,\xdc6],[\xe01,\xe30],[\xe32,\xe33],[\xe40,\xe46],[\xe81,\xe82],\xe84,[\xe87,\xe88],\xe8a,\xe8d,[\xe94,\xe97],[\xe99,\xe9f],[\xea1,\xea3],\xea5,\xea7,[\xeaa,\xeab],[\xead,\xeb0],[\xeb2,\xeb3],\xebd,[\xec0,\xec4],\xec6,[\xedc,\xedf],\xf00,[\xf40,\xf47],[\xf49,\xf6c],[\xf88,\xf8c],[\x1000,\x102a],\x103f,[\x1050,\x1055],[\x105a,\x105d],\x1061,[\x1065,\x1066],[\x106e,\x1070],[\x1075,\x1081],\x108e,[\x10a0,\x10c5],\x10c7,\x10cd,[\x10d0,\x10fa],[\x10fc,\x1248],[\x124a,\x124d],[\x1250,\x1256],\x1258,[\x125a,\x125d],[\x1260,\x1288],[\x128a,\x128d],[\x1290,\x12b0],[\x12b2,\x12b5],[\x12b8,\x12be],\x12c0,[\x12c2,\x12c5],[\x12c8,\x12d6],[\x12d8,\x1310],[\x1312,\x1315],[\x1318,\x135a],[\x1380,\x138f],[\x13a0,\x13f4],[\x1401,\x166c],[\x166f,\x167f],[\x1681,\x169a],[\x16a0,\x16ea],[\x16ee,\x16f0],[\x1700,\x170c],[\x170e,\x1711],[\x1720,\x1731],[\x1740,\x1751],[\x1760,\x176c],[\x176e,\x1770],[\x1780,\x17b3],\x17d7,\x17dc,[\x1820,\x1877],[\x1880,\x18a8],\x18aa,[\x18b0,\x18f5],[\x1900,\x191c],[\x1950,\x196d],[\x1970,\x1974],[\x1980,\x19ab],[\x19c1,\x19c7],[\x1a00,\x1a16],[\x1a20,\x1a54],\x1aa7,[\x1b05,\x1b33],[\x1b45,\x1b4b],[\x1b83,\x1ba0],[\x1bae,\x1baf],[\x1bba,\x1be5],[\x1c00,\x1c23],[\x1c4d,\x1c4f],[\x1c5a,\x1c7d],[\x1ce9,\x1cec],[\x1cee,\x1cf1],[\x1cf5,\x1cf6],[\x1d00,\x1dbf],[\x1e00,\x1f15],[\x1f18,\x1f1d],[\x1f20,\x1f45],[\x1f48,\x1f4d],[\x1f50,\x1f57],\x1f59,\x1f5b,\x1f5d,[\x1f5f,\x1f7d],[\x1f80,\x1fb4],[\x1fb6,\x1fbc],\x1fbe,[\x1fc2,\x1fc4],[\x1fc6,\x1fcc],[\x1fd0,\x1fd3],[\x1fd6,\x1fdb],[\x1fe0,\x1fec],[\x1ff2,\x1ff4],[\x1ff6,\x1ffc],\x2071,\x207f,[\x2090,\x209c],\x2102,\x2107,[\x210a,\x2113],\x2115,[\x2119,\x211d],\x2124,\x2126,\x2128,[\x212a,\x212d],[\x212f,\x2139],[\x213c,\x213f],[\x2145,\x2149],\x214e,[\x2160,\x2188],[\x2c00,\x2c2e],[\x2c30,\x2c5e],[\x2c60,\x2ce4],[\x2ceb,\x2cee],[\x2cf2,\x2cf3],[\x2d00,\x2d25],\x2d27,\x2d2d,[\x2d30,\x2d67],\x2d6f,[\x2d80,\x2d96],[\x2da0,\x2da6],[\x2da8,\x2dae],[\x2db0,\x2db6],[\x2db8,\x2dbe],[\x2dc0,\x2dc6],[\x2dc8,\x2dce],[\x2dd0,\x2dd6],[\x2dd8,\x2dde],\x2e2f,[\x3005,\x3007],[\x3021,\x3029],[\x3031,\x3035],[\x3038,\x303c],[\x3041,\x3096],[\x309d,\x309f],[\x30a1,\x30fa],[\x30fc,\x30ff],[\x3105,\x312d],[\x3131,\x318e],[\x31a0,\x31ba],[\x31f0,\x31ff],[\x3400,\x4db5],[\x4e00,\x9fcc],[\xa000,\xa48c],[\xa4d0,\xa4fd],[\xa500,\xa60c],[\xa610,\xa61f],[\xa62a,\xa62b],[\xa640,\xa66e],[\xa67f,\xa697],[\xa6a0,\xa6ef],[\xa717,\xa71f],[\xa722,\xa788],[\xa78b,\xa78e],[\xa790,\xa793],[\xa7a0,\xa7aa],[\xa7f8,\xa801],[\xa803,\xa805],[\xa807,\xa80a],[\xa80c,\xa822],[\xa840,\xa873],[\xa882,\xa8b3],[\xa8f2,\xa8f7],\xa8fb,[\xa90a,\xa925],[\xa930,\xa946],[\xa960,\xa97c],[\xa984,\xa9b2],\xa9cf,[\xaa00,\xaa28],[\xaa40,\xaa42],[\xaa44,\xaa4b],[\xaa60,\xaa76],\xaa7a,[\xaa80,\xaaaf],\xaab1,[\xaab5,\xaab6],[\xaab9,\xaabd],\xaac0,\xaac2,[\xaadb,\xaadd],[\xaae0,\xaaea],[\xaaf2,\xaaf4],[\xab01,\xab06],[\xab09,\xab0e],[\xab11,\xab16],[\xab20,\xab26],[\xab28,\xab2e],[\xabc0,\xabe2],[\xac00,\xd7a3],[\xd7b0,\xd7c6],[\xd7cb,\xd7fb],[\xf900,\xfa6d],[\xfa70,\xfad9],[\xfb00,\xfb06],[\xfb13,\xfb17],\xfb1d,[\xfb1f,\xfb28],[\xfb2a,\xfb36],[\xfb38,\xfb3c],\xfb3e,[\xfb40,\xfb41],[\xfb43,\xfb44],[\xfb46,\xfbb1],[\xfbd3,\xfd3d],[\xfd50,\xfd8f],[\xfd92,\xfdc7],[\xfdf0,\xfdfb],[\xfe70,\xfe74],[\xfe76,\xfefc],[\xff21,\xff3a],[\xff41,\xff5a],[\xff66,\xffbe],[\xffc2,\xffc7],[\xffca,\xffcf],[\xffd2,\xffd7],[\xffda,\xffdc] -> state 25
-
-state 1(end 0)
-    [\x9,\xa],\xd,' ' -> state 1
-
-state 2
-    [\x0,\x9],[\xb,'!'],['#','['],[']',oo) -> state 26
-    '"' -> state 27
-    '\' -> state 28
-
-state 3(end 3)
-    '$',['A','Z'],'_',['a','z'] -> state 29
-    ['0','9'] -> state 30
-    \xaa,\xb5,\xba,[\xc0,\xd6],[\xd8,\xf6],[\xf8,\x2c1],[\x2c6,\x2d1],[\x2e0,\x2e4],\x2ec,\x2ee,[\x370,\x374],[\x376,\x377],[\x37a,\x37d],\x386,[\x388,\x38a],\x38c,[\x38e,\x3a1],[\x3a3,\x3f5],[\x3f7,\x481],[\x48a,\x527],[\x531,\x556],\x559,[\x561,\x587],[\x5d0,\x5ea],[\x5f0,\x5f2],[\x620,\x64a],[\x66e,\x66f],[\x671,\x6d3],\x6d5,[\x6e5,\x6e6],[\x6ee,\x6ef],[\x6fa,\x6fc],\x6ff,\x710,[\x712,\x72f],[\x74d,\x7a5],\x7b1,[\x7ca,\x7ea],[\x7f4,\x7f5],\x7fa,[\x800,\x815],\x81a,\x824,\x828,[\x840,\x858],\x8a0,[\x8a2,\x8ac],[\x904,\x939],\x93d,\x950,[\x958,\x961],[\x971,\x977],[\x979,\x97f],[\x985,\x98c],[\x98f,\x990],[\x993,\x9a8],[\x9aa,\x9b0],\x9b2,[\x9b6,\x9b9],\x9bd,\x9ce,[\x9dc,\x9dd],[\x9df,\x9e1],[\x9f0,\x9f1],[\xa05,\xa0a],[\xa0f,\xa10],[\xa13,\xa28],[\xa2a,\xa30],[\xa32,\xa33],[\xa35,\xa36],[\xa38,\xa39],[\xa59,\xa5c],\xa5e,[\xa72,\xa74],[\xa85,\xa8d],[\xa8f,\xa91],[\xa93,\xaa8],[\xaaa,\xab0],[\xab2,\xab3],[\xab5,\xab9],\xabd,\xad0,[\xae0,\xae1],[\xb05,\xb0c],[\xb0f,\xb10],[\xb13,\xb28],[\xb2a,\xb30],[\xb32,\xb33],[\xb35,\xb39],\xb3d,[\xb5c,\xb5d],[\xb5f,\xb61],\xb71,\xb83,[\xb85,\xb8a],[\xb8e,\xb90],[\xb92,\xb95],[\xb99,\xb9a],\xb9c,[\xb9e,\xb9f],[\xba3,\xba4],[\xba8,\xbaa],[\xbae,\xbb9],\xbd0,[\xc05,\xc0c],[\xc0e,\xc10],[\xc12,\xc28],[\xc2a,\xc33],[\xc35,\xc39],\xc3d,[\xc58,\xc59],[\xc60,\xc61],[\xc85,\xc8c],[\xc8e,\xc90],[\xc92,\xca8],[\xcaa,\xcb3],[\xcb5,\xcb9],\xcbd,\xcde,[\xce0,\xce1],[\xcf1,\xcf2],[\xd05,\xd0c],[\xd0e,\xd10],[\xd12,\xd3a],\xd3d,\xd4e,[\xd60,\xd61],[\xd7a,\xd7f],[\xd85,\xd96],[\xd9a,\xdb1],[\xdb3,\xdbb],\xdbd,[\xdc0,\xdc6],[\xe01,\xe30],[\xe32,\xe33],[\xe40,\xe46],[\xe81,\xe82],\xe84,[\xe87,\xe88],\xe8a,\xe8d,[\xe94,\xe97],[\xe99,\xe9f],[\xea1,\xea3],\xea5,\xea7,[\xeaa,\xeab],[\xead,\xeb0],[\xeb2,\xeb3],\xebd,[\xec0,\xec4],\xec6,[\xedc,\xedf],\xf00,[\xf40,\xf47],[\xf49,\xf6c],[\xf88,\xf8c],[\x1000,\x102a],\x103f,[\x1050,\x1055],[\x105a,\x105d],\x1061,[\x1065,\x1066],[\x106e,\x1070],[\x1075,\x1081],\x108e,[\x10a0,\x10c5],\x10c7,\x10cd,[\x10d0,\x10fa],[\x10fc,\x1248],[\x124a,\x124d],[\x1250,\x1256],\x1258,[\x125a,\x125d],[\x1260,\x1288],[\x128a,\x128d],[\x1290,\x12b0],[\x12b2,\x12b5],[\x12b8,\x12be],\x12c0,[\x12c2,\x12c5],[\x12c8,\x12d6],[\x12d8,\x1310],[\x1312,\x1315],[\x1318,\x135a],[\x1380,\x138f],[\x13a0,\x13f4],[\x1401,\x166c],[\x166f,\x167f],[\x1681,\x169a],[\x16a0,\x16ea],[\x16ee,\x16f0],[\x1700,\x170c],[\x170e,\x1711],[\x1720,\x1731],[\x1740,\x1751],[\x1760,\x176c],[\x176e,\x1770],[\x1780,\x17b3],\x17d7,\x17dc,[\x1820,\x1877],[\x1880,\x18a8],\x18aa,[\x18b0,\x18f5],[\x1900,\x191c],[\x1950,\x196d],[\x1970,\x1974],[\x1980,\x19ab],[\x19c1,\x19c7],[\x1a00,\x1a16],[\x1a20,\x1a54],\x1aa7,[\x1b05,\x1b33],[\x1b45,\x1b4b],[\x1b83,\x1ba0],[\x1bae,\x1baf],[\x1bba,\x1be5],[\x1c00,\x1c23],[\x1c4d,\x1c4f],[\x1c5a,\x1c7d],[\x1ce9,\x1cec],[\x1cee,\x1cf1],[\x1cf5,\x1cf6],[\x1d00,\x1dbf],[\x1e00,\x1f15],[\x1f18,\x1f1d],[\x1f20,\x1f45],[\x1f48,\x1f4d],[\x1f50,\x1f57],\x1f59,\x1f5b,\x1f5d,[\x1f5f,\x1f7d],[\x1f80,\x1fb4],[\x1fb6,\x1fbc],\x1fbe,[\x1fc2,\x1fc4],[\x1fc6,\x1fcc],[\x1fd0,\x1fd3],[\x1fd6,\x1fdb],[\x1fe0,\x1fec],[\x1ff2,\x1ff4],[\x1ff6,\x1ffc],\x2071,\x207f,[\x2090,\x209c],\x2102,\x2107,[\x210a,\x2113],\x2115,[\x2119,\x211d],\x2124,\x2126,\x2128,[\x212a,\x212d],[\x212f,\x2139],[\x213c,\x213f],[\x2145,\x2149],\x214e,[\x2160,\x2188],[\x2c00,\x2c2e],[\x2c30,\x2c5e],[\x2c60,\x2ce4],[\x2ceb,\x2cee],[\x2cf2,\x2cf3],[\x2d00,\x2d25],\x2d27,\x2d2d,[\x2d30,\x2d67],\x2d6f,[\x2d80,\x2d96],[\x2da0,\x2da6],[\x2da8,\x2dae],[\x2db0,\x2db6],[\x2db8,\x2dbe],[\x2dc0,\x2dc6],[\x2dc8,\x2dce],[\x2dd0,\x2dd6],[\x2dd8,\x2dde],\x2e2f,[\x3005,\x3007],[\x3021,\x3029],[\x3031,\x3035],[\x3038,\x303c],[\x3041,\x3096],[\x309d,\x309f],[\x30a1,\x30fa],[\x30fc,\x30ff],[\x3105,\x312d],[\x3131,\x318e],[\x31a0,\x31ba],[\x31f0,\x31ff],[\x3400,\x4db5],[\x4e00,\x9fcc],[\xa000,\xa48c],[\xa4d0,\xa4fd],[\xa500,\xa60c],[\xa610,\xa61f],[\xa62a,\xa62b],[\xa640,\xa66e],[\xa67f,\xa697],[\xa6a0,\xa6ef],[\xa717,\xa71f],[\xa722,\xa788],[\xa78b,\xa78e],[\xa790,\xa793],[\xa7a0,\xa7aa],[\xa7f8,\xa801],[\xa803,\xa805],[\xa807,\xa80a],[\xa80c,\xa822],[\xa840,\xa873],[\xa882,\xa8b3],[\xa8f2,\xa8f7],\xa8fb,[\xa90a,\xa925],[\xa930,\xa946],[\xa960,\xa97c],[\xa984,\xa9b2],\xa9cf,[\xaa00,\xaa28],[\xaa40,\xaa42],[\xaa44,\xaa4b],[\xaa60,\xaa76],\xaa7a,[\xaa80,\xaaaf],\xaab1,[\xaab5,\xaab6],[\xaab9,\xaabd],\xaac0,\xaac2,[\xaadb,\xaadd],[\xaae0,\xaaea],[\xaaf2,\xaaf4],[\xab01,\xab06],[\xab09,\xab0e],[\xab11,\xab16],[\xab20,\xab26],[\xab28,\xab2e],[\xabc0,\xabe2],[\xac00,\xd7a3],[\xd7b0,\xd7c6],[\xd7cb,\xd7fb],[\xf900,\xfa6d],[\xfa70,\xfad9],[\xfb00,\xfb06],[\xfb13,\xfb17],\xfb1d,[\xfb1f,\xfb28],[\xfb2a,\xfb36],[\xfb38,\xfb3c],\xfb3e,[\xfb40,\xfb41],[\xfb43,\xfb44],[\xfb46,\xfbb1],[\xfbd3,\xfd3d],[\xfd50,\xfd8f],[\xfd92,\xfdc7],[\xfdf0,\xfdfb],[\xfe70,\xfe74],[\xfe76,\xfefc],[\xff21,\xff3a],[\xff41,\xff5a],[\xff66,\xffbe],[\xffc2,\xffc7],[\xffca,\xffcf],[\xffd2,\xffd7],[\xffda,\xffdc] -> state 31
-    [\x300,\x36f],[\x483,\x487],[\x591,\x5bd],\x5bf,[\x5c1,\x5c2],[\x5c4,\x5c5],\x5c7,[\x610,\x61a],[\x64b,\x669],\x670,[\x6d6,\x6dc],[\x6df,\x6e4],[\x6e7,\x6e8],[\x6ea,\x6ed],[\x6f0,\x6f9],\x711,[\x730,\x74a],[\x7a6,\x7b0],[\x7c0,\x7c9],[\x7eb,\x7f3],[\x816,\x819],[\x81b,\x823],[\x825,\x827],[\x829,\x82d],[\x859,\x85b],[\x8e4,\x8fe],[\x900,\x903],[\x93a,\x93c],[\x93e,\x94f],[\x951,\x957],[\x962,\x963],[\x966,\x96f],[\x981,\x983],\x9bc,[\x9be,\x9c4],[\x9c7,\x9c8],[\x9cb,\x9cd],\x9d7,[\x9e2,\x9e3],[\x9e6,\x9ef],[\xa01,\xa03],\xa3c,[\xa3e,\xa42],[\xa47,\xa48],[\xa4b,\xa4d],\xa51,[\xa66,\xa71],\xa75,[\xa81,\xa83],\xabc,[\xabe,\xac5],[\xac7,\xac9],[\xacb,\xacd],[\xae2,\xae3],[\xae6,\xaef],[\xb01,\xb03],\xb3c,[\xb3e,\xb44],[\xb47,\xb48],[\xb4b,\xb4d],[\xb56,\xb57],[\xb62,\xb63],[\xb66,\xb6f],\xb82,[\xbbe,\xbc2],[\xbc6,\xbc8],[\xbca,\xbcd],\xbd7,[\xbe6,\xbef],[\xc01,\xc03],[\xc3e,\xc44],[\xc46,\xc48],[\xc4a,\xc4d],[\xc55,\xc56],[\xc62,\xc63],[\xc66,\xc6f],[\xc82,\xc83],\xcbc,[\xcbe,\xcc4],[\xcc6,\xcc8],[\xcca,\xccd],[\xcd5,\xcd6],[\xce2,\xce3],[\xce6,\xcef],[\xd02,\xd03],[\xd3e,\xd44],[\xd46,\xd48],[\xd4a,\xd4d],\xd57,[\xd62,\xd63],[\xd66,\xd6f],[\xd82,\xd83],\xdca,[\xdcf,\xdd4],\xdd6,[\xdd8,\xddf],[\xdf2,\xdf3],\xe31,[\xe34,\xe3a],[\xe47,\xe4e],[\xe50,\xe59],\xeb1,[\xeb4,\xeb9],[\xebb,\xebc],[\xec8,\xecd],[\xed0,\xed9],[\xf18,\xf19],[\xf20,\xf29],\xf35,\xf37,\xf39,[\xf3e,\xf3f],[\xf71,\xf84],[\xf86,\xf87],[\xf8d,\xf97],[\xf99,\xfbc],\xfc6,[\x102b,\x103e],[\x1040,\x1049],[\x1056,\x1059],[\x105e,\x1060],[\x1062,\x1064],[\x1067,\x106d],[\x1071,\x1074],[\x1082,\x108d],[\x108f,\x109d],[\x135d,\x135f],[\x1712,\x1714],[\x1732,\x1734],[\x1752,\x1753],[\x1772,\x1773],[\x17b4,\x17d3],\x17dd,[\x17e0,\x17e9],[\x180b,\x180d],[\x1810,\x1819],\x18a9,[\x1920,\x192b],[\x1930,\x193b],[\x1946,\x194f],[\x19b0,\x19c0],[\x19c8,\x19c9],[\x19d0,\x19d9],[\x1a17,\x1a1b],[\x1a55,\x1a5e],[\x1a60,\x1a7c],[\x1a7f,\x1a89],[\x1a90,\x1a99],[\x1b00,\x1b04],[\x1b34,\x1b44],[\x1b50,\x1b59],[\x1b6b,\x1b73],[\x1b80,\x1b82],[\x1ba1,\x1bad],[\x1bb0,\x1bb9],[\x1be6,\x1bf3],[\x1c24,\x1c37],[\x1c40,\x1c49],[\x1c50,\x1c59],[\x1cd0,\x1cd2],[\x1cd4,\x1ce8],\x1ced,[\x1cf2,\x1cf4],[\x1dc0,\x1de6],[\x1dfc,\x1dff],[\x200c,\x200d],[\x203f,\x2040],\x2054,[\x20d0,\x20dc],\x20e1,[\x20e5,\x20f0],[\x2cef,\x2cf1],\x2d7f,[\x2de0,\x2dff],[\x302a,\x302f],[\x3099,\x309a],[\xa620,\xa629],\xa66f,[\xa674,\xa67d],\xa69f,[\xa6f0,\xa6f1],\xa802,\xa806,\xa80b,[\xa823,\xa827],[\xa880,\xa881],[\xa8b4,\xa8c4],[\xa8d0,\xa8d9],[\xa8e0,\xa8f1],[\xa900,\xa909],[\xa926,\xa92d],[\xa947,\xa953],[\xa980,\xa983],[\xa9b3,\xa9c0],[\xa9d0,\xa9d9],[\xaa29,\xaa36],\xaa43,[\xaa4c,\xaa4d],[\xaa50,\xaa59],\xaa7b,\xaab0,[\xaab2,\xaab4],[\xaab7,\xaab8],[\xaabe,\xaabf],\xaac1,[\xaaeb,\xaaef],[\xaaf5,\xaaf6],[\xabe3,\xabea],[\xabec,\xabed],[\xabf0,\xabf9],\xfb1e,[\xfe00,\xfe0f],[\xfe20,\xfe26],[\xfe33,\xfe34],[\xfe4d,\xfe4f],[\xff10,\xff19],\xff3f -> state 32
-
-state 4
-    '%' -> state 33
-    'e' -> state 34
-    'h' -> state 35
-    'i' -> state 36
-    'l' -> state 37
-    'n' -> state 38
-    'o' -> state 39
-    'p' -> state 40
-    'r' -> state 41
-    't' -> state 42
-    'u' -> state 43
-
-state 5
-    [\x0,\x9],[\xb,'&'],['(','['],[']',oo) -> state 44
-    ''' -> state 45
-    '\' -> state 46
-
-state 6(end 24)
-
-state 7(end 25)
-
-state 8(end 30)
-
-state 9(end 31)
-
-state 10(end 39)
-
-state 11(end 32)
-
-state 12
-    '*' -> state 47
-    '/' -> state 48
-
-state 13(end 33)
-
-state 14(end 35)
-
-state 15(end 23)
-
-state 16(end 26)
-    '>' -> state 49
-
-state 17(end 22)
-
-state 18(end 29)
-
-state 19(end 27)
-
-state 20(end 28)
-
-state 21(end 38)
-
-state 22(end 5)
-
-state 23(end 37)
-
-state 24(end 6)
-
-state 25(end 3)
-    '$',['A','Z'],'_',['a','z'] -> state 29
-    ['0','9'] -> state 30
-    \xaa,\xb5,\xba,[\xc0,\xd6],[\xd8,\xf6],[\xf8,\x2c1],[\x2c6,\x2d1],[\x2e0,\x2e4],\x2ec,\x2ee,[\x370,\x374],[\x376,\x377],[\x37a,\x37d],\x386,[\x388,\x38a],\x38c,[\x38e,\x3a1],[\x3a3,\x3f5],[\x3f7,\x481],[\x48a,\x527],[\x531,\x556],\x559,[\x561,\x587],[\x5d0,\x5ea],[\x5f0,\x5f2],[\x620,\x64a],[\x66e,\x66f],[\x671,\x6d3],\x6d5,[\x6e5,\x6e6],[\x6ee,\x6ef],[\x6fa,\x6fc],\x6ff,\x710,[\x712,\x72f],[\x74d,\x7a5],\x7b1,[\x7ca,\x7ea],[\x7f4,\x7f5],\x7fa,[\x800,\x815],\x81a,\x824,\x828,[\x840,\x858],\x8a0,[\x8a2,\x8ac],[\x904,\x939],\x93d,\x950,[\x958,\x961],[\x971,\x977],[\x979,\x97f],[\x985,\x98c],[\x98f,\x990],[\x993,\x9a8],[\x9aa,\x9b0],\x9b2,[\x9b6,\x9b9],\x9bd,\x9ce,[\x9dc,\x9dd],[\x9df,\x9e1],[\x9f0,\x9f1],[\xa05,\xa0a],[\xa0f,\xa10],[\xa13,\xa28],[\xa2a,\xa30],[\xa32,\xa33],[\xa35,\xa36],[\xa38,\xa39],[\xa59,\xa5c],\xa5e,[\xa72,\xa74],[\xa85,\xa8d],[\xa8f,\xa91],[\xa93,\xaa8],[\xaaa,\xab0],[\xab2,\xab3],[\xab5,\xab9],\xabd,\xad0,[\xae0,\xae1],[\xb05,\xb0c],[\xb0f,\xb10],[\xb13,\xb28],[\xb2a,\xb30],[\xb32,\xb33],[\xb35,\xb39],\xb3d,[\xb5c,\xb5d],[\xb5f,\xb61],\xb71,\xb83,[\xb85,\xb8a],[\xb8e,\xb90],[\xb92,\xb95],[\xb99,\xb9a],\xb9c,[\xb9e,\xb9f],[\xba3,\xba4],[\xba8,\xbaa],[\xbae,\xbb9],\xbd0,[\xc05,\xc0c],[\xc0e,\xc10],[\xc12,\xc28],[\xc2a,\xc33],[\xc35,\xc39],\xc3d,[\xc58,\xc59],[\xc60,\xc61],[\xc85,\xc8c],[\xc8e,\xc90],[\xc92,\xca8],[\xcaa,\xcb3],[\xcb5,\xcb9],\xcbd,\xcde,[\xce0,\xce1],[\xcf1,\xcf2],[\xd05,\xd0c],[\xd0e,\xd10],[\xd12,\xd3a],\xd3d,\xd4e,[\xd60,\xd61],[\xd7a,\xd7f],[\xd85,\xd96],[\xd9a,\xdb1],[\xdb3,\xdbb],\xdbd,[\xdc0,\xdc6],[\xe01,\xe30],[\xe32,\xe33],[\xe40,\xe46],[\xe81,\xe82],\xe84,[\xe87,\xe88],\xe8a,\xe8d,[\xe94,\xe97],[\xe99,\xe9f],[\xea1,\xea3],\xea5,\xea7,[\xeaa,\xeab],[\xead,\xeb0],[\xeb2,\xeb3],\xebd,[\xec0,\xec4],\xec6,[\xedc,\xedf],\xf00,[\xf40,\xf47],[\xf49,\xf6c],[\xf88,\xf8c],[\x1000,\x102a],\x103f,[\x1050,\x1055],[\x105a,\x105d],\x1061,[\x1065,\x1066],[\x106e,\x1070],[\x1075,\x1081],\x108e,[\x10a0,\x10c5],\x10c7,\x10cd,[\x10d0,\x10fa],[\x10fc,\x1248],[\x124a,\x124d],[\x1250,\x1256],\x1258,[\x125a,\x125d],[\x1260,\x1288],[\x128a,\x128d],[\x1290,\x12b0],[\x12b2,\x12b5],[\x12b8,\x12be],\x12c0,[\x12c2,\x12c5],[\x12c8,\x12d6],[\x12d8,\x1310],[\x1312,\x1315],[\x1318,\x135a],[\x1380,\x138f],[\x13a0,\x13f4],[\x1401,\x166c],[\x166f,\x167f],[\x1681,\x169a],[\x16a0,\x16ea],[\x16ee,\x16f0],[\x1700,\x170c],[\x170e,\x1711],[\x1720,\x1731],[\x1740,\x1751],[\x1760,\x176c],[\x176e,\x1770],[\x1780,\x17b3],\x17d7,\x17dc,[\x1820,\x1877],[\x1880,\x18a8],\x18aa,[\x18b0,\x18f5],[\x1900,\x191c],[\x1950,\x196d],[\x1970,\x1974],[\x1980,\x19ab],[\x19c1,\x19c7],[\x1a00,\x1a16],[\x1a20,\x1a54],\x1aa7,[\x1b05,\x1b33],[\x1b45,\x1b4b],[\x1b83,\x1ba0],[\x1bae,\x1baf],[\x1bba,\x1be5],[\x1c00,\x1c23],[\x1c4d,\x1c4f],[\x1c5a,\x1c7d],[\x1ce9,\x1cec],[\x1cee,\x1cf1],[\x1cf5,\x1cf6],[\x1d00,\x1dbf],[\x1e00,\x1f15],[\x1f18,\x1f1d],[\x1f20,\x1f45],[\x1f48,\x1f4d],[\x1f50,\x1f57],\x1f59,\x1f5b,\x1f5d,[\x1f5f,\x1f7d],[\x1f80,\x1fb4],[\x1fb6,\x1fbc],\x1fbe,[\x1fc2,\x1fc4],[\x1fc6,\x1fcc],[\x1fd0,\x1fd3],[\x1fd6,\x1fdb],[\x1fe0,\x1fec],[\x1ff2,\x1ff4],[\x1ff6,\x1ffc],\x2071,\x207f,[\x2090,\x209c],\x2102,\x2107,[\x210a,\x2113],\x2115,[\x2119,\x211d],\x2124,\x2126,\x2128,[\x212a,\x212d],[\x212f,\x2139],[\x213c,\x213f],[\x2145,\x2149],\x214e,[\x2160,\x2188],[\x2c00,\x2c2e],[\x2c30,\x2c5e],[\x2c60,\x2ce4],[\x2ceb,\x2cee],[\x2cf2,\x2cf3],[\x2d00,\x2d25],\x2d27,\x2d2d,[\x2d30,\x2d67],\x2d6f,[\x2d80,\x2d96],[\x2da0,\x2da6],[\x2da8,\x2dae],[\x2db0,\x2db6],[\x2db8,\x2dbe],[\x2dc0,\x2dc6],[\x2dc8,\x2dce],[\x2dd0,\x2dd6],[\x2dd8,\x2dde],\x2e2f,[\x3005,\x3007],[\x3021,\x3029],[\x3031,\x3035],[\x3038,\x303c],[\x3041,\x3096],[\x309d,\x309f],[\x30a1,\x30fa],[\x30fc,\x30ff],[\x3105,\x312d],[\x3131,\x318e],[\x31a0,\x31ba],[\x31f0,\x31ff],[\x3400,\x4db5],[\x4e00,\x9fcc],[\xa000,\xa48c],[\xa4d0,\xa4fd],[\xa500,\xa60c],[\xa610,\xa61f],[\xa62a,\xa62b],[\xa640,\xa66e],[\xa67f,\xa697],[\xa6a0,\xa6ef],[\xa717,\xa71f],[\xa722,\xa788],[\xa78b,\xa78e],[\xa790,\xa793],[\xa7a0,\xa7aa],[\xa7f8,\xa801],[\xa803,\xa805],[\xa807,\xa80a],[\xa80c,\xa822],[\xa840,\xa873],[\xa882,\xa8b3],[\xa8f2,\xa8f7],\xa8fb,[\xa90a,\xa925],[\xa930,\xa946],[\xa960,\xa97c],[\xa984,\xa9b2],\xa9cf,[\xaa00,\xaa28],[\xaa40,\xaa42],[\xaa44,\xaa4b],[\xaa60,\xaa76],\xaa7a,[\xaa80,\xaaaf],\xaab1,[\xaab5,\xaab6],[\xaab9,\xaabd],\xaac0,\xaac2,[\xaadb,\xaadd],[\xaae0,\xaaea],[\xaaf2,\xaaf4],[\xab01,\xab06],[\xab09,\xab0e],[\xab11,\xab16],[\xab20,\xab26],[\xab28,\xab2e],[\xabc0,\xabe2],[\xac00,\xd7a3],[\xd7b0,\xd7c6],[\xd7cb,\xd7fb],[\xf900,\xfa6d],[\xfa70,\xfad9],[\xfb00,\xfb06],[\xfb13,\xfb17],\xfb1d,[\xfb1f,\xfb28],[\xfb2a,\xfb36],[\xfb38,\xfb3c],\xfb3e,[\xfb40,\xfb41],[\xfb43,\xfb44],[\xfb46,\xfbb1],[\xfbd3,\xfd3d],[\xfd50,\xfd8f],[\xfd92,\xfdc7],[\xfdf0,\xfdfb],[\xfe70,\xfe74],[\xfe76,\xfefc],[\xff21,\xff3a],[\xff41,\xff5a],[\xff66,\xffbe],[\xffc2,\xffc7],[\xffca,\xffcf],[\xffd2,\xffd7],[\xffda,\xffdc] -> state 31
-    [\x300,\x36f],[\x483,\x487],[\x591,\x5bd],\x5bf,[\x5c1,\x5c2],[\x5c4,\x5c5],\x5c7,[\x610,\x61a],[\x64b,\x669],\x670,[\x6d6,\x6dc],[\x6df,\x6e4],[\x6e7,\x6e8],[\x6ea,\x6ed],[\x6f0,\x6f9],\x711,[\x730,\x74a],[\x7a6,\x7b0],[\x7c0,\x7c9],[\x7eb,\x7f3],[\x816,\x819],[\x81b,\x823],[\x825,\x827],[\x829,\x82d],[\x859,\x85b],[\x8e4,\x8fe],[\x900,\x903],[\x93a,\x93c],[\x93e,\x94f],[\x951,\x957],[\x962,\x963],[\x966,\x96f],[\x981,\x983],\x9bc,[\x9be,\x9c4],[\x9c7,\x9c8],[\x9cb,\x9cd],\x9d7,[\x9e2,\x9e3],[\x9e6,\x9ef],[\xa01,\xa03],\xa3c,[\xa3e,\xa42],[\xa47,\xa48],[\xa4b,\xa4d],\xa51,[\xa66,\xa71],\xa75,[\xa81,\xa83],\xabc,[\xabe,\xac5],[\xac7,\xac9],[\xacb,\xacd],[\xae2,\xae3],[\xae6,\xaef],[\xb01,\xb03],\xb3c,[\xb3e,\xb44],[\xb47,\xb48],[\xb4b,\xb4d],[\xb56,\xb57],[\xb62,\xb63],[\xb66,\xb6f],\xb82,[\xbbe,\xbc2],[\xbc6,\xbc8],[\xbca,\xbcd],\xbd7,[\xbe6,\xbef],[\xc01,\xc03],[\xc3e,\xc44],[\xc46,\xc48],[\xc4a,\xc4d],[\xc55,\xc56],[\xc62,\xc63],[\xc66,\xc6f],[\xc82,\xc83],\xcbc,[\xcbe,\xcc4],[\xcc6,\xcc8],[\xcca,\xccd],[\xcd5,\xcd6],[\xce2,\xce3],[\xce6,\xcef],[\xd02,\xd03],[\xd3e,\xd44],[\xd46,\xd48],[\xd4a,\xd4d],\xd57,[\xd62,\xd63],[\xd66,\xd6f],[\xd82,\xd83],\xdca,[\xdcf,\xdd4],\xdd6,[\xdd8,\xddf],[\xdf2,\xdf3],\xe31,[\xe34,\xe3a],[\xe47,\xe4e],[\xe50,\xe59],\xeb1,[\xeb4,\xeb9],[\xebb,\xebc],[\xec8,\xecd],[\xed0,\xed9],[\xf18,\xf19],[\xf20,\xf29],\xf35,\xf37,\xf39,[\xf3e,\xf3f],[\xf71,\xf84],[\xf86,\xf87],[\xf8d,\xf97],[\xf99,\xfbc],\xfc6,[\x102b,\x103e],[\x1040,\x1049],[\x1056,\x1059],[\x105e,\x1060],[\x1062,\x1064],[\x1067,\x106d],[\x1071,\x1074],[\x1082,\x108d],[\x108f,\x109d],[\x135d,\x135f],[\x1712,\x1714],[\x1732,\x1734],[\x1752,\x1753],[\x1772,\x1773],[\x17b4,\x17d3],\x17dd,[\x17e0,\x17e9],[\x180b,\x180d],[\x1810,\x1819],\x18a9,[\x1920,\x192b],[\x1930,\x193b],[\x1946,\x194f],[\x19b0,\x19c0],[\x19c8,\x19c9],[\x19d0,\x19d9],[\x1a17,\x1a1b],[\x1a55,\x1a5e],[\x1a60,\x1a7c],[\x1a7f,\x1a89],[\x1a90,\x1a99],[\x1b00,\x1b04],[\x1b34,\x1b44],[\x1b50,\x1b59],[\x1b6b,\x1b73],[\x1b80,\x1b82],[\x1ba1,\x1bad],[\x1bb0,\x1bb9],[\x1be6,\x1bf3],[\x1c24,\x1c37],[\x1c40,\x1c49],[\x1c50,\x1c59],[\x1cd0,\x1cd2],[\x1cd4,\x1ce8],\x1ced,[\x1cf2,\x1cf4],[\x1dc0,\x1de6],[\x1dfc,\x1dff],[\x200c,\x200d],[\x203f,\x2040],\x2054,[\x20d0,\x20dc],\x20e1,[\x20e5,\x20f0],[\x2cef,\x2cf1],\x2d7f,[\x2de0,\x2dff],[\x302a,\x302f],[\x3099,\x309a],[\xa620,\xa629],\xa66f,[\xa674,\xa67d],\xa69f,[\xa6f0,\xa6f1],\xa802,\xa806,\xa80b,[\xa823,\xa827],[\xa880,\xa881],[\xa8b4,\xa8c4],[\xa8d0,\xa8d9],[\xa8e0,\xa8f1],[\xa900,\xa909],[\xa926,\xa92d],[\xa947,\xa953],[\xa980,\xa983],[\xa9b3,\xa9c0],[\xa9d0,\xa9d9],[\xaa29,\xaa36],\xaa43,[\xaa4c,\xaa4d],[\xaa50,\xaa59],\xaa7b,\xaab0,[\xaab2,\xaab4],[\xaab7,\xaab8],[\xaabe,\xaabf],\xaac1,[\xaaeb,\xaaef],[\xaaf5,\xaaf6],[\xabe3,\xabea],[\xabec,\xabed],[\xabf0,\xabf9],\xfb1e,[\xfe00,\xfe0f],[\xfe20,\xfe26],[\xfe33,\xfe34],[\xfe4d,\xfe4f],[\xff10,\xff19],\xff3f -> state 32
-
-state 26
-    [\x0,\x9],[\xb,'!'],['#','['],[']',oo) -> state 26
-    '"' -> state 27
-    '\' -> state 28
-
-state 27(end 4)
-
-state 28
-    '"',''','\','b','f','n','r','t' -> state 50
-    'u','x' -> state 51
-
-state 29(end 3)
-    '$',['A','Z'],'_',['a','z'] -> state 29
-    ['0','9'] -> state 30
-    \xaa,\xb5,\xba,[\xc0,\xd6],[\xd8,\xf6],[\xf8,\x2c1],[\x2c6,\x2d1],[\x2e0,\x2e4],\x2ec,\x2ee,[\x370,\x374],[\x376,\x377],[\x37a,\x37d],\x386,[\x388,\x38a],\x38c,[\x38e,\x3a1],[\x3a3,\x3f5],[\x3f7,\x481],[\x48a,\x527],[\x531,\x556],\x559,[\x561,\x587],[\x5d0,\x5ea],[\x5f0,\x5f2],[\x620,\x64a],[\x66e,\x66f],[\x671,\x6d3],\x6d5,[\x6e5,\x6e6],[\x6ee,\x6ef],[\x6fa,\x6fc],\x6ff,\x710,[\x712,\x72f],[\x74d,\x7a5],\x7b1,[\x7ca,\x7ea],[\x7f4,\x7f5],\x7fa,[\x800,\x815],\x81a,\x824,\x828,[\x840,\x858],\x8a0,[\x8a2,\x8ac],[\x904,\x939],\x93d,\x950,[\x958,\x961],[\x971,\x977],[\x979,\x97f],[\x985,\x98c],[\x98f,\x990],[\x993,\x9a8],[\x9aa,\x9b0],\x9b2,[\x9b6,\x9b9],\x9bd,\x9ce,[\x9dc,\x9dd],[\x9df,\x9e1],[\x9f0,\x9f1],[\xa05,\xa0a],[\xa0f,\xa10],[\xa13,\xa28],[\xa2a,\xa30],[\xa32,\xa33],[\xa35,\xa36],[\xa38,\xa39],[\xa59,\xa5c],\xa5e,[\xa72,\xa74],[\xa85,\xa8d],[\xa8f,\xa91],[\xa93,\xaa8],[\xaaa,\xab0],[\xab2,\xab3],[\xab5,\xab9],\xabd,\xad0,[\xae0,\xae1],[\xb05,\xb0c],[\xb0f,\xb10],[\xb13,\xb28],[\xb2a,\xb30],[\xb32,\xb33],[\xb35,\xb39],\xb3d,[\xb5c,\xb5d],[\xb5f,\xb61],\xb71,\xb83,[\xb85,\xb8a],[\xb8e,\xb90],[\xb92,\xb95],[\xb99,\xb9a],\xb9c,[\xb9e,\xb9f],[\xba3,\xba4],[\xba8,\xbaa],[\xbae,\xbb9],\xbd0,[\xc05,\xc0c],[\xc0e,\xc10],[\xc12,\xc28],[\xc2a,\xc33],[\xc35,\xc39],\xc3d,[\xc58,\xc59],[\xc60,\xc61],[\xc85,\xc8c],[\xc8e,\xc90],[\xc92,\xca8],[\xcaa,\xcb3],[\xcb5,\xcb9],\xcbd,\xcde,[\xce0,\xce1],[\xcf1,\xcf2],[\xd05,\xd0c],[\xd0e,\xd10],[\xd12,\xd3a],\xd3d,\xd4e,[\xd60,\xd61],[\xd7a,\xd7f],[\xd85,\xd96],[\xd9a,\xdb1],[\xdb3,\xdbb],\xdbd,[\xdc0,\xdc6],[\xe01,\xe30],[\xe32,\xe33],[\xe40,\xe46],[\xe81,\xe82],\xe84,[\xe87,\xe88],\xe8a,\xe8d,[\xe94,\xe97],[\xe99,\xe9f],[\xea1,\xea3],\xea5,\xea7,[\xeaa,\xeab],[\xead,\xeb0],[\xeb2,\xeb3],\xebd,[\xec0,\xec4],\xec6,[\xedc,\xedf],\xf00,[\xf40,\xf47],[\xf49,\xf6c],[\xf88,\xf8c],[\x1000,\x102a],\x103f,[\x1050,\x1055],[\x105a,\x105d],\x1061,[\x1065,\x1066],[\x106e,\x1070],[\x1075,\x1081],\x108e,[\x10a0,\x10c5],\x10c7,\x10cd,[\x10d0,\x10fa],[\x10fc,\x1248],[\x124a,\x124d],[\x1250,\x1256],\x1258,[\x125a,\x125d],[\x1260,\x1288],[\x128a,\x128d],[\x1290,\x12b0],[\x12b2,\x12b5],[\x12b8,\x12be],\x12c0,[\x12c2,\x12c5],[\x12c8,\x12d6],[\x12d8,\x1310],[\x1312,\x1315],[\x1318,\x135a],[\x1380,\x138f],[\x13a0,\x13f4],[\x1401,\x166c],[\x166f,\x167f],[\x1681,\x169a],[\x16a0,\x16ea],[\x16ee,\x16f0],[\x1700,\x170c],[\x170e,\x1711],[\x1720,\x1731],[\x1740,\x1751],[\x1760,\x176c],[\x176e,\x1770],[\x1780,\x17b3],\x17d7,\x17dc,[\x1820,\x1877],[\x1880,\x18a8],\x18aa,[\x18b0,\x18f5],[\x1900,\x191c],[\x1950,\x196d],[\x1970,\x1974],[\x1980,\x19ab],[\x19c1,\x19c7],[\x1a00,\x1a16],[\x1a20,\x1a54],\x1aa7,[\x1b05,\x1b33],[\x1b45,\x1b4b],[\x1b83,\x1ba0],[\x1bae,\x1baf],[\x1bba,\x1be5],[\x1c00,\x1c23],[\x1c4d,\x1c4f],[\x1c5a,\x1c7d],[\x1ce9,\x1cec],[\x1cee,\x1cf1],[\x1cf5,\x1cf6],[\x1d00,\x1dbf],[\x1e00,\x1f15],[\x1f18,\x1f1d],[\x1f20,\x1f45],[\x1f48,\x1f4d],[\x1f50,\x1f57],\x1f59,\x1f5b,\x1f5d,[\x1f5f,\x1f7d],[\x1f80,\x1fb4],[\x1fb6,\x1fbc],\x1fbe,[\x1fc2,\x1fc4],[\x1fc6,\x1fcc],[\x1fd0,\x1fd3],[\x1fd6,\x1fdb],[\x1fe0,\x1fec],[\x1ff2,\x1ff4],[\x1ff6,\x1ffc],\x2071,\x207f,[\x2090,\x209c],\x2102,\x2107,[\x210a,\x2113],\x2115,[\x2119,\x211d],\x2124,\x2126,\x2128,[\x212a,\x212d],[\x212f,\x2139],[\x213c,\x213f],[\x2145,\x2149],\x214e,[\x2160,\x2188],[\x2c00,\x2c2e],[\x2c30,\x2c5e],[\x2c60,\x2ce4],[\x2ceb,\x2cee],[\x2cf2,\x2cf3],[\x2d00,\x2d25],\x2d27,\x2d2d,[\x2d30,\x2d67],\x2d6f,[\x2d80,\x2d96],[\x2da0,\x2da6],[\x2da8,\x2dae],[\x2db0,\x2db6],[\x2db8,\x2dbe],[\x2dc0,\x2dc6],[\x2dc8,\x2dce],[\x2dd0,\x2dd6],[\x2dd8,\x2dde],\x2e2f,[\x3005,\x3007],[\x3021,\x3029],[\x3031,\x3035],[\x3038,\x303c],[\x3041,\x3096],[\x309d,\x309f],[\x30a1,\x30fa],[\x30fc,\x30ff],[\x3105,\x312d],[\x3131,\x318e],[\x31a0,\x31ba],[\x31f0,\x31ff],[\x3400,\x4db5],[\x4e00,\x9fcc],[\xa000,\xa48c],[\xa4d0,\xa4fd],[\xa500,\xa60c],[\xa610,\xa61f],[\xa62a,\xa62b],[\xa640,\xa66e],[\xa67f,\xa697],[\xa6a0,\xa6ef],[\xa717,\xa71f],[\xa722,\xa788],[\xa78b,\xa78e],[\xa790,\xa793],[\xa7a0,\xa7aa],[\xa7f8,\xa801],[\xa803,\xa805],[\xa807,\xa80a],[\xa80c,\xa822],[\xa840,\xa873],[\xa882,\xa8b3],[\xa8f2,\xa8f7],\xa8fb,[\xa90a,\xa925],[\xa930,\xa946],[\xa960,\xa97c],[\xa984,\xa9b2],\xa9cf,[\xaa00,\xaa28],[\xaa40,\xaa42],[\xaa44,\xaa4b],[\xaa60,\xaa76],\xaa7a,[\xaa80,\xaaaf],\xaab1,[\xaab5,\xaab6],[\xaab9,\xaabd],\xaac0,\xaac2,[\xaadb,\xaadd],[\xaae0,\xaaea],[\xaaf2,\xaaf4],[\xab01,\xab06],[\xab09,\xab0e],[\xab11,\xab16],[\xab20,\xab26],[\xab28,\xab2e],[\xabc0,\xabe2],[\xac00,\xd7a3],[\xd7b0,\xd7c6],[\xd7cb,\xd7fb],[\xf900,\xfa6d],[\xfa70,\xfad9],[\xfb00,\xfb06],[\xfb13,\xfb17],\xfb1d,[\xfb1f,\xfb28],[\xfb2a,\xfb36],[\xfb38,\xfb3c],\xfb3e,[\xfb40,\xfb41],[\xfb43,\xfb44],[\xfb46,\xfbb1],[\xfbd3,\xfd3d],[\xfd50,\xfd8f],[\xfd92,\xfdc7],[\xfdf0,\xfdfb],[\xfe70,\xfe74],[\xfe76,\xfefc],[\xff21,\xff3a],[\xff41,\xff5a],[\xff66,\xffbe],[\xffc2,\xffc7],[\xffca,\xffcf],[\xffd2,\xffd7],[\xffda,\xffdc] -> state 31
-    [\x300,\x36f],[\x483,\x487],[\x591,\x5bd],\x5bf,[\x5c1,\x5c2],[\x5c4,\x5c5],\x5c7,[\x610,\x61a],[\x64b,\x669],\x670,[\x6d6,\x6dc],[\x6df,\x6e4],[\x6e7,\x6e8],[\x6ea,\x6ed],[\x6f0,\x6f9],\x711,[\x730,\x74a],[\x7a6,\x7b0],[\x7c0,\x7c9],[\x7eb,\x7f3],[\x816,\x819],[\x81b,\x823],[\x825,\x827],[\x829,\x82d],[\x859,\x85b],[\x8e4,\x8fe],[\x900,\x903],[\x93a,\x93c],[\x93e,\x94f],[\x951,\x957],[\x962,\x963],[\x966,\x96f],[\x981,\x983],\x9bc,[\x9be,\x9c4],[\x9c7,\x9c8],[\x9cb,\x9cd],\x9d7,[\x9e2,\x9e3],[\x9e6,\x9ef],[\xa01,\xa03],\xa3c,[\xa3e,\xa42],[\xa47,\xa48],[\xa4b,\xa4d],\xa51,[\xa66,\xa71],\xa75,[\xa81,\xa83],\xabc,[\xabe,\xac5],[\xac7,\xac9],[\xacb,\xacd],[\xae2,\xae3],[\xae6,\xaef],[\xb01,\xb03],\xb3c,[\xb3e,\xb44],[\xb47,\xb48],[\xb4b,\xb4d],[\xb56,\xb57],[\xb62,\xb63],[\xb66,\xb6f],\xb82,[\xbbe,\xbc2],[\xbc6,\xbc8],[\xbca,\xbcd],\xbd7,[\xbe6,\xbef],[\xc01,\xc03],[\xc3e,\xc44],[\xc46,\xc48],[\xc4a,\xc4d],[\xc55,\xc56],[\xc62,\xc63],[\xc66,\xc6f],[\xc82,\xc83],\xcbc,[\xcbe,\xcc4],[\xcc6,\xcc8],[\xcca,\xccd],[\xcd5,\xcd6],[\xce2,\xce3],[\xce6,\xcef],[\xd02,\xd03],[\xd3e,\xd44],[\xd46,\xd48],[\xd4a,\xd4d],\xd57,[\xd62,\xd63],[\xd66,\xd6f],[\xd82,\xd83],\xdca,[\xdcf,\xdd4],\xdd6,[\xdd8,\xddf],[\xdf2,\xdf3],\xe31,[\xe34,\xe3a],[\xe47,\xe4e],[\xe50,\xe59],\xeb1,[\xeb4,\xeb9],[\xebb,\xebc],[\xec8,\xecd],[\xed0,\xed9],[\xf18,\xf19],[\xf20,\xf29],\xf35,\xf37,\xf39,[\xf3e,\xf3f],[\xf71,\xf84],[\xf86,\xf87],[\xf8d,\xf97],[\xf99,\xfbc],\xfc6,[\x102b,\x103e],[\x1040,\x1049],[\x1056,\x1059],[\x105e,\x1060],[\x1062,\x1064],[\x1067,\x106d],[\x1071,\x1074],[\x1082,\x108d],[\x108f,\x109d],[\x135d,\x135f],[\x1712,\x1714],[\x1732,\x1734],[\x1752,\x1753],[\x1772,\x1773],[\x17b4,\x17d3],\x17dd,[\x17e0,\x17e9],[\x180b,\x180d],[\x1810,\x1819],\x18a9,[\x1920,\x192b],[\x1930,\x193b],[\x1946,\x194f],[\x19b0,\x19c0],[\x19c8,\x19c9],[\x19d0,\x19d9],[\x1a17,\x1a1b],[\x1a55,\x1a5e],[\x1a60,\x1a7c],[\x1a7f,\x1a89],[\x1a90,\x1a99],[\x1b00,\x1b04],[\x1b34,\x1b44],[\x1b50,\x1b59],[\x1b6b,\x1b73],[\x1b80,\x1b82],[\x1ba1,\x1bad],[\x1bb0,\x1bb9],[\x1be6,\x1bf3],[\x1c24,\x1c37],[\x1c40,\x1c49],[\x1c50,\x1c59],[\x1cd0,\x1cd2],[\x1cd4,\x1ce8],\x1ced,[\x1cf2,\x1cf4],[\x1dc0,\x1de6],[\x1dfc,\x1dff],[\x200c,\x200d],[\x203f,\x2040],\x2054,[\x20d0,\x20dc],\x20e1,[\x20e5,\x20f0],[\x2cef,\x2cf1],\x2d7f,[\x2de0,\x2dff],[\x302a,\x302f],[\x3099,\x309a],[\xa620,\xa629],\xa66f,[\xa674,\xa67d],\xa69f,[\xa6f0,\xa6f1],\xa802,\xa806,\xa80b,[\xa823,\xa827],[\xa880,\xa881],[\xa8b4,\xa8c4],[\xa8d0,\xa8d9],[\xa8e0,\xa8f1],[\xa900,\xa909],[\xa926,\xa92d],[\xa947,\xa953],[\xa980,\xa983],[\xa9b3,\xa9c0],[\xa9d0,\xa9d9],[\xaa29,\xaa36],\xaa43,[\xaa4c,\xaa4d],[\xaa50,\xaa59],\xaa7b,\xaab0,[\xaab2,\xaab4],[\xaab7,\xaab8],[\xaabe,\xaabf],\xaac1,[\xaaeb,\xaaef],[\xaaf5,\xaaf6],[\xabe3,\xabea],[\xabec,\xabed],[\xabf0,\xabf9],\xfb1e,[\xfe00,\xfe0f],[\xfe20,\xfe26],[\xfe33,\xfe34],[\xfe4d,\xfe4f],[\xff10,\xff19],\xff3f -> state 32
-
-state 30(end 3)
-    '$',['A','Z'],'_',['a','z'] -> state 29
-    ['0','9'] -> state 30
-    \xaa,\xb5,\xba,[\xc0,\xd6],[\xd8,\xf6],[\xf8,\x2c1],[\x2c6,\x2d1],[\x2e0,\x2e4],\x2ec,\x2ee,[\x370,\x374],[\x376,\x377],[\x37a,\x37d],\x386,[\x388,\x38a],\x38c,[\x38e,\x3a1],[\x3a3,\x3f5],[\x3f7,\x481],[\x48a,\x527],[\x531,\x556],\x559,[\x561,\x587],[\x5d0,\x5ea],[\x5f0,\x5f2],[\x620,\x64a],[\x66e,\x66f],[\x671,\x6d3],\x6d5,[\x6e5,\x6e6],[\x6ee,\x6ef],[\x6fa,\x6fc],\x6ff,\x710,[\x712,\x72f],[\x74d,\x7a5],\x7b1,[\x7ca,\x7ea],[\x7f4,\x7f5],\x7fa,[\x800,\x815],\x81a,\x824,\x828,[\x840,\x858],\x8a0,[\x8a2,\x8ac],[\x904,\x939],\x93d,\x950,[\x958,\x961],[\x971,\x977],[\x979,\x97f],[\x985,\x98c],[\x98f,\x990],[\x993,\x9a8],[\x9aa,\x9b0],\x9b2,[\x9b6,\x9b9],\x9bd,\x9ce,[\x9dc,\x9dd],[\x9df,\x9e1],[\x9f0,\x9f1],[\xa05,\xa0a],[\xa0f,\xa10],[\xa13,\xa28],[\xa2a,\xa30],[\xa32,\xa33],[\xa35,\xa36],[\xa38,\xa39],[\xa59,\xa5c],\xa5e,[\xa72,\xa74],[\xa85,\xa8d],[\xa8f,\xa91],[\xa93,\xaa8],[\xaaa,\xab0],[\xab2,\xab3],[\xab5,\xab9],\xabd,\xad0,[\xae0,\xae1],[\xb05,\xb0c],[\xb0f,\xb10],[\xb13,\xb28],[\xb2a,\xb30],[\xb32,\xb33],[\xb35,\xb39],\xb3d,[\xb5c,\xb5d],[\xb5f,\xb61],\xb71,\xb83,[\xb85,\xb8a],[\xb8e,\xb90],[\xb92,\xb95],[\xb99,\xb9a],\xb9c,[\xb9e,\xb9f],[\xba3,\xba4],[\xba8,\xbaa],[\xbae,\xbb9],\xbd0,[\xc05,\xc0c],[\xc0e,\xc10],[\xc12,\xc28],[\xc2a,\xc33],[\xc35,\xc39],\xc3d,[\xc58,\xc59],[\xc60,\xc61],[\xc85,\xc8c],[\xc8e,\xc90],[\xc92,\xca8],[\xcaa,\xcb3],[\xcb5,\xcb9],\xcbd,\xcde,[\xce0,\xce1],[\xcf1,\xcf2],[\xd05,\xd0c],[\xd0e,\xd10],[\xd12,\xd3a],\xd3d,\xd4e,[\xd60,\xd61],[\xd7a,\xd7f],[\xd85,\xd96],[\xd9a,\xdb1],[\xdb3,\xdbb],\xdbd,[\xdc0,\xdc6],[\xe01,\xe30],[\xe32,\xe33],[\xe40,\xe46],[\xe81,\xe82],\xe84,[\xe87,\xe88],\xe8a,\xe8d,[\xe94,\xe97],[\xe99,\xe9f],[\xea1,\xea3],\xea5,\xea7,[\xeaa,\xeab],[\xead,\xeb0],[\xeb2,\xeb3],\xebd,[\xec0,\xec4],\xec6,[\xedc,\xedf],\xf00,[\xf40,\xf47],[\xf49,\xf6c],[\xf88,\xf8c],[\x1000,\x102a],\x103f,[\x1050,\x1055],[\x105a,\x105d],\x1061,[\x1065,\x1066],[\x106e,\x1070],[\x1075,\x1081],\x108e,[\x10a0,\x10c5],\x10c7,\x10cd,[\x10d0,\x10fa],[\x10fc,\x1248],[\x124a,\x124d],[\x1250,\x1256],\x1258,[\x125a,\x125d],[\x1260,\x1288],[\x128a,\x128d],[\x1290,\x12b0],[\x12b2,\x12b5],[\x12b8,\x12be],\x12c0,[\x12c2,\x12c5],[\x12c8,\x12d6],[\x12d8,\x1310],[\x1312,\x1315],[\x1318,\x135a],[\x1380,\x138f],[\x13a0,\x13f4],[\x1401,\x166c],[\x166f,\x167f],[\x1681,\x169a],[\x16a0,\x16ea],[\x16ee,\x16f0],[\x1700,\x170c],[\x170e,\x1711],[\x1720,\x1731],[\x1740,\x1751],[\x1760,\x176c],[\x176e,\x1770],[\x1780,\x17b3],\x17d7,\x17dc,[\x1820,\x1877],[\x1880,\x18a8],\x18aa,[\x18b0,\x18f5],[\x1900,\x191c],[\x1950,\x196d],[\x1970,\x1974],[\x1980,\x19ab],[\x19c1,\x19c7],[\x1a00,\x1a16],[\x1a20,\x1a54],\x1aa7,[\x1b05,\x1b33],[\x1b45,\x1b4b],[\x1b83,\x1ba0],[\x1bae,\x1baf],[\x1bba,\x1be5],[\x1c00,\x1c23],[\x1c4d,\x1c4f],[\x1c5a,\x1c7d],[\x1ce9,\x1cec],[\x1cee,\x1cf1],[\x1cf5,\x1cf6],[\x1d00,\x1dbf],[\x1e00,\x1f15],[\x1f18,\x1f1d],[\x1f20,\x1f45],[\x1f48,\x1f4d],[\x1f50,\x1f57],\x1f59,\x1f5b,\x1f5d,[\x1f5f,\x1f7d],[\x1f80,\x1fb4],[\x1fb6,\x1fbc],\x1fbe,[\x1fc2,\x1fc4],[\x1fc6,\x1fcc],[\x1fd0,\x1fd3],[\x1fd6,\x1fdb],[\x1fe0,\x1fec],[\x1ff2,\x1ff4],[\x1ff6,\x1ffc],\x2071,\x207f,[\x2090,\x209c],\x2102,\x2107,[\x210a,\x2113],\x2115,[\x2119,\x211d],\x2124,\x2126,\x2128,[\x212a,\x212d],[\x212f,\x2139],[\x213c,\x213f],[\x2145,\x2149],\x214e,[\x2160,\x2188],[\x2c00,\x2c2e],[\x2c30,\x2c5e],[\x2c60,\x2ce4],[\x2ceb,\x2cee],[\x2cf2,\x2cf3],[\x2d00,\x2d25],\x2d27,\x2d2d,[\x2d30,\x2d67],\x2d6f,[\x2d80,\x2d96],[\x2da0,\x2da6],[\x2da8,\x2dae],[\x2db0,\x2db6],[\x2db8,\x2dbe],[\x2dc0,\x2dc6],[\x2dc8,\x2dce],[\x2dd0,\x2dd6],[\x2dd8,\x2dde],\x2e2f,[\x3005,\x3007],[\x3021,\x3029],[\x3031,\x3035],[\x3038,\x303c],[\x3041,\x3096],[\x309d,\x309f],[\x30a1,\x30fa],[\x30fc,\x30ff],[\x3105,\x312d],[\x3131,\x318e],[\x31a0,\x31ba],[\x31f0,\x31ff],[\x3400,\x4db5],[\x4e00,\x9fcc],[\xa000,\xa48c],[\xa4d0,\xa4fd],[\xa500,\xa60c],[\xa610,\xa61f],[\xa62a,\xa62b],[\xa640,\xa66e],[\xa67f,\xa697],[\xa6a0,\xa6ef],[\xa717,\xa71f],[\xa722,\xa788],[\xa78b,\xa78e],[\xa790,\xa793],[\xa7a0,\xa7aa],[\xa7f8,\xa801],[\xa803,\xa805],[\xa807,\xa80a],[\xa80c,\xa822],[\xa840,\xa873],[\xa882,\xa8b3],[\xa8f2,\xa8f7],\xa8fb,[\xa90a,\xa925],[\xa930,\xa946],[\xa960,\xa97c],[\xa984,\xa9b2],\xa9cf,[\xaa00,\xaa28],[\xaa40,\xaa42],[\xaa44,\xaa4b],[\xaa60,\xaa76],\xaa7a,[\xaa80,\xaaaf],\xaab1,[\xaab5,\xaab6],[\xaab9,\xaabd],\xaac0,\xaac2,[\xaadb,\xaadd],[\xaae0,\xaaea],[\xaaf2,\xaaf4],[\xab01,\xab06],[\xab09,\xab0e],[\xab11,\xab16],[\xab20,\xab26],[\xab28,\xab2e],[\xabc0,\xabe2],[\xac00,\xd7a3],[\xd7b0,\xd7c6],[\xd7cb,\xd7fb],[\xf900,\xfa6d],[\xfa70,\xfad9],[\xfb00,\xfb06],[\xfb13,\xfb17],\xfb1d,[\xfb1f,\xfb28],[\xfb2a,\xfb36],[\xfb38,\xfb3c],\xfb3e,[\xfb40,\xfb41],[\xfb43,\xfb44],[\xfb46,\xfbb1],[\xfbd3,\xfd3d],[\xfd50,\xfd8f],[\xfd92,\xfdc7],[\xfdf0,\xfdfb],[\xfe70,\xfe74],[\xfe76,\xfefc],[\xff21,\xff3a],[\xff41,\xff5a],[\xff66,\xffbe],[\xffc2,\xffc7],[\xffca,\xffcf],[\xffd2,\xffd7],[\xffda,\xffdc] -> state 31
-    [\x300,\x36f],[\x483,\x487],[\x591,\x5bd],\x5bf,[\x5c1,\x5c2],[\x5c4,\x5c5],\x5c7,[\x610,\x61a],[\x64b,\x669],\x670,[\x6d6,\x6dc],[\x6df,\x6e4],[\x6e7,\x6e8],[\x6ea,\x6ed],[\x6f0,\x6f9],\x711,[\x730,\x74a],[\x7a6,\x7b0],[\x7c0,\x7c9],[\x7eb,\x7f3],[\x816,\x819],[\x81b,\x823],[\x825,\x827],[\x829,\x82d],[\x859,\x85b],[\x8e4,\x8fe],[\x900,\x903],[\x93a,\x93c],[\x93e,\x94f],[\x951,\x957],[\x962,\x963],[\x966,\x96f],[\x981,\x983],\x9bc,[\x9be,\x9c4],[\x9c7,\x9c8],[\x9cb,\x9cd],\x9d7,[\x9e2,\x9e3],[\x9e6,\x9ef],[\xa01,\xa03],\xa3c,[\xa3e,\xa42],[\xa47,\xa48],[\xa4b,\xa4d],\xa51,[\xa66,\xa71],\xa75,[\xa81,\xa83],\xabc,[\xabe,\xac5],[\xac7,\xac9],[\xacb,\xacd],[\xae2,\xae3],[\xae6,\xaef],[\xb01,\xb03],\xb3c,[\xb3e,\xb44],[\xb47,\xb48],[\xb4b,\xb4d],[\xb56,\xb57],[\xb62,\xb63],[\xb66,\xb6f],\xb82,[\xbbe,\xbc2],[\xbc6,\xbc8],[\xbca,\xbcd],\xbd7,[\xbe6,\xbef],[\xc01,\xc03],[\xc3e,\xc44],[\xc46,\xc48],[\xc4a,\xc4d],[\xc55,\xc56],[\xc62,\xc63],[\xc66,\xc6f],[\xc82,\xc83],\xcbc,[\xcbe,\xcc4],[\xcc6,\xcc8],[\xcca,\xccd],[\xcd5,\xcd6],[\xce2,\xce3],[\xce6,\xcef],[\xd02,\xd03],[\xd3e,\xd44],[\xd46,\xd48],[\xd4a,\xd4d],\xd57,[\xd62,\xd63],[\xd66,\xd6f],[\xd82,\xd83],\xdca,[\xdcf,\xdd4],\xdd6,[\xdd8,\xddf],[\xdf2,\xdf3],\xe31,[\xe34,\xe3a],[\xe47,\xe4e],[\xe50,\xe59],\xeb1,[\xeb4,\xeb9],[\xebb,\xebc],[\xec8,\xecd],[\xed0,\xed9],[\xf18,\xf19],[\xf20,\xf29],\xf35,\xf37,\xf39,[\xf3e,\xf3f],[\xf71,\xf84],[\xf86,\xf87],[\xf8d,\xf97],[\xf99,\xfbc],\xfc6,[\x102b,\x103e],[\x1040,\x1049],[\x1056,\x1059],[\x105e,\x1060],[\x1062,\x1064],[\x1067,\x106d],[\x1071,\x1074],[\x1082,\x108d],[\x108f,\x109d],[\x135d,\x135f],[\x1712,\x1714],[\x1732,\x1734],[\x1752,\x1753],[\x1772,\x1773],[\x17b4,\x17d3],\x17dd,[\x17e0,\x17e9],[\x180b,\x180d],[\x1810,\x1819],\x18a9,[\x1920,\x192b],[\x1930,\x193b],[\x1946,\x194f],[\x19b0,\x19c0],[\x19c8,\x19c9],[\x19d0,\x19d9],[\x1a17,\x1a1b],[\x1a55,\x1a5e],[\x1a60,\x1a7c],[\x1a7f,\x1a89],[\x1a90,\x1a99],[\x1b00,\x1b04],[\x1b34,\x1b44],[\x1b50,\x1b59],[\x1b6b,\x1b73],[\x1b80,\x1b82],[\x1ba1,\x1bad],[\x1bb0,\x1bb9],[\x1be6,\x1bf3],[\x1c24,\x1c37],[\x1c40,\x1c49],[\x1c50,\x1c59],[\x1cd0,\x1cd2],[\x1cd4,\x1ce8],\x1ced,[\x1cf2,\x1cf4],[\x1dc0,\x1de6],[\x1dfc,\x1dff],[\x200c,\x200d],[\x203f,\x2040],\x2054,[\x20d0,\x20dc],\x20e1,[\x20e5,\x20f0],[\x2cef,\x2cf1],\x2d7f,[\x2de0,\x2dff],[\x302a,\x302f],[\x3099,\x309a],[\xa620,\xa629],\xa66f,[\xa674,\xa67d],\xa69f,[\xa6f0,\xa6f1],\xa802,\xa806,\xa80b,[\xa823,\xa827],[\xa880,\xa881],[\xa8b4,\xa8c4],[\xa8d0,\xa8d9],[\xa8e0,\xa8f1],[\xa900,\xa909],[\xa926,\xa92d],[\xa947,\xa953],[\xa980,\xa983],[\xa9b3,\xa9c0],[\xa9d0,\xa9d9],[\xaa29,\xaa36],\xaa43,[\xaa4c,\xaa4d],[\xaa50,\xaa59],\xaa7b,\xaab0,[\xaab2,\xaab4],[\xaab7,\xaab8],[\xaabe,\xaabf],\xaac1,[\xaaeb,\xaaef],[\xaaf5,\xaaf6],[\xabe3,\xabea],[\xabec,\xabed],[\xabf0,\xabf9],\xfb1e,[\xfe00,\xfe0f],[\xfe20,\xfe26],[\xfe33,\xfe34],[\xfe4d,\xfe4f],[\xff10,\xff19],\xff3f -> state 32
-
-state 31(end 3)
-    '$',['A','Z'],'_',['a','z'] -> state 29
-    ['0','9'] -> state 30
-    \xaa,\xb5,\xba,[\xc0,\xd6],[\xd8,\xf6],[\xf8,\x2c1],[\x2c6,\x2d1],[\x2e0,\x2e4],\x2ec,\x2ee,[\x370,\x374],[\x376,\x377],[\x37a,\x37d],\x386,[\x388,\x38a],\x38c,[\x38e,\x3a1],[\x3a3,\x3f5],[\x3f7,\x481],[\x48a,\x527],[\x531,\x556],\x559,[\x561,\x587],[\x5d0,\x5ea],[\x5f0,\x5f2],[\x620,\x64a],[\x66e,\x66f],[\x671,\x6d3],\x6d5,[\x6e5,\x6e6],[\x6ee,\x6ef],[\x6fa,\x6fc],\x6ff,\x710,[\x712,\x72f],[\x74d,\x7a5],\x7b1,[\x7ca,\x7ea],[\x7f4,\x7f5],\x7fa,[\x800,\x815],\x81a,\x824,\x828,[\x840,\x858],\x8a0,[\x8a2,\x8ac],[\x904,\x939],\x93d,\x950,[\x958,\x961],[\x971,\x977],[\x979,\x97f],[\x985,\x98c],[\x98f,\x990],[\x993,\x9a8],[\x9aa,\x9b0],\x9b2,[\x9b6,\x9b9],\x9bd,\x9ce,[\x9dc,\x9dd],[\x9df,\x9e1],[\x9f0,\x9f1],[\xa05,\xa0a],[\xa0f,\xa10],[\xa13,\xa28],[\xa2a,\xa30],[\xa32,\xa33],[\xa35,\xa36],[\xa38,\xa39],[\xa59,\xa5c],\xa5e,[\xa72,\xa74],[\xa85,\xa8d],[\xa8f,\xa91],[\xa93,\xaa8],[\xaaa,\xab0],[\xab2,\xab3],[\xab5,\xab9],\xabd,\xad0,[\xae0,\xae1],[\xb05,\xb0c],[\xb0f,\xb10],[\xb13,\xb28],[\xb2a,\xb30],[\xb32,\xb33],[\xb35,\xb39],\xb3d,[\xb5c,\xb5d],[\xb5f,\xb61],\xb71,\xb83,[\xb85,\xb8a],[\xb8e,\xb90],[\xb92,\xb95],[\xb99,\xb9a],\xb9c,[\xb9e,\xb9f],[\xba3,\xba4],[\xba8,\xbaa],[\xbae,\xbb9],\xbd0,[\xc05,\xc0c],[\xc0e,\xc10],[\xc12,\xc28],[\xc2a,\xc33],[\xc35,\xc39],\xc3d,[\xc58,\xc59],[\xc60,\xc61],[\xc85,\xc8c],[\xc8e,\xc90],[\xc92,\xca8],[\xcaa,\xcb3],[\xcb5,\xcb9],\xcbd,\xcde,[\xce0,\xce1],[\xcf1,\xcf2],[\xd05,\xd0c],[\xd0e,\xd10],[\xd12,\xd3a],\xd3d,\xd4e,[\xd60,\xd61],[\xd7a,\xd7f],[\xd85,\xd96],[\xd9a,\xdb1],[\xdb3,\xdbb],\xdbd,[\xdc0,\xdc6],[\xe01,\xe30],[\xe32,\xe33],[\xe40,\xe46],[\xe81,\xe82],\xe84,[\xe87,\xe88],\xe8a,\xe8d,[\xe94,\xe97],[\xe99,\xe9f],[\xea1,\xea3],\xea5,\xea7,[\xeaa,\xeab],[\xead,\xeb0],[\xeb2,\xeb3],\xebd,[\xec0,\xec4],\xec6,[\xedc,\xedf],\xf00,[\xf40,\xf47],[\xf49,\xf6c],[\xf88,\xf8c],[\x1000,\x102a],\x103f,[\x1050,\x1055],[\x105a,\x105d],\x1061,[\x1065,\x1066],[\x106e,\x1070],[\x1075,\x1081],\x108e,[\x10a0,\x10c5],\x10c7,\x10cd,[\x10d0,\x10fa],[\x10fc,\x1248],[\x124a,\x124d],[\x1250,\x1256],\x1258,[\x125a,\x125d],[\x1260,\x1288],[\x128a,\x128d],[\x1290,\x12b0],[\x12b2,\x12b5],[\x12b8,\x12be],\x12c0,[\x12c2,\x12c5],[\x12c8,\x12d6],[\x12d8,\x1310],[\x1312,\x1315],[\x1318,\x135a],[\x1380,\x138f],[\x13a0,\x13f4],[\x1401,\x166c],[\x166f,\x167f],[\x1681,\x169a],[\x16a0,\x16ea],[\x16ee,\x16f0],[\x1700,\x170c],[\x170e,\x1711],[\x1720,\x1731],[\x1740,\x1751],[\x1760,\x176c],[\x176e,\x1770],[\x1780,\x17b3],\x17d7,\x17dc,[\x1820,\x1877],[\x1880,\x18a8],\x18aa,[\x18b0,\x18f5],[\x1900,\x191c],[\x1950,\x196d],[\x1970,\x1974],[\x1980,\x19ab],[\x19c1,\x19c7],[\x1a00,\x1a16],[\x1a20,\x1a54],\x1aa7,[\x1b05,\x1b33],[\x1b45,\x1b4b],[\x1b83,\x1ba0],[\x1bae,\x1baf],[\x1bba,\x1be5],[\x1c00,\x1c23],[\x1c4d,\x1c4f],[\x1c5a,\x1c7d],[\x1ce9,\x1cec],[\x1cee,\x1cf1],[\x1cf5,\x1cf6],[\x1d00,\x1dbf],[\x1e00,\x1f15],[\x1f18,\x1f1d],[\x1f20,\x1f45],[\x1f48,\x1f4d],[\x1f50,\x1f57],\x1f59,\x1f5b,\x1f5d,[\x1f5f,\x1f7d],[\x1f80,\x1fb4],[\x1fb6,\x1fbc],\x1fbe,[\x1fc2,\x1fc4],[\x1fc6,\x1fcc],[\x1fd0,\x1fd3],[\x1fd6,\x1fdb],[\x1fe0,\x1fec],[\x1ff2,\x1ff4],[\x1ff6,\x1ffc],\x2071,\x207f,[\x2090,\x209c],\x2102,\x2107,[\x210a,\x2113],\x2115,[\x2119,\x211d],\x2124,\x2126,\x2128,[\x212a,\x212d],[\x212f,\x2139],[\x213c,\x213f],[\x2145,\x2149],\x214e,[\x2160,\x2188],[\x2c00,\x2c2e],[\x2c30,\x2c5e],[\x2c60,\x2ce4],[\x2ceb,\x2cee],[\x2cf2,\x2cf3],[\x2d00,\x2d25],\x2d27,\x2d2d,[\x2d30,\x2d67],\x2d6f,[\x2d80,\x2d96],[\x2da0,\x2da6],[\x2da8,\x2dae],[\x2db0,\x2db6],[\x2db8,\x2dbe],[\x2dc0,\x2dc6],[\x2dc8,\x2dce],[\x2dd0,\x2dd6],[\x2dd8,\x2dde],\x2e2f,[\x3005,\x3007],[\x3021,\x3029],[\x3031,\x3035],[\x3038,\x303c],[\x3041,\x3096],[\x309d,\x309f],[\x30a1,\x30fa],[\x30fc,\x30ff],[\x3105,\x312d],[\x3131,\x318e],[\x31a0,\x31ba],[\x31f0,\x31ff],[\x3400,\x4db5],[\x4e00,\x9fcc],[\xa000,\xa48c],[\xa4d0,\xa4fd],[\xa500,\xa60c],[\xa610,\xa61f],[\xa62a,\xa62b],[\xa640,\xa66e],[\xa67f,\xa697],[\xa6a0,\xa6ef],[\xa717,\xa71f],[\xa722,\xa788],[\xa78b,\xa78e],[\xa790,\xa793],[\xa7a0,\xa7aa],[\xa7f8,\xa801],[\xa803,\xa805],[\xa807,\xa80a],[\xa80c,\xa822],[\xa840,\xa873],[\xa882,\xa8b3],[\xa8f2,\xa8f7],\xa8fb,[\xa90a,\xa925],[\xa930,\xa946],[\xa960,\xa97c],[\xa984,\xa9b2],\xa9cf,[\xaa00,\xaa28],[\xaa40,\xaa42],[\xaa44,\xaa4b],[\xaa60,\xaa76],\xaa7a,[\xaa80,\xaaaf],\xaab1,[\xaab5,\xaab6],[\xaab9,\xaabd],\xaac0,\xaac2,[\xaadb,\xaadd],[\xaae0,\xaaea],[\xaaf2,\xaaf4],[\xab01,\xab06],[\xab09,\xab0e],[\xab11,\xab16],[\xab20,\xab26],[\xab28,\xab2e],[\xabc0,\xabe2],[\xac00,\xd7a3],[\xd7b0,\xd7c6],[\xd7cb,\xd7fb],[\xf900,\xfa6d],[\xfa70,\xfad9],[\xfb00,\xfb06],[\xfb13,\xfb17],\xfb1d,[\xfb1f,\xfb28],[\xfb2a,\xfb36],[\xfb38,\xfb3c],\xfb3e,[\xfb40,\xfb41],[\xfb43,\xfb44],[\xfb46,\xfbb1],[\xfbd3,\xfd3d],[\xfd50,\xfd8f],[\xfd92,\xfdc7],[\xfdf0,\xfdfb],[\xfe70,\xfe74],[\xfe76,\xfefc],[\xff21,\xff3a],[\xff41,\xff5a],[\xff66,\xffbe],[\xffc2,\xffc7],[\xffca,\xffcf],[\xffd2,\xffd7],[\xffda,\xffdc] -> state 31
-    [\x300,\x36f],[\x483,\x487],[\x591,\x5bd],\x5bf,[\x5c1,\x5c2],[\x5c4,\x5c5],\x5c7,[\x610,\x61a],[\x64b,\x669],\x670,[\x6d6,\x6dc],[\x6df,\x6e4],[\x6e7,\x6e8],[\x6ea,\x6ed],[\x6f0,\x6f9],\x711,[\x730,\x74a],[\x7a6,\x7b0],[\x7c0,\x7c9],[\x7eb,\x7f3],[\x816,\x819],[\x81b,\x823],[\x825,\x827],[\x829,\x82d],[\x859,\x85b],[\x8e4,\x8fe],[\x900,\x903],[\x93a,\x93c],[\x93e,\x94f],[\x951,\x957],[\x962,\x963],[\x966,\x96f],[\x981,\x983],\x9bc,[\x9be,\x9c4],[\x9c7,\x9c8],[\x9cb,\x9cd],\x9d7,[\x9e2,\x9e3],[\x9e6,\x9ef],[\xa01,\xa03],\xa3c,[\xa3e,\xa42],[\xa47,\xa48],[\xa4b,\xa4d],\xa51,[\xa66,\xa71],\xa75,[\xa81,\xa83],\xabc,[\xabe,\xac5],[\xac7,\xac9],[\xacb,\xacd],[\xae2,\xae3],[\xae6,\xaef],[\xb01,\xb03],\xb3c,[\xb3e,\xb44],[\xb47,\xb48],[\xb4b,\xb4d],[\xb56,\xb57],[\xb62,\xb63],[\xb66,\xb6f],\xb82,[\xbbe,\xbc2],[\xbc6,\xbc8],[\xbca,\xbcd],\xbd7,[\xbe6,\xbef],[\xc01,\xc03],[\xc3e,\xc44],[\xc46,\xc48],[\xc4a,\xc4d],[\xc55,\xc56],[\xc62,\xc63],[\xc66,\xc6f],[\xc82,\xc83],\xcbc,[\xcbe,\xcc4],[\xcc6,\xcc8],[\xcca,\xccd],[\xcd5,\xcd6],[\xce2,\xce3],[\xce6,\xcef],[\xd02,\xd03],[\xd3e,\xd44],[\xd46,\xd48],[\xd4a,\xd4d],\xd57,[\xd62,\xd63],[\xd66,\xd6f],[\xd82,\xd83],\xdca,[\xdcf,\xdd4],\xdd6,[\xdd8,\xddf],[\xdf2,\xdf3],\xe31,[\xe34,\xe3a],[\xe47,\xe4e],[\xe50,\xe59],\xeb1,[\xeb4,\xeb9],[\xebb,\xebc],[\xec8,\xecd],[\xed0,\xed9],[\xf18,\xf19],[\xf20,\xf29],\xf35,\xf37,\xf39,[\xf3e,\xf3f],[\xf71,\xf84],[\xf86,\xf87],[\xf8d,\xf97],[\xf99,\xfbc],\xfc6,[\x102b,\x103e],[\x1040,\x1049],[\x1056,\x1059],[\x105e,\x1060],[\x1062,\x1064],[\x1067,\x106d],[\x1071,\x1074],[\x1082,\x108d],[\x108f,\x109d],[\x135d,\x135f],[\x1712,\x1714],[\x1732,\x1734],[\x1752,\x1753],[\x1772,\x1773],[\x17b4,\x17d3],\x17dd,[\x17e0,\x17e9],[\x180b,\x180d],[\x1810,\x1819],\x18a9,[\x1920,\x192b],[\x1930,\x193b],[\x1946,\x194f],[\x19b0,\x19c0],[\x19c8,\x19c9],[\x19d0,\x19d9],[\x1a17,\x1a1b],[\x1a55,\x1a5e],[\x1a60,\x1a7c],[\x1a7f,\x1a89],[\x1a90,\x1a99],[\x1b00,\x1b04],[\x1b34,\x1b44],[\x1b50,\x1b59],[\x1b6b,\x1b73],[\x1b80,\x1b82],[\x1ba1,\x1bad],[\x1bb0,\x1bb9],[\x1be6,\x1bf3],[\x1c24,\x1c37],[\x1c40,\x1c49],[\x1c50,\x1c59],[\x1cd0,\x1cd2],[\x1cd4,\x1ce8],\x1ced,[\x1cf2,\x1cf4],[\x1dc0,\x1de6],[\x1dfc,\x1dff],[\x200c,\x200d],[\x203f,\x2040],\x2054,[\x20d0,\x20dc],\x20e1,[\x20e5,\x20f0],[\x2cef,\x2cf1],\x2d7f,[\x2de0,\x2dff],[\x302a,\x302f],[\x3099,\x309a],[\xa620,\xa629],\xa66f,[\xa674,\xa67d],\xa69f,[\xa6f0,\xa6f1],\xa802,\xa806,\xa80b,[\xa823,\xa827],[\xa880,\xa881],[\xa8b4,\xa8c4],[\xa8d0,\xa8d9],[\xa8e0,\xa8f1],[\xa900,\xa909],[\xa926,\xa92d],[\xa947,\xa953],[\xa980,\xa983],[\xa9b3,\xa9c0],[\xa9d0,\xa9d9],[\xaa29,\xaa36],\xaa43,[\xaa4c,\xaa4d],[\xaa50,\xaa59],\xaa7b,\xaab0,[\xaab2,\xaab4],[\xaab7,\xaab8],[\xaabe,\xaabf],\xaac1,[\xaaeb,\xaaef],[\xaaf5,\xaaf6],[\xabe3,\xabea],[\xabec,\xabed],[\xabf0,\xabf9],\xfb1e,[\xfe00,\xfe0f],[\xfe20,\xfe26],[\xfe33,\xfe34],[\xfe4d,\xfe4f],[\xff10,\xff19],\xff3f -> state 32
-
-state 32(end 3)
-    '$',['A','Z'],'_',['a','z'] -> state 29
-    ['0','9'] -> state 30
-    \xaa,\xb5,\xba,[\xc0,\xd6],[\xd8,\xf6],[\xf8,\x2c1],[\x2c6,\x2d1],[\x2e0,\x2e4],\x2ec,\x2ee,[\x370,\x374],[\x376,\x377],[\x37a,\x37d],\x386,[\x388,\x38a],\x38c,[\x38e,\x3a1],[\x3a3,\x3f5],[\x3f7,\x481],[\x48a,\x527],[\x531,\x556],\x559,[\x561,\x587],[\x5d0,\x5ea],[\x5f0,\x5f2],[\x620,\x64a],[\x66e,\x66f],[\x671,\x6d3],\x6d5,[\x6e5,\x6e6],[\x6ee,\x6ef],[\x6fa,\x6fc],\x6ff,\x710,[\x712,\x72f],[\x74d,\x7a5],\x7b1,[\x7ca,\x7ea],[\x7f4,\x7f5],\x7fa,[\x800,\x815],\x81a,\x824,\x828,[\x840,\x858],\x8a0,[\x8a2,\x8ac],[\x904,\x939],\x93d,\x950,[\x958,\x961],[\x971,\x977],[\x979,\x97f],[\x985,\x98c],[\x98f,\x990],[\x993,\x9a8],[\x9aa,\x9b0],\x9b2,[\x9b6,\x9b9],\x9bd,\x9ce,[\x9dc,\x9dd],[\x9df,\x9e1],[\x9f0,\x9f1],[\xa05,\xa0a],[\xa0f,\xa10],[\xa13,\xa28],[\xa2a,\xa30],[\xa32,\xa33],[\xa35,\xa36],[\xa38,\xa39],[\xa59,\xa5c],\xa5e,[\xa72,\xa74],[\xa85,\xa8d],[\xa8f,\xa91],[\xa93,\xaa8],[\xaaa,\xab0],[\xab2,\xab3],[\xab5,\xab9],\xabd,\xad0,[\xae0,\xae1],[\xb05,\xb0c],[\xb0f,\xb10],[\xb13,\xb28],[\xb2a,\xb30],[\xb32,\xb33],[\xb35,\xb39],\xb3d,[\xb5c,\xb5d],[\xb5f,\xb61],\xb71,\xb83,[\xb85,\xb8a],[\xb8e,\xb90],[\xb92,\xb95],[\xb99,\xb9a],\xb9c,[\xb9e,\xb9f],[\xba3,\xba4],[\xba8,\xbaa],[\xbae,\xbb9],\xbd0,[\xc05,\xc0c],[\xc0e,\xc10],[\xc12,\xc28],[\xc2a,\xc33],[\xc35,\xc39],\xc3d,[\xc58,\xc59],[\xc60,\xc61],[\xc85,\xc8c],[\xc8e,\xc90],[\xc92,\xca8],[\xcaa,\xcb3],[\xcb5,\xcb9],\xcbd,\xcde,[\xce0,\xce1],[\xcf1,\xcf2],[\xd05,\xd0c],[\xd0e,\xd10],[\xd12,\xd3a],\xd3d,\xd4e,[\xd60,\xd61],[\xd7a,\xd7f],[\xd85,\xd96],[\xd9a,\xdb1],[\xdb3,\xdbb],\xdbd,[\xdc0,\xdc6],[\xe01,\xe30],[\xe32,\xe33],[\xe40,\xe46],[\xe81,\xe82],\xe84,[\xe87,\xe88],\xe8a,\xe8d,[\xe94,\xe97],[\xe99,\xe9f],[\xea1,\xea3],\xea5,\xea7,[\xeaa,\xeab],[\xead,\xeb0],[\xeb2,\xeb3],\xebd,[\xec0,\xec4],\xec6,[\xedc,\xedf],\xf00,[\xf40,\xf47],[\xf49,\xf6c],[\xf88,\xf8c],[\x1000,\x102a],\x103f,[\x1050,\x1055],[\x105a,\x105d],\x1061,[\x1065,\x1066],[\x106e,\x1070],[\x1075,\x1081],\x108e,[\x10a0,\x10c5],\x10c7,\x10cd,[\x10d0,\x10fa],[\x10fc,\x1248],[\x124a,\x124d],[\x1250,\x1256],\x1258,[\x125a,\x125d],[\x1260,\x1288],[\x128a,\x128d],[\x1290,\x12b0],[\x12b2,\x12b5],[\x12b8,\x12be],\x12c0,[\x12c2,\x12c5],[\x12c8,\x12d6],[\x12d8,\x1310],[\x1312,\x1315],[\x1318,\x135a],[\x1380,\x138f],[\x13a0,\x13f4],[\x1401,\x166c],[\x166f,\x167f],[\x1681,\x169a],[\x16a0,\x16ea],[\x16ee,\x16f0],[\x1700,\x170c],[\x170e,\x1711],[\x1720,\x1731],[\x1740,\x1751],[\x1760,\x176c],[\x176e,\x1770],[\x1780,\x17b3],\x17d7,\x17dc,[\x1820,\x1877],[\x1880,\x18a8],\x18aa,[\x18b0,\x18f5],[\x1900,\x191c],[\x1950,\x196d],[\x1970,\x1974],[\x1980,\x19ab],[\x19c1,\x19c7],[\x1a00,\x1a16],[\x1a20,\x1a54],\x1aa7,[\x1b05,\x1b33],[\x1b45,\x1b4b],[\x1b83,\x1ba0],[\x1bae,\x1baf],[\x1bba,\x1be5],[\x1c00,\x1c23],[\x1c4d,\x1c4f],[\x1c5a,\x1c7d],[\x1ce9,\x1cec],[\x1cee,\x1cf1],[\x1cf5,\x1cf6],[\x1d00,\x1dbf],[\x1e00,\x1f15],[\x1f18,\x1f1d],[\x1f20,\x1f45],[\x1f48,\x1f4d],[\x1f50,\x1f57],\x1f59,\x1f5b,\x1f5d,[\x1f5f,\x1f7d],[\x1f80,\x1fb4],[\x1fb6,\x1fbc],\x1fbe,[\x1fc2,\x1fc4],[\x1fc6,\x1fcc],[\x1fd0,\x1fd3],[\x1fd6,\x1fdb],[\x1fe0,\x1fec],[\x1ff2,\x1ff4],[\x1ff6,\x1ffc],\x2071,\x207f,[\x2090,\x209c],\x2102,\x2107,[\x210a,\x2113],\x2115,[\x2119,\x211d],\x2124,\x2126,\x2128,[\x212a,\x212d],[\x212f,\x2139],[\x213c,\x213f],[\x2145,\x2149],\x214e,[\x2160,\x2188],[\x2c00,\x2c2e],[\x2c30,\x2c5e],[\x2c60,\x2ce4],[\x2ceb,\x2cee],[\x2cf2,\x2cf3],[\x2d00,\x2d25],\x2d27,\x2d2d,[\x2d30,\x2d67],\x2d6f,[\x2d80,\x2d96],[\x2da0,\x2da6],[\x2da8,\x2dae],[\x2db0,\x2db6],[\x2db8,\x2dbe],[\x2dc0,\x2dc6],[\x2dc8,\x2dce],[\x2dd0,\x2dd6],[\x2dd8,\x2dde],\x2e2f,[\x3005,\x3007],[\x3021,\x3029],[\x3031,\x3035],[\x3038,\x303c],[\x3041,\x3096],[\x309d,\x309f],[\x30a1,\x30fa],[\x30fc,\x30ff],[\x3105,\x312d],[\x3131,\x318e],[\x31a0,\x31ba],[\x31f0,\x31ff],[\x3400,\x4db5],[\x4e00,\x9fcc],[\xa000,\xa48c],[\xa4d0,\xa4fd],[\xa500,\xa60c],[\xa610,\xa61f],[\xa62a,\xa62b],[\xa640,\xa66e],[\xa67f,\xa697],[\xa6a0,\xa6ef],[\xa717,\xa71f],[\xa722,\xa788],[\xa78b,\xa78e],[\xa790,\xa793],[\xa7a0,\xa7aa],[\xa7f8,\xa801],[\xa803,\xa805],[\xa807,\xa80a],[\xa80c,\xa822],[\xa840,\xa873],[\xa882,\xa8b3],[\xa8f2,\xa8f7],\xa8fb,[\xa90a,\xa925],[\xa930,\xa946],[\xa960,\xa97c],[\xa984,\xa9b2],\xa9cf,[\xaa00,\xaa28],[\xaa40,\xaa42],[\xaa44,\xaa4b],[\xaa60,\xaa76],\xaa7a,[\xaa80,\xaaaf],\xaab1,[\xaab5,\xaab6],[\xaab9,\xaabd],\xaac0,\xaac2,[\xaadb,\xaadd],[\xaae0,\xaaea],[\xaaf2,\xaaf4],[\xab01,\xab06],[\xab09,\xab0e],[\xab11,\xab16],[\xab20,\xab26],[\xab28,\xab2e],[\xabc0,\xabe2],[\xac00,\xd7a3],[\xd7b0,\xd7c6],[\xd7cb,\xd7fb],[\xf900,\xfa6d],[\xfa70,\xfad9],[\xfb00,\xfb06],[\xfb13,\xfb17],\xfb1d,[\xfb1f,\xfb28],[\xfb2a,\xfb36],[\xfb38,\xfb3c],\xfb3e,[\xfb40,\xfb41],[\xfb43,\xfb44],[\xfb46,\xfbb1],[\xfbd3,\xfd3d],[\xfd50,\xfd8f],[\xfd92,\xfdc7],[\xfdf0,\xfdfb],[\xfe70,\xfe74],[\xfe76,\xfefc],[\xff21,\xff3a],[\xff41,\xff5a],[\xff66,\xffbe],[\xffc2,\xffc7],[\xffca,\xffcf],[\xffd2,\xffd7],[\xffda,\xffdc] -> state 31
-    [\x300,\x36f],[\x483,\x487],[\x591,\x5bd],\x5bf,[\x5c1,\x5c2],[\x5c4,\x5c5],\x5c7,[\x610,\x61a],[\x64b,\x669],\x670,[\x6d6,\x6dc],[\x6df,\x6e4],[\x6e7,\x6e8],[\x6ea,\x6ed],[\x6f0,\x6f9],\x711,[\x730,\x74a],[\x7a6,\x7b0],[\x7c0,\x7c9],[\x7eb,\x7f3],[\x816,\x819],[\x81b,\x823],[\x825,\x827],[\x829,\x82d],[\x859,\x85b],[\x8e4,\x8fe],[\x900,\x903],[\x93a,\x93c],[\x93e,\x94f],[\x951,\x957],[\x962,\x963],[\x966,\x96f],[\x981,\x983],\x9bc,[\x9be,\x9c4],[\x9c7,\x9c8],[\x9cb,\x9cd],\x9d7,[\x9e2,\x9e3],[\x9e6,\x9ef],[\xa01,\xa03],\xa3c,[\xa3e,\xa42],[\xa47,\xa48],[\xa4b,\xa4d],\xa51,[\xa66,\xa71],\xa75,[\xa81,\xa83],\xabc,[\xabe,\xac5],[\xac7,\xac9],[\xacb,\xacd],[\xae2,\xae3],[\xae6,\xaef],[\xb01,\xb03],\xb3c,[\xb3e,\xb44],[\xb47,\xb48],[\xb4b,\xb4d],[\xb56,\xb57],[\xb62,\xb63],[\xb66,\xb6f],\xb82,[\xbbe,\xbc2],[\xbc6,\xbc8],[\xbca,\xbcd],\xbd7,[\xbe6,\xbef],[\xc01,\xc03],[\xc3e,\xc44],[\xc46,\xc48],[\xc4a,\xc4d],[\xc55,\xc56],[\xc62,\xc63],[\xc66,\xc6f],[\xc82,\xc83],\xcbc,[\xcbe,\xcc4],[\xcc6,\xcc8],[\xcca,\xccd],[\xcd5,\xcd6],[\xce2,\xce3],[\xce6,\xcef],[\xd02,\xd03],[\xd3e,\xd44],[\xd46,\xd48],[\xd4a,\xd4d],\xd57,[\xd62,\xd63],[\xd66,\xd6f],[\xd82,\xd83],\xdca,[\xdcf,\xdd4],\xdd6,[\xdd8,\xddf],[\xdf2,\xdf3],\xe31,[\xe34,\xe3a],[\xe47,\xe4e],[\xe50,\xe59],\xeb1,[\xeb4,\xeb9],[\xebb,\xebc],[\xec8,\xecd],[\xed0,\xed9],[\xf18,\xf19],[\xf20,\xf29],\xf35,\xf37,\xf39,[\xf3e,\xf3f],[\xf71,\xf84],[\xf86,\xf87],[\xf8d,\xf97],[\xf99,\xfbc],\xfc6,[\x102b,\x103e],[\x1040,\x1049],[\x1056,\x1059],[\x105e,\x1060],[\x1062,\x1064],[\x1067,\x106d],[\x1071,\x1074],[\x1082,\x108d],[\x108f,\x109d],[\x135d,\x135f],[\x1712,\x1714],[\x1732,\x1734],[\x1752,\x1753],[\x1772,\x1773],[\x17b4,\x17d3],\x17dd,[\x17e0,\x17e9],[\x180b,\x180d],[\x1810,\x1819],\x18a9,[\x1920,\x192b],[\x1930,\x193b],[\x1946,\x194f],[\x19b0,\x19c0],[\x19c8,\x19c9],[\x19d0,\x19d9],[\x1a17,\x1a1b],[\x1a55,\x1a5e],[\x1a60,\x1a7c],[\x1a7f,\x1a89],[\x1a90,\x1a99],[\x1b00,\x1b04],[\x1b34,\x1b44],[\x1b50,\x1b59],[\x1b6b,\x1b73],[\x1b80,\x1b82],[\x1ba1,\x1bad],[\x1bb0,\x1bb9],[\x1be6,\x1bf3],[\x1c24,\x1c37],[\x1c40,\x1c49],[\x1c50,\x1c59],[\x1cd0,\x1cd2],[\x1cd4,\x1ce8],\x1ced,[\x1cf2,\x1cf4],[\x1dc0,\x1de6],[\x1dfc,\x1dff],[\x200c,\x200d],[\x203f,\x2040],\x2054,[\x20d0,\x20dc],\x20e1,[\x20e5,\x20f0],[\x2cef,\x2cf1],\x2d7f,[\x2de0,\x2dff],[\x302a,\x302f],[\x3099,\x309a],[\xa620,\xa629],\xa66f,[\xa674,\xa67d],\xa69f,[\xa6f0,\xa6f1],\xa802,\xa806,\xa80b,[\xa823,\xa827],[\xa880,\xa881],[\xa8b4,\xa8c4],[\xa8d0,\xa8d9],[\xa8e0,\xa8f1],[\xa900,\xa909],[\xa926,\xa92d],[\xa947,\xa953],[\xa980,\xa983],[\xa9b3,\xa9c0],[\xa9d0,\xa9d9],[\xaa29,\xaa36],\xaa43,[\xaa4c,\xaa4d],[\xaa50,\xaa59],\xaa7b,\xaab0,[\xaab2,\xaab4],[\xaab7,\xaab8],[\xaabe,\xaabf],\xaac1,[\xaaeb,\xaaef],[\xaaf5,\xaaf6],[\xabe3,\xabea],[\xabec,\xabed],[\xabf0,\xabf9],\xfb1e,[\xfe00,\xfe0f],[\xfe20,\xfe26],[\xfe33,\xfe34],[\xfe4d,\xfe4f],[\xff10,\xff19],\xff3f -> state 32
-
-state 33(end 36)
-
-state 34
-    'm' -> state 52
-    'x' -> state 53
-
-state 35
-    'e' -> state 54
-
-state 36
-    'm' -> state 55
-    'n' -> state 56
-
-state 37
-    'e' -> state 57
-
-state 38
-    'o' -> state 58
-
-state 39
-    'p' -> state 59
-    'u' -> state 60
-
-state 40
-    'r' -> state 61
-
-state 41
-    'i' -> state 62
-
-state 42
-    'o' -> state 63
-    'y' -> state 64
-
-state 43
-    's' -> state 65
-
-state 44
-    [\x0,\x9],[\xb,'&'],['(','['],[']',oo) -> state 44
-    ''' -> state 45
-    '\' -> state 46
-
-state 45(end 4)
-
-state 46
-    '"',''','\','b','f','n','r','t' -> state 66
-    'u','x' -> state 67
-
-state 47
-    [\x0,')'],['+','.'],['0',oo) -> state 68
-    '*' -> state 69
-    '/' -> state 70
-
-state 48(end 2)
-    [\x0,\x9],[\xb,oo) -> state 71
-
-state 49(end 34)
-
-state 50
-    [\x0,\x9],[\xb,'!'],['#','['],[']',oo) -> state 26
-    '"' -> state 27
-    '\' -> state 28
-
-state 51
-    ['0','9'],['A','F'],['a','f'] -> state 72
-
-state 52
-    'p' -> state 73
-
-state 53
-    't' -> state 74
-
-state 54
-    'a' -> state 75
-
-state 55
-    'p' -> state 76
-
-state 56
-    'i' -> state 77
-
-state 57
-    'f' -> state 78
-    'x' -> state 79
-
-state 58
-    'n' -> state 80
-
-state 59
-    't' -> state 81
-
-state 60
-    't' -> state 82
-
-state 61
-    'e' -> state 83
-
-state 62
-    'g' -> state 84
-
-state 63
-    'k' -> state 85
-
-state 64
-    'p' -> state 86
-
-state 65
-    'e' -> state 87
-
-state 66
-    [\x0,\x9],[\xb,'&'],['(','['],[']',oo) -> state 44
-    ''' -> state 45
-    '\' -> state 46
-
-state 67
-    ['0','9'],['A','F'],['a','f'] -> state 88
-
-state 68
-    [\x0,')'],['+','.'],['0',oo) -> state 68
-    '*' -> state 69
-    '/' -> state 89
-
-state 69
-    [\x0,'.'],['0',oo) -> state 90
-    '/' -> state 91
-
-state 70
-    '/' -> state 92
-
-state 71(end 2)
-    [\x0,\x9],[\xb,oo) -> state 71
-
-state 72
-    [\x0,\x9],[\xb,'!'],['#','/'],[':','@'],['G','['],[']','`'],['g',oo) -> state 26
-    '"' -> state 27
-    ['0','9'],['A','F'],['a','f'] -> state 93
-    '\' -> state 28
-
-state 73
-    't' -> state 94
-
-state 74
-    'r' -> state 95
-
-state 75
-    'd' -> state 96
-
-state 76
-    'o' -> state 97
-
-state 77
-    't' -> state 98
-
-state 78
-    't' -> state 99
-
-state 79(end 8)
-
-state 80
-    'a' -> state 100
-
-state 81
-    'i' -> state 101
-
-state 82
-    'p' -> state 102
-
-state 83
-    'c' -> state 103
-
-state 84
-    'h' -> state 104
-
-state 85
-    'e' -> state 105
-
-state 86
-    'e' -> state 106
-
-state 87(end 13)
-
-state 88
-    [\x0,\x9],[\xb,'&'],['(','/'],[':','@'],['G','['],[']','`'],['g',oo) -> state 44
-    ''' -> state 45
-    ['0','9'],['A','F'],['a','f'] -> state 107
-    '\' -> state 46
-
-state 89
-    [\x0,')'],['+','.'],['0',oo) -> state 68
-    '*' -> state 69
-    '/' -> state 89
-
-state 90
-    [\x0,')'],['+','.'],['0',oo) -> state 68
-    '*' -> state 69
-    '/' -> state 70
-
-state 91(end 1)
-
-state 92
-    [\x0,')'],['+','.'],['0',oo) -> state 68
-    '*' -> state 69
-    '/' -> state 70
-
-state 93
-    [\x0,\x9],[\xb,'!'],['#','/'],[':','@'],['G','['],[']','`'],['g',oo) -> state 26
-    '"' -> state 27
-    ['0','9'],['A','F'],['a','f'] -> state 93
-    '\' -> state 28
-
-state 94
-    'y' -> state 108
-
-state 95
-    'a' -> state 109
-
-state 96
-    'e' -> state 110
-
-state 97
-    'r' -> state 111
-
-state 98(end 19)
-
-state 99(end 10)
-
-state 100
-    's' -> state 112
-
-state 101
-    'o' -> state 113
-
-state 102
-    'u' -> state 114
-
-state 103(end 18)
-
-state 104
-    't' -> state 115
-
-state 105
-    'n' -> state 116
-
-state 106(end 17)
-
-state 107
-    [\x0,\x9],[\xb,'&'],['(','/'],[':','@'],['G','['],[']','`'],['g',oo) -> state 44
-    ''' -> state 45
-    ['0','9'],['A','F'],['a','f'] -> state 107
-    '\' -> state 46
-
-state 108(end 16)
-
-state 109
-    '_' -> state 117
-
-state 110
-    'r' -> state 118
-
-state 111
-    't' -> state 119
-
-state 112
-    's' -> state 120
-
-state 113
-    'n' -> state 121
-
-state 114
-    't' -> state 122
-
-state 115(end 11)
-
-state 116(end 9)
-
-state 117
-    'a' -> state 123
-
-state 118(end 14)
-
-state 119(end 21)
-
-state 120
-    'o' -> state 124
-
-state 121(end 7)
-
-state 122(end 20)
-
-state 123
-    'r' -> state 125
-
-state 124
-    'c' -> state 126
-
-state 125
-    'g' -> state 127
-
-state 126(end 12)
-
-state 127(end 15)
-
-
-
-state 0(start)(end 40)
-    [\x0,'['],[']','z'],'|',['~',oo) -> state 1
-    '\' -> state 2
-    '{' -> state 3
-    '}' -> state 4
-
-state 1(end 40)
-    [\x0,'['],[']','z'],'|',['~',oo) -> state 1
-    '\' -> state 5
-
-state 2
-    [\x0,'z'],'|',['~',oo) -> state 6
-    '{','}' -> state 7
-
-state 3(end 42)
-
-state 4(end 43)
-
-state 5
-    [\x0,'z'],'|',['~',oo) -> state 6
-
-state 6(end 40)
-    [\x0,'['],[']','z'],'|',['~',oo) -> state 1
-    '\' -> state 5
-
-state 7(end 41)
-
-
-
-state 0(start)
-    [\x0,oo) -> state 1
-
-state 1(end 44)
-    [\x0,oo) -> state 1
-
+\x0 -> c0, \x1 -> c0, \x2 -> c0, \x3 -> c0, \x4 -> c0, \x5 -> c0, \x6 -> c0, \x7 -> c0, \x8 -> c0, \x9 -> c1, \xa -> c2, 
+\xb -> c0, \xc -> c0, \xd -> c1, \xe -> c0, \xf -> c0, \x10 -> c0, \x11 -> c0, \x12 -> c0, \x13 -> c0, \x14 -> c0, \x15 -> c0, 
+\x16 -> c0, \x17 -> c0, \x18 -> c0, \x19 -> c0, \x1a -> c0, \x1b -> c0, \x1c -> c0, \x1d -> c0, \x1e -> c0, \x1f -> c0, ' ' -> c1, 
+'!' -> c0, '"' -> c3, '#' -> c0, '$' -> c4, '%' -> c5, '&' -> c0, ''' -> c6, '(' -> c7, ')' -> c8, '*' -> c9, '+' -> c10, 
+',' -> c11, '-' -> c12, '.' -> c0, '/' -> c13, '0' -> c14, '1' -> c14, '2' -> c14, '3' -> c14, '4' -> c14, '5' -> c14, '6' -> c14, 
+'7' -> c14, '8' -> c14, '9' -> c14, ':' -> c15, ';' -> c16, '<' -> c17, '=' -> c18, '>' -> c19, '?' -> c20, '@' -> c0, 'A' -> c21, 
+'B' -> c21, 'C' -> c21, 'D' -> c21, 'E' -> c21, 'F' -> c21, 'G' -> c4, 'H' -> c4, 'I' -> c4, 'J' -> c4, 'K' -> c4, 'L' -> c4, 
+'M' -> c4, 'N' -> c4, 'O' -> c4, 'P' -> c4, 'Q' -> c4, 'R' -> c4, 'S' -> c4, 'T' -> c4, 'U' -> c4, 'V' -> c4, 'W' -> c4, 
+'X' -> c4, 'Y' -> c4, 'Z' -> c4, '[' -> c22, '\' -> c23, ']' -> c24, '^' -> c25, '_' -> c26, '`' -> c0, 'a' -> c27, 'b' -> c28, 
+'c' -> c29, 'd' -> c30, 'e' -> c31, 'f' -> c32, 'g' -> c33, 'h' -> c34, 'i' -> c35, 'j' -> c4, 'k' -> c36, 'l' -> c37, 'm' -> c38, 
+'n' -> c39, 'o' -> c40, 'p' -> c41, 'q' -> c4, 'r' -> c42, 's' -> c43, 't' -> c44, 'u' -> c45, 'v' -> c4, 'w' -> c4, 'x' -> c46, 
+'y' -> c47, 'z' -> c4, '{' -> c48, '|' -> c49, '}' -> c50, '~' -> c0, \x7f -> c0, \x80 -> c0, \x81 -> c0, \x82 -> c0, \x83 -> c0, 
+\x84 -> c0, \x85 -> c0, \x86 -> c0, \x87 -> c0, \x88 -> c0, \x89 -> c0, \x8a -> c0, \x8b -> c0, \x8c -> c0, \x8d -> c0, \x8e -> c0, 
+\x8f -> c0, \x90 -> c0, \x91 -> c0, \x92 -> c0, \x93 -> c0, \x94 -> c0, \x95 -> c0, \x96 -> c0, \x97 -> c0, \x98 -> c0, \x99 -> c0, 
+\x9a -> c0, \x9b -> c0, \x9c -> c0, \x9d -> c0, \x9e -> c0, \x9f -> c0, \xa0 -> c0, \xa1 -> c0, \xa2 -> c0, \xa3 -> c0, \xa4 -> c0, 
+\xa5 -> c0, \xa6 -> c0, \xa7 -> c0, \xa8 -> c0, \xa9 -> c0, \xaa -> c51, \xab -> c0, \xac -> c0, \xad -> c0, \xae -> c0, \xaf -> c0, 
+\xb0 -> c0, \xb1 -> c0, \xb2 -> c0, \xb3 -> c0, \xb4 -> c0, \xb5 -> c51, \xb6 -> c0, \xb7 -> c0, \xb8 -> c0, \xb9 -> c0, \xba -> c51, 
+\xbb -> c0, \xbc -> c0, \xbd -> c0, \xbe -> c0, \xbf -> c0, \xc0 -> c51, \xc1 -> c51, \xc2 -> c51, \xc3 -> c51, \xc4 -> c51, \xc5 -> c51, 
+\xc6 -> c51, \xc7 -> c51, \xc8 -> c51, \xc9 -> c51, \xca -> c51, \xcb -> c51, \xcc -> c51, \xcd -> c51, \xce -> c51, \xcf -> c51, \xd0 -> c51, 
+\xd1 -> c51, \xd2 -> c51, \xd3 -> c51, \xd4 -> c51, \xd5 -> c51, \xd6 -> c51, \xd7 -> c0, \xd8 -> c51, \xd9 -> c51, \xda -> c51, \xdb -> c51, 
+\xdc -> c51, \xdd -> c51, \xde -> c51, \xdf -> c51, \xe0 -> c51, \xe1 -> c51, \xe2 -> c51, \xe3 -> c51, \xe4 -> c51, \xe5 -> c51, \xe6 -> c51, 
+\xe7 -> c51, \xe8 -> c51, \xe9 -> c51, \xea -> c51, \xeb -> c51, \xec -> c51, \xed -> c51, \xee -> c51, \xef -> c51, \xf0 -> c51, \xf1 -> c51, 
+\xf2 -> c51, \xf3 -> c51, \xf4 -> c51, \xf5 -> c51, \xf6 -> c51, \xf7 -> c0, \xf8 -> c51, \xf9 -> c51, \xfa -> c51, \xfb -> c51, \xfc -> c51, 
+\xfd -> c51, \xfe -> c51, \xff -> c51, 
+\x256-\x705 -> c51, \x706-\x709 -> c0, \x710-\x721 -> c51, \x722-\x735 -> c0, \x736-\x740 -> c51, \x741-\x747 -> c0, 
+\x748-\x748 -> c51, \x749-\x749 -> c0, \x750-\x750 -> c51, \x751-\x767 -> c0, \x768-\x879 -> c52, \x880-\x884 -> c51, 
+\x885-\x885 -> c0, \x886-\x887 -> c51, \x888-\x889 -> c0, \x890-\x893 -> c51, \x894-\x901 -> c0, \x902-\x902 -> c51, 
+\x903-\x903 -> c0, \x904-\x906 -> c51, \x907-\x907 -> c0, \x908-\x908 -> c51, \x909-\x909 -> c0, \x910-\x929 -> c51, 
+\x930-\x930 -> c0, \x931-\x1013 -> c51, \x1014-\x1014 -> c0, \x1015-\x1153 -> c51, \x1154-\x1154 -> c0, \x1155-\x1159 -> c52, 
+\x1160-\x1161 -> c0, \x1162-\x1319 -> c51, \x1320-\x1328 -> c0, \x1329-\x1366 -> c51, \x1367-\x1368 -> c0, \x1369-\x1369 -> c51, 
+\x1370-\x1376 -> c0, \x1377-\x1415 -> c51, \x1416-\x1424 -> c0, \x1425-\x1469 -> c52, \x1470-\x1470 -> c0, \x1471-\x1471 -> c52, 
+\x1472-\x1472 -> c0, \x1473-\x1474 -> c52, \x1475-\x1475 -> c0, \x1476-\x1477 -> c52, \x1478-\x1478 -> c0, \x1479-\x1479 -> c52, 
+\x1480-\x1487 -> c0, \x1488-\x1514 -> c51, \x1515-\x1519 -> c0, \x1520-\x1522 -> c51, \x1523-\x1551 -> c0, \x1552-\x1562 -> c52, 
+\x1563-\x1567 -> c0, \x1568-\x1610 -> c51, \x1611-\x1641 -> c52, \x1642-\x1645 -> c0, \x1646-\x1647 -> c51, \x1648-\x1648 -> c52, 
+\x1649-\x1747 -> c51, \x1748-\x1748 -> c0, \x1749-\x1749 -> c51, \x1750-\x1756 -> c52, \x1757-\x1758 -> c0, \x1759-\x1764 -> c52, 
+\x1765-\x1766 -> c51, \x1767-\x1768 -> c52, \x1769-\x1769 -> c0, \x1770-\x1773 -> c52, \x1774-\x1775 -> c51, \x1776-\x1785 -> c52, 
+\x1786-\x1788 -> c51, \x1789-\x1790 -> c0, \x1791-\x1791 -> c51, \x1792-\x1807 -> c0, \x1808-\x1808 -> c51, \x1809-\x1809 -> c52, 
+\x1810-\x1839 -> c51, \x1840-\x1866 -> c52, \x1867-\x1868 -> c0, \x1869-\x1957 -> c51, \x1958-\x1968 -> c52, \x1969-\x1969 -> c51, 
+\x1970-\x1983 -> c0, \x1984-\x1993 -> c52, \x1994-\x2026 -> c51, \x2027-\x2035 -> c52, \x2036-\x2037 -> c51, \x2038-\x2041 -> c0, 
+\x2042-\x2042 -> c51, \x2043-\x2047 -> c0, \x2048-\x2069 -> c51, \x2070-\x2073 -> c52, \x2074-\x2074 -> c51, \x2075-\x2083 -> c52, 
+\x2084-\x2084 -> c51, \x2085-\x2087 -> c52, \x2088-\x2088 -> c51, \x2089-\x2093 -> c52, \x2094-\x2111 -> c0, \x2112-\x2136 -> c51, 
+\x2137-\x2139 -> c52, \x2140-\x2207 -> c0, \x2208-\x2208 -> c51, \x2209-\x2209 -> c0, \x2210-\x2220 -> c51, \x2221-\x2275 -> c0, 
+\x2276-\x2302 -> c52, \x2303-\x2303 -> c0, \x2304-\x2307 -> c52, \x2308-\x2361 -> c51, \x2362-\x2364 -> c52, \x2365-\x2365 -> c51, 
+\x2366-\x2383 -> c52, \x2384-\x2384 -> c51, \x2385-\x2391 -> c52, \x2392-\x2401 -> c51, \x2402-\x2403 -> c52, \x2404-\x2405 -> c0, 
+\x2406-\x2415 -> c52, \x2416-\x2416 -> c0, \x2417-\x2423 -> c51, \x2424-\x2424 -> c0, \x2425-\x2431 -> c51, \x2432-\x2432 -> c0, 
+\x2433-\x2435 -> c52, \x2436-\x2436 -> c0, \x2437-\x2444 -> c51, \x2445-\x2446 -> c0, \x2447-\x2448 -> c51, \x2449-\x2450 -> c0, 
+\x2451-\x2472 -> c51, \x2473-\x2473 -> c0, \x2474-\x2480 -> c51, \x2481-\x2481 -> c0, \x2482-\x2482 -> c51, \x2483-\x2485 -> c0, 
+\x2486-\x2489 -> c51, \x2490-\x2491 -> c0, \x2492-\x2492 -> c52, \x2493-\x2493 -> c51, \x2494-\x2500 -> c52, \x2501-\x2502 -> c0, 
+\x2503-\x2504 -> c52, \x2505-\x2506 -> c0, \x2507-\x2509 -> c52, \x2510-\x2510 -> c51, \x2511-\x2518 -> c0, \x2519-\x2519 -> c52, 
+\x2520-\x2523 -> c0, \x2524-\x2525 -> c51, \x2526-\x2526 -> c0, \x2527-\x2529 -> c51, \x2530-\x2531 -> c52, \x2532-\x2533 -> c0, 
+\x2534-\x2543 -> c52, \x2544-\x2545 -> c51, \x2546-\x2560 -> c0, \x2561-\x2563 -> c52, \x2564-\x2564 -> c0, \x2565-\x2570 -> c51, 
+\x2571-\x2574 -> c0, \x2575-\x2576 -> c51, \x2577-\x2578 -> c0, \x2579-\x2600 -> c51, \x2601-\x2601 -> c0, \x2602-\x2608 -> c51, 
+\x2609-\x2609 -> c0, \x2610-\x2611 -> c51, \x2612-\x2612 -> c0, \x2613-\x2614 -> c51, \x2615-\x2615 -> c0, \x2616-\x2617 -> c51, 
+\x2618-\x2619 -> c0, \x2620-\x2620 -> c52, \x2621-\x2621 -> c0, \x2622-\x2626 -> c52, \x2627-\x2630 -> c0, \x2631-\x2632 -> c52, 
+\x2633-\x2634 -> c0, \x2635-\x2637 -> c52, \x2638-\x2640 -> c0, \x2641-\x2641 -> c52, \x2642-\x2648 -> c0, \x2649-\x2652 -> c51, 
+\x2653-\x2653 -> c0, \x2654-\x2654 -> c51, \x2655-\x2661 -> c0, \x2662-\x2673 -> c52, \x2674-\x2676 -> c51, \x2677-\x2677 -> c52, 
+\x2678-\x2688 -> c0, \x2689-\x2691 -> c52, \x2692-\x2692 -> c0, \x2693-\x2701 -> c51, \x2702-\x2702 -> c0, \x2703-\x2705 -> c51, 
+\x2706-\x2706 -> c0, \x2707-\x2728 -> c51, \x2729-\x2729 -> c0, \x2730-\x2736 -> c51, \x2737-\x2737 -> c0, \x2738-\x2739 -> c51, 
+\x2740-\x2740 -> c0, \x2741-\x2745 -> c51, \x2746-\x2747 -> c0, \x2748-\x2748 -> c52, \x2749-\x2749 -> c51, \x2750-\x2757 -> c52, 
+\x2758-\x2758 -> c0, \x2759-\x2761 -> c52, \x2762-\x2762 -> c0, \x2763-\x2765 -> c52, \x2766-\x2767 -> c0, \x2768-\x2768 -> c51, 
+\x2769-\x2783 -> c0, \x2784-\x2785 -> c51, \x2786-\x2787 -> c52, \x2788-\x2789 -> c0, \x2790-\x2799 -> c52, \x2800-\x2816 -> c0, 
+\x2817-\x2819 -> c52, \x2820-\x2820 -> c0, \x2821-\x2828 -> c51, \x2829-\x2830 -> c0, \x2831-\x2832 -> c51, \x2833-\x2834 -> c0, 
+\x2835-\x2856 -> c51, \x2857-\x2857 -> c0, \x2858-\x2864 -> c51, \x2865-\x2865 -> c0, \x2866-\x2867 -> c51, \x2868-\x2868 -> c0, 
+\x2869-\x2873 -> c51, \x2874-\x2875 -> c0, \x2876-\x2876 -> c52, \x2877-\x2877 -> c51, \x2878-\x2884 -> c52, \x2885-\x2886 -> c0, 
+\x2887-\x2888 -> c52, \x2889-\x2890 -> c0, \x2891-\x2893 -> c52, \x2894-\x2901 -> c0, \x2902-\x2903 -> c52, \x2904-\x2907 -> c0, 
+\x2908-\x2909 -> c51, \x2910-\x2910 -> c0, \x2911-\x2913 -> c51, \x2914-\x2915 -> c52, \x2916-\x2917 -> c0, \x2918-\x2927 -> c52, 
+\x2928-\x2928 -> c0, \x2929-\x2929 -> c51, \x2930-\x2945 -> c0, \x2946-\x2946 -> c52, \x2947-\x2947 -> c51, \x2948-\x2948 -> c0, 
+\x2949-\x2954 -> c51, \x2955-\x2957 -> c0, \x2958-\x2960 -> c51, \x2961-\x2961 -> c0, \x2962-\x2965 -> c51, \x2966-\x2968 -> c0, 
+\x2969-\x2970 -> c51, \x2971-\x2971 -> c0, \x2972-\x2972 -> c51, \x2973-\x2973 -> c0, \x2974-\x2975 -> c51, \x2976-\x2978 -> c0, 
+\x2979-\x2980 -> c51, \x2981-\x2983 -> c0, \x2984-\x2986 -> c51, \x2987-\x2989 -> c0, \x2990-\x3001 -> c51, \x3002-\x3005 -> c0, 
+\x3006-\x3010 -> c52, \x3011-\x3013 -> c0, \x3014-\x3016 -> c52, \x3017-\x3017 -> c0, \x3018-\x3021 -> c52, \x3022-\x3023 -> c0, 
+\x3024-\x3024 -> c51, \x3025-\x3030 -> c0, \x3031-\x3031 -> c52, \x3032-\x3045 -> c0, \x3046-\x3055 -> c52, \x3056-\x3072 -> c0, 
+\x3073-\x3075 -> c52, \x3076-\x3076 -> c0, \x3077-\x3084 -> c51, \x3085-\x3085 -> c0, \x3086-\x3088 -> c51, \x3089-\x3089 -> c0, 
+\x3090-\x3112 -> c51, \x3113-\x3113 -> c0, \x3114-\x3123 -> c51, \x3124-\x3124 -> c0, \x3125-\x3129 -> c51, \x3130-\x3132 -> c0, 
+\x3133-\x3133 -> c51, \x3134-\x3140 -> c52, \x3141-\x3141 -> c0, \x3142-\x3144 -> c52, \x3145-\x3145 -> c0, \x3146-\x3149 -> c52, 
+\x3150-\x3156 -> c0, \x3157-\x3158 -> c52, \x3159-\x3159 -> c0, \x3160-\x3161 -> c51, \x3162-\x3167 -> c0, \x3168-\x3169 -> c51, 
+\x3170-\x3171 -> c52, \x3172-\x3173 -> c0, \x3174-\x3183 -> c52, \x3184-\x3201 -> c0, \x3202-\x3203 -> c52, \x3204-\x3204 -> c0, 
+\x3205-\x3212 -> c51, \x3213-\x3213 -> c0, \x3214-\x3216 -> c51, \x3217-\x3217 -> c0, \x3218-\x3240 -> c51, \x3241-\x3241 -> c0, 
+\x3242-\x3251 -> c51, \x3252-\x3252 -> c0, \x3253-\x3257 -> c51, \x3258-\x3259 -> c0, \x3260-\x3260 -> c52, \x3261-\x3261 -> c51, 
+\x3262-\x3268 -> c52, \x3269-\x3269 -> c0, \x3270-\x3272 -> c52, \x3273-\x3273 -> c0, \x3274-\x3277 -> c52, \x3278-\x3284 -> c0, 
+\x3285-\x3286 -> c52, \x3287-\x3293 -> c0, \x3294-\x3294 -> c51, \x3295-\x3295 -> c0, \x3296-\x3297 -> c51, \x3298-\x3299 -> c52, 
+\x3300-\x3301 -> c0, \x3302-\x3311 -> c52, \x3312-\x3312 -> c0, \x3313-\x3314 -> c51, \x3315-\x3329 -> c0, \x3330-\x3331 -> c52, 
+\x3332-\x3332 -> c0, \x3333-\x3340 -> c51, \x3341-\x3341 -> c0, \x3342-\x3344 -> c51, \x3345-\x3345 -> c0, \x3346-\x3386 -> c51, 
+\x3387-\x3388 -> c0, \x3389-\x3389 -> c51, \x3390-\x3396 -> c52, \x3397-\x3397 -> c0, \x3398-\x3400 -> c52, \x3401-\x3401 -> c0, 
+\x3402-\x3405 -> c52, \x3406-\x3406 -> c51, \x3407-\x3414 -> c0, \x3415-\x3415 -> c52, \x3416-\x3423 -> c0, \x3424-\x3425 -> c51, 
+\x3426-\x3427 -> c52, \x3428-\x3429 -> c0, \x3430-\x3439 -> c52, \x3440-\x3449 -> c0, \x3450-\x3455 -> c51, \x3456-\x3457 -> c0, 
+\x3458-\x3459 -> c52, \x3460-\x3460 -> c0, \x3461-\x3478 -> c51, \x3479-\x3481 -> c0, \x3482-\x3505 -> c51, \x3506-\x3506 -> c0, 
+\x3507-\x3515 -> c51, \x3516-\x3516 -> c0, \x3517-\x3517 -> c51, \x3518-\x3519 -> c0, \x3520-\x3526 -> c51, \x3527-\x3529 -> c0, 
+\x3530-\x3530 -> c52, \x3531-\x3534 -> c0, \x3535-\x3540 -> c52, \x3541-\x3541 -> c0, \x3542-\x3542 -> c52, \x3543-\x3543 -> c0, 
+\x3544-\x3551 -> c52, \x3552-\x3569 -> c0, \x3570-\x3571 -> c52, \x3572-\x3584 -> c0, \x3585-\x3632 -> c51, \x3633-\x3633 -> c52, 
+\x3634-\x3635 -> c51, \x3636-\x3642 -> c52, \x3643-\x3647 -> c0, \x3648-\x3654 -> c51, \x3655-\x3662 -> c52, \x3663-\x3663 -> c0, 
+\x3664-\x3673 -> c52, \x3674-\x3712 -> c0, \x3713-\x3714 -> c51, \x3715-\x3715 -> c0, \x3716-\x3716 -> c51, \x3717-\x3718 -> c0, 
+\x3719-\x3720 -> c51, \x3721-\x3721 -> c0, \x3722-\x3722 -> c51, \x3723-\x3724 -> c0, \x3725-\x3725 -> c51, \x3726-\x3731 -> c0, 
+\x3732-\x3735 -> c51, \x3736-\x3736 -> c0, \x3737-\x3743 -> c51, \x3744-\x3744 -> c0, \x3745-\x3747 -> c51, \x3748-\x3748 -> c0, 
+\x3749-\x3749 -> c51, \x3750-\x3750 -> c0, \x3751-\x3751 -> c51, \x3752-\x3753 -> c0, \x3754-\x3755 -> c51, \x3756-\x3756 -> c0, 
+\x3757-\x3760 -> c51, \x3761-\x3761 -> c52, \x3762-\x3763 -> c51, \x3764-\x3769 -> c52, \x3770-\x3770 -> c0, \x3771-\x3772 -> c52, 
+\x3773-\x3773 -> c51, \x3774-\x3775 -> c0, \x3776-\x3780 -> c51, \x3781-\x3781 -> c0, \x3782-\x3782 -> c51, \x3783-\x3783 -> c0, 
+\x3784-\x3789 -> c52, \x3790-\x3791 -> c0, \x3792-\x3801 -> c52, \x3802-\x3803 -> c0, \x3804-\x3807 -> c51, \x3808-\x3839 -> c0, 
+\x3840-\x3840 -> c51, \x3841-\x3863 -> c0, \x3864-\x3865 -> c52, \x3866-\x3871 -> c0, \x3872-\x3881 -> c52, \x3882-\x3892 -> c0, 
+\x3893-\x3893 -> c52, \x3894-\x3894 -> c0, \x3895-\x3895 -> c52, \x3896-\x3896 -> c0, \x3897-\x3897 -> c52, \x3898-\x3901 -> c0, 
+\x3902-\x3903 -> c52, \x3904-\x3911 -> c51, \x3912-\x3912 -> c0, \x3913-\x3948 -> c51, \x3949-\x3952 -> c0, \x3953-\x3972 -> c52, 
+\x3973-\x3973 -> c0, \x3974-\x3975 -> c52, \x3976-\x3980 -> c51, \x3981-\x3991 -> c52, \x3992-\x3992 -> c0, \x3993-\x4028 -> c52, 
+\x4029-\x4037 -> c0, \x4038-\x4038 -> c52, \x4039-\x4095 -> c0, \x4096-\x4138 -> c51, \x4139-\x4158 -> c52, \x4159-\x4159 -> c51, 
+\x4160-\x4169 -> c52, \x4170-\x4175 -> c0, \x4176-\x4181 -> c51, \x4182-\x4185 -> c52, \x4186-\x4189 -> c51, \x4190-\x4192 -> c52, 
+\x4193-\x4193 -> c51, \x4194-\x4196 -> c52, \x4197-\x4198 -> c51, \x4199-\x4205 -> c52, \x4206-\x4208 -> c51, \x4209-\x4212 -> c52, 
+\x4213-\x4225 -> c51, \x4226-\x4237 -> c52, \x4238-\x4238 -> c51, \x4239-\x4253 -> c52, \x4254-\x4255 -> c0, \x4256-\x4293 -> c51, 
+\x4294-\x4294 -> c0, \x4295-\x4295 -> c51, \x4296-\x4300 -> c0, \x4301-\x4301 -> c51, \x4302-\x4303 -> c0, \x4304-\x4346 -> c51, 
+\x4347-\x4347 -> c0, \x4348-\x4680 -> c51, \x4681-\x4681 -> c0, \x4682-\x4685 -> c51, \x4686-\x4687 -> c0, \x4688-\x4694 -> c51, 
+\x4695-\x4695 -> c0, \x4696-\x4696 -> c51, \x4697-\x4697 -> c0, \x4698-\x4701 -> c51, \x4702-\x4703 -> c0, \x4704-\x4744 -> c51, 
+\x4745-\x4745 -> c0, \x4746-\x4749 -> c51, \x4750-\x4751 -> c0, \x4752-\x4784 -> c51, \x4785-\x4785 -> c0, \x4786-\x4789 -> c51, 
+\x4790-\x4791 -> c0, \x4792-\x4798 -> c51, \x4799-\x4799 -> c0, \x4800-\x4800 -> c51, \x4801-\x4801 -> c0, \x4802-\x4805 -> c51, 
+\x4806-\x4807 -> c0, \x4808-\x4822 -> c51, \x4823-\x4823 -> c0, \x4824-\x4880 -> c51, \x4881-\x4881 -> c0, \x4882-\x4885 -> c51, 
+\x4886-\x4887 -> c0, \x4888-\x4954 -> c51, \x4955-\x4956 -> c0, \x4957-\x4959 -> c52, \x4960-\x4991 -> c0, \x4992-\x5007 -> c51, 
+\x5008-\x5023 -> c0, \x5024-\x5108 -> c51, \x5109-\x5120 -> c0, \x5121-\x5740 -> c51, \x5741-\x5742 -> c0, \x5743-\x5759 -> c51, 
+\x5760-\x5760 -> c0, \x5761-\x5786 -> c51, \x5787-\x5791 -> c0, \x5792-\x5866 -> c51, \x5867-\x5869 -> c0, \x5870-\x5872 -> c51, 
+\x5873-\x5887 -> c0, \x5888-\x5900 -> c51, \x5901-\x5901 -> c0, \x5902-\x5905 -> c51, \x5906-\x5908 -> c52, \x5909-\x5919 -> c0, 
+\x5920-\x5937 -> c51, \x5938-\x5940 -> c52, \x5941-\x5951 -> c0, \x5952-\x5969 -> c51, \x5970-\x5971 -> c52, \x5972-\x5983 -> c0, 
+\x5984-\x5996 -> c51, \x5997-\x5997 -> c0, \x5998-\x6000 -> c51, \x6001-\x6001 -> c0, \x6002-\x6003 -> c52, \x6004-\x6015 -> c0, 
+\x6016-\x6067 -> c51, \x6068-\x6099 -> c52, \x6100-\x6102 -> c0, \x6103-\x6103 -> c51, \x6104-\x6107 -> c0, \x6108-\x6108 -> c51, 
+\x6109-\x6109 -> c52, \x6110-\x6111 -> c0, \x6112-\x6121 -> c52, \x6122-\x6154 -> c0, \x6155-\x6157 -> c52, \x6158-\x6159 -> c0, 
+\x6160-\x6169 -> c52, \x6170-\x6175 -> c0, \x6176-\x6263 -> c51, \x6264-\x6271 -> c0, \x6272-\x6312 -> c51, \x6313-\x6313 -> c52, 
+\x6314-\x6314 -> c51, \x6315-\x6319 -> c0, \x6320-\x6389 -> c51, \x6390-\x6399 -> c0, \x6400-\x6428 -> c51, \x6429-\x6431 -> c0, 
+\x6432-\x6443 -> c52, \x6444-\x6447 -> c0, \x6448-\x6459 -> c52, \x6460-\x6469 -> c0, \x6470-\x6479 -> c52, \x6480-\x6509 -> c51, 
+\x6510-\x6511 -> c0, \x6512-\x6516 -> c51, \x6517-\x6527 -> c0, \x6528-\x6571 -> c51, \x6572-\x6575 -> c0, \x6576-\x6592 -> c52, 
+\x6593-\x6599 -> c51, \x6600-\x6601 -> c52, \x6602-\x6607 -> c0, \x6608-\x6617 -> c52, \x6618-\x6655 -> c0, \x6656-\x6678 -> c51, 
+\x6679-\x6683 -> c52, \x6684-\x6687 -> c0, \x6688-\x6740 -> c51, \x6741-\x6750 -> c52, \x6751-\x6751 -> c0, \x6752-\x6780 -> c52, 
+\x6781-\x6782 -> c0, \x6783-\x6793 -> c52, \x6794-\x6799 -> c0, \x6800-\x6809 -> c52, \x6810-\x6822 -> c0, \x6823-\x6823 -> c51, 
+\x6824-\x6911 -> c0, \x6912-\x6916 -> c52, \x6917-\x6963 -> c51, \x6964-\x6980 -> c52, \x6981-\x6987 -> c51, \x6988-\x6991 -> c0, 
+\x6992-\x7001 -> c52, \x7002-\x7018 -> c0, \x7019-\x7027 -> c52, \x7028-\x7039 -> c0, \x7040-\x7042 -> c52, \x7043-\x7072 -> c51, 
+\x7073-\x7085 -> c52, \x7086-\x7087 -> c51, \x7088-\x7097 -> c52, \x7098-\x7141 -> c51, \x7142-\x7155 -> c52, \x7156-\x7167 -> c0, 
+\x7168-\x7203 -> c51, \x7204-\x7223 -> c52, \x7224-\x7231 -> c0, \x7232-\x7241 -> c52, \x7242-\x7244 -> c0, \x7245-\x7247 -> c51, 
+\x7248-\x7257 -> c52, \x7258-\x7293 -> c51, \x7294-\x7375 -> c0, \x7376-\x7378 -> c52, \x7379-\x7379 -> c0, \x7380-\x7400 -> c52, 
+\x7401-\x7404 -> c51, \x7405-\x7405 -> c52, \x7406-\x7409 -> c51, \x7410-\x7412 -> c52, \x7413-\x7414 -> c51, \x7415-\x7423 -> c0, 
+\x7424-\x7615 -> c51, \x7616-\x7654 -> c52, \x7655-\x7675 -> c0, \x7676-\x7679 -> c52, \x7680-\x7957 -> c51, \x7958-\x7959 -> c0, 
+\x7960-\x7965 -> c51, \x7966-\x7967 -> c0, \x7968-\x8005 -> c51, \x8006-\x8007 -> c0, \x8008-\x8013 -> c51, \x8014-\x8015 -> c0, 
+\x8016-\x8023 -> c51, \x8024-\x8024 -> c0, \x8025-\x8025 -> c51, \x8026-\x8026 -> c0, \x8027-\x8027 -> c51, \x8028-\x8028 -> c0, 
+\x8029-\x8029 -> c51, \x8030-\x8030 -> c0, \x8031-\x8061 -> c51, \x8062-\x8063 -> c0, \x8064-\x8116 -> c51, \x8117-\x8117 -> c0, 
+\x8118-\x8124 -> c51, \x8125-\x8125 -> c0, \x8126-\x8126 -> c51, \x8127-\x8129 -> c0, \x8130-\x8132 -> c51, \x8133-\x8133 -> c0, 
+\x8134-\x8140 -> c51, \x8141-\x8143 -> c0, \x8144-\x8147 -> c51, \x8148-\x8149 -> c0, \x8150-\x8155 -> c51, \x8156-\x8159 -> c0, 
+\x8160-\x8172 -> c51, \x8173-\x8177 -> c0, \x8178-\x8180 -> c51, \x8181-\x8181 -> c0, \x8182-\x8188 -> c51, \x8189-\x8203 -> c0, 
+\x8204-\x8205 -> c52, \x8206-\x8254 -> c0, \x8255-\x8256 -> c52, \x8257-\x8275 -> c0, \x8276-\x8276 -> c52, \x8277-\x8304 -> c0, 
+\x8305-\x8305 -> c51, \x8306-\x8318 -> c0, \x8319-\x8319 -> c51, \x8320-\x8335 -> c0, \x8336-\x8348 -> c51, \x8349-\x8399 -> c0, 
+\x8400-\x8412 -> c52, \x8413-\x8416 -> c0, \x8417-\x8417 -> c52, \x8418-\x8420 -> c0, \x8421-\x8432 -> c52, \x8433-\x8449 -> c0, 
+\x8450-\x8450 -> c51, \x8451-\x8454 -> c0, \x8455-\x8455 -> c51, \x8456-\x8457 -> c0, \x8458-\x8467 -> c51, \x8468-\x8468 -> c0, 
+\x8469-\x8469 -> c51, \x8470-\x8472 -> c0, \x8473-\x8477 -> c51, \x8478-\x8483 -> c0, \x8484-\x8484 -> c51, \x8485-\x8485 -> c0, 
+\x8486-\x8486 -> c51, \x8487-\x8487 -> c0, \x8488-\x8488 -> c51, \x8489-\x8489 -> c0, \x8490-\x8493 -> c51, \x8494-\x8494 -> c0, 
+\x8495-\x8505 -> c51, \x8506-\x8507 -> c0, \x8508-\x8511 -> c51, \x8512-\x8516 -> c0, \x8517-\x8521 -> c51, \x8522-\x8525 -> c0, 
+\x8526-\x8526 -> c51, \x8527-\x8543 -> c0, \x8544-\x8584 -> c51, \x8585-\x11263 -> c0, \x11264-\x11310 -> c51, \x11311-\x11311 -> c0, 
+\x11312-\x11358 -> c51, \x11359-\x11359 -> c0, \x11360-\x11492 -> c51, \x11493-\x11498 -> c0, \x11499-\x11502 -> c51, \x11503-\x11505 -> c52, 
+\x11506-\x11507 -> c51, \x11508-\x11519 -> c0, \x11520-\x11557 -> c51, \x11558-\x11558 -> c0, \x11559-\x11559 -> c51, \x11560-\x11564 -> c0, 
+\x11565-\x11565 -> c51, \x11566-\x11567 -> c0, \x11568-\x11623 -> c51, \x11624-\x11630 -> c0, \x11631-\x11631 -> c51, \x11632-\x11646 -> c0, 
+\x11647-\x11647 -> c52, \x11648-\x11670 -> c51, \x11671-\x11679 -> c0, \x11680-\x11686 -> c51, \x11687-\x11687 -> c0, \x11688-\x11694 -> c51, 
+\x11695-\x11695 -> c0, \x11696-\x11702 -> c51, \x11703-\x11703 -> c0, \x11704-\x11710 -> c51, \x11711-\x11711 -> c0, \x11712-\x11718 -> c51, 
+\x11719-\x11719 -> c0, \x11720-\x11726 -> c51, \x11727-\x11727 -> c0, \x11728-\x11734 -> c51, \x11735-\x11735 -> c0, \x11736-\x11742 -> c51, 
+\x11743-\x11743 -> c0, \x11744-\x11775 -> c52, \x11776-\x11822 -> c0, \x11823-\x11823 -> c51, \x11824-\x12292 -> c0, \x12293-\x12295 -> c51, 
+\x12296-\x12320 -> c0, \x12321-\x12329 -> c51, \x12330-\x12335 -> c52, \x12336-\x12336 -> c0, \x12337-\x12341 -> c51, \x12342-\x12343 -> c0, 
+\x12344-\x12348 -> c51, \x12349-\x12352 -> c0, \x12353-\x12438 -> c51, \x12439-\x12440 -> c0, \x12441-\x12442 -> c52, \x12443-\x12444 -> c0, 
+\x12445-\x12447 -> c51, \x12448-\x12448 -> c0, \x12449-\x12538 -> c51, \x12539-\x12539 -> c0, \x12540-\x12543 -> c51, \x12544-\x12548 -> c0, 
+\x12549-\x12589 -> c51, \x12590-\x12592 -> c0, \x12593-\x12686 -> c51, \x12687-\x12703 -> c0, \x12704-\x12730 -> c51, \x12731-\x12783 -> c0, 
+\x12784-\x12799 -> c51, \x12800-\x13311 -> c0, \x13312-\x19893 -> c51, \x19894-\x19967 -> c0, \x19968-\x40908 -> c51, \x40909-\x40959 -> c0, 
+\x40960-\x42124 -> c51, \x42125-\x42191 -> c0, \x42192-\x42237 -> c51, \x42238-\x42239 -> c0, \x42240-\x42508 -> c51, \x42509-\x42511 -> c0, 
+\x42512-\x42527 -> c51, \x42528-\x42537 -> c52, \x42538-\x42539 -> c51, \x42540-\x42559 -> c0, \x42560-\x42606 -> c51, \x42607-\x42607 -> c52, 
+\x42608-\x42611 -> c0, \x42612-\x42621 -> c52, \x42622-\x42622 -> c0, \x42623-\x42647 -> c51, \x42648-\x42654 -> c0, \x42655-\x42655 -> c52, 
+\x42656-\x42735 -> c51, \x42736-\x42737 -> c52, \x42738-\x42774 -> c0, \x42775-\x42783 -> c51, \x42784-\x42785 -> c0, \x42786-\x42888 -> c51, 
+\x42889-\x42890 -> c0, \x42891-\x42894 -> c51, \x42895-\x42895 -> c0, \x42896-\x42899 -> c51, \x42900-\x42911 -> c0, \x42912-\x42922 -> c51, 
+\x42923-\x42999 -> c0, \x43000-\x43009 -> c51, \x43010-\x43010 -> c52, \x43011-\x43013 -> c51, \x43014-\x43014 -> c52, \x43015-\x43018 -> c51, 
+\x43019-\x43019 -> c52, \x43020-\x43042 -> c51, \x43043-\x43047 -> c52, \x43048-\x43071 -> c0, \x43072-\x43123 -> c51, \x43124-\x43135 -> c0, 
+\x43136-\x43137 -> c52, \x43138-\x43187 -> c51, \x43188-\x43204 -> c52, \x43205-\x43215 -> c0, \x43216-\x43225 -> c52, \x43226-\x43231 -> c0, 
+\x43232-\x43249 -> c52, \x43250-\x43255 -> c51, \x43256-\x43258 -> c0, \x43259-\x43259 -> c51, \x43260-\x43263 -> c0, \x43264-\x43273 -> c52, 
+\x43274-\x43301 -> c51, \x43302-\x43309 -> c52, \x43310-\x43311 -> c0, \x43312-\x43334 -> c51, \x43335-\x43347 -> c52, \x43348-\x43359 -> c0, 
+\x43360-\x43388 -> c51, \x43389-\x43391 -> c0, \x43392-\x43395 -> c52, \x43396-\x43442 -> c51, \x43443-\x43456 -> c52, \x43457-\x43470 -> c0, 
+\x43471-\x43471 -> c51, \x43472-\x43481 -> c52, \x43482-\x43519 -> c0, \x43520-\x43560 -> c51, \x43561-\x43574 -> c52, \x43575-\x43583 -> c0, 
+\x43584-\x43586 -> c51, \x43587-\x43587 -> c52, \x43588-\x43595 -> c51, \x43596-\x43597 -> c52, \x43598-\x43599 -> c0, \x43600-\x43609 -> c52, 
+\x43610-\x43615 -> c0, \x43616-\x43638 -> c51, \x43639-\x43641 -> c0, \x43642-\x43642 -> c51, \x43643-\x43643 -> c52, \x43644-\x43647 -> c0, 
+\x43648-\x43695 -> c51, \x43696-\x43696 -> c52, \x43697-\x43697 -> c51, \x43698-\x43700 -> c52, \x43701-\x43702 -> c51, \x43703-\x43704 -> c52, 
+\x43705-\x43709 -> c51, \x43710-\x43711 -> c52, \x43712-\x43712 -> c51, \x43713-\x43713 -> c52, \x43714-\x43714 -> c51, \x43715-\x43738 -> c0, 
+\x43739-\x43741 -> c51, \x43742-\x43743 -> c0, \x43744-\x43754 -> c51, \x43755-\x43759 -> c52, \x43760-\x43761 -> c0, \x43762-\x43764 -> c51, 
+\x43765-\x43766 -> c52, \x43767-\x43776 -> c0, \x43777-\x43782 -> c51, \x43783-\x43784 -> c0, \x43785-\x43790 -> c51, \x43791-\x43792 -> c0, 
+\x43793-\x43798 -> c51, \x43799-\x43807 -> c0, \x43808-\x43814 -> c51, \x43815-\x43815 -> c0, \x43816-\x43822 -> c51, \x43823-\x43967 -> c0, 
+\x43968-\x44002 -> c51, \x44003-\x44010 -> c52, \x44011-\x44011 -> c0, \x44012-\x44013 -> c52, \x44014-\x44015 -> c0, \x44016-\x44025 -> c52, 
+\x44026-\x44031 -> c0, \x44032-\x55203 -> c51, \x55204-\x55215 -> c0, \x55216-\x55238 -> c51, \x55239-\x55242 -> c0, \x55243-\x55291 -> c51, 
+\x55292-\x63743 -> c0, \x63744-\x64109 -> c51, \x64110-\x64111 -> c0, \x64112-\x64217 -> c51, \x64218-\x64255 -> c0, \x64256-\x64262 -> c51, 
+\x64263-\x64274 -> c0, \x64275-\x64279 -> c51, \x64280-\x64284 -> c0, \x64285-\x64285 -> c51, \x64286-\x64286 -> c52, \x64287-\x64296 -> c51, 
+\x64297-\x64297 -> c0, \x64298-\x64310 -> c51, \x64311-\x64311 -> c0, \x64312-\x64316 -> c51, \x64317-\x64317 -> c0, \x64318-\x64318 -> c51, 
+\x64319-\x64319 -> c0, \x64320-\x64321 -> c51, \x64322-\x64322 -> c0, \x64323-\x64324 -> c51, \x64325-\x64325 -> c0, \x64326-\x64433 -> c51, 
+\x64434-\x64466 -> c0, \x64467-\x64829 -> c51, \x64830-\x64847 -> c0, \x64848-\x64911 -> c51, \x64912-\x64913 -> c0, \x64914-\x64967 -> c51, 
+\x64968-\x65007 -> c0, \x65008-\x65019 -> c51, \x65020-\x65023 -> c0, \x65024-\x65039 -> c52, \x65040-\x65055 -> c0, \x65056-\x65062 -> c52, 
+\x65063-\x65074 -> c0, \x65075-\x65076 -> c52, \x65077-\x65100 -> c0, \x65101-\x65103 -> c52, \x65104-\x65135 -> c0, \x65136-\x65140 -> c51, 
+\x65141-\x65141 -> c0, \x65142-\x65276 -> c51, \x65277-\x65295 -> c0, \x65296-\x65305 -> c52, \x65306-\x65312 -> c0, \x65313-\x65338 -> c51, 
+\x65339-\x65342 -> c0, \x65343-\x65343 -> c52, \x65344-\x65344 -> c0, \x65345-\x65370 -> c51, \x65371-\x65381 -> c0, \x65382-\x65470 -> c51, 
+\x65471-\x65473 -> c0, \x65474-\x65479 -> c51, \x65480-\x65481 -> c0, \x65482-\x65487 -> c51, \x65488-\x65489 -> c0, \x65490-\x65495 -> c51, 
+\x65496-\x65497 -> c0, \x65498-\x65500 -> c51, \x65501-\xInfinity -> c0, 
+state 0:
+    c1: state 1
+    c2: state 1
+    c3: state 2
+    c4: state 3
+    c5: state 4
+    c6: state 5
+    c7: state 6
+    c8: state 7
+    c9: state 8
+    c10: state 9
+    c11: state 10
+    c12: state 11
+    c13: state 12
+    c15: state 13
+    c16: state 14
+    c17: state 15
+    c18: state 16
+    c19: state 17
+    c20: state 18
+    c21: state 3
+    c22: state 19
+    c24: state 20
+    c25: state 21
+    c26: state 3
+    c27: state 3
+    c28: state 3
+    c29: state 3
+    c30: state 3
+    c31: state 3
+    c32: state 3
+    c33: state 3
+    c34: state 3
+    c35: state 3
+    c36: state 3
+    c37: state 3
+    c38: state 3
+    c39: state 3
+    c40: state 3
+    c41: state 3
+    c42: state 3
+    c43: state 3
+    c44: state 3
+    c45: state 3
+    c46: state 3
+    c47: state 3
+    c48: state 22
+    c49: state 23
+    c50: state 24
+    c51: state 25
+state 1:
+    end = 0
+    c1: state 1
+    c2: state 1
+state 2:
+    c0: state 26
+    c1: state 26
+    c3: state 27
+    c4: state 26
+    c5: state 26
+    c6: state 26
+    c7: state 26
+    c8: state 26
+    c9: state 26
+    c10: state 26
+    c11: state 26
+    c12: state 26
+    c13: state 26
+    c14: state 26
+    c15: state 26
+    c16: state 26
+    c17: state 26
+    c18: state 26
+    c19: state 26
+    c20: state 26
+    c21: state 26
+    c22: state 26
+    c23: state 28
+    c24: state 26
+    c25: state 26
+    c26: state 26
+    c27: state 26
+    c28: state 26
+    c29: state 26
+    c30: state 26
+    c31: state 26
+    c32: state 26
+    c33: state 26
+    c34: state 26
+    c35: state 26
+    c36: state 26
+    c37: state 26
+    c38: state 26
+    c39: state 26
+    c40: state 26
+    c41: state 26
+    c42: state 26
+    c43: state 26
+    c44: state 26
+    c45: state 26
+    c46: state 26
+    c47: state 26
+    c48: state 26
+    c49: state 26
+    c50: state 26
+    c51: state 26
+    c52: state 26
+state 3:
+    end = 3
+    c4: state 29
+    c14: state 30
+    c21: state 29
+    c26: state 29
+    c27: state 29
+    c28: state 29
+    c29: state 29
+    c30: state 29
+    c31: state 29
+    c32: state 29
+    c33: state 29
+    c34: state 29
+    c35: state 29
+    c36: state 29
+    c37: state 29
+    c38: state 29
+    c39: state 29
+    c40: state 29
+    c41: state 29
+    c42: state 29
+    c43: state 29
+    c44: state 29
+    c45: state 29
+    c46: state 29
+    c47: state 29
+    c51: state 31
+    c52: state 32
+state 4:
+    c5: state 33
+    c31: state 34
+    c34: state 35
+    c35: state 36
+    c37: state 37
+    c39: state 38
+    c40: state 39
+    c41: state 40
+    c42: state 41
+    c44: state 42
+    c45: state 43
+state 5:
+    c0: state 44
+    c1: state 44
+    c3: state 44
+    c4: state 44
+    c5: state 44
+    c6: state 45
+    c7: state 44
+    c8: state 44
+    c9: state 44
+    c10: state 44
+    c11: state 44
+    c12: state 44
+    c13: state 44
+    c14: state 44
+    c15: state 44
+    c16: state 44
+    c17: state 44
+    c18: state 44
+    c19: state 44
+    c20: state 44
+    c21: state 44
+    c22: state 44
+    c23: state 46
+    c24: state 44
+    c25: state 44
+    c26: state 44
+    c27: state 44
+    c28: state 44
+    c29: state 44
+    c30: state 44
+    c31: state 44
+    c32: state 44
+    c33: state 44
+    c34: state 44
+    c35: state 44
+    c36: state 44
+    c37: state 44
+    c38: state 44
+    c39: state 44
+    c40: state 44
+    c41: state 44
+    c42: state 44
+    c43: state 44
+    c44: state 44
+    c45: state 44
+    c46: state 44
+    c47: state 44
+    c48: state 44
+    c49: state 44
+    c50: state 44
+    c51: state 44
+    c52: state 44
+state 6:
+    end = 24
+state 7:
+    end = 25
+state 8:
+    end = 30
+state 9:
+    end = 31
+state 10:
+    end = 39
+state 11:
+    end = 32
+state 12:
+    c9: state 47
+    c13: state 48
+state 13:
+    end = 33
+state 14:
+    end = 35
+state 15:
+    end = 23
+state 16:
+    end = 26
+    c19: state 49
+state 17:
+    end = 22
+state 18:
+    end = 29
+state 19:
+    end = 27
+state 20:
+    end = 28
+state 21:
+    end = 38
+state 22:
+    end = 5
+state 23:
+    end = 37
+state 24:
+    end = 6
+state 25:
+    end = 3
+    c4: state 29
+    c14: state 30
+    c21: state 29
+    c26: state 29
+    c27: state 29
+    c28: state 29
+    c29: state 29
+    c30: state 29
+    c31: state 29
+    c32: state 29
+    c33: state 29
+    c34: state 29
+    c35: state 29
+    c36: state 29
+    c37: state 29
+    c38: state 29
+    c39: state 29
+    c40: state 29
+    c41: state 29
+    c42: state 29
+    c43: state 29
+    c44: state 29
+    c45: state 29
+    c46: state 29
+    c47: state 29
+    c51: state 31
+    c52: state 32
+state 26:
+    c0: state 26
+    c1: state 26
+    c3: state 27
+    c4: state 26
+    c5: state 26
+    c6: state 26
+    c7: state 26
+    c8: state 26
+    c9: state 26
+    c10: state 26
+    c11: state 26
+    c12: state 26
+    c13: state 26
+    c14: state 26
+    c15: state 26
+    c16: state 26
+    c17: state 26
+    c18: state 26
+    c19: state 26
+    c20: state 26
+    c21: state 26
+    c22: state 26
+    c23: state 28
+    c24: state 26
+    c25: state 26
+    c26: state 26
+    c27: state 26
+    c28: state 26
+    c29: state 26
+    c30: state 26
+    c31: state 26
+    c32: state 26
+    c33: state 26
+    c34: state 26
+    c35: state 26
+    c36: state 26
+    c37: state 26
+    c38: state 26
+    c39: state 26
+    c40: state 26
+    c41: state 26
+    c42: state 26
+    c43: state 26
+    c44: state 26
+    c45: state 26
+    c46: state 26
+    c47: state 26
+    c48: state 26
+    c49: state 26
+    c50: state 26
+    c51: state 26
+    c52: state 26
+state 27:
+    end = 4
+state 28:
+    c3: state 50
+    c6: state 50
+    c23: state 50
+    c28: state 50
+    c32: state 50
+    c39: state 50
+    c42: state 50
+    c44: state 50
+    c45: state 51
+    c46: state 51
+state 29:
+    end = 3
+    c4: state 29
+    c14: state 30
+    c21: state 29
+    c26: state 29
+    c27: state 29
+    c28: state 29
+    c29: state 29
+    c30: state 29
+    c31: state 29
+    c32: state 29
+    c33: state 29
+    c34: state 29
+    c35: state 29
+    c36: state 29
+    c37: state 29
+    c38: state 29
+    c39: state 29
+    c40: state 29
+    c41: state 29
+    c42: state 29
+    c43: state 29
+    c44: state 29
+    c45: state 29
+    c46: state 29
+    c47: state 29
+    c51: state 31
+    c52: state 32
+state 30:
+    end = 3
+    c4: state 29
+    c14: state 30
+    c21: state 29
+    c26: state 29
+    c27: state 29
+    c28: state 29
+    c29: state 29
+    c30: state 29
+    c31: state 29
+    c32: state 29
+    c33: state 29
+    c34: state 29
+    c35: state 29
+    c36: state 29
+    c37: state 29
+    c38: state 29
+    c39: state 29
+    c40: state 29
+    c41: state 29
+    c42: state 29
+    c43: state 29
+    c44: state 29
+    c45: state 29
+    c46: state 29
+    c47: state 29
+    c51: state 31
+    c52: state 32
+state 31:
+    end = 3
+    c4: state 29
+    c14: state 30
+    c21: state 29
+    c26: state 29
+    c27: state 29
+    c28: state 29
+    c29: state 29
+    c30: state 29
+    c31: state 29
+    c32: state 29
+    c33: state 29
+    c34: state 29
+    c35: state 29
+    c36: state 29
+    c37: state 29
+    c38: state 29
+    c39: state 29
+    c40: state 29
+    c41: state 29
+    c42: state 29
+    c43: state 29
+    c44: state 29
+    c45: state 29
+    c46: state 29
+    c47: state 29
+    c51: state 31
+    c52: state 32
+state 32:
+    end = 3
+    c4: state 29
+    c14: state 30
+    c21: state 29
+    c26: state 29
+    c27: state 29
+    c28: state 29
+    c29: state 29
+    c30: state 29
+    c31: state 29
+    c32: state 29
+    c33: state 29
+    c34: state 29
+    c35: state 29
+    c36: state 29
+    c37: state 29
+    c38: state 29
+    c39: state 29
+    c40: state 29
+    c41: state 29
+    c42: state 29
+    c43: state 29
+    c44: state 29
+    c45: state 29
+    c46: state 29
+    c47: state 29
+    c51: state 31
+    c52: state 32
+state 33:
+    end = 36
+state 34:
+    c38: state 52
+    c46: state 53
+state 35:
+    c31: state 54
+state 36:
+    c38: state 55
+    c39: state 56
+state 37:
+    c31: state 57
+state 38:
+    c40: state 58
+state 39:
+    c41: state 59
+    c45: state 60
+state 40:
+    c42: state 61
+state 41:
+    c35: state 62
+state 42:
+    c40: state 63
+    c47: state 64
+state 43:
+    c43: state 65
+state 44:
+    c0: state 44
+    c1: state 44
+    c3: state 44
+    c4: state 44
+    c5: state 44
+    c6: state 45
+    c7: state 44
+    c8: state 44
+    c9: state 44
+    c10: state 44
+    c11: state 44
+    c12: state 44
+    c13: state 44
+    c14: state 44
+    c15: state 44
+    c16: state 44
+    c17: state 44
+    c18: state 44
+    c19: state 44
+    c20: state 44
+    c21: state 44
+    c22: state 44
+    c23: state 46
+    c24: state 44
+    c25: state 44
+    c26: state 44
+    c27: state 44
+    c28: state 44
+    c29: state 44
+    c30: state 44
+    c31: state 44
+    c32: state 44
+    c33: state 44
+    c34: state 44
+    c35: state 44
+    c36: state 44
+    c37: state 44
+    c38: state 44
+    c39: state 44
+    c40: state 44
+    c41: state 44
+    c42: state 44
+    c43: state 44
+    c44: state 44
+    c45: state 44
+    c46: state 44
+    c47: state 44
+    c48: state 44
+    c49: state 44
+    c50: state 44
+    c51: state 44
+    c52: state 44
+state 45:
+    end = 4
+state 46:
+    c3: state 66
+    c6: state 66
+    c23: state 66
+    c28: state 66
+    c32: state 66
+    c39: state 66
+    c42: state 66
+    c44: state 66
+    c45: state 67
+    c46: state 67
+state 47:
+    c0: state 68
+    c1: state 68
+    c2: state 68
+    c3: state 68
+    c4: state 68
+    c5: state 68
+    c6: state 68
+    c7: state 68
+    c8: state 68
+    c9: state 69
+    c10: state 68
+    c11: state 68
+    c12: state 68
+    c13: state 70
+    c14: state 68
+    c15: state 68
+    c16: state 68
+    c17: state 68
+    c18: state 68
+    c19: state 68
+    c20: state 68
+    c21: state 68
+    c22: state 68
+    c23: state 68
+    c24: state 68
+    c25: state 68
+    c26: state 68
+    c27: state 68
+    c28: state 68
+    c29: state 68
+    c30: state 68
+    c31: state 68
+    c32: state 68
+    c33: state 68
+    c34: state 68
+    c35: state 68
+    c36: state 68
+    c37: state 68
+    c38: state 68
+    c39: state 68
+    c40: state 68
+    c41: state 68
+    c42: state 68
+    c43: state 68
+    c44: state 68
+    c45: state 68
+    c46: state 68
+    c47: state 68
+    c48: state 68
+    c49: state 68
+    c50: state 68
+    c51: state 68
+    c52: state 68
+state 48:
+    end = 2
+    c0: state 71
+    c1: state 71
+    c3: state 71
+    c4: state 71
+    c5: state 71
+    c6: state 71
+    c7: state 71
+    c8: state 71
+    c9: state 71
+    c10: state 71
+    c11: state 71
+    c12: state 71
+    c13: state 71
+    c14: state 71
+    c15: state 71
+    c16: state 71
+    c17: state 71
+    c18: state 71
+    c19: state 71
+    c20: state 71
+    c21: state 71
+    c22: state 71
+    c23: state 71
+    c24: state 71
+    c25: state 71
+    c26: state 71
+    c27: state 71
+    c28: state 71
+    c29: state 71
+    c30: state 71
+    c31: state 71
+    c32: state 71
+    c33: state 71
+    c34: state 71
+    c35: state 71
+    c36: state 71
+    c37: state 71
+    c38: state 71
+    c39: state 71
+    c40: state 71
+    c41: state 71
+    c42: state 71
+    c43: state 71
+    c44: state 71
+    c45: state 71
+    c46: state 71
+    c47: state 71
+    c48: state 71
+    c49: state 71
+    c50: state 71
+    c51: state 71
+    c52: state 71
+state 49:
+    end = 34
+state 50:
+    c0: state 26
+    c1: state 26
+    c3: state 27
+    c4: state 26
+    c5: state 26
+    c6: state 26
+    c7: state 26
+    c8: state 26
+    c9: state 26
+    c10: state 26
+    c11: state 26
+    c12: state 26
+    c13: state 26
+    c14: state 26
+    c15: state 26
+    c16: state 26
+    c17: state 26
+    c18: state 26
+    c19: state 26
+    c20: state 26
+    c21: state 26
+    c22: state 26
+    c23: state 28
+    c24: state 26
+    c25: state 26
+    c26: state 26
+    c27: state 26
+    c28: state 26
+    c29: state 26
+    c30: state 26
+    c31: state 26
+    c32: state 26
+    c33: state 26
+    c34: state 26
+    c35: state 26
+    c36: state 26
+    c37: state 26
+    c38: state 26
+    c39: state 26
+    c40: state 26
+    c41: state 26
+    c42: state 26
+    c43: state 26
+    c44: state 26
+    c45: state 26
+    c46: state 26
+    c47: state 26
+    c48: state 26
+    c49: state 26
+    c50: state 26
+    c51: state 26
+    c52: state 26
+state 51:
+    c14: state 72
+    c21: state 72
+    c27: state 72
+    c28: state 72
+    c29: state 72
+    c30: state 72
+    c31: state 72
+    c32: state 72
+state 52:
+    c41: state 73
+state 53:
+    c44: state 74
+state 54:
+    c27: state 75
+state 55:
+    c41: state 76
+state 56:
+    c35: state 77
+state 57:
+    c32: state 78
+    c46: state 79
+state 58:
+    c39: state 80
+state 59:
+    c44: state 81
+state 60:
+    c44: state 82
+state 61:
+    c31: state 83
+state 62:
+    c33: state 84
+state 63:
+    c36: state 85
+state 64:
+    c41: state 86
+state 65:
+    c31: state 87
+state 66:
+    c0: state 44
+    c1: state 44
+    c3: state 44
+    c4: state 44
+    c5: state 44
+    c6: state 45
+    c7: state 44
+    c8: state 44
+    c9: state 44
+    c10: state 44
+    c11: state 44
+    c12: state 44
+    c13: state 44
+    c14: state 44
+    c15: state 44
+    c16: state 44
+    c17: state 44
+    c18: state 44
+    c19: state 44
+    c20: state 44
+    c21: state 44
+    c22: state 44
+    c23: state 46
+    c24: state 44
+    c25: state 44
+    c26: state 44
+    c27: state 44
+    c28: state 44
+    c29: state 44
+    c30: state 44
+    c31: state 44
+    c32: state 44
+    c33: state 44
+    c34: state 44
+    c35: state 44
+    c36: state 44
+    c37: state 44
+    c38: state 44
+    c39: state 44
+    c40: state 44
+    c41: state 44
+    c42: state 44
+    c43: state 44
+    c44: state 44
+    c45: state 44
+    c46: state 44
+    c47: state 44
+    c48: state 44
+    c49: state 44
+    c50: state 44
+    c51: state 44
+    c52: state 44
+state 67:
+    c14: state 88
+    c21: state 88
+    c27: state 88
+    c28: state 88
+    c29: state 88
+    c30: state 88
+    c31: state 88
+    c32: state 88
+state 68:
+    c0: state 68
+    c1: state 68
+    c2: state 68
+    c3: state 68
+    c4: state 68
+    c5: state 68
+    c6: state 68
+    c7: state 68
+    c8: state 68
+    c9: state 69
+    c10: state 68
+    c11: state 68
+    c12: state 68
+    c13: state 89
+    c14: state 68
+    c15: state 68
+    c16: state 68
+    c17: state 68
+    c18: state 68
+    c19: state 68
+    c20: state 68
+    c21: state 68
+    c22: state 68
+    c23: state 68
+    c24: state 68
+    c25: state 68
+    c26: state 68
+    c27: state 68
+    c28: state 68
+    c29: state 68
+    c30: state 68
+    c31: state 68
+    c32: state 68
+    c33: state 68
+    c34: state 68
+    c35: state 68
+    c36: state 68
+    c37: state 68
+    c38: state 68
+    c39: state 68
+    c40: state 68
+    c41: state 68
+    c42: state 68
+    c43: state 68
+    c44: state 68
+    c45: state 68
+    c46: state 68
+    c47: state 68
+    c48: state 68
+    c49: state 68
+    c50: state 68
+    c51: state 68
+    c52: state 68
+state 69:
+    c0: state 90
+    c1: state 90
+    c2: state 90
+    c3: state 90
+    c4: state 90
+    c5: state 90
+    c6: state 90
+    c7: state 90
+    c8: state 90
+    c9: state 90
+    c10: state 90
+    c11: state 90
+    c12: state 90
+    c13: state 91
+    c14: state 90
+    c15: state 90
+    c16: state 90
+    c17: state 90
+    c18: state 90
+    c19: state 90
+    c20: state 90
+    c21: state 90
+    c22: state 90
+    c23: state 90
+    c24: state 90
+    c25: state 90
+    c26: state 90
+    c27: state 90
+    c28: state 90
+    c29: state 90
+    c30: state 90
+    c31: state 90
+    c32: state 90
+    c33: state 90
+    c34: state 90
+    c35: state 90
+    c36: state 90
+    c37: state 90
+    c38: state 90
+    c39: state 90
+    c40: state 90
+    c41: state 90
+    c42: state 90
+    c43: state 90
+    c44: state 90
+    c45: state 90
+    c46: state 90
+    c47: state 90
+    c48: state 90
+    c49: state 90
+    c50: state 90
+    c51: state 90
+    c52: state 90
+state 70:
+    c13: state 92
+state 71:
+    end = 2
+    c0: state 71
+    c1: state 71
+    c3: state 71
+    c4: state 71
+    c5: state 71
+    c6: state 71
+    c7: state 71
+    c8: state 71
+    c9: state 71
+    c10: state 71
+    c11: state 71
+    c12: state 71
+    c13: state 71
+    c14: state 71
+    c15: state 71
+    c16: state 71
+    c17: state 71
+    c18: state 71
+    c19: state 71
+    c20: state 71
+    c21: state 71
+    c22: state 71
+    c23: state 71
+    c24: state 71
+    c25: state 71
+    c26: state 71
+    c27: state 71
+    c28: state 71
+    c29: state 71
+    c30: state 71
+    c31: state 71
+    c32: state 71
+    c33: state 71
+    c34: state 71
+    c35: state 71
+    c36: state 71
+    c37: state 71
+    c38: state 71
+    c39: state 71
+    c40: state 71
+    c41: state 71
+    c42: state 71
+    c43: state 71
+    c44: state 71
+    c45: state 71
+    c46: state 71
+    c47: state 71
+    c48: state 71
+    c49: state 71
+    c50: state 71
+    c51: state 71
+    c52: state 71
+state 72:
+    c0: state 26
+    c1: state 26
+    c3: state 27
+    c4: state 26
+    c5: state 26
+    c6: state 26
+    c7: state 26
+    c8: state 26
+    c9: state 26
+    c10: state 26
+    c11: state 26
+    c12: state 26
+    c13: state 26
+    c14: state 93
+    c15: state 26
+    c16: state 26
+    c17: state 26
+    c18: state 26
+    c19: state 26
+    c20: state 26
+    c21: state 93
+    c22: state 26
+    c23: state 28
+    c24: state 26
+    c25: state 26
+    c26: state 26
+    c27: state 93
+    c28: state 93
+    c29: state 93
+    c30: state 93
+    c31: state 93
+    c32: state 93
+    c33: state 26
+    c34: state 26
+    c35: state 26
+    c36: state 26
+    c37: state 26
+    c38: state 26
+    c39: state 26
+    c40: state 26
+    c41: state 26
+    c42: state 26
+    c43: state 26
+    c44: state 26
+    c45: state 26
+    c46: state 26
+    c47: state 26
+    c48: state 26
+    c49: state 26
+    c50: state 26
+    c51: state 26
+    c52: state 26
+state 73:
+    c44: state 94
+state 74:
+    c42: state 95
+state 75:
+    c30: state 96
+state 76:
+    c40: state 97
+state 77:
+    c44: state 98
+state 78:
+    c44: state 99
+state 79:
+    end = 8
+state 80:
+    c27: state 100
+state 81:
+    c35: state 101
+state 82:
+    c41: state 102
+state 83:
+    c29: state 103
+state 84:
+    c34: state 104
+state 85:
+    c31: state 105
+state 86:
+    c31: state 106
+state 87:
+    end = 13
+state 88:
+    c0: state 44
+    c1: state 44
+    c3: state 44
+    c4: state 44
+    c5: state 44
+    c6: state 45
+    c7: state 44
+    c8: state 44
+    c9: state 44
+    c10: state 44
+    c11: state 44
+    c12: state 44
+    c13: state 44
+    c14: state 107
+    c15: state 44
+    c16: state 44
+    c17: state 44
+    c18: state 44
+    c19: state 44
+    c20: state 44
+    c21: state 107
+    c22: state 44
+    c23: state 46
+    c24: state 44
+    c25: state 44
+    c26: state 44
+    c27: state 107
+    c28: state 107
+    c29: state 107
+    c30: state 107
+    c31: state 107
+    c32: state 107
+    c33: state 44
+    c34: state 44
+    c35: state 44
+    c36: state 44
+    c37: state 44
+    c38: state 44
+    c39: state 44
+    c40: state 44
+    c41: state 44
+    c42: state 44
+    c43: state 44
+    c44: state 44
+    c45: state 44
+    c46: state 44
+    c47: state 44
+    c48: state 44
+    c49: state 44
+    c50: state 44
+    c51: state 44
+    c52: state 44
+state 89:
+    c0: state 68
+    c1: state 68
+    c2: state 68
+    c3: state 68
+    c4: state 68
+    c5: state 68
+    c6: state 68
+    c7: state 68
+    c8: state 68
+    c9: state 69
+    c10: state 68
+    c11: state 68
+    c12: state 68
+    c13: state 89
+    c14: state 68
+    c15: state 68
+    c16: state 68
+    c17: state 68
+    c18: state 68
+    c19: state 68
+    c20: state 68
+    c21: state 68
+    c22: state 68
+    c23: state 68
+    c24: state 68
+    c25: state 68
+    c26: state 68
+    c27: state 68
+    c28: state 68
+    c29: state 68
+    c30: state 68
+    c31: state 68
+    c32: state 68
+    c33: state 68
+    c34: state 68
+    c35: state 68
+    c36: state 68
+    c37: state 68
+    c38: state 68
+    c39: state 68
+    c40: state 68
+    c41: state 68
+    c42: state 68
+    c43: state 68
+    c44: state 68
+    c45: state 68
+    c46: state 68
+    c47: state 68
+    c48: state 68
+    c49: state 68
+    c50: state 68
+    c51: state 68
+    c52: state 68
+state 90:
+    c0: state 68
+    c1: state 68
+    c2: state 68
+    c3: state 68
+    c4: state 68
+    c5: state 68
+    c6: state 68
+    c7: state 68
+    c8: state 68
+    c9: state 69
+    c10: state 68
+    c11: state 68
+    c12: state 68
+    c13: state 70
+    c14: state 68
+    c15: state 68
+    c16: state 68
+    c17: state 68
+    c18: state 68
+    c19: state 68
+    c20: state 68
+    c21: state 68
+    c22: state 68
+    c23: state 68
+    c24: state 68
+    c25: state 68
+    c26: state 68
+    c27: state 68
+    c28: state 68
+    c29: state 68
+    c30: state 68
+    c31: state 68
+    c32: state 68
+    c33: state 68
+    c34: state 68
+    c35: state 68
+    c36: state 68
+    c37: state 68
+    c38: state 68
+    c39: state 68
+    c40: state 68
+    c41: state 68
+    c42: state 68
+    c43: state 68
+    c44: state 68
+    c45: state 68
+    c46: state 68
+    c47: state 68
+    c48: state 68
+    c49: state 68
+    c50: state 68
+    c51: state 68
+    c52: state 68
+state 91:
+    end = 1
+state 92:
+    c0: state 68
+    c1: state 68
+    c2: state 68
+    c3: state 68
+    c4: state 68
+    c5: state 68
+    c6: state 68
+    c7: state 68
+    c8: state 68
+    c9: state 69
+    c10: state 68
+    c11: state 68
+    c12: state 68
+    c13: state 70
+    c14: state 68
+    c15: state 68
+    c16: state 68
+    c17: state 68
+    c18: state 68
+    c19: state 68
+    c20: state 68
+    c21: state 68
+    c22: state 68
+    c23: state 68
+    c24: state 68
+    c25: state 68
+    c26: state 68
+    c27: state 68
+    c28: state 68
+    c29: state 68
+    c30: state 68
+    c31: state 68
+    c32: state 68
+    c33: state 68
+    c34: state 68
+    c35: state 68
+    c36: state 68
+    c37: state 68
+    c38: state 68
+    c39: state 68
+    c40: state 68
+    c41: state 68
+    c42: state 68
+    c43: state 68
+    c44: state 68
+    c45: state 68
+    c46: state 68
+    c47: state 68
+    c48: state 68
+    c49: state 68
+    c50: state 68
+    c51: state 68
+    c52: state 68
+state 93:
+    c0: state 26
+    c1: state 26
+    c3: state 27
+    c4: state 26
+    c5: state 26
+    c6: state 26
+    c7: state 26
+    c8: state 26
+    c9: state 26
+    c10: state 26
+    c11: state 26
+    c12: state 26
+    c13: state 26
+    c14: state 93
+    c15: state 26
+    c16: state 26
+    c17: state 26
+    c18: state 26
+    c19: state 26
+    c20: state 26
+    c21: state 93
+    c22: state 26
+    c23: state 28
+    c24: state 26
+    c25: state 26
+    c26: state 26
+    c27: state 93
+    c28: state 93
+    c29: state 93
+    c30: state 93
+    c31: state 93
+    c32: state 93
+    c33: state 26
+    c34: state 26
+    c35: state 26
+    c36: state 26
+    c37: state 26
+    c38: state 26
+    c39: state 26
+    c40: state 26
+    c41: state 26
+    c42: state 26
+    c43: state 26
+    c44: state 26
+    c45: state 26
+    c46: state 26
+    c47: state 26
+    c48: state 26
+    c49: state 26
+    c50: state 26
+    c51: state 26
+    c52: state 26
+state 94:
+    c47: state 108
+state 95:
+    c27: state 109
+state 96:
+    c31: state 110
+state 97:
+    c42: state 111
+state 98:
+    end = 19
+state 99:
+    end = 10
+state 100:
+    c43: state 112
+state 101:
+    c40: state 113
+state 102:
+    c45: state 114
+state 103:
+    end = 18
+state 104:
+    c44: state 115
+state 105:
+    c39: state 116
+state 106:
+    end = 17
+state 107:
+    c0: state 44
+    c1: state 44
+    c3: state 44
+    c4: state 44
+    c5: state 44
+    c6: state 45
+    c7: state 44
+    c8: state 44
+    c9: state 44
+    c10: state 44
+    c11: state 44
+    c12: state 44
+    c13: state 44
+    c14: state 107
+    c15: state 44
+    c16: state 44
+    c17: state 44
+    c18: state 44
+    c19: state 44
+    c20: state 44
+    c21: state 107
+    c22: state 44
+    c23: state 46
+    c24: state 44
+    c25: state 44
+    c26: state 44
+    c27: state 107
+    c28: state 107
+    c29: state 107
+    c30: state 107
+    c31: state 107
+    c32: state 107
+    c33: state 44
+    c34: state 44
+    c35: state 44
+    c36: state 44
+    c37: state 44
+    c38: state 44
+    c39: state 44
+    c40: state 44
+    c41: state 44
+    c42: state 44
+    c43: state 44
+    c44: state 44
+    c45: state 44
+    c46: state 44
+    c47: state 44
+    c48: state 44
+    c49: state 44
+    c50: state 44
+    c51: state 44
+    c52: state 44
+state 108:
+    end = 16
+state 109:
+    c26: state 117
+state 110:
+    c42: state 118
+state 111:
+    c44: state 119
+state 112:
+    c43: state 120
+state 113:
+    c39: state 121
+state 114:
+    c44: state 122
+state 115:
+    end = 11
+state 116:
+    end = 9
+state 117:
+    c27: state 123
+state 118:
+    end = 14
+state 119:
+    end = 21
+state 120:
+    c40: state 124
+state 121:
+    end = 7
+state 122:
+    end = 20
+state 123:
+    c42: state 125
+state 124:
+    c29: state 126
+state 125:
+    c33: state 127
+state 126:
+    end = 12
+state 127:
+    end = 15
+
+
+\x0 -> c0, \x1 -> c0, \x2 -> c0, \x3 -> c0, \x4 -> c0, \x5 -> c0, \x6 -> c0, \x7 -> c0, \x8 -> c0, \x9 -> c0, \xa -> c0, 
+\xb -> c0, \xc -> c0, \xd -> c0, \xe -> c0, \xf -> c0, \x10 -> c0, \x11 -> c0, \x12 -> c0, \x13 -> c0, \x14 -> c0, \x15 -> c0, 
+\x16 -> c0, \x17 -> c0, \x18 -> c0, \x19 -> c0, \x1a -> c0, \x1b -> c0, \x1c -> c0, \x1d -> c0, \x1e -> c0, \x1f -> c0, ' ' -> c0, 
+'!' -> c0, '"' -> c0, '#' -> c0, '$' -> c0, '%' -> c0, '&' -> c0, ''' -> c0, '(' -> c0, ')' -> c0, '*' -> c0, '+' -> c0, 
+',' -> c0, '-' -> c0, '.' -> c0, '/' -> c0, '0' -> c0, '1' -> c0, '2' -> c0, '3' -> c0, '4' -> c0, '5' -> c0, '6' -> c0, 
+'7' -> c0, '8' -> c0, '9' -> c0, ':' -> c0, ';' -> c0, '<' -> c0, '=' -> c0, '>' -> c0, '?' -> c0, '@' -> c0, 'A' -> c0, 
+'B' -> c0, 'C' -> c0, 'D' -> c0, 'E' -> c0, 'F' -> c0, 'G' -> c0, 'H' -> c0, 'I' -> c0, 'J' -> c0, 'K' -> c0, 'L' -> c0, 
+'M' -> c0, 'N' -> c0, 'O' -> c0, 'P' -> c0, 'Q' -> c0, 'R' -> c0, 'S' -> c0, 'T' -> c0, 'U' -> c0, 'V' -> c0, 'W' -> c0, 
+'X' -> c0, 'Y' -> c0, 'Z' -> c0, '[' -> c0, '\' -> c1, ']' -> c0, '^' -> c0, '_' -> c0, '`' -> c0, 'a' -> c0, 'b' -> c0, 
+'c' -> c0, 'd' -> c0, 'e' -> c0, 'f' -> c0, 'g' -> c0, 'h' -> c0, 'i' -> c0, 'j' -> c0, 'k' -> c0, 'l' -> c0, 'm' -> c0, 
+'n' -> c0, 'o' -> c0, 'p' -> c0, 'q' -> c0, 'r' -> c0, 's' -> c0, 't' -> c0, 'u' -> c0, 'v' -> c0, 'w' -> c0, 'x' -> c0, 
+'y' -> c0, 'z' -> c0, '{' -> c2, '|' -> c0, '}' -> c3, '~' -> c0, \x7f -> c0, \x80 -> c0, \x81 -> c0, \x82 -> c0, \x83 -> c0, 
+\x84 -> c0, \x85 -> c0, \x86 -> c0, \x87 -> c0, \x88 -> c0, \x89 -> c0, \x8a -> c0, \x8b -> c0, \x8c -> c0, \x8d -> c0, \x8e -> c0, 
+\x8f -> c0, \x90 -> c0, \x91 -> c0, \x92 -> c0, \x93 -> c0, \x94 -> c0, \x95 -> c0, \x96 -> c0, \x97 -> c0, \x98 -> c0, \x99 -> c0, 
+\x9a -> c0, \x9b -> c0, \x9c -> c0, \x9d -> c0, \x9e -> c0, \x9f -> c0, \xa0 -> c0, \xa1 -> c0, \xa2 -> c0, \xa3 -> c0, \xa4 -> c0, 
+\xa5 -> c0, \xa6 -> c0, \xa7 -> c0, \xa8 -> c0, \xa9 -> c0, \xaa -> c0, \xab -> c0, \xac -> c0, \xad -> c0, \xae -> c0, \xaf -> c0, 
+\xb0 -> c0, \xb1 -> c0, \xb2 -> c0, \xb3 -> c0, \xb4 -> c0, \xb5 -> c0, \xb6 -> c0, \xb7 -> c0, \xb8 -> c0, \xb9 -> c0, \xba -> c0, 
+\xbb -> c0, \xbc -> c0, \xbd -> c0, \xbe -> c0, \xbf -> c0, \xc0 -> c0, \xc1 -> c0, \xc2 -> c0, \xc3 -> c0, \xc4 -> c0, \xc5 -> c0, 
+\xc6 -> c0, \xc7 -> c0, \xc8 -> c0, \xc9 -> c0, \xca -> c0, \xcb -> c0, \xcc -> c0, \xcd -> c0, \xce -> c0, \xcf -> c0, \xd0 -> c0, 
+\xd1 -> c0, \xd2 -> c0, \xd3 -> c0, \xd4 -> c0, \xd5 -> c0, \xd6 -> c0, \xd7 -> c0, \xd8 -> c0, \xd9 -> c0, \xda -> c0, \xdb -> c0, 
+\xdc -> c0, \xdd -> c0, \xde -> c0, \xdf -> c0, \xe0 -> c0, \xe1 -> c0, \xe2 -> c0, \xe3 -> c0, \xe4 -> c0, \xe5 -> c0, \xe6 -> c0, 
+\xe7 -> c0, \xe8 -> c0, \xe9 -> c0, \xea -> c0, \xeb -> c0, \xec -> c0, \xed -> c0, \xee -> c0, \xef -> c0, \xf0 -> c0, \xf1 -> c0, 
+\xf2 -> c0, \xf3 -> c0, \xf4 -> c0, \xf5 -> c0, \xf6 -> c0, \xf7 -> c0, \xf8 -> c0, \xf9 -> c0, \xfa -> c0, \xfb -> c0, \xfc -> c0, 
+\xfd -> c0, \xfe -> c0, \xff -> c0, 
+\x256-\xInfinity -> c0, 
+state 0:
+    end = 40
+    c0: state 1
+    c1: state 2
+    c2: state 3
+    c3: state 4
+state 1:
+    end = 40
+    c0: state 1
+    c1: state 5
+state 2:
+    c0: state 6
+    c1: state 6
+    c2: state 7
+    c3: state 7
+state 3:
+    end = 42
+state 4:
+    end = 43
+state 5:
+    c0: state 6
+    c1: state 6
+state 6:
+    end = 40
+    c0: state 1
+    c1: state 5
+state 7:
+    end = 41
+
+
+\x0 -> c0, \x1 -> c0, \x2 -> c0, \x3 -> c0, \x4 -> c0, \x5 -> c0, \x6 -> c0, \x7 -> c0, \x8 -> c0, \x9 -> c0, \xa -> c0, 
+\xb -> c0, \xc -> c0, \xd -> c0, \xe -> c0, \xf -> c0, \x10 -> c0, \x11 -> c0, \x12 -> c0, \x13 -> c0, \x14 -> c0, \x15 -> c0, 
+\x16 -> c0, \x17 -> c0, \x18 -> c0, \x19 -> c0, \x1a -> c0, \x1b -> c0, \x1c -> c0, \x1d -> c0, \x1e -> c0, \x1f -> c0, ' ' -> c0, 
+'!' -> c0, '"' -> c0, '#' -> c0, '$' -> c0, '%' -> c0, '&' -> c0, ''' -> c0, '(' -> c0, ')' -> c0, '*' -> c0, '+' -> c0, 
+',' -> c0, '-' -> c0, '.' -> c0, '/' -> c0, '0' -> c0, '1' -> c0, '2' -> c0, '3' -> c0, '4' -> c0, '5' -> c0, '6' -> c0, 
+'7' -> c0, '8' -> c0, '9' -> c0, ':' -> c0, ';' -> c0, '<' -> c0, '=' -> c0, '>' -> c0, '?' -> c0, '@' -> c0, 'A' -> c0, 
+'B' -> c0, 'C' -> c0, 'D' -> c0, 'E' -> c0, 'F' -> c0, 'G' -> c0, 'H' -> c0, 'I' -> c0, 'J' -> c0, 'K' -> c0, 'L' -> c0, 
+'M' -> c0, 'N' -> c0, 'O' -> c0, 'P' -> c0, 'Q' -> c0, 'R' -> c0, 'S' -> c0, 'T' -> c0, 'U' -> c0, 'V' -> c0, 'W' -> c0, 
+'X' -> c0, 'Y' -> c0, 'Z' -> c0, '[' -> c0, '\' -> c0, ']' -> c0, '^' -> c0, '_' -> c0, '`' -> c0, 'a' -> c0, 'b' -> c0, 
+'c' -> c0, 'd' -> c0, 'e' -> c0, 'f' -> c0, 'g' -> c0, 'h' -> c0, 'i' -> c0, 'j' -> c0, 'k' -> c0, 'l' -> c0, 'm' -> c0, 
+'n' -> c0, 'o' -> c0, 'p' -> c0, 'q' -> c0, 'r' -> c0, 's' -> c0, 't' -> c0, 'u' -> c0, 'v' -> c0, 'w' -> c0, 'x' -> c0, 
+'y' -> c0, 'z' -> c0, '{' -> c0, '|' -> c0, '}' -> c0, '~' -> c0, \x7f -> c0, \x80 -> c0, \x81 -> c0, \x82 -> c0, \x83 -> c0, 
+\x84 -> c0, \x85 -> c0, \x86 -> c0, \x87 -> c0, \x88 -> c0, \x89 -> c0, \x8a -> c0, \x8b -> c0, \x8c -> c0, \x8d -> c0, \x8e -> c0, 
+\x8f -> c0, \x90 -> c0, \x91 -> c0, \x92 -> c0, \x93 -> c0, \x94 -> c0, \x95 -> c0, \x96 -> c0, \x97 -> c0, \x98 -> c0, \x99 -> c0, 
+\x9a -> c0, \x9b -> c0, \x9c -> c0, \x9d -> c0, \x9e -> c0, \x9f -> c0, \xa0 -> c0, \xa1 -> c0, \xa2 -> c0, \xa3 -> c0, \xa4 -> c0, 
+\xa5 -> c0, \xa6 -> c0, \xa7 -> c0, \xa8 -> c0, \xa9 -> c0, \xaa -> c0, \xab -> c0, \xac -> c0, \xad -> c0, \xae -> c0, \xaf -> c0, 
+\xb0 -> c0, \xb1 -> c0, \xb2 -> c0, \xb3 -> c0, \xb4 -> c0, \xb5 -> c0, \xb6 -> c0, \xb7 -> c0, \xb8 -> c0, \xb9 -> c0, \xba -> c0, 
+\xbb -> c0, \xbc -> c0, \xbd -> c0, \xbe -> c0, \xbf -> c0, \xc0 -> c0, \xc1 -> c0, \xc2 -> c0, \xc3 -> c0, \xc4 -> c0, \xc5 -> c0, 
+\xc6 -> c0, \xc7 -> c0, \xc8 -> c0, \xc9 -> c0, \xca -> c0, \xcb -> c0, \xcc -> c0, \xcd -> c0, \xce -> c0, \xcf -> c0, \xd0 -> c0, 
+\xd1 -> c0, \xd2 -> c0, \xd3 -> c0, \xd4 -> c0, \xd5 -> c0, \xd6 -> c0, \xd7 -> c0, \xd8 -> c0, \xd9 -> c0, \xda -> c0, \xdb -> c0, 
+\xdc -> c0, \xdd -> c0, \xde -> c0, \xdf -> c0, \xe0 -> c0, \xe1 -> c0, \xe2 -> c0, \xe3 -> c0, \xe4 -> c0, \xe5 -> c0, \xe6 -> c0, 
+\xe7 -> c0, \xe8 -> c0, \xe9 -> c0, \xea -> c0, \xeb -> c0, \xec -> c0, \xed -> c0, \xee -> c0, \xef -> c0, \xf0 -> c0, \xf1 -> c0, 
+\xf2 -> c0, \xf3 -> c0, \xf4 -> c0, \xf5 -> c0, \xf6 -> c0, \xf7 -> c0, \xf8 -> c0, \xf9 -> c0, \xfa -> c0, \xfb -> c0, \xfc -> c0, 
+\xfd -> c0, \xfe -> c0, \xff -> c0, 
+\x256-\xInfinity -> c0, 
+state 0:
+    c0: state 1
+state 1:
+    end = 44
+    c0: state 1
 
 
 state 0
