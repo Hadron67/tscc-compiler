@@ -61,91 +61,7 @@ function printTable<T>(tname: string, t: T[], align: number, lc: number, mapper:
     echoLine("");
     echo("]; ");
     } 
-function printState(state: State<LexAction[]>){ 
-    function arcToString(arc: Arc<LexAction[]>): string{
-        let ret: string[] = [];
-        arc.chars.forEach((from, to) => {
-            if(from === to){
-                ret.push(`c === ${from}`);
-            }
-            else if(from === 0 && to !== oo){
-                ret.push(`c <= ${to}`);
-            }
-            else if(from !== 0 && to === oo){
-                ret.push(`c >= ${from}`);
-            }
-            else if(from !== 0 && to !== oo){
-                ret.push(`(c >= ${from} && c <= ${to})`);
-            }
-            else {
-                // this merely happens
-                ret.push('true');
-            }
-        });
-        return ret.join(' || ');
-    }
-
-    let first = true; 
-    echoLine("");
-    echo("        case ");
-    echo(state.index );
-    echoLine(":");
-    echo("            ret.hasArc = ");
-    echo(state.arcs.length > 0 ? 'true' : 'false' );
-    echoLine(";");
-    echo("            ret.isEnd = ");
-    echo(state.endAction === null ? 'false' : 'true' );
-    echo(";");
-    if(state.arcs.length === 0){ 
-    echoLine("");
-    echo("            ret.state = -1;");
-    } else if(state.hasDefinate()){ 
-    echoLine("");
-    echo("            ret.state = ");
-    echo(state.arcs[0].to.index );
-    echo(";");
-    } else {
-        for(let arc of state.arcs){ 
-    echoLine("");
-    echo("            ");
-    echo(first ? (first = false, '') : 'else ' );
-    echo("if(");
-    echo(arcToString(arc) );
-    echoLine("){");
-    echo("                ret.state = ");
-    echo(arc.to.index );
-    echoLine(";");
-    echo("            }");
-    } 
-    echoLine("");
-    echoLine("            else {");
-    echoLine("                ret.state = -1;");
-    echo("            } ");
-    } 
-    echoLine("");
-    echo("            break;");
-    } 
-function printDFA(dfa: DFA<LexAction[]>, n: number){ 
-    echoLine("");
-    echo("function moveDFA");
-    echo(n );
-    echo("(c");
-    echo(ts(": number") );
-    echo(", ret");
-    echo(ts(": { state: number, hasArc: boolean, isEnd: boolean }") );
-    echoLine("){");
-    echo("    switch(ret.state){");
-    for(let state of dfa.states){
-        printState(state);
-    } 
-    echoLine("");
-    echoLine("        default:");
-    echoLine("            ret.state = -1;");
-    echoLine("            ret.hasArc = false;");
-    echoLine("    }");
-    echo("}");
-    }
-function printLexTokens(dfa: DFA<LexAction[]>, n: number){
+function printLexTokens(dfa: DFATable<LexAction[]>, n: number){
     function getAction(act: LexAction[]): number{
         for(let a of act){
             if(a.token !== -1){
@@ -158,30 +74,13 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
         return state.endAction ? getAction(state.endAction.data).toString() : '-1';
     });
 } 
-    let dfas = input.file.lexDFA; 
     echoLine("");
     echoLine("/*");
-    echoLine("    find the next state to go in the dfa");
-    echo("*/");
-    for(let i = 0, _a = dfas; i < _a.length; i++){
-    printDFA(_a[i], i);
-} 
-    echoLine("");
-    echoLine("");
-    echoLine("/*");
-    echoLine("    all the lexer data goes here.");
+    echoLine("    constants");
     echoLine("*/");
     echo("var ");
     echo(prefix );
-    echo("lexers = [");
-    for(let i = 0;i < dfas.length;i++){ 
-    echoLine("");
-    echo("    moveDFA");
-    echo(i );
-    echo(",");
-    } 
-    echoLine("");
-    echo("];");
+    echo("eol = '\\n'.charCodeAt(0);");
     if(ists){ 
     echoLine("");
     echoLine("interface DFATable{");
@@ -241,6 +140,9 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echo("};");
     } 
     echoLine("");
+    echoLine("/*");
+    echoLine("    dfa table definations");
+    echo("*/");
     for(let i = 0, _a = dfaTables; i < _a.length; i++){
     printDFATable(_a[i], i);
 } 
@@ -264,9 +166,29 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("");
     echoLine("];");
     echoLine("/*");
+    echoLine("    find unicode class");
+    echoLine("*/");
+    echo("function ");
+    echo(prefix );
+    echo("findUnicodeClass(uc");
+    echo(ts(": number[]") );
+    echo(", c");
+    echo(ts(": number") );
+    echoLine("){");
+    echoLine("    for(var i = 0; i < uc.length; i += 3){");
+    echoLine("        if(c >= uc[i + 1] && c <= uc[i + 2]){");
+    echoLine("            return uc[i];");
+    echoLine("        }");
+    echoLine("        else if(c < uc[i + 1]){");
+    echoLine("            return -1;");
+    echoLine("        }");
+    echoLine("    }");
+    echoLine("    return -1;");
+    echoLine("}");
+    echoLine("/*");
     echoLine("    tokens that a lexical dfa state can return");
     echo("*/");
-    for(let i = 0, _a = dfas; i < _a.length; i++){
+    for(let i = 0, _a = dfaTables; i < _a.length; i++){
     printLexTokens(_a[i], i);
 } 
     echoLine("");
@@ -381,7 +303,7 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     printTable<TokenDef>('tokenAlias', pt.g.tokens, 20, 3, t => t.alias ? `"${t.alias.replace(/"/g, '\\"')}"` : "null"); 
     let className = getOpt('className', 'Parser'); 
     echoLine("");
-    function printLexActionsFunc(dfa: DFA<LexAction[]>, n: number){
+    function printLexActionsFunc(dfa: DFATable<LexAction[]>, n: number){
     let codegen = {
         addBlock(b: string, line: number){ 
     echoLine("");
@@ -441,7 +363,7 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echo("(");
     echo(statevn + ts(": number"));
     echoLine("){");
-    echo("        let ");
+    echo("        var ");
     echo(prefix );
     echo("tk = ");
     echo(prefix );
@@ -860,7 +782,7 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echo(prefix );
     echoLine("handlers[name].push(cb);");
     echo("    }");
-    for(let i = 0, _a = dfas; i < _a.length; i++){
+    for(let i = 0, _a = dfaTables; i < _a.length; i++){
     printLexActionsFunc(_a[i], i);
 } 
     echoLine("");
@@ -877,7 +799,7 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echo(ts(": number") );
     echoLine("){");
     echo("        switch(lexstate){");
-    for(let i = 0;i < dfas.length;i++){ 
+    for(let i = 0;i < dfaTables.length;i++){ 
     echoLine("");
     echo("            case ");
     echo(i );
@@ -903,7 +825,7 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echo("rollback()");
     echo(ts(": string") );
     echoLine("{");
-    echo("        let ret = ");
+    echo("        var ret = ");
     echo(prefix );
     echo("matched.substr(");
     echo(prefix );
@@ -969,18 +891,20 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echo("    function ");
     echo(prefix );
     echo("consume(c");
-    echo(ts(": string") );
+    echo(ts(": number") );
     echoLine("){");
-    echo("        c === '\\n' ? (");
+    echo("        c === ");
+    echo(prefix );
+    echo("eol ? (");
     echo(prefix );
     echo("line++, ");
     echo(prefix );
     echo("column = 0) : (");
     echo(prefix );
-    echoLine("column += c.charCodeAt(0) > 0xff ? 2 : 1);");
+    echoLine("column += c > 0xff ? 2 : 1);");
     echo("        ");
     echo(prefix );
-    echoLine("matched += c;");
+    echoLine("matched += String.fromCharCode(c);");
     echo("        ");
     echo(prefix );
     echo("marker.state !== -1 && (");
@@ -996,24 +920,43 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("     */");
     echo("    function ");
     echo(prefix );
-    echo("acceptChar(c");
-    echo(ts(": string") );
+    echo("acceptChar(ccode");
+    echo(ts(": number") );
     echoLine("){");
     echo("        var lexstate = ");
     echo(prefix );
     echo("lexState[");
     echo(prefix );
     echoLine("lexState.length - 1];");
-    echo("        var retn = { state: ");
+    echo("        var ltable = ");
     echo(prefix );
-    echoLine("state, hasArc: false, isEnd: false };");
-    echo("        ");
+    echoLine("dfaTables[lexstate];");
+    echo("        var isEnd = ltable.isEnd[");
     echo(prefix );
-    echoLine("lexers[lexstate](c.charCodeAt(0), retn);");
-    echoLine("        if(retn.isEnd){");
+    echoLine("state] === 1;");
+    echo("        var hasArc = ltable.hasArc[");
+    echo(prefix );
+    echoLine("state] === 1;");
+    echoLine("        // get the class of the given character");
+    echo("        var cl = ccode < ltable.maxAsicii ? ltable.classTable[ccode] : ");
+    echo(prefix );
+    echoLine("findUnicodeClass(ltable.unicodeClassTable, ccode);");
+    echoLine("        // find the next state to go");
+    echoLine("        var nstate = -1;");
+    echoLine("        if(cl !== -1){");
+    echo("            var ind = ltable.disnext[");
+    echo(prefix );
+    echoLine("state] + cl;");
+    echo("            if(ind >= 0 && ind < ltable.pnext.length && ltable.checknext[ind] === ");
+    echo(prefix );
+    echoLine("state){");
+    echoLine("                nstate = ltable.pnext[ind];");
+    echoLine("            }");
+    echoLine("        }");
+    echoLine("        if(isEnd){");
     echoLine("            // if current state is a terminate state, be careful");
-    echoLine("            if(retn.hasArc){");
-    echoLine("                if(retn.state === -1){");
+    echoLine("            if(hasArc){");
+    echoLine("                if(nstate === -1){");
     echoLine("                    // nowhere to go, stay where we are");
     echo("                    ");
     echo(prefix );
@@ -1043,10 +986,10 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("mark();");
     echo("                    ");
     echo(prefix );
-    echoLine("state = retn.state;");
+    echoLine("state = nstate;");
     echo("                    return ");
     echo(prefix );
-    echoLine("consume(c);");
+    echoLine("consume(ccode);");
     echoLine("                }");
     echoLine("            }");
     echoLine("            else {");
@@ -1071,7 +1014,7 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("            }");
     echoLine("        }");
     echoLine("        else {");
-    echoLine("            if(retn.state === -1){");
+    echoLine("            if(nstate === -1){");
     echoLine("                // nowhere to go at current state, error may have occured.");
     echoLine("                // check marker to verify that");
     echo("                if(");
@@ -1097,7 +1040,7 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("                    // error occurs");
     echo("                    ");
     echo(prefix );
-    echo("emit('lexicalerror', c, ");
+    echo("emit('lexicalerror', String.fromCharCode(ccode), ");
     echo(prefix );
     echo("line, ");
     echo(prefix );
@@ -1109,11 +1052,11 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("            else {");
     echo("                ");
     echo(prefix );
-    echoLine("state = retn.state;");
+    echoLine("state = nstate;");
     echoLine("                // character consumed");
     echo("                return ");
     echo(prefix );
-    echoLine("consume(c);");
+    echoLine("consume(ccode);");
     echoLine("            }");
     echoLine("        }");
     echoLine("    }");
@@ -1133,18 +1076,18 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echoLine("            return true;");
     echoLine("        }");
     echoLine("        else {");
-    echo("            let lexstate = ");
+    echo("            var lexstate = ");
     echo(prefix );
     echo("lexState[");
     echo(prefix );
     echoLine("lexState.length - 1];");
-    echo("            let retn = { state: ");
+    echo("            var ltable = ");
     echo(prefix );
-    echoLine("state, hasArc: false, isEnd: false };");
-    echo("            ");
+    echoLine("dfaTables[lexstate];");
+    echo("            var isEnd = ltable.isEnd[");
     echo(prefix );
-    echoLine("lexers[lexstate](-1, retn);");
-    echoLine("            if(retn.isEnd){");
+    echoLine("state];");
+    echoLine("            if(isEnd){");
     echo("                ");
     echo(prefix );
     echo("doLexAction(lexstate, ");
@@ -1161,7 +1104,7 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echo("            else if(");
     echo(prefix );
     echoLine("marker.state !== -1){");
-    echo("                let s = ");
+    echo("                var s = ");
     echo(prefix );
     echoLine("rollback();");
     echo("                ");
@@ -1194,12 +1137,12 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
     echo("    function accept(s");
     echo(ts(": string") );
     echoLine("){");
-    echo("        for(let i = 0; i < s.length && !");
+    echo("        for(var i = 0; i < s.length && !");
     echo(prefix );
     echoLine("stop;){");
     echo("            ");
     echo(prefix );
-    echoLine("acceptChar(s.charAt(i)) && i++;");
+    echoLine("acceptChar(s.charCodeAt(i)) && i++;");
     echoLine("        }");
     echoLine("    }");
     echoLine("    /**");

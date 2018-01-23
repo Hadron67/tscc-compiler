@@ -44,63 +44,7 @@ var <%- prefix + tname %> = [
     } %>
 ]; 
 <% } 
-function printState(state: State<LexAction[]>){ 
-    function arcToString(arc: Arc<LexAction[]>): string{
-        let ret: string[] = [];
-        arc.chars.forEach((from, to) => {
-            if(from === to){
-                ret.push(`c === ${from}`);
-            }
-            else if(from === 0 && to !== oo){
-                ret.push(`c <= ${to}`);
-            }
-            else if(from !== 0 && to === oo){
-                ret.push(`c >= ${from}`);
-            }
-            else if(from !== 0 && to !== oo){
-                ret.push(`(c >= ${from} && c <= ${to})`);
-            }
-            else {
-                // this merely happens
-                ret.push('true');
-            }
-        });
-        return ret.join(' || ');
-    }
-
-    let first = true; %>
-        case <%- state.index %>:
-            ret.hasArc = <%- state.arcs.length > 0 ? 'true' : 'false' %>;
-            ret.isEnd = <%- state.endAction === null ? 'false' : 'true' %>;
-    <% if(state.arcs.length === 0){ %>
-            ret.state = -1;
-    <% } else if(state.hasDefinate()){ %>
-            ret.state = <%- state.arcs[0].to.index %>;
-    <% } else {
-        for(let arc of state.arcs){ %>
-            <%- first ? (first = false, '') : 'else ' %>if(<%- arcToString(arc) %>){
-                ret.state = <%- arc.to.index %>;
-            }
-        <% } %>
-            else {
-                ret.state = -1;
-            } 
-    <% } %>
-            break;
-<% } 
-function printDFA(dfa: DFA<LexAction[]>, n: number){ %>
-function moveDFA<%- n %>(c<%- ts(": number") %>, ret<%- ts(": { state: number, hasArc: boolean, isEnd: boolean }") %>){
-    switch(ret.state){
-    <% for(let state of dfa.states){
-        printState(state);
-    } %>
-        default:
-            ret.state = -1;
-            ret.hasArc = false;
-    }
-}
-<% }
-function printLexTokens(dfa: DFA<LexAction[]>, n: number){
+function printLexTokens(dfa: DFATable<LexAction[]>, n: number){
     function getAction(act: LexAction[]): number{
         for(let a of act){
             if(a.token !== -1){
@@ -113,22 +57,10 @@ function printLexTokens(dfa: DFA<LexAction[]>, n: number){
         return state.endAction ? getAction(state.endAction.data).toString() : '-1';
     });
 } %>
-<% let dfas = input.file.lexDFA; %>
 /*
-    find the next state to go in the dfa
+    constants
 */
-<% for(let i = 0, _a = dfas; i < _a.length; i++){
-    printDFA(_a[i], i);
-} %>
-
-/*
-    all the lexer data goes here.
-*/
-var <%- prefix %>lexers = [
-<% for(let i = 0;i < dfas.length;i++){ %>
-    moveDFA<%- i %>,
-<% } %>
-];
+var <%- prefix %>eol = '\n'.charCodeAt(0);
 <% if(ists){ %>
 interface DFATable{
     pnext: number[];
@@ -165,7 +97,9 @@ var <%- prefix %>lextable<%- String(n) + ts(': DFATable') %> = {
     hasArc: <%- tn('lexhasArc') %>
 };
 <% } %>
-
+/*
+    dfa table definations
+*/
 <% for(let i = 0, _a = dfaTables; i < _a.length; i++){
     printDFATable(_a[i], i);
 } %>
@@ -178,9 +112,23 @@ var <%- prefix %>dfaTables<%- ts(': DFATable[]') %> = [
 <% } %>
 ];
 /*
+    find unicode class
+*/
+function <%- prefix %>findUnicodeClass(uc<%- ts(": number[]") %>, c<%- ts(": number") %>){
+    for(var i = 0; i < uc.length; i += 3){
+        if(c >= uc[i + 1] && c <= uc[i + 2]){
+            return uc[i];
+        }
+        else if(c < uc[i + 1]){
+            return -1;
+        }
+    }
+    return -1;
+}
+/*
     tokens that a lexical dfa state can return
 */
-<% for(let i = 0, _a = dfas; i < _a.length; i++){
+<% for(let i = 0, _a = dfaTables; i < _a.length; i++){
     printLexTokens(_a[i], i);
 } %>
 
@@ -255,7 +203,7 @@ var <%- prefix %>actERR = <%- pt.stateCount + 1 %>;
 <% printTable<TokenDef>('tokenAlias', pt.g.tokens, 20, 3, t => t.alias ? `"${t.alias.replace(/"/g, '\\"')}"` : "null"); %>
 <% let className = getOpt('className', 'Parser'); %>
 
-<% function printLexActionsFunc(dfa: DFA<LexAction[]>, n: number){
+<% function printLexActionsFunc(dfa: DFATable<LexAction[]>, n: number){
     let codegen = {
         addBlock(b: string, line: number){ %>
                 <%- b.replace(/\$token/g, prefix + 'token').replace(/\$\$/g, prefix + 'sematicVal') %>
@@ -286,7 +234,7 @@ var <%- prefix %>actERR = <%- pt.stateCount + 1 %>;
     }
     let statevn = prefix + 'staten'; %>
     function <%- prefix %>doLexAction<%- n %>(<%- statevn + ts(": number")%>){
-        let <%- prefix %>tk = <%- prefix %>lexTokens<%- n %>[<%- statevn %>];
+        var <%- prefix %>tk = <%- prefix %>lexTokens<%- n %>[<%- statevn %>];
         <%- prefix %>tk !== -1 && <%- prefix %>prepareToken(<%- prefix %>tk);
         switch(<%- statevn %>){
     <% for(let i = 0, _a = dfa.states; i < _a.length; i++){ 
@@ -469,7 +417,7 @@ function create<%- className %>()<%- ts(': ' + className) %> {
         <%- prefix %>handlers[name] || (<%- prefix %>handlers[name] = []);
         <%- prefix %>handlers[name].push(cb);
     }
-<% for(let i = 0, _a = dfas; i < _a.length; i++){
+<% for(let i = 0, _a = dfaTables; i < _a.length; i++){
     printLexActionsFunc(_a[i], i);
 } %>
     /**
@@ -479,7 +427,7 @@ function create<%- className %>()<%- ts(': ' + className) %> {
      */
     function <%- prefix %>doLexAction(lexstate<%- ts(": number") %>, state<%- ts(": number") %>){
         switch(lexstate){
-<% for(let i = 0;i < dfas.length;i++){ %>
+<% for(let i = 0;i < dfaTables.length;i++){ %>
             case <%- i %>:
                 <%- prefix %>doLexAction<%- i %>(state);
                 break;
@@ -489,7 +437,7 @@ function create<%- className %>()<%- ts(': ' + className) %> {
         <%- prefix %>token.id !== -1 && <%- prefix %>returnToken();
     }
     function <%- prefix %>rollback()<%- ts(": string") %>{
-        let ret = <%- prefix %>matched.substr(<%- prefix %>matched.length - <%- prefix %>backupCount, <%- prefix %>backupCount);
+        var ret = <%- prefix %>matched.substr(<%- prefix %>matched.length - <%- prefix %>backupCount, <%- prefix %>backupCount);
         <%- prefix %>matched = <%- prefix %>matched.substr(0, <%- prefix %>matched.length - <%- prefix %>backupCount);
         <%- prefix %>backupCount = 0;
         <%- prefix %>line = <%- prefix %>marker.line;
@@ -504,9 +452,9 @@ function create<%- className %>()<%- ts(': ' + className) %> {
         <%- prefix %>marker.column = <%- prefix %>column;
         <%- prefix %>backupCount = 0;
     }
-    function <%- prefix %>consume(c<%- ts(": string") %>){
-        c === '\n' ? (<%- prefix %>line++, <%- prefix %>column = 0) : (<%- prefix %>column += c.charCodeAt(0) > 0xff ? 2 : 1);
-        <%- prefix %>matched += c;
+    function <%- prefix %>consume(c<%- ts(": number") %>){
+        c === <%- prefix %>eol ? (<%- prefix %>line++, <%- prefix %>column = 0) : (<%- prefix %>column += c > 0xff ? 2 : 1);
+        <%- prefix %>matched += String.fromCharCode(c);
         <%- prefix %>marker.state !== -1 && (<%- prefix %>backupCount++);
         return true;
     }
@@ -516,14 +464,25 @@ function create<%- className %>()<%- ts(': ' + className) %> {
      *  @api private
      *  @internal
      */
-    function <%- prefix %>acceptChar(c<%- ts(": string") %>){
+    function <%- prefix %>acceptChar(ccode<%- ts(": number") %>){
         var lexstate = <%- prefix %>lexState[<%- prefix %>lexState.length - 1];
-        var retn = { state: <%- prefix %>state, hasArc: false, isEnd: false };
-        <%- prefix %>lexers[lexstate](c.charCodeAt(0), retn);
-        if(retn.isEnd){
+        var ltable = <%- prefix %>dfaTables[lexstate];
+        var isEnd = ltable.isEnd[<%- prefix %>state] === 1;
+        var hasArc = ltable.hasArc[<%- prefix %>state] === 1;
+        // get the class of the given character
+        var cl = ccode < ltable.maxAsicii ? ltable.classTable[ccode] : <%- prefix %>findUnicodeClass(ltable.unicodeClassTable, ccode);
+        // find the next state to go
+        var nstate = -1;
+        if(cl !== -1){
+            var ind = ltable.disnext[<%- prefix %>state] + cl;
+            if(ind >= 0 && ind < ltable.pnext.length && ltable.checknext[ind] === <%- prefix %>state){
+                nstate = ltable.pnext[ind];
+            }
+        }
+        if(isEnd){
             // if current state is a terminate state, be careful
-            if(retn.hasArc){
-                if(retn.state === -1){
+            if(hasArc){
+                if(nstate === -1){
                     // nowhere to go, stay where we are
                     <%- prefix %>doLexAction(lexstate, <%- prefix %>state);
                     // recover
@@ -539,8 +498,8 @@ function create<%- className %>()<%- ts(': ' + className) %> {
                     // so we need to memorize this state before move on, in case if 
                     // an error occurs later, we could just return to this state.
                     <%- prefix %>mark();
-                    <%- prefix %>state = retn.state;
-                    return <%- prefix %>consume(c);
+                    <%- prefix %>state = nstate;
+                    return <%- prefix %>consume(ccode);
                 }
             }
             else {
@@ -555,7 +514,7 @@ function create<%- className %>()<%- ts(': ' + className) %> {
             }
         }
         else {
-            if(retn.state === -1){
+            if(nstate === -1){
                 // nowhere to go at current state, error may have occured.
                 // check marker to verify that
                 if(<%- prefix %>marker.state !== -1){
@@ -569,15 +528,15 @@ function create<%- className %>()<%- ts(': ' + className) %> {
                 }
                 else {
                     // error occurs
-                    <%- prefix %>emit('lexicalerror', c, <%- prefix %>line, <%- prefix %>column);
+                    <%- prefix %>emit('lexicalerror', String.fromCharCode(ccode), <%- prefix %>line, <%- prefix %>column);
                     // force consume
                     return true;
                 }
             }
             else {
-                <%- prefix %>state = retn.state;
+                <%- prefix %>state = nstate;
                 // character consumed
-                return <%- prefix %>consume(c);
+                return <%- prefix %>consume(ccode);
             }
         }
     }
@@ -589,17 +548,17 @@ function create<%- className %>()<%- ts(': ' + className) %> {
             return true;
         }
         else {
-            let lexstate = <%- prefix %>lexState[<%- prefix %>lexState.length - 1];
-            let retn = { state: <%- prefix %>state, hasArc: false, isEnd: false };
-            <%- prefix %>lexers[lexstate](-1, retn);
-            if(retn.isEnd){
+            var lexstate = <%- prefix %>lexState[<%- prefix %>lexState.length - 1];
+            var ltable = <%- prefix %>dfaTables[lexstate];
+            var isEnd = ltable.isEnd[<%- prefix %>state];
+            if(isEnd){
                 <%- prefix %>doLexAction(lexstate, <%- prefix %>state);
                 <%- prefix %>state = 0;
                 <%- prefix %>marker.state = -1;
                 return false;
             }
             else if(<%- prefix %>marker.state !== -1){
-                let s = <%- prefix %>rollback();
+                var s = <%- prefix %>rollback();
                 <%- prefix %>doLexAction(lexstate, <%- prefix %>state);
                 <%- prefix %>state = 0;
                 accept(s);
@@ -616,8 +575,8 @@ function create<%- className %>()<%- ts(': ' + className) %> {
      *  @api public
      */
     function accept(s<%- ts(": string") %>){
-        for(let i = 0; i < s.length && !<%- prefix %>stop;){
-            <%- prefix %>acceptChar(s.charAt(i)) && i++;
+        for(var i = 0; i < s.length && !<%- prefix %>stop;){
+            <%- prefix %>acceptChar(s.charCodeAt(i)) && i++;
         }
     }
     /**

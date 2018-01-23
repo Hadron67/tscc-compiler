@@ -1,88 +1,112 @@
-state 0(start)
-    [\x9,\xa],\xd,' ' -> state 1
-    '(' -> state 2
-    ')' -> state 3
-    '*' -> state 4
-    '+' -> state 5
-    '-' -> state 6
-    '.' -> state 7
-    '/' -> state 8
-    ['0','9'] -> state 9
-    'e' -> state 10
-    '|' -> state 11
+\x9 -> c0, \xa -> c0, 
+\xd -> c0, 
+' ' -> c0, 
+'(' -> c1, ')' -> c2, '*' -> c3, '+' -> c4, 
+'-' -> c5, '.' -> c6, '/' -> c7, '0' -> c8, '1' -> c8, '2' -> c8, '3' -> c8, '4' -> c8, '5' -> c8, '6' -> c8, 
+'7' -> c8, '8' -> c8, '9' -> c8, 
+'E' -> c9, 'I' -> c10, 'J' -> c11, 'K' -> c12, 
 
-state 1(end 0)
-    [\x9,\xa],\xd,' ' -> state 1
 
-state 2(end 10)
+'e' -> c13, 'i' -> c10, 'j' -> c11, 'k' -> c12, 
+'p' -> c14, 'x' -> c15, 
+'|' -> c16, 
 
-state 3(end 11)
 
-state 4(end 7)
 
-state 5(end 5)
 
-state 6(end 6)
 
-state 7
-    ['0','9'] -> state 12
 
-state 8(end 8)
 
-state 9(end 1)
-    '.' -> state 13
-    ['0','9'] -> state 9
-    'E','e' -> state 14
-    'I','i' -> state 15
-    'J','j' -> state 16
-    'K','k' -> state 17
 
-state 10
-    'x' -> state 18
 
-state 11(end 9)
 
-state 12(end 1)
-    ['0','9'] -> state 12
-    'E','e' -> state 14
-    'I','i' -> state 15
-    'J','j' -> state 16
-    'K','k' -> state 17
 
-state 13(end 1)
-    ['0','9'] -> state 19
-    'E','e' -> state 14
-    'I','i' -> state 15
-    'J','j' -> state 16
-    'K','k' -> state 17
 
-state 14
-    ['0','9'] -> state 20
 
-state 15(end 2)
-
-state 16(end 3)
-
-state 17(end 4)
-
-state 18
-    'p' -> state 21
-
-state 19(end 1)
-    ['0','9'] -> state 19
-    'E','e' -> state 14
-    'I','i' -> state 15
-    'J','j' -> state 16
-    'K','k' -> state 17
-
-state 20(end 1)
-    ['0','9'] -> state 20
-    'I','i' -> state 15
-    'J','j' -> state 16
-    'K','k' -> state 17
-
-state 21(end 12)
-
+state 0:
+    c0: state 1
+    c1: state 2
+    c2: state 3
+    c3: state 4
+    c4: state 5
+    c5: state 6
+    c6: state 7
+    c7: state 8
+    c8: state 9
+    c13: state 10
+    c16: state 11
+state 1:
+    end = 0
+    c0: state 1
+state 2:
+    end = 10
+state 3:
+    end = 11
+state 4:
+    end = 7
+state 5:
+    end = 5
+state 6:
+    end = 6
+state 7:
+    c8: state 12
+state 8:
+    end = 8
+state 9:
+    end = 1
+    c6: state 13
+    c8: state 9
+    c9: state 14
+    c10: state 15
+    c11: state 16
+    c12: state 17
+    c13: state 14
+state 10:
+    c15: state 18
+state 11:
+    end = 9
+state 12:
+    end = 1
+    c8: state 12
+    c9: state 14
+    c10: state 15
+    c11: state 16
+    c12: state 17
+    c13: state 14
+state 13:
+    end = 1
+    c8: state 19
+    c9: state 14
+    c10: state 15
+    c11: state 16
+    c12: state 17
+    c13: state 14
+state 14:
+    c8: state 20
+state 15:
+    end = 2
+state 16:
+    end = 3
+state 17:
+    end = 4
+state 18:
+    c14: state 21
+state 19:
+    end = 1
+    c8: state 19
+    c9: state 14
+    c10: state 15
+    c11: state 16
+    c12: state 17
+    c13: state 14
+state 20:
+    end = 1
+    c8: state 20
+    c10: state 15
+    c11: state 16
+    c12: state 17
+state 21:
+    end = 12
 
 
 state 0

@@ -63,278 +63,102 @@ function cut(s){
 }
 
 /*
-    find the next state to go in the dfa
+    constants
 */
-function moveDFA0(c, ret){
-    switch(ret.state){
-        case 0:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if((c >= 9 && c <= 10) || c === 13 || c === 32){
-                ret.state = 1;
-            }
-            else if(c === 40){
-                ret.state = 2;
-            }
-            else if(c === 41){
-                ret.state = 3;
-            }
-            else if(c === 42){
-                ret.state = 4;
-            }
-            else if(c === 43){
-                ret.state = 5;
-            }
-            else if(c === 45){
-                ret.state = 6;
-            }
-            else if(c === 46){
-                ret.state = 7;
-            }
-            else if(c === 47){
-                ret.state = 8;
-            }
-            else if((c >= 48 && c <= 57)){
-                ret.state = 9;
-            }
-            else if(c === 101){
-                ret.state = 10;
-            }
-            else if(c === 124){
-                ret.state = 11;
-            }
-            else {
-                ret.state = -1;
-            } 
-            break;
-        case 1:
-            ret.hasArc = true;
-            ret.isEnd = true;
-            if((c >= 9 && c <= 10) || c === 13 || c === 32){
-                ret.state = 1;
-            }
-            else {
-                ret.state = -1;
-            } 
-            break;
-        case 2:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
-            break;
-        case 3:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
-            break;
-        case 4:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
-            break;
-        case 5:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
-            break;
-        case 6:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
-            break;
-        case 7:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if((c >= 48 && c <= 57)){
-                ret.state = 12;
-            }
-            else {
-                ret.state = -1;
-            } 
-            break;
-        case 8:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
-            break;
-        case 9:
-            ret.hasArc = true;
-            ret.isEnd = true;
-            if(c === 46){
-                ret.state = 13;
-            }
-            else if((c >= 48 && c <= 57)){
-                ret.state = 9;
-            }
-            else if(c === 69 || c === 101){
-                ret.state = 14;
-            }
-            else if(c === 73 || c === 105){
-                ret.state = 15;
-            }
-            else if(c === 74 || c === 106){
-                ret.state = 16;
-            }
-            else if(c === 75 || c === 107){
-                ret.state = 17;
-            }
-            else {
-                ret.state = -1;
-            } 
-            break;
-        case 10:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if(c === 120){
-                ret.state = 18;
-            }
-            else {
-                ret.state = -1;
-            } 
-            break;
-        case 11:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
-            break;
-        case 12:
-            ret.hasArc = true;
-            ret.isEnd = true;
-            if((c >= 48 && c <= 57)){
-                ret.state = 12;
-            }
-            else if(c === 69 || c === 101){
-                ret.state = 14;
-            }
-            else if(c === 73 || c === 105){
-                ret.state = 15;
-            }
-            else if(c === 74 || c === 106){
-                ret.state = 16;
-            }
-            else if(c === 75 || c === 107){
-                ret.state = 17;
-            }
-            else {
-                ret.state = -1;
-            } 
-            break;
-        case 13:
-            ret.hasArc = true;
-            ret.isEnd = true;
-            if((c >= 48 && c <= 57)){
-                ret.state = 19;
-            }
-            else if(c === 69 || c === 101){
-                ret.state = 14;
-            }
-            else if(c === 73 || c === 105){
-                ret.state = 15;
-            }
-            else if(c === 74 || c === 106){
-                ret.state = 16;
-            }
-            else if(c === 75 || c === 107){
-                ret.state = 17;
-            }
-            else {
-                ret.state = -1;
-            } 
-            break;
-        case 14:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if((c >= 48 && c <= 57)){
-                ret.state = 20;
-            }
-            else {
-                ret.state = -1;
-            } 
-            break;
-        case 15:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
-            break;
-        case 16:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
-            break;
-        case 17:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
-            break;
-        case 18:
-            ret.hasArc = true;
-            ret.isEnd = false;
-            if(c === 112){
-                ret.state = 21;
-            }
-            else {
-                ret.state = -1;
-            } 
-            break;
-        case 19:
-            ret.hasArc = true;
-            ret.isEnd = true;
-            if((c >= 48 && c <= 57)){
-                ret.state = 19;
-            }
-            else if(c === 69 || c === 101){
-                ret.state = 14;
-            }
-            else if(c === 73 || c === 105){
-                ret.state = 15;
-            }
-            else if(c === 74 || c === 106){
-                ret.state = 16;
-            }
-            else if(c === 75 || c === 107){
-                ret.state = 17;
-            }
-            else {
-                ret.state = -1;
-            } 
-            break;
-        case 20:
-            ret.hasArc = true;
-            ret.isEnd = true;
-            if((c >= 48 && c <= 57)){
-                ret.state = 20;
-            }
-            else if(c === 73 || c === 105){
-                ret.state = 15;
-            }
-            else if(c === 74 || c === 106){
-                ret.state = 16;
-            }
-            else if(c === 75 || c === 107){
-                ret.state = 17;
-            }
-            else {
-                ret.state = -1;
-            } 
-            break;
-        case 21:
-            ret.hasArc = false;
-            ret.isEnd = true;
-            ret.state = -1;
-            break;
-        default:
-            ret.state = -1;
-            ret.hasArc = false;
-    }
-}
-
+var jjeol = '\n'.charCodeAt(0);
 /*
-    all the lexer data goes here.
+    dfa table definations
 */
-var jjlexers = [
-    moveDFA0,
+var jjlexpnext0 = [ 
+         1,     2,     3,     4,     5,     6,     7,     8,     9,    21,
+        20,    18,    12,    10,     1,    13,    11,     9,    14,    15,
+        16,    17,    14,    19,    14,    15,    16,    17,    14,    19,
+        14,    15,    16,    17,    14,    12,    14,    15,    16,    17,
+        14,    20,    -1,    15,    16,    17,    -1,    -1,    -1,    -1,
+    
+]; 
+var jjlexdisnext0 = [ 
+         0,    14,   -17,   -17,   -17,   -17,   -17,     4,   -17,     9,
+        -4,   -17,    27,    21,     2,   -17,   -17,   -17,    -5,    15,
+        33,   -17,
+]; 
+var jjlexchecknext0 = [ 
+         0,     0,     0,     0,     0,     0,     0,     0,     0,    18,
+        14,    10,     7,     0,     1,     9,     0,     9,     9,     9,
+         9,     9,     9,    19,    19,    19,    19,    19,    19,    13,
+        13,    13,    13,    13,    13,    12,    12,    12,    12,    12,
+        12,    20,    -1,    20,    20,    20,    -1,    -1,    -1,    -1,
+    
+]; 
+var jjlexclassTable0 = [ 
+        -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,     0,
+         0,    -1,    -1,     0,    -1,    -1,    -1,    -1,    -1,    -1,
+        -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+        -1,    -1,     0,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+         1,     2,     3,     4,    -1,     5,     6,     7,     8,     8,
+         8,     8,     8,     8,     8,     8,     8,     8,    -1,    -1,
+        -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,     9,
+        -1,    -1,    -1,    10,    11,    12,    -1,    -1,    -1,    -1,
+        -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+        -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+        -1,    13,    -1,    -1,    -1,    10,    11,    12,    -1,    -1,
+        -1,    -1,    14,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+        15,    -1,    -1,    -1,    16,    -1,    -1,    -1,    -1,    -1,
+        -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+        -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+        -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+        -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+        -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+        -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+        -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+        -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+        -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+        -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+        -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+        -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+        -1,    -1,    -1,    -1,    -1,    -1,
+]; 
+var jjlexunicodeClassTable0 = [ 
+    
+]; 
+var jjlexisEnd0 = [ 
+    0,1,1,1,1,1,1,0,1,1,0,1,1,1,0,
+    1,1,1,0,1,1,1,
+]; 
+var jjlexhasArc0 = [ 
+    1,1,0,0,0,0,0,1,0,1,1,0,1,1,1,
+    0,0,0,1,1,1,0,
+]; 
+var jjlextable0 = {
+    pnext: jjlexpnext0,
+    disnext: jjlexdisnext0,
+    checknext: jjlexchecknext0,
+    maxAsicii: 255,
+    classTable: jjlexclassTable0,
+    unicodeClassTable: jjlexunicodeClassTable0,
+    isEnd: jjlexisEnd0,
+    hasArc: jjlexhasArc0
+};
+/*
+    dfa tables
+*/
+var jjdfaTables = [
+    jjlextable0,
 ];
-
+/*
+    find unicode class
+*/
+function jjfindUnicodeClass(uc, c){
+    for(var i = 0; i < uc.length; i += 3){
+        if(c >= uc[i + 1] && c <= uc[i + 2]){
+            return uc[i];
+        }
+        else if(c < uc[i + 1]){
+            return -1;
+        }
+    }
+    return -1;
+}
 /*
     tokens that a lexical dfa state can return
 */
@@ -582,7 +406,7 @@ function createParser() {
         jjhandlers[name].push(cb);
     }
     function jjdoLexAction0(jjstaten){
-        let jjtk = jjlexTokens0[jjstaten];
+        var jjtk = jjlexTokens0[jjstaten];
         jjtk !== -1 && jjprepareToken(jjtk);
         switch(jjstaten){
             case 1:
@@ -630,7 +454,7 @@ function createParser() {
         jjtoken.id !== -1 && jjreturnToken();
     }
     function jjrollback(){
-        let ret = jjmatched.substr(jjmatched.length - jjbackupCount, jjbackupCount);
+        var ret = jjmatched.substr(jjmatched.length - jjbackupCount, jjbackupCount);
         jjmatched = jjmatched.substr(0, jjmatched.length - jjbackupCount);
         jjbackupCount = 0;
         jjline = jjmarker.line;
@@ -646,8 +470,8 @@ function createParser() {
         jjbackupCount = 0;
     }
     function jjconsume(c){
-        c === '\n' ? (jjline++, jjcolumn = 0) : (jjcolumn += c.charCodeAt(0) > 0xff ? 2 : 1);
-        jjmatched += c;
+        c === jjeol ? (jjline++, jjcolumn = 0) : (jjcolumn += c > 0xff ? 2 : 1);
+        jjmatched += String.fromCharCode(c);
         jjmarker.state !== -1 && (jjbackupCount++);
         return true;
     }
@@ -657,14 +481,25 @@ function createParser() {
      *  @api private
      *  @internal
      */
-    function jjacceptChar(c){
+    function jjacceptChar(ccode){
         var lexstate = jjlexState[jjlexState.length - 1];
-        var retn = { state: jjstate, hasArc: false, isEnd: false };
-        jjlexers[lexstate](c.charCodeAt(0), retn);
-        if(retn.isEnd){
+        var ltable = jjdfaTables[lexstate];
+        var isEnd = ltable.isEnd[jjstate] === 1;
+        var hasArc = ltable.hasArc[jjstate] === 1;
+        // get the class of the given character
+        var cl = ccode < ltable.maxAsicii ? ltable.classTable[ccode] : jjfindUnicodeClass(ltable.unicodeClassTable, ccode);
+        // find the next state to go
+        var nstate = -1;
+        if(cl !== -1){
+            var ind = ltable.disnext[jjstate] + cl;
+            if(ind >= 0 && ind < ltable.pnext.length && ltable.checknext[ind] === jjstate){
+                nstate = ltable.pnext[ind];
+            }
+        }
+        if(isEnd){
             // if current state is a terminate state, be careful
-            if(retn.hasArc){
-                if(retn.state === -1){
+            if(hasArc){
+                if(nstate === -1){
                     // nowhere to go, stay where we are
                     jjdoLexAction(lexstate, jjstate);
                     // recover
@@ -680,8 +515,8 @@ function createParser() {
                     // so we need to memorize this state before move on, in case if 
                     // an error occurs later, we could just return to this state.
                     jjmark();
-                    jjstate = retn.state;
-                    return jjconsume(c);
+                    jjstate = nstate;
+                    return jjconsume(ccode);
                 }
             }
             else {
@@ -696,7 +531,7 @@ function createParser() {
             }
         }
         else {
-            if(retn.state === -1){
+            if(nstate === -1){
                 // nowhere to go at current state, error may have occured.
                 // check marker to verify that
                 if(jjmarker.state !== -1){
@@ -710,15 +545,15 @@ function createParser() {
                 }
                 else {
                     // error occurs
-                    jjemit('lexicalerror', c, jjline, jjcolumn);
+                    jjemit('lexicalerror', String.fromCharCode(ccode), jjline, jjcolumn);
                     // force consume
                     return true;
                 }
             }
             else {
-                jjstate = retn.state;
+                jjstate = nstate;
                 // character consumed
-                return jjconsume(c);
+                return jjconsume(ccode);
             }
         }
     }
@@ -730,17 +565,17 @@ function createParser() {
             return true;
         }
         else {
-            let lexstate = jjlexState[jjlexState.length - 1];
-            let retn = { state: jjstate, hasArc: false, isEnd: false };
-            jjlexers[lexstate](-1, retn);
-            if(retn.isEnd){
+            var lexstate = jjlexState[jjlexState.length - 1];
+            var ltable = jjdfaTables[lexstate];
+            var isEnd = ltable.isEnd[jjstate];
+            if(isEnd){
                 jjdoLexAction(lexstate, jjstate);
                 jjstate = 0;
                 jjmarker.state = -1;
                 return false;
             }
             else if(jjmarker.state !== -1){
-                let s = jjrollback();
+                var s = jjrollback();
                 jjdoLexAction(lexstate, jjstate);
                 jjstate = 0;
                 accept(s);
@@ -757,8 +592,8 @@ function createParser() {
      *  @api public
      */
     function accept(s){
-        for(let i = 0; i < s.length && !jjstop;){
-            jjacceptChar(s.charAt(i)) && i++;
+        for(var i = 0; i < s.length && !jjstop;){
+            jjacceptChar(s.charCodeAt(i)) && i++;
         }
     }
     /**
