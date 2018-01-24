@@ -79,6 +79,7 @@ function unescape(s: string){
     let assoc: Assoc;
     let lexacts: LexAction[];
     let ruleLhs: JNode;
+    let least: boolean;
 }
 
 %init {ctx1: Context, b: GBuilder}{
@@ -122,6 +123,7 @@ function unescape(s: string){
     < INIT_DIR: '%init' >
     < OUTPUT_DIR: '%output' >
     < IMPORT_DIR: '%import' >
+    < LEAST_DIR: '%least' >
     < GT: ">" >
     < LT: "<" >
     < BRA: "(" >
@@ -147,7 +149,8 @@ function unescape(s: string){
     < ESCAPED_CHAR_IN_BLOCK: "\\" ["{", "}"] >: { $$ = newNode($token.val.charAt(1)); }
     < OPEN_BLOCK: "{" >: { $$ = nodeFromTrivalToken($token); }
     < CLOSE_BLOCK: "}" >: { $$ = nodeFromTrivalToken($token); }
-//    < TOKEN_REF_IN_BLOCK: '<' <ID> '>' >
+
+//    < TOKEN_REF_IN_BLOCK: %least '<' <ID> '>' >
 //    : { $$ = nodeFromToken($token); $$.val = $$.val.substr(1, $$.val.length - 2); }
 }
 %lex <IN_EPILOGUE> {
@@ -207,11 +210,11 @@ lexBody: lexBody lexBodyItem | ;
 lexBodyItem: 
     v = <NAME> { gb.lexBuilder.prepareVar(v); } 
     '=' '<' regexp '>' { gb.lexBuilder.endVar(); }
-|   newState '<' regexp '>' lexAction_ { gb.lexBuilder.end(lexacts, '(untitled)'); }
+|   newState '<' regexp '>' lexAction_ { gb.lexBuilder.end(lexacts, least, '(untitled)'); }
 |   newState '<' tn = <NAME> ':' regexp '>' lexAction_ { 
     let tdef = gb.defToken(tn, gb.lexBuilder.getPossibleAlias());
     lexacts.push(returnToken(tdef));
-    gb.lexBuilder.end(lexacts, tn.val);
+    gb.lexBuilder.end(lexacts, least, tn.val);
 }
 ;
 
@@ -232,8 +235,11 @@ lexActionItem:
 |   b = block { lexacts.push(blockAction(b.val, b.startLine)); }
 |   '=' s = <STRING> { lexacts.push(setImg(s.val)); }
 ;
-
-regexp: { gb.lexBuilder.enterUnion(); } union { gb.lexBuilder.leaveUnion(); };
+regexp: 
+    innerRegexp { least = false; }
+|   '%least' innerRegexp { least = true; }
+;
+innerRegexp: { gb.lexBuilder.enterUnion(); } union { gb.lexBuilder.leaveUnion(); };
 union:
     union '|' simpleRE { gb.lexBuilder.endUnionItem(); }
 |   simpleRE { gb.lexBuilder.endUnionItem(); }
@@ -250,7 +256,7 @@ rePostfix:
 |   { $$ = newNode(''); }
 ;
 primitiveRE: 
-    '(' regexp ')'
+    '(' innerRegexp ')'
 |   '[' inverse_ setRE_ ']'
 |   '<' n = <NAME> '>' { gb.lexBuilder.addVar(n); }
 |   '%import' '(' i = <STRING> ')' { gb.lexBuilder.importVar(i); }
@@ -316,7 +322,7 @@ innerBlockItem:
     <ANY_CODE> 
 |   <ESCAPED_CHAR_IN_BLOCK>
 // |   t = <TOKEN_REF_IN_BLOCK> 
-//    { $$ = newNode(gb.getTokenID(t)); }
+//     { $$ = newNode(gb.getTokenID(t)); }
 |   [+IN_BLOCK] '{' b = innerBlock [-] '}' 
     { $$ = newNode(''); $$.val = '{' + b.val + '}'; }
 ;

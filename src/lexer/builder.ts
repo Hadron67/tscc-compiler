@@ -30,7 +30,7 @@ export interface LexBuilder<T>{
     prepareLex();
     selectState(s: string);
     newState();
-    end(action: T, label: string);
+    end(action: T, least: boolean, label: string);
     enterUnion();
     endUnionItem();
     leaveUnion();
@@ -188,7 +188,7 @@ export function createLexBuilder<T>(ctx: Context): LexBuilder<T>{
             _head.epsilonTo(_currentState);
         });
     }
-    function end(action: T, label: string = '(untitled)'){
+    function end(action: T, least: boolean, label: string = '(untitled)'){
         for(let sn of _selectedStates){
             sn.label = `<${label}>`;
         }
@@ -196,6 +196,7 @@ export function createLexBuilder<T>(ctx: Context): LexBuilder<T>{
             let ac = new EndAction<T>();
             ac.id = ac.priority = _scount++;
             ac.data = action;
+            ac.least = least;
             _currentState.endAction = ac;
         });
     }
@@ -345,6 +346,9 @@ export function createLexBuilder<T>(ctx: Context): LexBuilder<T>{
         return dfas;
     }
     function loadSet(arcs: number[]){
+        if(arcs.length % 2 !== 0){
+            throw new Error('invalid character set array');
+        }
         beginSet(false);
         for(let i = 0, _a = arcs; i < _a.length; i += 2){
             addSetItemRaw(_a[i], _a[i + 1]);

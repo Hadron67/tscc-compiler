@@ -23,6 +23,7 @@ export class Arc<T>{
 }
 export class EndAction<T>{
     priority: number = 0;
+    least: boolean = false;
     id: number = 0;
     data: T = null;
 }
@@ -325,7 +326,7 @@ export class State<T>{
                 }
                 else {
                     dfaStates[cphash] = cpState;
-                    queue.push(cpState);
+                    (cpState.endAction === null || !cpState.endAction.least) && queue.push(cpState);
                     cpState.index = dfaCount++;
                     states.push(cpState);
                 }

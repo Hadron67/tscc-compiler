@@ -2,6 +2,12 @@ export interface Option{
     typeClass?: string;
     escape?: boolean;
 }
+export class InternalError{
+    constructor(public msg: string){}
+    toString(){
+        return this.msg;
+    }
+}
 export class JsccError{
     constructor(public msg: string, public type: string = 'Error'){}
     public toString(opt: Option = {}): string{
