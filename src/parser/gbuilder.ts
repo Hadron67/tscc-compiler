@@ -6,7 +6,7 @@ import { Assoc, TokenDef } from '../grammar/token-entry';
 import { JsccError, JsccWarning } from '../util/E';
 import { Context } from '../util/context';
 import { LexBuilder, createLexBuilder } from '../lexer/builder';
-import { LexAction, pushState } from '../lexer/action';
+import { LexAction } from '../lexer/action';
 import { Coroutine, CoroutineMgr } from '../util/coroutine';
 import { Located } from '../util/located';
 import { JNode, newNode, markPosition, Position, posToString } from './node';
@@ -53,12 +53,12 @@ export interface GBuilder{
     addRuleUseVar(vname: JNode);
     addRuleSematicVar(vname: JNode);
     addRuleItem(id: JNode, type: TokenRefType);
-    addAction(b: LexAction[]);
+    addAction(b: LexAction);
     defineRulePr(token: JNode, type: TokenRefType);
     commitRule();
-    addPushStateAction(acts: LexAction[], vn: JNode);
+    addPushStateAction(act: LexAction, vn: JNode);
     build(): File;
-    readonly lexBuilder: LexBuilder<LexAction[]>;
+    readonly lexBuilder: LexBuilder<LexAction>;
 }
 
 export function createFileBuilder(ctx: Context): GBuilder{
@@ -80,7 +80,7 @@ export function createFileBuilder(ctx: Context): GBuilder{
     let _pr = 1;
     let _onCommit: (() => any)[] = [];
     let _onDone: (() => any)[] = [];
-    let lexBuilder: LexBuilder<LexAction[]>;
+    let lexBuilder: LexBuilder<LexAction>;
     let _pseudoTokens: { [tname: string]: PseudoToken } = {};
 
     file.grammar = grammar;
@@ -364,7 +364,7 @@ export function createFileBuilder(ctx: Context): GBuilder{
             }
         }
     }
-    function addAction(b: LexAction[]){
+    function addAction(b: LexAction){
         var t = _top();
         if(t.action !== null){
             _splitAction();
@@ -407,10 +407,13 @@ export function createFileBuilder(ctx: Context): GBuilder{
         }
         _onCommit.length = 0;
     }
-    function addPushStateAction(acts: LexAction[], vn: JNode){
+    function addPushStateAction(act: LexAction, vn: JNode){
+        let n = act.placeHolder();
         lexBuilder.requiringState.wait(vn.val, (su, sn) => {
             if(su){
-                acts.push(pushState(sn));
+                act.set(n, c => {
+                    c.pushLexState(sn);
+                });
             }
             else {
                 singlePosErr(`state "${vn.val}" is undefined`, vn);

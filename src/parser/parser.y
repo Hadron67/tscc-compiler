@@ -9,7 +9,7 @@ import { Assoc } from '../grammar/token-entry';
 import { CompilationError as E, JsccError } from '../util/E';
 import { InputStream, endl } from '../util/io';
 import { Context } from '../util/context';
-import { LexAction, returnToken, blockAction, pushState, popState, setImg } from '../lexer/action';
+import { LexAction } from '../lexer/action';
 import { Position, JNode, newNode, markPosition, nodeBetween } from './node';
 import { File } from './file';
 
@@ -77,7 +77,7 @@ function unescape(s: string){
     let gb: GBuilder;
     let ctx: Context;
     let assoc: Assoc;
-    let lexacts: LexAction[];
+    let lexact: LexAction;
     let ruleLhs: JNode;
     let least: boolean;
 }
@@ -149,10 +149,19 @@ function unescape(s: string){
     < ESCAPED_CHAR_IN_BLOCK: "\\" ["{", "}"] >: { $$ = newNode($token.val.charAt(1)); }
     < OPEN_BLOCK: "{" >: { $$ = nodeFromTrivalToken($token); }
     < CLOSE_BLOCK: "}" >: { $$ = nodeFromTrivalToken($token); }
-
-//    < TOKEN_REF_IN_BLOCK: %least '<' <ID> '>' >
-//    : { $$ = nodeFromToken($token); $$.val = $$.val.substr(1, $$.val.length - 2); }
 }
+
+%lex <IN_ACTION_BLOCK> {
+    < ANY_CODE: "$"? ( [^"{", "}", "\\", "$"] | "\\" [^"{", "}", "$"] )* >: { $$ = newNode($token.val); }
+    < ESCAPED_CHAR_IN_BLOCK: "\\" ["{", "}", "$"] >: { $$ = newNode($token.val.charAt(1)); }
+    < OPEN_BLOCK: "{" >: { $$ = nodeFromTrivalToken($token); }
+    < CLOSE_BLOCK: "}" >: { $$ = nodeFromTrivalToken($token); }
+
+    < LHS_REF: %least "$$" >
+    < TOKEN_REF: %least "$token" >
+
+}
+
 %lex <IN_EPILOGUE> {
     < ANY_EPLOGUE_CODE: [^]+ >: { $$ = nodeFromToken($token); }
 }
@@ -210,19 +219,19 @@ lexBody: lexBody lexBodyItem | ;
 lexBodyItem: 
     v = <NAME> { gb.lexBuilder.prepareVar(v); } 
     '=' '<' regexp '>' { gb.lexBuilder.endVar(); }
-|   newState '<' regexp '>' lexAction_ { gb.lexBuilder.end(lexacts, least, '(untitled)'); }
+|   newState '<' regexp '>' lexAction_ { gb.lexBuilder.end(lexact, least, '(untitled)'); }
 |   newState '<' tn = <NAME> ':' regexp '>' lexAction_ { 
     let tdef = gb.defToken(tn, gb.lexBuilder.getPossibleAlias());
-    lexacts.push(returnToken(tdef));
-    gb.lexBuilder.end(lexacts, least, tn.val);
+    lexact.returnToken(tdef);
+    gb.lexBuilder.end(lexact, least, tn.val);
 }
 ;
 
 newState: { gb.lexBuilder.newState(); };
-lexAction_: ':' lexAction | { lexacts = []; };
+lexAction_: ':' lexAction | { lexact = new LexAction(); };
 lexAction: 
-    { lexacts = []; } '[' lexActions ']'
-|   b = block { lexacts = [blockAction(b.val, b.startLine)]; }
+    { lexact = new LexAction(); } '[' lexActions ']'
+|   { lexact = new LexAction(); } actionBlock 
 ;
 
 lexActions: 
@@ -230,10 +239,10 @@ lexActions:
 |   lexActionItem
 ;
 lexActionItem: 
-    '+' vn = <NAME> { gb.addPushStateAction(lexacts, vn); }
-|   '-' { lexacts.push(popState()); }
-|   b = block { lexacts.push(blockAction(b.val, b.startLine)); }
-|   '=' s = <STRING> { lexacts.push(setImg(s.val)); }
+    '+' vn = <NAME> { gb.addPushStateAction(lexact, vn); lexact.raw('; '); }
+|   '-' { lexact.popState(); lexact.raw('; '); }
+|   actionBlock
+|   '=' s = <STRING> { lexact.setImg(s.val); lexact.raw('; '); }
 ;
 regexp: 
     innerRegexp { least = false; }
@@ -280,7 +289,7 @@ arrow: ':' | '=>';
 rules: rules '|' rule | rule;
 rule: 
     { gb.prepareRule(ruleLhs); } 
-    ruleHead ruleBody ruleTrailer     { gb.commitRule(); } 
+    ruleHead ruleBody ruleTrailer { gb.commitRule(); } 
 ;
 ruleHead: '%use' '(' varUseList ')' | ;
 varUseList: 
@@ -298,7 +307,7 @@ ruleItem:
 |   vn = <NAME> '=' { gb.addRuleSematicVar(vn); } 
     t = <NAME> { gb.addRuleItem(t, TokenRefType.NAME); }
 |   itemName t = tokenRef { gb.addRuleItem(t, t.ext); }
-|   itemName lexAction { gb.addAction(lexacts); }
+|   itemName lexAction { gb.addAction(lexact); }
 ;
 tokenRef: 
     '<' t = <NAME> '>' { $$ = t; $$.ext = TokenRefType.TOKEN; } 
@@ -307,7 +316,7 @@ tokenRef:
 ruleTrailer:
     /* empty */
 |   rulePrec
-|   rulePrec lexAction { gb.addAction(lexacts); }
+|   rulePrec lexAction { gb.addAction(lexact); }
 ;
 rulePrec:
     '%prec' t = <NAME> { gb.defineRulePr(t, TokenRefType.NAME); }
@@ -321,12 +330,22 @@ innerBlock: innerBlock b = innerBlockItem { $$.val += b.val; } | { $$ = newNode(
 innerBlockItem: 
     <ANY_CODE> 
 |   <ESCAPED_CHAR_IN_BLOCK>
-// |   t = <TOKEN_REF_IN_BLOCK> 
-//     { $$ = newNode(gb.getTokenID(t)); }
 |   [+IN_BLOCK] '{' b = innerBlock [-] '}' 
     { $$ = newNode(''); $$.val = '{' + b.val + '}'; }
 ;
 
+actionBlock: 
+    [+IN_ACTION_BLOCK] open = "{" { lexact.beginBlock(open); }
+    innerActionBlock [-] close = "}" { lexact.endBlock(close); }
+;
+innerActionBlock: innerActionBlock innerActionBlockItem |;
+innerActionBlockItem:
+    c = <ANY_CODE> { lexact.raw(c.val); }
+|   c = <ESCAPED_CHAR_IN_BLOCK> { lexact.raw(c.val); }
+|   <LHS_REF> { lexact.lhs(); }
+|   <TOKEN_REF> { lexact.tokenObj(); }
+|   [+IN_ACTION_BLOCK] '{' { lexact.raw('\{'); } innerActionBlock [-] '}' { lexact.raw('\}'); }
+;
 %%
 function charPosition(c: string, line: number, column: number): Position{
     return {

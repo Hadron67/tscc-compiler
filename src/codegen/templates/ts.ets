@@ -43,20 +43,7 @@ var <%- prefix + tname %> = [
         count++ >= lc && (count = 1, echo(input.endl + tab));
     } %>
 ]; 
-<% } 
-function printLexTokens(dfa: DFATable<LexAction[]>, n: number){
-    function getAction(act: LexAction[]): number{
-        for(let a of act){
-            if(a.token !== -1){
-                return a.token;
-            }
-        }
-        return -1;
-    }
-    printTable<State<LexAction[]>>('lexTokens' + n, dfa.states, 6, 10, (state) => {
-        return state.endAction ? getAction(state.endAction.data).toString() : '-1';
-    });
-} %>
+<% } %>
 /*
     constants
 */
@@ -74,17 +61,17 @@ interface DFATable{
 };
 <% } %>
 <% let dfaTables = input.file.dfaTables; %>
-<% function printDFATable(t: DFATable<LexAction[]>, n: number){
+<% function printDFATable(t: DFATable<LexAction>, n: number){
     function tn(s: string){
         return prefix + s + String(n);
     }
-    printTable<Arc<LexAction[]>>('lexpnext' + n, t.pnext, 6, 10, a => a === null ? '-1' :  String(a.to.index));
+    printTable<Arc<LexAction>>('lexpnext' + n, t.pnext, 6, 10, a => a === null ? '-1' :  String(a.to.index));
     printTable<number>('lexdisnext' + n, t.disnext, 6, 10, a => String(a));
     printTable<number>('lexchecknext' + n, t.checknext, 6, 10, a => String(a));
     printTable<number>('lexclassTable' + n, t.classTable, 6, 10, a => String(a));
     printTable<number>('lexunicodeClassTable' + n, t.unicodeClassTable, 6, 10, a => String(a));
-    printTable<State<LexAction[]>>('lexisEnd' + n, t.states, 1, 15, a => a.endAction === null ? '0' : '1');
-    printTable<State<LexAction[]>>('lexhasArc' + n, t.states, 1, 15, a => a.arcs.length === 0 ? '0' : '1');
+    printTable<State<LexAction>>('lexisEnd' + n, t.states, 1, 15, a => a.endAction === null ? '0' : '1');
+    printTable<State<LexAction>>('lexhasArc' + n, t.states, 1, 15, a => a.arcs.length === 0 ? '0' : '1');
 %>
 var <%- prefix %>lextable<%- String(n) + ts(': DFATable') %> = {
     pnext: <%- tn('lexpnext') %>,
@@ -129,7 +116,9 @@ function <%- prefix %>findUnicodeClass(uc<%- ts(": number[]") %>, c<%- ts(": num
     tokens that a lexical dfa state can return
 */
 <% for(let i = 0, _a = dfaTables; i < _a.length; i++){
-    printLexTokens(_a[i], i);
+    printTable<State<LexAction>>('lexTokens' + i, _a[i].states, 6, 10, s => { 
+        return s.endAction === null || s.endAction.data.token === null ? '-1' : String(s.endAction.data.token.index);
+    });
 } %>
 
 <% let pt = input.pt; %>
@@ -203,46 +192,43 @@ var <%- prefix %>actERR = <%- pt.stateCount + 1 %>;
 <% printTable<TokenDef>('tokenAlias', pt.g.tokens, 20, 3, t => t.alias ? `"${t.alias.replace(/"/g, '\\"')}"` : "null"); %>
 <% let className = getOpt('className', 'Parser'); %>
 
-<% function printLexActionsFunc(dfa: DFATable<LexAction[]>, n: number){
+<% function printLexActionsFunc(dfa: DFATable<LexAction>, n: number){
     let codegen = {
-        addBlock(b: string, line: number){ %>
-                <%- b.replace(/\$token/g, prefix + 'token').replace(/\$\$/g, prefix + 'sematicVal') %>
-        <% },
-        pushLexState(n: number){ %>
-                <%- prefix %>lexState.push(<%- n %>);
-        <% },
-        popLexState(){ %>
-                <%- prefix %>lexState.pop();
-        <% },
-        setImg(n: string){ %>
-                <%- prefix %>setImg("<%- n %>");
-        <% },
-        returnToken(t: TokenDef){ %>
-                this.<%- prefix %>token = {
-                    id: <%- t.index %>,
-                    val: this.<%- prefix %>matched.join('')
-                };
-        <% }
-    }; 
-    function hasNormalAction(a: LexAction[]){
-        for(let act of a){
-            if(act.token === -1){
-                return true;
-            }
-        }
-        return false;
-    }
+        raw(s: string){
+            echo(s);
+        },
+        beginBlock(pos: Position){
+            echo('{');
+        },
+        endBlock(pos: Position){
+            echo('}');
+        },
+        pushLexState(n: number){
+            echo(`${prefix}lexState.push(${n})`);
+        },
+        popLexState(){
+            echo(`${prefix}lexState.pop()`);
+        },
+        setImg(n: string){
+            echo(`${prefix}setImg("${n}")`);
+        },
+        tokenObj(){
+            echo(prefix + 'token');
+        }, // $token
+        lhs(){
+            echo(prefix + "sematicVal");
+        } // $$
+    };
     let statevn = prefix + 'staten'; %>
     function <%- prefix %>doLexAction<%- n %>(<%- statevn + ts(": number")%>){
         var <%- prefix %>tk = <%- prefix %>lexTokens<%- n %>[<%- statevn %>];
         <%- prefix %>tk !== -1 && <%- prefix %>prepareToken(<%- prefix %>tk);
         switch(<%- statevn %>){
     <% for(let i = 0, _a = dfa.states; i < _a.length; i++){ 
-        if(_a[i].endAction !== null && hasNormalAction(_a[i].endAction.data)){ %>
+        if(_a[i].endAction !== null && _a[i].endAction.data.actions.length > 0){ %>
             case <%- i %>:
-            <% for(let act of _a[i].endAction.data){
-                act.token === -1 && act.toCode(codegen);
-            } %>
+                <% echoLine(''); echo('                '); %>
+                <% _a[i].endAction.data.toCode(codegen); %>
                 break;
         <% }
     } %>
@@ -592,35 +578,46 @@ function create<%- className %>()<%- ts(': ' + className) %> {
     }
 <% function printReduceActions(){
     let codegen = {
-        addBlock(b: string, line: number){ %>
-                {<%- b.replace(/\$\$/g, prefix + 'top') %>}
-        <% },
-        pushLexState(n: number){ %>
-                <%- prefix %>lexState.push(<%- n %>);
-        <% },
-        popLexState(){ %>
-                <%- prefix %>lexState.pop();
-        <% },
-        setImg(n: string){ %>
-                <%- prefix %>setImg("<%- n %>");
-        <% },
-        returnToken(t: TokenDef){
-            // should not happen
-        }
+        raw(s: string){
+            echo(s);
+        },
+        beginBlock(pos: Position){
+            echo('{');
+        },
+        endBlock(pos: Position){
+            echo('} ');
+        },
+        pushLexState(n: number){
+            echo(`${prefix}lexState.push(${n})`);
+        },
+        popLexState(){
+            echo(`${prefix}lexState.pop()`);
+        },
+        setImg(n: string){
+            echo(`${prefix}setImg("${n}")`);
+        },
+        tokenObj(){
+            echo(prefix + 'token');
+        }, // $token
+        lhs(){
+            echo(prefix + "top");
+        } // $$
     };
     for(let rule of input.file.grammar.rules){
+        let newLine = true;
         if(rule.action !== null){ %>
             case <%- rule.index %>:
                 /* <%- rule.toString() %> */
             <% for(let uvar in rule.vars){ %>
                 var <%- uvar %> = <%- prefix %>sematicS[<%- prefix %>sp - <%- rule.rhs.length - rule.vars[uvar].val %>];
-            <% }
+            <% newLine = false; 
+            }
             for(let uvar2 in rule.usedVars){ %>
                 var <%- uvar2 %> = <%- prefix %>sematicS[<%- prefix %>sp - <%- rule.usedVars[uvar2].val %>];
-            <% }
-            for(let act of rule.action){
-                act.toCode(codegen);
-            } %>
+            <% newLine = false; 
+            }
+            newLine && (echoLine(''), echo('                '));
+            rule.action.toCode(codegen); %>
                 break;
         <% }
     }

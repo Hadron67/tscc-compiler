@@ -20,7 +20,7 @@ interface Located<T>{
 export class Rule{
     public pr: number = -1;
     public rhs: number[] = [];
-    public action: LexAction[] = null;
+    public action: LexAction = null;
     public index = 0;
     public vars: { [s: string]: Located<number> } = {};
     public usedVars: { [s: string]: Located<number> } = {};

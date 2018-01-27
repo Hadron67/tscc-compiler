@@ -7,8 +7,8 @@ import { DFATable } from '../lexer/dfa-table';
 export class File{
     name: string;
     grammar: Grammar = null;
-    lexDFA: DFA<LexAction[]>[] = [];
-    dfaTables: DFATable<LexAction[]>[] = [];
+    lexDFA: DFA<LexAction>[] = [];
+    dfaTables: DFATable<LexAction>[] = [];
     opt: {[s: string]: { name: JNode, val: JNode }} = {};
     
     prefix: string = 'jj';

@@ -2755,47 +2755,6 @@ function createLexBuilder(ctx) {
     }
 }
 
-function noCode(c) {
-}
-function returnToken(tk) {
-    return {
-        toCode: noCode,
-        token: tk.index
-    };
-}
-function pushState(n) {
-    return {
-        toCode: function (c) {
-            c.pushLexState(n);
-        },
-        token: -1
-    };
-}
-function popState() {
-    return {
-        toCode: function (c) {
-            c.popLexState();
-        },
-        token: -1
-    };
-}
-function blockAction(b, line) {
-    return {
-        toCode: function (c) {
-            c.addBlock(b, line);
-        },
-        token: -1
-    };
-}
-function setImg(img) {
-    return {
-        toCode: function (c) {
-            c.setImg(img);
-        },
-        token: -1
-    };
-}
-
 var TokenRefType;
 (function (TokenRefType) {
     TokenRefType[TokenRefType["TOKEN"] = 0] = "TOKEN";
@@ -3130,10 +3089,13 @@ function createFileBuilder(ctx) {
         }
         _onCommit.length = 0;
     }
-    function addPushStateAction(acts, vn) {
+    function addPushStateAction(act, vn) {
+        var n = act.placeHolder();
         lexBuilder.requiringState.wait(vn.val, function (su, sn) {
             if (su) {
-                acts.push(pushState(sn));
+                act.set(n, function (c) {
+                    c.pushLexState(sn);
+                });
             }
             else {
                 singlePosErr("state \"" + vn.val + "\" is undefined", vn);
@@ -3170,6 +3132,71 @@ function createFileBuilder(ctx) {
         return file;
     }
 }
+
+var LexAction = (function () {
+    function LexAction() {
+        this.token = null;
+        this.actions = [];
+    }
+    LexAction.prototype.toCode = function (c) {
+        for (var _i = 0, _a = this.actions; _i < _a.length; _i++) {
+            var act = _a[_i];
+            act(c);
+        }
+    };
+    LexAction.prototype.returnToken = function (tk) {
+        this.token = tk;
+    };
+    LexAction.prototype.raw = function (s) {
+        this.actions.push(function (c) {
+            c.raw(s);
+        });
+    };
+    LexAction.prototype.pushState = function (n) {
+        this.actions.push(function (c) {
+            c.pushLexState(n);
+        });
+    };
+    LexAction.prototype.placeHolder = function () {
+        var ret = this.actions.length;
+        this.actions.push(null);
+        return ret;
+    };
+    LexAction.prototype.set = function (n, cb) {
+        this.actions[n] = cb;
+    };
+    LexAction.prototype.popState = function () {
+        this.actions.push(function (c) {
+            c.popLexState();
+        });
+    };
+    LexAction.prototype.beginBlock = function (pos) {
+        this.actions.push(function (c) {
+            c.beginBlock(pos);
+        });
+    };
+    LexAction.prototype.setImg = function (s) {
+        this.actions.push(function (c) {
+            c.setImg(s);
+        });
+    };
+    LexAction.prototype.endBlock = function (pos) {
+        this.actions.push(function (c) {
+            c.endBlock(pos);
+        });
+    };
+    LexAction.prototype.lhs = function () {
+        this.actions.push(function (c) {
+            c.lhs();
+        });
+    };
+    LexAction.prototype.tokenObj = function () {
+        this.actions.push(function (c) {
+            c.tokenObj();
+        });
+    };
+    return LexAction;
+}());
 
 function nodeFromToken(t) {
     return {
@@ -3950,15 +3977,88 @@ var jjlextable1 = {
     hasArc: jjlexhasArc1
 };
 var jjlexpnext2 = [
-    1, 1,
+    9, 10, 9, 9, 9, 9, 9, 9, 10, 10,
+    1, 2, 3, 1, 1, 1, 1, 1, 4, 5,
+    1, 7, 6, 1, 1, 1, 1, 8, 1, -1,
+    6, 1, 1, 14, 1, 1, 1, -1, 6, 13,
+    1, 1, 1, 1, 1, -1, 6, 1, 12, 1,
+    1, 1, 1, -1, 6, 1, 1, 1, 1, 1,
+    1, -1, 6, 1, 1, 1, 11, 1, 9, -1,
+    9, 9, 9, 9, 9, 9, 1, -1, 6, 1,
+    1, 1, 1, 1, -1, -1,
 ];
 var jjlexdisnext2 = [
-    1, 0,
+    10, 76, 20, 0, -10, -10, 68, -10, 60, 52,
+    -10, 44, 36, 28, -10,
 ];
 var jjlexchecknext2 = [
-    1, 0,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    2, 2, 2, 2, 2, 2, 2, 2, 13, -1,
+    13, 13, 13, 13, 13, 13, 12, -1, 12, 12,
+    12, 12, 12, 12, 11, -1, 11, 11, 11, 11,
+    11, 11, 9, -1, 9, 9, 9, 9, 9, 9,
+    8, -1, 8, 8, 8, 8, 8, 8, 6, -1,
+    6, 6, 6, 6, 6, 6, 1, -1, 1, 1,
+    1, 1, 1, 1, -1, -1,
 ];
 var jjlexclassTable2 = [
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 2, 0, 0, 0, 0, 0, 0, 0,
+    0, 3, 0, 0, 0, 0, 0, 4, 0, 0,
+    5, 6, 0, 0, 0, 0, 7, 0, 0, 0,
+    0, 0, 0, 8, 0, 9, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0,
+];
+var jjlexunicodeClassTable2 = [
+    0, 256, Infinity,
+];
+var jjlexisEnd2 = [
+    1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+];
+var jjlexhasArc2 = [
+    1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0,
+];
+var jjlextable2 = {
+    pnext: jjlexpnext2,
+    disnext: jjlexdisnext2,
+    checknext: jjlexchecknext2,
+    maxAsicii: 255,
+    classTable: jjlexclassTable2,
+    unicodeClassTable: jjlexunicodeClassTable2,
+    isEnd: jjlexisEnd2,
+    hasArc: jjlexhasArc2
+};
+var jjlexpnext3 = [
+    1, 1,
+];
+var jjlexdisnext3 = [
+    1, 0,
+];
+var jjlexchecknext3 = [
+    1, 0,
+];
+var jjlexclassTable3 = [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -3986,29 +4086,30 @@ var jjlexclassTable2 = [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0,
 ];
-var jjlexunicodeClassTable2 = [
+var jjlexunicodeClassTable3 = [
     0, 256, Infinity,
 ];
-var jjlexisEnd2 = [
+var jjlexisEnd3 = [
     0, 1,
 ];
-var jjlexhasArc2 = [
+var jjlexhasArc3 = [
     1, 1,
 ];
-var jjlextable2 = {
-    pnext: jjlexpnext2,
-    disnext: jjlexdisnext2,
-    checknext: jjlexchecknext2,
+var jjlextable3 = {
+    pnext: jjlexpnext3,
+    disnext: jjlexdisnext3,
+    checknext: jjlexchecknext3,
     maxAsicii: 255,
-    classTable: jjlexclassTable2,
-    unicodeClassTable: jjlexunicodeClassTable2,
-    isEnd: jjlexisEnd2,
-    hasArc: jjlexhasArc2
+    classTable: jjlexclassTable3,
+    unicodeClassTable: jjlexunicodeClassTable3,
+    isEnd: jjlexisEnd3,
+    hasArc: jjlexhasArc3
 };
 var jjdfaTables = [
     jjlextable0,
     jjlextable1,
     jjlextable2,
+    jjlextable3,
 ];
 function jjfindUnicodeClass(uc, c) {
     for (var i = 0; i < uc.length; i += 3) {
@@ -4041,158 +4142,178 @@ var jjlexTokens1 = [
     39, 39, -1, 3, 4, -1, 39, 40,
 ];
 var jjlexTokens2 = [
-    -1, 41,
+    39, 39, 39, -1, 3, 4, -1, 41, 39, 39,
+    40, 39, 39, 39, 42,
 ];
-var jjtokenCount = 42;
-var jjactERR = 187;
+var jjlexTokens3 = [
+    -1, 43,
+];
+var jjtokenCount = 44;
+var jjactERR = 205;
 var jjpact = [
-    9, 7, 15, 16, 17, 18, 94, 10, 11, -118,
-    12, 164, 13, 14, -55, 105, 108, -55, 172, 173,
-    171, -93, -56, -119, 77, -56, 112, 75, 163, -55,
-    5, 162, 160, 108, -111, 161, 107, -56, 130, -93,
-    113, -93, 130, 127, 128, 67, 68, 127, 128, 27,
-    108, 27, 108, 107, 168, -111, 100, 63, 67, 68,
-    71, 54, 72, 186, 53, 141, 48, 49, 185, 184,
-    107, 183, 107, 153, 64, 102, 181, 180, -42, 179,
-    153, 177, 176, 140, 166, 165, 157, 124, 145, 144,
-    143, 142, 138, -111, 134, 133, 132, 102, 124, 102,
-    121, -100, 119, 118, 116, 115, 114, 109, 98, 97,
-    92, 88, 86, 85, 81, 80, 79, 74, 70, 65,
-    58, 56, 55, 52, 50, 46, 45, 44, 40, 22,
-    35, 33, 28, 22, 4, 0, 0, 0, 0, 0,
+    9, 7, 15, 16, 17, 18, -134, 10, 11, -132,
+    12, 169, 13, 14, -56, 110, 113, -56, 99, 183,
+    184, 182, -57, -120, -119, -57, 204, 178, 168, -56,
+    5, 167, 165, -94, 135, 166, 112, -57, 145, 132,
+    133, 173, 174, 175, 176, 173, 174, 175, 176, 135,
+    -44, -94, 117, -94, 132, 133, 113, -44, 71, 72,
+    71, 72, 27, 113, 27, 113, 118, 105, 81, 202,
+    75, 79, 76, -42, 66, 56, 112, 200, 55, 50,
+    51, 199, 196, 112, 195, 112, 107, 158, 193, 191,
+    190, 67, 158, 188, 187, 144, 171, 170, 162, 161,
+    129, 148, 147, 146, 142, -44, 138, 137, 136, 107,
+    129, 107, 126, -101, 124, 123, 121, 120, 119, 114,
+    103, 102, 97, 93, 91, 90, 86, 85, 84, 83,
+    78, 74, 68, 61, 59, 58, 54, 52, 48, 47,
+    46, 44, 41, 22, 36, 34, 28, 22, 4, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0,
 ];
 var jjdisact = [
-    -42, 134, -5, -42, 132, -42, -42, 50, 129, -42,
-    -42, -42, -42, 129, 108, -42, -42, -42, 128, -42,
-    -42, -42, 106, 48, -42, -42, -42, -42, -42, -42,
-    -42, -42, -42, 105, 125, 90, -42, 34, 121, 122,
-    -42, 60, -42, 121, 100, 79, -42, -42, -42, -42,
-    36, -42, -42, 94, 97, -42, -42, -42, 26, -42,
-    106, 23, -42, 115, 113, -42, -42, -42, 111, -42,
-    -42, -42, 99, 89, -42, -42, -42, 89, -42, -42,
-    -42, -42, 94, 5, -42, 108, 83, 55, 19, -42,
-    52, 14, -42, 82, 31, 2, -42, 84, 84, 72,
-    -42, -42, 99, -42, -42, -42, 101, -42, 100, -42,
-    -42, -42, 99, 79, 66, 77, -42, -42, 75, 94,
-    -42, 73, -42, 90, 71, -42, 90, -42, -42, 88,
-    86, -42, -42, -42, -42, 62, -42, 55, -42, -42,
-    17, -42, -42, -42, 13, -42, 50, 1, -42, 9,
-    47, -42, 53, -42, 6, 27, -42, -42, -10, -42,
-    46, 81, 58, -42, 78, 77, 73, -42, -7, -42,
-    -42, -42, -42, 52, 71, 50, 67, -42, -42, -42,
-    -42, 41, -42, 39, -42, -42,
+    -44, 148, -5, -44, 146, -44, -44, 63, 143, -44,
+    -44, -44, -44, 143, 122, -44, -44, -44, 142, -44,
+    -44, -44, 120, 61, -44, -44, -44, -44, -44, 138,
+    -44, -44, -44, -44, 118, 138, 103, -44, 47, 134,
+    135, -44, 74, -44, -44, 134, 113, 90, -44, -44,
+    -44, -44, 53, -44, -44, 107, 21, 110, -44, -44,
+    -44, 36, -44, 119, 67, -44, 128, 126, 123, -44,
+    -44, -44, 123, -44, -44, -44, 111, 101, -44, -44,
+    -44, 101, -44, -44, -44, -44, -44, 106, 17, -44,
+    120, 95, 66, 19, -44, 47, 14, -44, 94, 54,
+    28, -44, 96, 96, 84, -44, -44, 111, -44, -44,
+    -44, 113, -44, 112, -44, -44, -44, 111, 91, 78,
+    89, -44, -44, 87, 106, -44, 85, -44, 102, 83,
+    -44, 102, -44, -44, 100, -44, -44, -44, -44, 75,
+    -44, 68, -44, -44, 24, -44, -44, 9, -44, 96,
+    -44, 62, 1, -44, 9, 59, -44, 65, -44, 0,
+    -44, -44, -44, -9, -44, 58, 93, 70, -44, 90,
+    88, -44, -44, -44, -44, -44, 86, -44, -44, -7,
+    -44, -44, -44, -44, 64, 85, 63, 80, -44, -44,
+    -44, 6, -44, 54, -44, 53, -44, 65, -44, -44,
+    2, -44, 22, -44,
 ];
 var jjcheckact = [
-    2, 2, 2, 2, 2, 2, 83, 2, 2, 154,
-    2, 149, 2, 2, 168, 91, 91, 168, 158, 158,
-    158, 83, 147, 88, 61, 147, 95, 61, 149, 168,
-    2, 149, 149, 94, 94, 149, 91, 147, 144, 83,
-    95, 83, 140, 144, 144, 154, 154, 140, 140, 23,
-    23, 7, 7, 94, 155, 90, 87, 50, 88, 88,
-    58, 41, 58, 183, 41, 155, 37, 37, 181, 176,
-    23, 175, 7, 174, 50, 87, 173, 166, 90, 165,
-    164, 162, 161, 160, 152, 150, 146, 137, 135, 130,
-    129, 126, 124, 123, 121, 119, 118, 115, 114, 113,
-    112, 108, 106, 102, 99, 98, 97, 93, 86, 85,
-    82, 77, 73, 72, 68, 64, 63, 60, 54, 53,
-    45, 44, 43, 39, 38, 35, 34, 33, 22, 18,
-    14, 13, 8, 4, 1, 0, 0, 0, 0, 0,
+    2, 2, 2, 2, 2, 2, 200, 2, 2, 191,
+    2, 154, 2, 2, 179, 96, 96, 179, 88, 163,
+    163, 163, 152, 93, 56, 152, 202, 159, 154, 179,
+    2, 154, 154, 88, 147, 154, 96, 152, 159, 147,
+    147, 200, 200, 200, 200, 191, 191, 191, 191, 144,
+    95, 88, 100, 88, 144, 144, 99, 99, 93, 93,
+    56, 56, 23, 23, 7, 7, 100, 92, 64, 197,
+    61, 64, 61, 95, 52, 42, 99, 195, 42, 38,
+    38, 193, 187, 23, 186, 7, 92, 185, 184, 176,
+    170, 52, 169, 167, 166, 165, 157, 155, 151, 149,
+    141, 139, 134, 131, 129, 128, 126, 124, 123, 120,
+    119, 118, 117, 113, 111, 107, 104, 103, 102, 98,
+    91, 90, 87, 81, 77, 76, 72, 68, 67, 66,
+    63, 57, 55, 47, 46, 45, 40, 39, 36, 35,
+    34, 29, 22, 18, 14, 13, 8, 4, 1, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0,
 ];
 var jjdefred = [
-    4, -1, -1, 0, -1, 3, 5, -1, -1, 110,
-    110, 110, 110, -1, -1, 19, 20, 21, 1, 78,
-    79, 80, 29, 7, 23, 24, 25, 27, 9, 10,
-    11, 110, 13, 14, -1, -1, 77, -1, -1, -1,
-    22, -1, 12, -1, -1, 17, 86, 82, 83, 33,
-    -1, 30, 8, -1, -1, 16, 2, 18, -1, 85,
-    89, 38, 28, -1, -1, 113, 115, 116, -1, 15,
-    81, 86, 95, -1, 6, 32, 34, -1, 31, 26,
-    114, 84, 105, 97, 93, -1, -1, 52, 117, 87,
-    106, -1, 94, 98, 41, -1, 91, -1, -1, -1,
-    50, 52, -1, 107, 108, 109, -1, 104, 96, 101,
-    102, 88, -1, 52, 40, 52, 51, 119, -1, -1,
-    90, -1, 36, 41, -1, 45, -1, 47, 48, -1,
-    -1, 103, 100, 35, 39, -1, 43, 40, 58, 69,
-    110, 46, 49, 114, 110, 37, 53, 58, 57, -1,
-    71, 74, 75, 44, 111, -1, 58, 56, 63, 52,
-    70, -1, -1, 68, -1, -1, -1, 42, 58, 59,
-    60, 61, 62, -1, 72, -1, -1, 73, 76, 112,
-    64, -1, 66, -1, 65, 67,
+    4, -1, -1, 0, -1, 3, 5, -1, -1, 111,
+    111, 111, 111, -1, -1, 19, 20, 21, 1, 79,
+    80, 81, 29, 7, 23, 24, 25, 27, 9, -1,
+    10, 11, 111, 13, 14, -1, -1, 78, -1, -1,
+    -1, 22, -1, 115, 12, -1, -1, 17, 87, 83,
+    84, 33, -1, 30, 8, -1, 112, -1, 16, 2,
+    18, -1, 86, 90, 38, 28, -1, -1, -1, 114,
+    116, 117, -1, 15, 82, 87, 96, -1, 6, 32,
+    34, -1, 31, 26, 113, 115, 85, 106, 98, 94,
+    -1, -1, 53, 118, 88, 107, -1, 95, 99, 41,
+    -1, 92, -1, -1, -1, 51, 53, -1, 108, 109,
+    110, -1, 105, 97, 102, 103, 89, -1, 53, 40,
+    53, 52, 120, -1, -1, 91, -1, 36, 41, -1,
+    46, -1, 48, 49, -1, 104, 101, 35, 39, -1,
+    121, 40, 59, 70, 121, 47, 50, 121, 44, -1,
+    37, 54, 59, 58, -1, 72, 75, 76, 45, -1,
+    122, 59, 57, 64, 53, 71, -1, -1, 69, -1,
+    -1, 125, 127, 128, 129, 130, -1, 42, 126, 59,
+    60, 61, 62, 63, -1, 73, -1, -1, 74, 77,
+    132, 123, 65, -1, 67, -1, 126, -1, 66, 68,
+    131, 124, -1, 134,
 ];
 var jjpgoto = [
-    5, 158, 103, 135, 7, 94, 92, 23, 24, 157,
-    149, 169, 166, 153, 65, 68, 157, 149, 155, 125,
-    105, 110, 135, 65, 68, 102, 98, 100, 138, 89,
-    90, 72, 46, 40, 38, 177, 174, 136, 130, 75,
-    22, 77, 181, 150, 151, 128, 130, 145, 122, 25,
-    119, 128, 130, 109, 134, 135, 136, 130, 124, 100,
-    138, 121, 100, 138, 116, 138, 95, 82, 83, 81,
-    60, 56, 50, 35, 25, 33, 31, 130, 18, 19,
-    20, 1, 154, 2, 173, 138, 168, 148, 149, 136,
-    130, 146, 147, 148, 149, 88, 86, 61, 58, 59,
-    60, 42, 130, 41, 37, 30, 130, -1, 36, 20,
-    29, 130, 28, 130, -1, -1, -1, -1, -1, -1,
+    5, 163, 171, 176, 7, 202, 197, 39, 171, 176,
+    108, 139, 140, 115, 139, 140, 99, 97, 68, 180,
+    69, 72, 23, 24, 162, 154, 162, 154, 159, 130,
+    110, 158, 69, 72, 107, 103, 105, 142, 94, 95,
+    76, 48, 41, 22, 191, 188, 114, 193, 155, 156,
+    185, 138, 139, 140, 127, 100, 87, 88, 79, 200,
+    81, 196, 150, 124, 91, 25, 121, 142, 133, 149,
+    133, 149, 129, 105, 142, 126, 105, 142, 86, 63,
+    64, 59, 52, 38, 25, 36, 34, 32, 29, 18,
+    19, 20, 1, 178, 2, 184, 142, 179, 153, 154,
+    151, 152, 153, 154, 148, 149, 93, 61, 62, 63,
+    56, 44, 29, 42, 31, 29, 30, 29, 28, 29,
+    -1, 37, 20, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1,
 ];
 var jjdisgoto = [
-    80, -61, -4, -61, 42, -61, 35, -2, -61, 58,
-    56, 51, 22, -61, 69, -61, -61, -61, 71, -61,
-    -61, 65, 22, 23, -61, -61, -61, 92, -61, -61,
-    -61, 47, -61, -61, -61, -61, -61, -8, -61, 59,
-    -61, -61, -61, -61, -61, 64, 57, -61, -61, 83,
-    -61, -61, -61, -61, -61, -61, -61, -61, -61, -61,
-    -13, 24, -61, -61, -61, -61, -61, -61, -61, -61,
-    -61, 27, 21, -61, -61, -61, 80, -61, -61, -61,
-    38, -61, -23, -43, -61, 21, -61, 3, -35, -61,
-    -17, -31, -61, -61, 2, -61, -61, -61, -61, -61,
-    -61, 40, -61, -61, -61, -61, -61, -61, 0, -61,
-    -61, -61, -61, 38, 30, 35, -61, -61, -61, -61,
-    -61, -61, -61, 35, -61, -61, -61, -61, -61, -61,
-    -61, -61, -61, -61, -61, -61, -61, 29, 65, -61,
-    -9, -61, -61, 25, -3, -61, -61, -12, -61, -30,
-    -61, -61, -61, -61, -44, -61, 59, -61, -19, 60,
-    4, -61, -61, -61, 0, -61, -61, -61, -19, -61,
-    -61, -61, -61, -61, 9, -61, -61, -61, -61, -61,
-    -61, -61, -61, -61, -61, -61,
+    91, -71, -4, -71, 52, -71, 38, 13, -71, 63,
+    61, 59, 32, -71, 80, -71, -71, -71, 83, -71,
+    -71, 43, -5, 32, -71, -71, -71, 102, -71, -71,
+    -71, -71, 56, -71, -71, -71, -71, -71, 0, -71,
+    69, -71, -71, 52, -71, -71, -71, 74, 65, -71,
+    -71, 66, -71, -71, -71, -71, -39, -71, -71, -71,
+    -71, -71, -71, -5, 43, -71, -71, -71, -71, -71,
+    -71, -71, -71, -71, -71, 35, 9, -71, -71, -71,
+    48, -71, -71, -71, -71, 48, -71, -15, -33, -71,
+    9, -71, 11, -27, -71, -9, -22, -71, -71, -6,
+    -71, -71, -71, -71, -71, -71, 41, -71, -71, -71,
+    -71, -71, -71, 12, -71, -71, -71, -71, 51, 36,
+    48, -71, -71, -71, -71, -71, -71, -71, 32, -71,
+    -71, -71, -71, -71, -71, -71, -71, -71, -71, -71,
+    42, 44, 73, -71, 8, -71, -71, 6, -71, -71,
+    -71, -71, -3, -71, -31, -71, -71, -71, -71, -71,
+    29, 69, -71, -12, 70, 17, -71, -71, -71, 9,
+    -71, -71, -71, -71, -71, -71, -71, -71, -22, -5,
+    -71, -71, -71, -71, -71, 13, -71, -71, -71, -71,
+    -8, -59, -71, -71, -71, -71, -7, -71, -71, -71,
+    -65, -71, -71, -71,
 ];
 var jjruleLen = [
     2, 0, 6, 2, 0, 0, 6, 2, 4, 2,
     2, 2, 3, 2, 2, 4, 3, 0, 1, 1,
     1, 1, 2, 1, 1, 1, 4, 0, 3, 0,
     1, 3, 2, 0, 0, 6, 5, 7, 0, 2,
-    0, 0, 4, 1, 3, 1, 2, 1, 1, 2,
-    1, 2, 0, 2, 3, 1, 2, 1, 0, 3,
-    1, 1, 1, 0, 3, 4, 3, 4, 1, 1,
-    0, 1, 0, 3, 1, 1, 3, 2, 1, 1,
-    0, 5, 1, 1, 3, 1, 0, 4, 4, 0,
-    3, 1, 1, 1, 2, 0, 2, 0, 1, 0,
-    4, 2, 2, 3, 1, 0, 1, 2, 2, 2,
-    0, 0, 5, 2, 0, 1, 1, 0, 0, 5,
+    0, 0, 4, 0, 2, 3, 1, 2, 1, 1,
+    2, 1, 2, 0, 2, 3, 1, 2, 1, 0,
+    3, 1, 1, 1, 0, 3, 4, 3, 4, 1,
+    1, 0, 1, 0, 3, 1, 1, 3, 2, 1,
+    1, 0, 5, 1, 1, 3, 1, 0, 4, 4,
+    0, 3, 1, 1, 1, 2, 0, 2, 0, 1,
+    0, 4, 2, 2, 3, 1, 0, 1, 2, 2,
+    2, 0, 0, 5, 2, 0, 1, 1, 0, 0,
+    5, 0, 0, 0, 6, 2, 0, 1, 1, 1,
+    1, 0, 0, 0, 6,
 ];
 var jjlhs = [
     0, 2, 1, 3, 3, 5, 4, 4, 4, 4,
     4, 4, 4, 4, 4, 6, 6, 7, 7, 8,
     8, 8, 9, 9, 10, 10, 11, 11, 12, 12,
     13, 13, 14, 14, 16, 15, 15, 15, 17, 18,
-    18, 20, 19, 19, 21, 21, 22, 22, 22, 22,
-    23, 23, 25, 24, 26, 26, 27, 27, 29, 28,
-    30, 30, 30, 30, 31, 31, 31, 31, 31, 32,
-    32, 33, 33, 34, 34, 35, 35, 36, 36, 37,
-    39, 38, 40, 40, 41, 41, 43, 42, 44, 44,
-    45, 45, 46, 46, 47, 47, 48, 48, 49, 50,
-    49, 49, 49, 51, 51, 52, 52, 52, 53, 53,
-    55, 56, 54, 57, 57, 58, 58, 59, 60, 58,
+    18, 20, 19, 21, 19, 22, 22, 23, 23, 23,
+    23, 24, 24, 26, 25, 27, 27, 28, 28, 30,
+    29, 31, 31, 31, 31, 32, 32, 32, 32, 32,
+    33, 33, 34, 34, 35, 35, 36, 36, 37, 37,
+    38, 40, 39, 41, 41, 42, 42, 44, 43, 45,
+    45, 46, 46, 47, 47, 48, 48, 49, 49, 50,
+    51, 50, 50, 50, 52, 52, 53, 53, 53, 54,
+    54, 56, 57, 55, 58, 58, 59, 59, 60, 61,
+    59, 63, 64, 65, 62, 66, 66, 67, 67, 67,
+    67, 68, 69, 70, 67,
 ];
 var jjtokenNames = [
     "EOF", "NAME", "STRING",
@@ -4208,7 +4329,8 @@ var jjtokenNames = [
     "PLUS", "DASH", "COLON",
     "ARROW", "EOL", "SEPERATOR",
     "OR", "WEDGE", "COMMA",
-    "ANY_CODE", "ESCAPED_CHAR_IN_BLOCK", "ANY_EPLOGUE_CODE",
+    "ANY_CODE", "ESCAPED_CHAR_IN_BLOCK", "LHS_REF",
+    "TOKEN_REF", "ANY_EPLOGUE_CODE",
 ];
 var jjtokenAlias = [
     null, null, null,
@@ -4224,7 +4346,8 @@ var jjtokenAlias = [
     "+", "-", ":",
     "=>", ";", "%%",
     "|", "^", ",",
-    null, null, null,
+    null, null, "$$",
+    "$token", null,
 ];
 function tokenToString(tk) {
     return jjtokenAlias[tk] === null ? "<" + jjtokenNames[tk] + ">" : "\"" + jjtokenAlias[tk] + "\"";
@@ -4266,7 +4389,7 @@ function createParser() {
     var jjhandlers = {};
     var gb;
     var assoc;
-    var lexacts;
+    var lexact;
     var ruleLhs;
     var least;
     return {
@@ -4334,36 +4457,56 @@ function createParser() {
                 jjsetImg("");
                 break;
             case 3:
-                jjsematicVal = nodeFromToken(jjtoken);
+                {
+                    jjsematicVal = nodeFromToken(jjtoken);
+                }
                 break;
             case 22:
-                jjsematicVal = nodeFromTrivalToken(jjtoken);
+                {
+                    jjsematicVal = nodeFromTrivalToken(jjtoken);
+                }
                 break;
             case 24:
-                jjsematicVal = nodeFromTrivalToken(jjtoken);
+                {
+                    jjsematicVal = nodeFromTrivalToken(jjtoken);
+                }
                 break;
             case 25:
-                jjsematicVal = nodeFromToken(jjtoken);
+                {
+                    jjsematicVal = nodeFromToken(jjtoken);
+                }
                 break;
             case 27:
-                jjsematicVal = nodeFromToken(jjtoken);
-                jjsematicVal.val = unescape(jjsematicVal.val.substr(1, jjsematicVal.val.length - 2));
+                {
+                    jjsematicVal = nodeFromToken(jjtoken);
+                    jjsematicVal.val = unescape(jjsematicVal.val.substr(1, jjsematicVal.val.length - 2));
+                }
                 break;
             case 29:
-                jjsematicVal = nodeFromToken(jjtoken);
+                {
+                    jjsematicVal = nodeFromToken(jjtoken);
+                }
                 break;
             case 30:
-                jjsematicVal = nodeFromToken(jjtoken);
+                {
+                    jjsematicVal = nodeFromToken(jjtoken);
+                }
                 break;
             case 31:
-                jjsematicVal = nodeFromToken(jjtoken);
+                {
+                    jjsematicVal = nodeFromToken(jjtoken);
+                }
                 break;
             case 32:
-                jjsematicVal = nodeFromToken(jjtoken);
+                {
+                    jjsematicVal = nodeFromToken(jjtoken);
+                }
                 break;
             case 45:
-                jjsematicVal = nodeFromToken(jjtoken);
-                jjsematicVal.val = unescape(jjsematicVal.val.substr(1, jjsematicVal.val.length - 2));
+                {
+                    jjsematicVal = nodeFromToken(jjtoken);
+                    jjsematicVal.val = unescape(jjsematicVal.val.substr(1, jjsematicVal.val.length - 2));
+                }
                 break;
             case 48:
                 jjsetImg("");
@@ -4382,22 +4525,34 @@ function createParser() {
         jjtk !== -1 && jjprepareToken(jjtk);
         switch (jjstaten) {
             case 0:
-                jjsematicVal = newNode(jjtoken.val);
+                {
+                    jjsematicVal = newNode(jjtoken.val);
+                }
                 break;
             case 1:
-                jjsematicVal = newNode(jjtoken.val);
+                {
+                    jjsematicVal = newNode(jjtoken.val);
+                }
                 break;
             case 3:
-                jjsematicVal = nodeFromTrivalToken(jjtoken);
+                {
+                    jjsematicVal = nodeFromTrivalToken(jjtoken);
+                }
                 break;
             case 4:
-                jjsematicVal = nodeFromTrivalToken(jjtoken);
+                {
+                    jjsematicVal = nodeFromTrivalToken(jjtoken);
+                }
                 break;
             case 6:
-                jjsematicVal = newNode(jjtoken.val);
+                {
+                    jjsematicVal = newNode(jjtoken.val);
+                }
                 break;
             case 7:
-                jjsematicVal = newNode(jjtoken.val.charAt(1));
+                {
+                    jjsematicVal = newNode(jjtoken.val.charAt(1));
+                }
                 break;
             default: ;
         }
@@ -4406,8 +4561,72 @@ function createParser() {
         var jjtk = jjlexTokens2[jjstaten];
         jjtk !== -1 && jjprepareToken(jjtk);
         switch (jjstaten) {
+            case 0:
+                {
+                    jjsematicVal = newNode(jjtoken.val);
+                }
+                break;
             case 1:
-                jjsematicVal = nodeFromToken(jjtoken);
+                {
+                    jjsematicVal = newNode(jjtoken.val);
+                }
+                break;
+            case 2:
+                {
+                    jjsematicVal = newNode(jjtoken.val);
+                }
+                break;
+            case 4:
+                {
+                    jjsematicVal = nodeFromTrivalToken(jjtoken);
+                }
+                break;
+            case 5:
+                {
+                    jjsematicVal = nodeFromTrivalToken(jjtoken);
+                }
+                break;
+            case 8:
+                {
+                    jjsematicVal = newNode(jjtoken.val);
+                }
+                break;
+            case 9:
+                {
+                    jjsematicVal = newNode(jjtoken.val);
+                }
+                break;
+            case 10:
+                {
+                    jjsematicVal = newNode(jjtoken.val.charAt(1));
+                }
+                break;
+            case 11:
+                {
+                    jjsematicVal = newNode(jjtoken.val);
+                }
+                break;
+            case 12:
+                {
+                    jjsematicVal = newNode(jjtoken.val);
+                }
+                break;
+            case 13:
+                {
+                    jjsematicVal = newNode(jjtoken.val);
+                }
+                break;
+            default: ;
+        }
+    }
+    function jjdoLexAction3(jjstaten) {
+        var jjtk = jjlexTokens3[jjstaten];
+        jjtk !== -1 && jjprepareToken(jjtk);
+        switch (jjstaten) {
+            case 1:
+                {
+                    jjsematicVal = nodeFromToken(jjtoken);
+                }
                 break;
             default: ;
         }
@@ -4422,6 +4641,9 @@ function createParser() {
                 break;
             case 2:
                 jjdoLexAction2(state);
+                break;
+            case 3:
+                jjdoLexAction3(state);
                 break;
             default: ;
         }
@@ -4553,7 +4775,7 @@ function createParser() {
         var jjtop = jjsematicS[jjsp - jjruleLen[jjrulenum]] || null;
         switch (jjrulenum) {
             case 1:
-                jjlexState.push(2);
+                jjlexState.push(3);
                 break;
             case 5:
                 {
@@ -4679,15 +4901,15 @@ function createParser() {
                 break;
             case 36:
                 {
-                    gb.lexBuilder.end(lexacts, least, '(untitled)');
+                    gb.lexBuilder.end(lexact, least, '(untitled)');
                 }
                 break;
             case 37:
                 var tn = jjsematicS[jjsp - 5];
                 {
                     var tdef = gb.defToken(tn, gb.lexBuilder.getPossibleAlias());
-                    lexacts.push(returnToken(tdef));
-                    gb.lexBuilder.end(lexacts, least, tn.val);
+                    lexact.returnToken(tdef);
+                    gb.lexBuilder.end(lexact, least, tn.val);
                 }
                 break;
             case 38:
@@ -4697,66 +4919,57 @@ function createParser() {
                 break;
             case 40:
                 {
-                    lexacts = [];
+                    lexact = new LexAction();
                 }
                 break;
             case 41:
                 {
-                    lexacts = [];
+                    lexact = new LexAction();
                 }
                 break;
             case 43:
-                var b = jjsematicS[jjsp - 1];
                 {
-                    lexacts = [blockAction(b.val, b.startLine)];
-                }
-                break;
-            case 46:
-                var vn = jjsematicS[jjsp - 1];
-                {
-                    gb.addPushStateAction(lexacts, vn);
+                    lexact = new LexAction();
                 }
                 break;
             case 47:
+                var vn = jjsematicS[jjsp - 1];
                 {
-                    lexacts.push(popState());
+                    gb.addPushStateAction(lexact, vn);
+                    lexact.raw('; ');
                 }
                 break;
             case 48:
-                var b = jjsematicS[jjsp - 1];
                 {
-                    lexacts.push(blockAction(b.val, b.startLine));
-                }
-                break;
-            case 49:
-                var s = jjsematicS[jjsp - 1];
-                {
-                    lexacts.push(setImg(s.val));
+                    lexact.popState();
+                    lexact.raw('; ');
                 }
                 break;
             case 50:
+                var s = jjsematicS[jjsp - 1];
                 {
-                    least = false;
+                    lexact.setImg(s.val);
+                    lexact.raw('; ');
                 }
                 break;
             case 51:
                 {
-                    least = true;
+                    least = false;
                 }
                 break;
             case 52:
                 {
-                    gb.lexBuilder.enterUnion();
+                    least = true;
                 }
                 break;
             case 53:
                 {
-                    gb.lexBuilder.leaveUnion();
+                    gb.lexBuilder.enterUnion();
                 }
                 break;
             case 54:
                 {
-                    gb.lexBuilder.endUnionItem();
+                    gb.lexBuilder.leaveUnion();
                 }
                 break;
             case 55:
@@ -4764,98 +4977,97 @@ function createParser() {
                     gb.lexBuilder.endUnionItem();
                 }
                 break;
-            case 58:
+            case 56:
+                {
+                    gb.lexBuilder.endUnionItem();
+                }
+                break;
+            case 59:
                 {
                     gb.lexBuilder.enterSimple();
                 }
                 break;
-            case 59:
+            case 60:
                 var suffix = jjsematicS[jjsp - 1];
                 {
                     gb.lexBuilder.simplePostfix(suffix.val);
                 }
                 break;
-            case 60:
+            case 61:
                 {
                     jjtop = newNode('+');
                 }
                 break;
-            case 61:
+            case 62:
                 {
                     jjtop = newNode('?');
                 }
                 break;
-            case 62:
+            case 63:
                 {
                     jjtop = newNode('*');
                 }
                 break;
-            case 63:
+            case 64:
                 {
                     jjtop = newNode('');
                 }
                 break;
-            case 66:
+            case 67:
                 var n = jjsematicS[jjsp - 2];
                 {
                     gb.lexBuilder.addVar(n);
                 }
                 break;
-            case 67:
+            case 68:
                 var i = jjsematicS[jjsp - 2];
                 {
                     gb.lexBuilder.importVar(i);
                 }
                 break;
-            case 68:
+            case 69:
                 var s = jjsematicS[jjsp - 1];
                 {
                     gb.lexBuilder.addString(s.val);
                 }
                 break;
-            case 69:
+            case 70:
                 {
                     gb.lexBuilder.beginSet(true);
                 }
                 break;
-            case 70:
+            case 71:
                 {
                     gb.lexBuilder.beginSet(false);
                 }
                 break;
-            case 75:
+            case 76:
                 var s = jjsematicS[jjsp - 1];
                 {
                     gb.lexBuilder.addSetItem(s, s);
                 }
                 break;
-            case 76:
+            case 77:
                 var from = jjsematicS[jjsp - 3];
                 var to = jjsematicS[jjsp - 1];
                 {
                     gb.lexBuilder.addSetItem(from, to);
                 }
                 break;
-            case 80:
+            case 81:
                 var n = jjsematicS[jjsp - 1];
                 {
                     ruleLhs = n;
                 }
                 break;
-            case 86:
+            case 87:
                 {
                     gb.prepareRule(ruleLhs);
                 }
                 break;
-            case 87:
+            case 88:
                 {
                     gb.commitRule();
-                }
-                break;
-            case 90:
-                var vn = jjsematicS[jjsp - 1];
-                {
-                    gb.addRuleUseVar(vn);
                 }
                 break;
             case 91:
@@ -4864,80 +5076,86 @@ function createParser() {
                     gb.addRuleUseVar(vn);
                 }
                 break;
-            case 96:
+            case 92:
+                var vn = jjsematicS[jjsp - 1];
+                {
+                    gb.addRuleUseVar(vn);
+                }
+                break;
+            case 97:
                 var itn = jjsematicS[jjsp - 2];
                 {
                     gb.addRuleSematicVar(itn);
                 }
                 break;
-            case 98:
+            case 99:
                 var t = jjsematicS[jjsp - 1];
                 {
                     gb.addRuleItem(t, TokenRefType.NAME);
                 }
                 break;
-            case 99:
+            case 100:
                 var vn = jjsematicS[jjsp - 2];
                 {
                     gb.addRuleSematicVar(vn);
                 }
                 break;
-            case 100:
+            case 101:
                 var vn = jjsematicS[jjsp - 4];
                 var t = jjsematicS[jjsp - 1];
                 {
                     gb.addRuleItem(t, TokenRefType.NAME);
                 }
                 break;
-            case 101:
+            case 102:
                 var t = jjsematicS[jjsp - 1];
                 {
                     gb.addRuleItem(t, t.ext);
                 }
                 break;
-            case 102:
+            case 103:
                 {
-                    gb.addAction(lexacts);
+                    gb.addAction(lexact);
                 }
                 break;
-            case 103:
+            case 104:
                 var t = jjsematicS[jjsp - 2];
                 {
                     jjtop = t;
                     jjtop.ext = TokenRefType.TOKEN;
                 }
                 break;
-            case 104:
+            case 105:
                 {
                     jjtop.ext = TokenRefType.STRING;
                 }
                 break;
-            case 107:
-                {
-                    gb.addAction(lexacts);
-                }
-                break;
             case 108:
-                var t = jjsematicS[jjsp - 1];
                 {
-                    gb.defineRulePr(t, TokenRefType.NAME);
+                    gb.addAction(lexact);
                 }
                 break;
             case 109:
                 var t = jjsematicS[jjsp - 1];
                 {
-                    gb.defineRulePr(t, t.ext);
+                    gb.defineRulePr(t, TokenRefType.NAME);
                 }
                 break;
             case 110:
-                jjlexState.push(1);
+                var t = jjsematicS[jjsp - 1];
+                {
+                    gb.defineRulePr(t, t.ext);
+                }
                 break;
             case 111:
+                jjlexState.push(1);
+                break;
+            case 112:
                 var open = jjsematicS[jjsp - 2];
                 var bl = jjsematicS[jjsp - 1];
                 jjlexState.pop();
                 break;
-            case 112:
+            case 113:
                 var open = jjsematicS[jjsp - 4];
                 var bl = jjsematicS[jjsp - 3];
                 var close = jjsematicS[jjsp - 1];
@@ -4945,29 +5163,87 @@ function createParser() {
                     jjtop = nodeBetween(open, close, bl.val);
                 }
                 break;
-            case 113:
+            case 114:
                 var b = jjsematicS[jjsp - 1];
                 {
                     jjtop.val += b.val;
                 }
                 break;
-            case 114:
+            case 115:
                 {
                     jjtop = newNode('');
                 }
                 break;
-            case 117:
+            case 118:
                 jjlexState.push(1);
                 break;
-            case 118:
+            case 119:
                 var b = jjsematicS[jjsp - 1];
                 jjlexState.pop();
                 break;
-            case 119:
+            case 120:
                 var b = jjsematicS[jjsp - 3];
                 {
                     jjtop = newNode('');
                     jjtop.val = '{' + b.val + '}';
+                }
+                break;
+            case 121:
+                jjlexState.push(2);
+                break;
+            case 122:
+                var open = jjsematicS[jjsp - 1];
+                {
+                    lexact.beginBlock(open);
+                }
+                break;
+            case 123:
+                var open = jjsematicS[jjsp - 3];
+                jjlexState.pop();
+                break;
+            case 124:
+                var open = jjsematicS[jjsp - 5];
+                var close = jjsematicS[jjsp - 1];
+                {
+                    lexact.endBlock(close);
+                }
+                break;
+            case 127:
+                var c = jjsematicS[jjsp - 1];
+                {
+                    lexact.raw(c.val);
+                }
+                break;
+            case 128:
+                var c = jjsematicS[jjsp - 1];
+                {
+                    lexact.raw(c.val);
+                }
+                break;
+            case 129:
+                {
+                    lexact.lhs();
+                }
+                break;
+            case 130:
+                {
+                    lexact.tokenObj();
+                }
+                break;
+            case 131:
+                jjlexState.push(2);
+                break;
+            case 132:
+                {
+                    lexact.raw('{');
+                }
+                break;
+            case 133:
+                jjlexState.pop();
+                break;
+            case 134:
+                {
+                    lexact.raw('}');
                 }
                 break;
         }
@@ -5131,20 +5407,6 @@ var tsRenderer = function (input, output) {
         echoLine("");
         echo("]; ");
     }
-    function printLexTokens(dfa, n) {
-        function getAction(act) {
-            for (var _i = 0, act_1 = act; _i < act_1.length; _i++) {
-                var a = act_1[_i];
-                if (a.token !== -1) {
-                    return a.token;
-                }
-            }
-            return -1;
-        }
-        printTable('lexTokens' + n, dfa.states, 6, 10, function (state) {
-            return state.endAction ? getAction(state.endAction.data).toString() : '-1';
-        });
-    }
     echoLine("");
     echoLine("/*");
     echoLine("    constants");
@@ -5259,7 +5521,9 @@ var tsRenderer = function (input, output) {
     echoLine("    tokens that a lexical dfa state can return");
     echo("*/");
     for (var i = 0, _a = dfaTables; i < _a.length; i++) {
-        printLexTokens(_a[i], i);
+        printTable('lexTokens' + i, _a[i].states, 6, 10, function (s) {
+            return s.endAction === null || s.endAction.data.token === null ? '-1' : String(s.endAction.data.token.index);
+        });
     }
     echoLine("");
     var pt = input.pt;
@@ -5375,56 +5639,31 @@ var tsRenderer = function (input, output) {
     echoLine("");
     function printLexActionsFunc(dfa, n) {
         var codegen = {
-            addBlock: function (b, line) {
-                echoLine("");
-                echo("                ");
-                echo(b.replace(/\$token/g, prefix + 'token').replace(/\$\$/g, prefix + 'sematicVal'));
+            raw: function (s) {
+                echo(s);
+            },
+            beginBlock: function (pos) {
+                echo('{');
+            },
+            endBlock: function (pos) {
+                echo('}');
             },
             pushLexState: function (n) {
-                echoLine("");
-                echo("                ");
-                echo(prefix);
-                echo("lexState.push(");
-                echo(n);
-                echo(");");
+                echo(prefix + "lexState.push(" + n + ")");
             },
             popLexState: function () {
-                echoLine("");
-                echo("                ");
-                echo(prefix);
-                echo("lexState.pop();");
+                echo(prefix + "lexState.pop()");
             },
             setImg: function (n) {
-                echoLine("");
-                echo("                ");
-                echo(prefix);
-                echo("setImg(\"");
-                echo(n);
-                echo("\");");
+                echo(prefix + "setImg(\"" + n + "\")");
             },
-            returnToken: function (t) {
-                echoLine("");
-                echo("                this.");
-                echo(prefix);
-                echoLine("token = {");
-                echo("                    id: ");
-                echo(t.index);
-                echoLine(",");
-                echo("                    val: this.");
-                echo(prefix);
-                echoLine("matched.join('')");
-                echo("                };");
+            tokenObj: function () {
+                echo(prefix + 'token');
+            },
+            lhs: function () {
+                echo(prefix + "sematicVal");
             }
         };
-        function hasNormalAction(a) {
-            for (var _i = 0, a_1 = a; _i < a_1.length; _i++) {
-                var act = a_1[_i];
-                if (act.token === -1) {
-                    return true;
-                }
-            }
-            return false;
-        }
         var statevn = prefix + 'staten';
         echoLine("");
         echo("    function ");
@@ -5454,15 +5693,14 @@ var tsRenderer = function (input, output) {
         echo(statevn);
         echo("){");
         for (var i = 0, _a = dfa.states; i < _a.length; i++) {
-            if (_a[i].endAction !== null && hasNormalAction(_a[i].endAction.data)) {
+            if (_a[i].endAction !== null && _a[i].endAction.data.actions.length > 0) {
                 echoLine("");
                 echo("            case ");
                 echo(i);
                 echo(":");
-                for (var _i = 0, _b = _a[i].endAction.data; _i < _b.length; _i++) {
-                    var act = _b[_i];
-                    act.token === -1 && act.toCode(codegen);
-                }
+                echoLine('');
+                echo('                ');
+                _a[i].endAction.data.toCode(codegen);
                 echoLine("");
                 echo("                break;");
             }
@@ -6241,39 +6479,34 @@ var tsRenderer = function (input, output) {
     echo("    }");
     function printReduceActions() {
         var codegen = {
-            addBlock: function (b, line) {
-                echoLine("");
-                echo("                {");
-                echo(b.replace(/\$\$/g, prefix + 'top'));
-                echo("}");
+            raw: function (s) {
+                echo(s);
+            },
+            beginBlock: function (pos) {
+                echo('{');
+            },
+            endBlock: function (pos) {
+                echo('} ');
             },
             pushLexState: function (n) {
-                echoLine("");
-                echo("                ");
-                echo(prefix);
-                echo("lexState.push(");
-                echo(n);
-                echo(");");
+                echo(prefix + "lexState.push(" + n + ")");
             },
             popLexState: function () {
-                echoLine("");
-                echo("                ");
-                echo(prefix);
-                echo("lexState.pop();");
+                echo(prefix + "lexState.pop()");
             },
             setImg: function (n) {
-                echoLine("");
-                echo("                ");
-                echo(prefix);
-                echo("setImg(\"");
-                echo(n);
-                echo("\");");
+                echo(prefix + "setImg(\"" + n + "\")");
             },
-            returnToken: function (t) {
+            tokenObj: function () {
+                echo(prefix + 'token');
+            },
+            lhs: function () {
+                echo(prefix + "top");
             }
         };
         for (var _i = 0, _b = input.file.grammar.rules; _i < _b.length; _i++) {
             var rule = _b[_i];
+            var newLine = true;
             if (rule.action !== null) {
                 echoLine("");
                 echo("            case ");
@@ -6293,6 +6526,7 @@ var tsRenderer = function (input, output) {
                     echo("sp - ");
                     echo(rule.rhs.length - rule.vars[uvar].val);
                     echo("];");
+                    newLine = false;
                 }
                 for (var uvar2 in rule.usedVars) {
                     echoLine("");
@@ -6305,11 +6539,10 @@ var tsRenderer = function (input, output) {
                     echo("sp - ");
                     echo(rule.usedVars[uvar2].val);
                     echo("];");
+                    newLine = false;
                 }
-                for (var _c = 0, _d = rule.action; _c < _d.length; _c++) {
-                    var act = _d[_c];
-                    act.toCode(codegen);
-                }
+                newLine && (echoLine(''), echo('                '));
+                rule.action.toCode(codegen);
                 echoLine("");
                 echo("                break;");
             }

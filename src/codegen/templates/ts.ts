@@ -7,7 +7,7 @@ import { DFA } from '../../lexer/dfa';
 import { LexAction } from '../../lexer/action';
 import { State, Arc } from '../../lexer/state';
 import { oo, _oo } from '../../util/interval-set';
-import { JNode } from '../../parser/node'
+import { JNode, Position } from '../../parser/node'
 import { DFATable } from '../../lexer/dfa-table'
 
 export default function(input: TemplateInput, output: TemplateOutput){
@@ -61,19 +61,6 @@ function printTable<T>(tname: string, t: T[], align: number, lc: number, mapper:
     echoLine("");
     echo("]; ");
     } 
-function printLexTokens(dfa: DFATable<LexAction[]>, n: number){
-    function getAction(act: LexAction[]): number{
-        for(let a of act){
-            if(a.token !== -1){
-                return a.token;
-            }
-        }
-        return -1;
-    }
-    printTable<State<LexAction[]>>('lexTokens' + n, dfa.states, 6, 10, (state) => {
-        return state.endAction ? getAction(state.endAction.data).toString() : '-1';
-    });
-} 
     echoLine("");
     echoLine("/*");
     echoLine("    constants");
@@ -95,17 +82,17 @@ function printLexTokens(dfa: DFATable<LexAction[]>, n: number){
     echo("};");
     } 
     let dfaTables = input.file.dfaTables; 
-    function printDFATable(t: DFATable<LexAction[]>, n: number){
+    function printDFATable(t: DFATable<LexAction>, n: number){
     function tn(s: string){
         return prefix + s + String(n);
     }
-    printTable<Arc<LexAction[]>>('lexpnext' + n, t.pnext, 6, 10, a => a === null ? '-1' :  String(a.to.index));
+    printTable<Arc<LexAction>>('lexpnext' + n, t.pnext, 6, 10, a => a === null ? '-1' :  String(a.to.index));
     printTable<number>('lexdisnext' + n, t.disnext, 6, 10, a => String(a));
     printTable<number>('lexchecknext' + n, t.checknext, 6, 10, a => String(a));
     printTable<number>('lexclassTable' + n, t.classTable, 6, 10, a => String(a));
     printTable<number>('lexunicodeClassTable' + n, t.unicodeClassTable, 6, 10, a => String(a));
-    printTable<State<LexAction[]>>('lexisEnd' + n, t.states, 1, 15, a => a.endAction === null ? '0' : '1');
-    printTable<State<LexAction[]>>('lexhasArc' + n, t.states, 1, 15, a => a.arcs.length === 0 ? '0' : '1');
+    printTable<State<LexAction>>('lexisEnd' + n, t.states, 1, 15, a => a.endAction === null ? '0' : '1');
+    printTable<State<LexAction>>('lexhasArc' + n, t.states, 1, 15, a => a.arcs.length === 0 ? '0' : '1');
 
     echoLine("");
     echo("var ");
@@ -189,7 +176,9 @@ function printLexTokens(dfa: DFATable<LexAction[]>, n: number){
     echoLine("    tokens that a lexical dfa state can return");
     echo("*/");
     for(let i = 0, _a = dfaTables; i < _a.length; i++){
-    printLexTokens(_a[i], i);
+    printTable<State<LexAction>>('lexTokens' + i, _a[i].states, 6, 10, s => { 
+        return s.endAction === null || s.endAction.data.token === null ? '-1' : String(s.endAction.data.token.index);
+    });
 } 
     echoLine("");
     let pt = input.pt; 
@@ -303,57 +292,33 @@ function printLexTokens(dfa: DFATable<LexAction[]>, n: number){
     printTable<TokenDef>('tokenAlias', pt.g.tokens, 20, 3, t => t.alias ? `"${t.alias.replace(/"/g, '\\"')}"` : "null"); 
     let className = getOpt('className', 'Parser'); 
     echoLine("");
-    function printLexActionsFunc(dfa: DFATable<LexAction[]>, n: number){
+    function printLexActionsFunc(dfa: DFATable<LexAction>, n: number){
     let codegen = {
-        addBlock(b: string, line: number){ 
-    echoLine("");
-    echo("                ");
-    echo(b.replace(/\$token/g, prefix + 'token').replace(/\$\$/g, prefix + 'sematicVal') );
-    },
-        pushLexState(n: number){ 
-    echoLine("");
-    echo("                ");
-    echo(prefix );
-    echo("lexState.push(");
-    echo(n );
-    echo(");");
-    },
-        popLexState(){ 
-    echoLine("");
-    echo("                ");
-    echo(prefix );
-    echo("lexState.pop();");
-    },
-        setImg(n: string){ 
-    echoLine("");
-    echo("                ");
-    echo(prefix );
-    echo("setImg(\"");
-    echo(n );
-    echo("\");");
-    },
-        returnToken(t: TokenDef){ 
-    echoLine("");
-    echo("                this.");
-    echo(prefix );
-    echoLine("token = {");
-    echo("                    id: ");
-    echo(t.index );
-    echoLine(",");
-    echo("                    val: this.");
-    echo(prefix );
-    echoLine("matched.join('')");
-    echo("                };");
-    }
-    }; 
-    function hasNormalAction(a: LexAction[]){
-        for(let act of a){
-            if(act.token === -1){
-                return true;
-            }
-        }
-        return false;
-    }
+        raw(s: string){
+            echo(s);
+        },
+        beginBlock(pos: Position){
+            echo('{');
+        },
+        endBlock(pos: Position){
+            echo('}');
+        },
+        pushLexState(n: number){
+            echo(`${prefix}lexState.push(${n})`);
+        },
+        popLexState(){
+            echo(`${prefix}lexState.pop()`);
+        },
+        setImg(n: string){
+            echo(`${prefix}setImg("${n}")`);
+        },
+        tokenObj(){
+            echo(prefix + 'token');
+        }, // $token
+        lhs(){
+            echo(prefix + "sematicVal");
+        } // $$
+    };
     let statevn = prefix + 'staten'; 
     echoLine("");
     echo("    function ");
@@ -383,14 +348,13 @@ function printLexTokens(dfa: DFATable<LexAction[]>, n: number){
     echo(statevn );
     echo("){");
     for(let i = 0, _a = dfa.states; i < _a.length; i++){ 
-        if(_a[i].endAction !== null && hasNormalAction(_a[i].endAction.data)){ 
+        if(_a[i].endAction !== null && _a[i].endAction.data.actions.length > 0){ 
     echoLine("");
     echo("            case ");
     echo(i );
     echo(":");
-    for(let act of _a[i].endAction.data){
-                act.token === -1 && act.toCode(codegen);
-            } 
+    echoLine(''); echo('                '); 
+    _a[i].endAction.data.toCode(codegen); 
     echoLine("");
     echo("                break;");
     }
@@ -1166,39 +1130,33 @@ function printLexTokens(dfa: DFATable<LexAction[]>, n: number){
     echo("    }");
     function printReduceActions(){
     let codegen = {
-        addBlock(b: string, line: number){ 
-    echoLine("");
-    echo("                {");
-    echo(b.replace(/\$\$/g, prefix + 'top') );
-    echo("}");
-    },
-        pushLexState(n: number){ 
-    echoLine("");
-    echo("                ");
-    echo(prefix );
-    echo("lexState.push(");
-    echo(n );
-    echo(");");
-    },
-        popLexState(){ 
-    echoLine("");
-    echo("                ");
-    echo(prefix );
-    echo("lexState.pop();");
-    },
-        setImg(n: string){ 
-    echoLine("");
-    echo("                ");
-    echo(prefix );
-    echo("setImg(\"");
-    echo(n );
-    echo("\");");
-    },
-        returnToken(t: TokenDef){
-            // should not happen
-        }
+        raw(s: string){
+            echo(s);
+        },
+        beginBlock(pos: Position){
+            echo('{');
+        },
+        endBlock(pos: Position){
+            echo('} ');
+        },
+        pushLexState(n: number){
+            echo(`${prefix}lexState.push(${n})`);
+        },
+        popLexState(){
+            echo(`${prefix}lexState.pop()`);
+        },
+        setImg(n: string){
+            echo(`${prefix}setImg("${n}")`);
+        },
+        tokenObj(){
+            echo(prefix + 'token');
+        }, // $token
+        lhs(){
+            echo(prefix + "top");
+        } // $$
     };
     for(let rule of input.file.grammar.rules){
+        let newLine = true;
         if(rule.action !== null){ 
     echoLine("");
     echo("            case ");
@@ -1218,7 +1176,8 @@ function printLexTokens(dfa: DFATable<LexAction[]>, n: number){
     echo("sp - ");
     echo(rule.rhs.length - rule.vars[uvar].val );
     echo("];");
-    }
+    newLine = false; 
+            }
             for(let uvar2 in rule.usedVars){ 
     echoLine("");
     echo("                var ");
@@ -1230,10 +1189,10 @@ function printLexTokens(dfa: DFATable<LexAction[]>, n: number){
     echo("sp - ");
     echo(rule.usedVars[uvar2].val );
     echo("];");
-    }
-            for(let act of rule.action){
-                act.toCode(codegen);
-            } 
+    newLine = false; 
+            }
+            newLine && (echoLine(''), echo('                '));
+            rule.action.toCode(codegen); 
     echoLine("");
     echo("                break;");
     }

@@ -1,9 +1,15 @@
 import { TokenDef } from "../grammar/token-entry";
+import { Position } from "../parser/node";
 
 export interface CodeGenerator{
-    addBlock(b: string, line: number);
+    raw(s: string);
+    beginBlock(pos: Position);
+    endBlock(pos: Position);
+
     pushLexState(n: number);
     popLexState();
     setImg(n: string);
-    returnToken(t: TokenDef);
+    
+    tokenObj(); // $token
+    lhs(); // $$
 };
