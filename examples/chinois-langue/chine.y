@@ -4,7 +4,7 @@
     PART = < <DIGIT> | %import('es5UnicodeIDPart') >
 
     < NAME: <LETTER> (<LETTER>|<PART>)* >
-    < NUM: (<DIGIT>+ ('.' <DIGIT>*)?|'.' <DIGIT>+ ) (['e', 'E']<DIGIT>+)? >
+    < NUM: (<DIGIT>+ ('.' <DIGIT>*)?|'.' <DIGIT>+ ) (['e', 'E']['+', '-']?<DIGIT>+)? >
     < BEGIN: '开始' >
     < END: '结束' >
     < IF: '如果' >

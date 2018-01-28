@@ -152,15 +152,15 @@ function unescape(s: string){
 }
 
 %lex <IN_ACTION_BLOCK> {
-    < ANY_CODE: "$"? ( [^"{", "}", "\\", "$"] | "\\" [^"{", "}", "$"] )* >: { $$ = newNode($token.val); }
-    < ESCAPED_CHAR_IN_BLOCK: "\\" ["{", "}", "$"] >: { $$ = newNode($token.val.charAt(1)); }
+    < ANY_CODE: "$"? ( [^"{", "}", "\\", "$"] | "\\" [^"{", "}", "$"] )* >: { $$ = nodeFromToken($token); }
+    < ESCAPED_CHAR_IN_BLOCK: "\\" ["{", "}", "$"] >: { $$ = nodeFromToken($token); $$.val = $$.val.charAt(1); }
     < OPEN_BLOCK: "{" >: { $$ = nodeFromTrivalToken($token); }
     < CLOSE_BLOCK: "}" >: { $$ = nodeFromTrivalToken($token); }
 
     < LHS_REF: %least "$$" >
     < TOKEN_REF: %least "$token" >
     < EMIT_TOKEN: %least "$emit<" <ID> ">" >
-    : { $$ = newNode($token.val.substr(4, $token.val.length - 5)); }
+    : { $$ = nodeFromToken($token); $$.val = $$.val.substr(6, $$.val.length - 7); }
 }
 
 %lex <IN_EPILOGUE> {
@@ -242,8 +242,9 @@ lexActions:
 lexActionItem: 
     '+' vn = <NAME> { gb.addPushStateAction(lexact, vn); lexact.raw('; '); }
 |   '-' { lexact.popState(); lexact.raw('; '); }
-|   actionBlock
+|   '=>' sn = <NAME> { gb.addSwitchToStateAction(lexact, sn); lexact.raw('; '); }
 |   '=' s = <STRING> { lexact.setImg(s.val); lexact.raw('; '); }
+|   actionBlock
 ;
 regexp: 
     innerRegexp { least = false; }

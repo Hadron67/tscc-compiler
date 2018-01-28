@@ -57,6 +57,7 @@ export interface GBuilder{
     defineRulePr(token: JNode, type: TokenRefType);
     commitRule();
     addPushStateAction(act: LexAction, vn: JNode);
+    addSwitchToStateAction(act: LexAction, vn: JNode);
     addEmitTokenAction(act: LexAction, tn: JNode);
     build(): File;
     readonly lexBuilder: LexBuilder<LexAction>;
@@ -113,6 +114,7 @@ export function createFileBuilder(ctx: Context): GBuilder{
         defineRulePr,
         commitRule,
         addPushStateAction,
+        addSwitchToStateAction,
         addEmitTokenAction,
         build,
         lexBuilder: lexBuilder
@@ -417,6 +419,19 @@ export function createFileBuilder(ctx: Context): GBuilder{
             if(su){
                 act.set(n, c => {
                     c.pushLexState(sn);
+                });
+            }
+            else {
+                singlePosErr(`state "${vn.val}" is undefined`, vn);
+            }
+        });
+    }
+    function addSwitchToStateAction(act: LexAction, vn: JNode){
+        let n = act.placeHolder();
+        lexBuilder.requiringState.wait(vn.val, (su, sn) => {
+            if(su){
+                act.set(n, c => {
+                    c.switchToLexState(sn);
                 });
             }
             else {

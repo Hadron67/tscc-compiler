@@ -46,11 +46,11 @@ function leftAlign(s: string, al: number): string{
     }
     return (s.length < al ? repeat(' ', al - s.length) : '') + s;
 }
-function printTable<T>(tname: string, t: T[], align: number, lc: number, mapper: (d: T) => string){
+function printTable<T>(tname: string, type: string, t: T[], align: number, lc: number, mapper: (d: T) => string){
     let count = 1; 
     echoLine("");
     echo("var ");
-    echo(prefix + tname );
+    echo(prefix + tname + ts(': ' + type + '[]'));
     echoLine(" = [ ");
     echo(tab); 
     for(let i of t){
@@ -86,13 +86,13 @@ function printTable<T>(tname: string, t: T[], align: number, lc: number, mapper:
     function tn(s: string){
         return prefix + s + String(n);
     }
-    printTable<Arc<LexAction>>('lexpnext' + n, t.pnext, 6, 10, a => a === null ? '-1' :  String(a.to.index));
-    printTable<number>('lexdisnext' + n, t.disnext, 6, 10, a => String(a));
-    printTable<number>('lexchecknext' + n, t.checknext, 6, 10, a => String(a));
-    printTable<number>('lexclassTable' + n, t.classTable, 6, 10, a => String(a));
-    printTable<number>('lexunicodeClassTable' + n, t.unicodeClassTable, 6, 10, a => String(a));
-    printTable<State<LexAction>>('lexisEnd' + n, t.states, 1, 15, a => a.endAction === null ? '0' : '1');
-    printTable<State<LexAction>>('lexhasArc' + n, t.states, 1, 15, a => a.arcs.length === 0 ? '0' : '1');
+    printTable<Arc<LexAction>>('lexpnext' + n, 'number', t.pnext, 6, 10, a => a === null ? '-1' :  String(a.to.index));
+    printTable<number>('lexdisnext' + n, 'number', t.disnext, 6, 10, a => String(a));
+    printTable<number>('lexchecknext' + n, 'number', t.checknext, 6, 10, a => String(a));
+    printTable<number>('lexclassTable' + n, 'number', t.classTable, 6, 10, a => String(a));
+    printTable<number>('lexunicodeClassTable' + n, 'number', t.unicodeClassTable, 6, 10, a => String(a));
+    printTable<State<LexAction>>('lexisEnd' + n, 'number', t.states, 1, 15, a => a.endAction === null ? '0' : '1');
+    printTable<State<LexAction>>('lexhasArc' + n, 'number', t.states, 1, 15, a => a.arcs.length === 0 ? '0' : '1');
 
     echoLine("");
     echo("var ");
@@ -176,7 +176,7 @@ function printTable<T>(tname: string, t: T[], align: number, lc: number, mapper:
     echoLine("    tokens that a lexical dfa state can return");
     echo("*/");
     for(let i = 0, _a = dfaTables; i < _a.length; i++){
-    printTable<State<LexAction>>('lexTokens' + i, _a[i].states, 6, 10, s => { 
+    printTable<State<LexAction>>('lexTokens' + i, 'number', _a[i].states, 6, 10, s => { 
         return s.endAction === null || s.endAction.data.token === null ? '-1' : String(s.endAction.data.token.index);
     });
 } 
@@ -208,7 +208,7 @@ function printTable<T>(tname: string, t: T[], align: number, lc: number, mapper:
     echoLine("    when action < 0, reduce with rule (1-action);");
     echoLine("    when action = 0, do default action.");
     echo("*/");
-    printTable<Item>('pact', pt.pact, 6, 10, t => {
+    printTable<Item>('pact', 'number', pt.pact, 6, 10, t => {
     if(t === null){
         return '0';
     }
@@ -226,7 +226,7 @@ function printTable<T>(tname: string, t: T[], align: number, lc: number, mapper:
     echoLine("/*");
     echoLine("    displacement of action table.");
     echo("*/");
-    printTable<number>('disact', pt.disact, 6, 10, t => t.toString()); 
+    printTable<number>('disact', 'number', pt.disact, 6, 10, t => t.toString()); 
     echoLine("");
     echoLine("/*");
     echo("    used to check if a position in ");
@@ -238,7 +238,7 @@ function printTable<T>(tname: string, t: T[], align: number, lc: number, mapper:
     echo(prefix );
     echoLine("disact[STATE-NUM] + TOKEN] = STATE-NUM, this position is not out of bounds.");
     echo("*/");
-    printTable<number>('checkact', pt.checkact, 6, 10, t => t === undefined ? '0' : t.toString()); 
+    printTable<number>('checkact', 'number', pt.checkact, 6, 10, t => t === undefined ? '0' : t.toString()); 
     echoLine("");
     echoLine("/*");
     echo("    default action table. action = ");
@@ -246,7 +246,7 @@ function printTable<T>(tname: string, t: T[], align: number, lc: number, mapper:
     echoLine("defred[STATE-NUM],");
     echoLine("    where action is the number of the rule to reduce with.");
     echo("*/");
-    printTable<number>('defred', pt.defred, 6, 10, t => t.toString()); 
+    printTable<number>('defred', 'number', pt.defred, 6, 10, t => t.toString()); 
     echoLine("");
     echoLine("/*");
     echo("    compressed goto table: goto = ");
@@ -255,7 +255,7 @@ function printTable<T>(tname: string, t: T[], align: number, lc: number, mapper:
     echo(prefix );
     echoLine("disgoto[STATE-NUM] + NON_TERMINAL]");
     echo("*/");
-    printTable<Item>('pgoto', pt.pgoto, 6, 10, t => {
+    printTable<Item>('pgoto', 'number', pt.pgoto, 6, 10, t => {
     if(t === null){
         return '-1';
     }
@@ -267,29 +267,29 @@ function printTable<T>(tname: string, t: T[], align: number, lc: number, mapper:
     echoLine("/*");
     echoLine("    displacement of the goto table");
     echo("*/");
-    printTable<number>('disgoto', pt.disgoto, 6, 10, t => t.toString()); 
+    printTable<number>('disgoto', 'number', pt.disgoto, 6, 10, t => t.toString()); 
     echoLine("");
     echoLine("/*");
     echo("    length of each rule: rule length = ");
     echo(prefix );
     echoLine("ruleLen[RULE-NUM]");
     echo("*/");
-    printTable<Rule>('ruleLen', pt.g.rules, 6, 10, r => r.rhs.length.toString()); 
+    printTable<Rule>('ruleLen', 'number', pt.g.rules, 6, 10, r => r.rhs.length.toString()); 
     echoLine("");
     echoLine("/*");
     echoLine("    index of the LHS of each rule");
     echo("*/");
-    printTable<Rule>('lhs', pt.g.rules, 6, 10, r => r.lhs.index.toString()); 
+    printTable<Rule>('lhs', 'number', pt.g.rules, 6, 10, r => r.lhs.index.toString()); 
     echoLine("");
     echoLine("/*");
     echoLine("    token names");
     echo("*/");
-    printTable<TokenDef>('tokenNames', pt.g.tokens, 20, 3, t => `"${t.sym.replace(/"/g, '\\"')}"`); 
+    printTable<TokenDef>('tokenNames', 'string', pt.g.tokens, 20, 3, t => `"${t.sym.replace(/"/g, '\\"')}"`); 
     echoLine("");
     echoLine("/*");
     echoLine("    token alias");
     echo("*/");
-    printTable<TokenDef>('tokenAlias', pt.g.tokens, 20, 3, t => t.alias ? `"${t.alias.replace(/"/g, '\\"')}"` : "null"); 
+    printTable<TokenDef>('tokenAlias', 'string', pt.g.tokens, 20, 3, t => t.alias ? `"${t.alias.replace(/"/g, '\\"')}"` : "null"); 
     let className = getOpt('className', 'Parser'); 
     echoLine("");
     function printLexActionsFunc(dfa: DFATable<LexAction>, n: number){
@@ -305,6 +305,9 @@ function printTable<T>(tname: string, t: T[], align: number, lc: number, mapper:
         },
         pushLexState(n: number){
             echo(`${prefix}lexState.push(${n})`);
+        },
+        switchToLexState(n: number){
+            echo(`${prefix}lexState[${prefix}lexState.length - 1] = ${n}`);
         },
         popLexState(){
             echo(`${prefix}lexState.pop()`);
@@ -1148,6 +1151,9 @@ function printTable<T>(tname: string, t: T[], align: number, lc: number, mapper:
         },
         pushLexState(n: number){
             echo(`${prefix}lexState.push(${n})`);
+        },
+        switchToLexState(n: number){
+            echo(`${prefix}lexState[${prefix}lexState.length - 1] = ${n}`);
         },
         popLexState(){
             echo(`${prefix}lexState.pop()`);

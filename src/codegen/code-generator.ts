@@ -7,6 +7,7 @@ export interface CodeGenerator{
     endBlock(pos: Position);
 
     pushLexState(n: number);
+    switchToLexState(n: number);
     popLexState();
     setImg(n: string);
     

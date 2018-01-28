@@ -101,8 +101,10 @@ export class DFATable<T>{
         }
         let tl = 0;
         for(let c = 0; c < this.classTable.length; c++){
-            this.classTable[c] !== -1 && os.write(`${char(c)} -> c${this.classTable[c]}, `);
-            tl++ > 9 && (os.writeln(), tl = 0);
+            if(this.classTable[c] !== -1) {
+                os.write(`${char(c)} -> c${this.classTable[c]}, `);
+                tl++ > 9 && (os.writeln(), tl = 0);
+            }
         }
         os.writeln();
         tl = 0;

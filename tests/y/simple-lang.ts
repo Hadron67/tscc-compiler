@@ -19,7 +19,7 @@ interface DFATable{
 /*
     dfa table definations
 */
-var jjlexpnext0 = [ 
+var jjlexpnext0: number[] = [ 
          1,     1,     2,     3,     4,     5,     6,     7,     8,     9,
         10,    11,    12,    13,    14,    15,    16,    17,    18,    19,
         20,    21,    22,    23,     4,    24,    25,    26,     4,    27,
@@ -115,7 +115,7 @@ var jjlexpnext0 = [
         35,    35,    35,    35,    35,    35,    -1,    -1,    -1,    -1,
     
 ]; 
-var jjlexdisnext0 = [ 
+var jjlexdisnext0: number[] = [ 
          0,    49,    46,    73,   888,    70,    72,   -42,   -42,    71,
         69,   -42,    43,    67,    70,   -42,   -42,    42,    65,    39,
        -42,   -42,   -42,    64,   854,   820,   786,   752,   718,   -42,
@@ -125,7 +125,7 @@ var jjlexdisnext0 = [
        -42,   -42,   -42,   -42,   412,   378,   344,   310,   276,   242,
        208,   174,   140,   106,    72,    38,
 ]; 
-var jjlexchecknext0 = [ 
+var jjlexchecknext0: number[] = [ 
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
@@ -221,7 +221,7 @@ var jjlexchecknext0 = [
          4,     4,     4,     4,     4,     4,    -1,    -1,    -1,    -1,
     
 ]; 
-var jjlexclassTable0 = [ 
+var jjlexclassTable0: number[] = [ 
         -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,     0,
          1,    -1,    -1,     2,    -1,    -1,    -1,    -1,    -1,    -1,
         -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
@@ -249,10 +249,10 @@ var jjlexclassTable0 = [
         -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
         -1,    -1,    -1,    -1,    -1,    -1,
 ]; 
-var jjlexunicodeClassTable0 = [ 
+var jjlexunicodeClassTable0: number[] = [ 
     
 ]; 
-var jjlexisEnd0 = [ 
+var jjlexisEnd0: number[] = [ 
     0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -260,7 +260,7 @@ var jjlexisEnd0 = [
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
     1,
 ]; 
-var jjlexhasArc0 = [ 
+var jjlexhasArc0: number[] = [ 
     1,1,1,1,1,1,1,0,0,1,1,0,1,1,1,
     0,0,1,1,1,0,0,0,1,1,1,1,1,1,0,
     1,0,0,1,0,1,1,0,0,0,0,0,0,0,0,
@@ -301,7 +301,7 @@ function jjfindUnicodeClass(uc: number[], c: number){
 /*
     tokens that a lexical dfa state can return
 */
-var jjlexTokens0 = [ 
+var jjlexTokens0: number[] = [ 
         -1,    -1,    -1,    47,     1,    10,    28,    37,    38,     5,
          3,    41,     4,     6,     2,     9,    44,    12,    17,    11,
          8,    39,    40,    30,     1,     1,     1,     1,     1,    42,
@@ -321,7 +321,7 @@ var jjactERR = 145;
     when action < 0, reduce with rule (1-action);
     when action = 0, do default action.
 */
-var jjpact = [ 
+var jjpact: number[] = [ 
         55,    56,    57,    58,    60,    45,   110,    59,     8,     9,
         10,    11,    12,    13,   -79,   -79,   -79,   -79,   -79,   -79,
        -79,   -79,   -79,   -79,   -79,    50,    48,    49,   143,    64,
@@ -469,7 +469,7 @@ var jjpact = [
 /*
     displacement of action table.
 */
-var jjdisact = [ 
+var jjdisact: number[] = [ 
        -54,   604,   -54,   -54,   -54,   220,   249,   -54,   -54,   -54,
        -54,   -54,   -54,   -54,   -54,   -54,   -54,   -54,   -54,   -54,
        -54,   -54,   -54,   -54,    41,  1326,  1315,  1278,  1267,   -54,
@@ -490,7 +490,7 @@ var jjdisact = [
     used to check if a position in jjpact is out of bouds.
     if jjcheckact[jjdisact[STATE-NUM] + TOKEN] = STATE-NUM, this position is not out of bounds.
 */
-var jjcheckact = [ 
+var jjcheckact: number[] = [ 
         78,    78,    78,    78,    78,    78,    78,    78,    78,    78,
         78,    78,    78,    78,    32,    32,    32,    32,    32,    32,
         32,    32,    32,    32,    32,    78,    78,    78,   141,    32,
@@ -639,7 +639,7 @@ var jjcheckact = [
     default action table. action = jjdefred[STATE-NUM],
     where action is the number of the rule to reduce with.
 */
-var jjdefred = [ 
+var jjdefred: number[] = [ 
          2,    -1,     0,     1,     3,    -1,     6,    62,    63,    64,
         65,    66,    67,    51,    52,    53,    54,    55,    56,    57,
         58,    59,    60,    61,    48,    -1,    -1,    -1,    -1,    45,
@@ -659,7 +659,7 @@ var jjdefred = [
 /*
     compressed goto table: goto = jjpgoto[jjdisgoto[STATE-NUM] + NON_TERMINAL]
 */
-var jjpgoto = [ 
+var jjpgoto: number[] = [ 
         50,    50,    50,    50,    50,    50,    50,    50,    50,    50,
         50,    50,    50,    50,    50,    50,    50,    50,    50,    50,
          3,    50,   143,    50,     4,   102,    37,   102,    37,   141,
@@ -685,7 +685,7 @@ var jjpgoto = [
 /*
     displacement of the goto table
 */
-var jjdisgoto = [ 
+var jjdisgoto: number[] = [ 
        177,    18,   -18,   -18,   -18,   -18,   110,   -18,   -18,   -18,
        -18,   -18,   -18,   -18,   -18,   -18,   -18,   -18,   -18,   -18,
        -18,   -18,   -18,   -18,    93,   182,   180,   177,   172,   -18,
@@ -705,7 +705,7 @@ var jjdisgoto = [
 /*
     length of each rule: rule length = jjruleLen[RULE-NUM]
 */
-var jjruleLen = [ 
+var jjruleLen: number[] = [ 
          2,     2,     0,     1,     7,     1,     0,     3,     1,     2,
          0,     1,     3,     2,     6,     5,     7,     9,     0,     2,
          0,     1,     3,     1,     3,     5,     3,     3,     3,     3,
@@ -718,7 +718,7 @@ var jjruleLen = [
 /*
     index of the LHS of each rule
 */
-var jjlhs = [ 
+var jjlhs: number[] = [ 
          0,     1,     1,     2,     2,     3,     3,     4,     4,     5,
          5,     6,     6,     6,     6,     6,     6,     6,     7,     7,
          8,     8,     9,     9,    10,    10,    10,    10,    10,    10,
@@ -731,7 +731,7 @@ var jjlhs = [
 /*
     token names
 */
-var jjtokenNames = [ 
+var jjtokenNames: string[] = [ 
                    "EOF",              "NAME",               "NUM",
                   "PLUS",             "MINUS",             "TIMES",
                 "DIVIDE",               "EXP",          "QUESTION",
@@ -755,7 +755,7 @@ var jjtokenNames = [
 /*
     token alias
 */
-var jjtokenAlias = [ 
+var jjtokenAlias: string[] = [ 
                     null,                null,                null,
                      "+",                 "-",                 "*",
                      "/",                "**",                 "?",
@@ -830,8 +830,9 @@ function createParser(): Parser {
 
     // members for parser
     var jjlrState: number[];
-    var jjsematicS: any[] = [];
+    var jjsematicS: any[];
     var jjsematicVal: any;
+    var jjemittedTokens: number[];
 
     var jjstop;
 
@@ -860,6 +861,7 @@ function createParser(): Parser {
         jjlrState = [ 0 ];
         jjsematicS = [];
         jjsematicVal = null;
+        jjemittedTokens = [];
 
         jjstop = false;
         
@@ -886,7 +888,7 @@ function createParser(): Parser {
     }
     function jjreturnToken(){
         jjemit('token', jjtokenNames[jjtoken.id], jjtoken.val);
-        while(!jjstop && !jjacceptToken(jjtoken));
+        jjconsumeTokens(jjtoken);
         jjtoken.id = -1;
     }
     function jjemit(name: string, a1?, a2?, a3?){
@@ -906,13 +908,13 @@ function createParser(): Parser {
         jjtk !== -1 && jjprepareToken(jjtk);
         switch(jjstaten){
             case 1:
-                jjsetImg("");
+                jjsetImg(""); 
                 break;
             case 2:
-                jjsetImg("");
+                jjsetImg(""); 
                 break;
             case 33:
-                jjsetImg("");
+                jjsetImg(""); 
                 break;
             default:;
         }
@@ -1098,7 +1100,14 @@ function createParser(): Parser {
         jjsematicS.length -= jjruleLen[jjrulenum];
         jjsematicS.push(jjtop);
     }
-
+    function jjconsumeTokens(t: Token){
+        if(t !== null){
+            while(!jjstop && !jjacceptToken(jjtoken));
+        }
+        while(!jjstop && jjemittedTokens.length > 0){
+            jjacceptToken(new Token(jjemittedTokens[0], null, 0, 0, 0, 0)) && jjemittedTokens.shift();
+        }
+    }
     function jjacceptToken(t: Token){
         // look up action table
         var cstate = jjlrState[jjlrState.length - 1];
