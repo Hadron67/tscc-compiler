@@ -12,4 +12,5 @@ export interface CodeGenerator{
     
     tokenObj(); // $token
     lhs(); // $$
+    emitToken(tid: number);
 };

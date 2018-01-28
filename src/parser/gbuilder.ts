@@ -57,6 +57,7 @@ export interface GBuilder{
     defineRulePr(token: JNode, type: TokenRefType);
     commitRule();
     addPushStateAction(act: LexAction, vn: JNode);
+    addEmitTokenAction(act: LexAction, tn: JNode);
     build(): File;
     readonly lexBuilder: LexBuilder<LexAction>;
 }
@@ -74,6 +75,7 @@ export function createFileBuilder(ctx: Context): GBuilder{
     let _ntTable: {[s: string]: NtDef} = {};
     // ntPlaceHolders: {[s: string]: RuleLoc[]} = {};
     let _requiringNt: CoroutineMgr<NtDef> = null;
+    let _requiringToken: CoroutineMgr<TokenDef> = null;
 
     let _genIndex = 0;
     let _first = true;
@@ -86,6 +88,7 @@ export function createFileBuilder(ctx: Context): GBuilder{
     file.grammar = grammar;
     lexBuilder = createLexBuilder(ctx);
     _requiringNt = new CoroutineMgr<NtDef>(s => _ntTable[s]);
+    _requiringToken = new CoroutineMgr<TokenDef>(s => _tokenNameTable[s]);
     defToken(newNode('EOF'), null);
 
     return {
@@ -110,6 +113,7 @@ export function createFileBuilder(ctx: Context): GBuilder{
         defineRulePr,
         commitRule,
         addPushStateAction,
+        addEmitTokenAction,
         build,
         lexBuilder: lexBuilder
     };
@@ -420,6 +424,19 @@ export function createFileBuilder(ctx: Context): GBuilder{
             }
         });
     }
+    function addEmitTokenAction(act: LexAction, tn: JNode){
+        let n = act.placeHolder();
+        _requiringToken.wait(tn.val, (success, tdef) => {
+            if(success){
+                act.set(n, c => {
+                    // TODO: emit token
+                });
+            }
+            else {
+                singlePosErr(`use of undefined token <${tn.val}>`, tn);
+            }
+        });
+    }
     function build(){
         grammar.tokenCount = grammar.tokens.length;
         grammar.tokens[0].used = true;// end of file
@@ -442,6 +459,7 @@ export function createFileBuilder(ctx: Context): GBuilder{
         for(let cb of _onDone){
             cb();
         }
+        _requiringToken.fail();
         _requiringNt.fail();
         return file;
     }

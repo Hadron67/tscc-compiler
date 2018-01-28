@@ -217,7 +217,10 @@ var <%- prefix %>actERR = <%- pt.stateCount + 1 %>;
         }, // $token
         lhs(){
             echo(prefix + "sematicVal");
-        } // $$
+        }, // $$
+        emitToken(tid: number){
+            echo(`${prefix}emittedTokens.push(${tid})`);
+        }
     };
     let statevn = prefix + 'staten'; %>
     function <%- prefix %>doLexAction<%- n %>(<%- statevn + ts(": number")%>){
@@ -322,8 +325,9 @@ function create<%- className %>()<%- ts(': ' + className) %> {
 
     // members for parser
     var <%- prefix %>lrState<%- ts(": number[]") %>;
-    var <%- prefix %>sematicS<%- ts(': ' + stype + '[]') %> = [];
+    var <%- prefix %>sematicS<%- ts(': ' + stype + '[]') %>;
     var <%- prefix %>sematicVal<%- ts(': ' + stype) %>;
+    var <%- prefix %>emittedTokens: number[];
 
     var <%- prefix %>stop;
 
@@ -362,6 +366,7 @@ function create<%- className %>()<%- ts(': ' + className) %> {
         <%- prefix %>lrState = [ 0 ];
         <%- prefix %>sematicS = [];
         <%- prefix %>sematicVal = null;
+        <%- prefix %>emittedTokens = [];
 
         <%- prefix %>stop = false;
         <%- n(input.file.initBody) %>
@@ -388,7 +393,7 @@ function create<%- className %>()<%- ts(': ' + className) %> {
     }
     function <%- prefix %>returnToken(){
         <%- prefix %>emit('token', <%- prefix %>tokenNames[<%- prefix %>token.id], <%- prefix %>token.val);
-        while(!<%- prefix %>stop && !<%- prefix %>acceptToken(<%- prefix %>token));
+        <%- prefix %>consumeTokens(<%- prefix %>token);
         <%- prefix %>token.id = -1;
     }
     function <%- prefix %>emit(name<%- ts(": string") + ts(", a1?, a2?, a3?", ", a1, a2, a3") %>){
@@ -601,22 +606,23 @@ function create<%- className %>()<%- ts(': ' + className) %> {
         }, // $token
         lhs(){
             echo(prefix + "top");
-        } // $$
+        }, // $$
+        emitToken(tid: number){
+            echo(`${prefix}emittedTokens.push(${tid})`);
+        }
     };
     for(let rule of input.file.grammar.rules){
-        let newLine = true;
         if(rule.action !== null){ %>
             case <%- rule.index %>:
                 /* <%- rule.toString() %> */
             <% for(let uvar in rule.vars){ %>
                 var <%- uvar %> = <%- prefix %>sematicS[<%- prefix %>sp - <%- rule.rhs.length - rule.vars[uvar].val %>];
-            <% newLine = false; 
-            }
+            <% }
             for(let uvar2 in rule.usedVars){ %>
                 var <%- uvar2 %> = <%- prefix %>sematicS[<%- prefix %>sp - <%- rule.usedVars[uvar2].val %>];
-            <% newLine = false; 
-            }
-            newLine && (echoLine(''), echo('                '));
+            <% }
+            echoLine('');
+            echo('                ');
             rule.action.toCode(codegen); %>
                 break;
         <% }
@@ -636,7 +642,14 @@ function create<%- className %>()<%- ts(': ' + className) %> {
         <%- prefix %>sematicS.length -= <%- prefix %>ruleLen[<%- prefix %>rulenum];
         <%- prefix %>sematicS.push(<%- prefix %>top);
     }
-
+    function <%- prefix%>consumeTokens(t<%- ts(': Token') %>){
+        if(t !== null){
+            while(!<%- prefix %>stop && !<%- prefix %>acceptToken(<%- prefix %>token));
+        }
+        while(!<%- prefix %>stop && <%- prefix %>emittedTokens.length > 0){
+            <%- prefix %>acceptToken(new Token(<%- prefix %>emittedTokens[0], null, 0, 0, 0, 0)) && <%- prefix %>emittedTokens.shift();
+        }
+    }
     function <%- prefix %>acceptToken(t<%- ts(": Token") %>){
         // look up action table
         var cstate = <%- prefix %>lrState[<%- prefix %>lrState.length - 1];

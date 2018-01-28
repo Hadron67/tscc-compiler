@@ -13,7 +13,7 @@ export class LexAction{
 
     toCode(c: CodeGenerator){
         for(let act of this.actions){
-            act(c);
+            act !== null && act(c);
         }
     }
 

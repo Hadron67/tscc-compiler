@@ -317,7 +317,10 @@ function printTable<T>(tname: string, t: T[], align: number, lc: number, mapper:
         }, // $token
         lhs(){
             echo(prefix + "sematicVal");
-        } // $$
+        }, // $$
+        emitToken(tid: number){
+            echo(`${prefix}emittedTokens.push(${tid})`);
+        }
     };
     let statevn = prefix + 'staten'; 
     echoLine("");
@@ -535,12 +538,15 @@ function printTable<T>(tname: string, t: T[], align: number, lc: number, mapper:
     echo(prefix );
     echo("sematicS");
     echo(ts(': ' + stype + '[]') );
-    echoLine(" = [];");
+    echoLine(";");
     echo("    var ");
     echo(prefix );
     echo("sematicVal");
     echo(ts(': ' + stype) );
     echoLine(";");
+    echo("    var ");
+    echo(prefix );
+    echoLine("emittedTokens: number[];");
     echoLine("");
     echo("    var ");
     echo(prefix );
@@ -617,6 +623,9 @@ function printTable<T>(tname: string, t: T[], align: number, lc: number, mapper:
     echo("        ");
     echo(prefix );
     echoLine("sematicVal = null;");
+    echo("        ");
+    echo(prefix );
+    echoLine("emittedTokens = [];");
     echoLine("");
     echo("        ");
     echo(prefix );
@@ -707,13 +716,11 @@ function printTable<T>(tname: string, t: T[], align: number, lc: number, mapper:
     echo("token.id], ");
     echo(prefix );
     echoLine("token.val);");
-    echo("        while(!");
+    echo("        ");
     echo(prefix );
-    echo("stop && !");
+    echo("consumeTokens(");
     echo(prefix );
-    echo("acceptToken(");
-    echo(prefix );
-    echoLine("token));");
+    echoLine("token);");
     echo("        ");
     echo(prefix );
     echoLine("token.id = -1;");
@@ -1153,10 +1160,12 @@ function printTable<T>(tname: string, t: T[], align: number, lc: number, mapper:
         }, // $token
         lhs(){
             echo(prefix + "top");
-        } // $$
+        }, // $$
+        emitToken(tid: number){
+            echo(`${prefix}emittedTokens.push(${tid})`);
+        }
     };
     for(let rule of input.file.grammar.rules){
-        let newLine = true;
         if(rule.action !== null){ 
     echoLine("");
     echo("            case ");
@@ -1176,8 +1185,7 @@ function printTable<T>(tname: string, t: T[], align: number, lc: number, mapper:
     echo("sp - ");
     echo(rule.rhs.length - rule.vars[uvar].val );
     echo("];");
-    newLine = false; 
-            }
+    }
             for(let uvar2 in rule.usedVars){ 
     echoLine("");
     echo("                var ");
@@ -1189,9 +1197,9 @@ function printTable<T>(tname: string, t: T[], align: number, lc: number, mapper:
     echo("sp - ");
     echo(rule.usedVars[uvar2].val );
     echo("];");
-    newLine = false; 
-            }
-            newLine && (echoLine(''), echo('                '));
+    }
+            echoLine('');
+            echo('                ');
             rule.action.toCode(codegen); 
     echoLine("");
     echo("                break;");
@@ -1274,7 +1282,34 @@ function printTable<T>(tname: string, t: T[], align: number, lc: number, mapper:
     echo(prefix );
     echoLine("top);");
     echoLine("    }");
-    echoLine("");
+    echo("    function ");
+    echo(prefix);
+    echo("consumeTokens(t");
+    echo(ts(': Token') );
+    echoLine("){");
+    echoLine("        if(t !== null){");
+    echo("            while(!");
+    echo(prefix );
+    echo("stop && !");
+    echo(prefix );
+    echo("acceptToken(");
+    echo(prefix );
+    echoLine("token));");
+    echoLine("        }");
+    echo("        while(!");
+    echo(prefix );
+    echo("stop && ");
+    echo(prefix );
+    echoLine("emittedTokens.length > 0){");
+    echo("            ");
+    echo(prefix );
+    echo("acceptToken(new Token(");
+    echo(prefix );
+    echo("emittedTokens[0], null, 0, 0, 0, 0)) && ");
+    echo(prefix );
+    echoLine("emittedTokens.shift();");
+    echoLine("        }");
+    echoLine("    }");
     echo("    function ");
     echo(prefix );
     echo("acceptToken(t");

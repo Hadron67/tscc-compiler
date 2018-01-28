@@ -159,7 +159,8 @@ function unescape(s: string){
 
     < LHS_REF: %least "$$" >
     < TOKEN_REF: %least "$token" >
-
+    < EMIT_TOKEN: %least "$emit<" <ID> ">" >
+    : { $$ = newNode($token.val.substr(4, $token.val.length - 5)); }
 }
 
 %lex <IN_EPILOGUE> {
@@ -344,6 +345,7 @@ innerActionBlockItem:
 |   c = <ESCAPED_CHAR_IN_BLOCK> { lexact.raw(c.val); }
 |   <LHS_REF> { lexact.lhs(); }
 |   <TOKEN_REF> { lexact.tokenObj(); }
+|   t = <EMIT_TOKEN> { gb.addEmitTokenAction(lexact, t); }
 |   [+IN_ACTION_BLOCK] '{' { lexact.raw('\{'); } innerActionBlock [-] '}' { lexact.raw('\}'); }
 ;
 %%
