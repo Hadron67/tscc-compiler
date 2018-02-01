@@ -218,6 +218,9 @@ var <%- prefix %>actERR = <%- pt.stateCount + 1 %>;
         tokenObj(){
             echo(prefix + 'token');
         }, // $token
+        matched(){
+            echo(prefix + 'matched');
+        },
         lhs(){
             echo(prefix + "sematicVal");
         }, // $$
@@ -330,7 +333,7 @@ function create<%- className %>()<%- ts(': ' + className) %> {
     var <%- prefix %>lrState<%- ts(": number[]") %>;
     var <%- prefix %>sematicS<%- ts(': ' + stype + '[]') %>;
     var <%- prefix %>sematicVal<%- ts(': ' + stype) %>;
-    var <%- prefix %>emittedTokens: number[];
+    var <%- prefix %>emittedTokens<%- ts(": number[]") %>;
 
     var <%- prefix %>stop;
 
@@ -395,7 +398,7 @@ function create<%- className %>()<%- ts(': ' + className) %> {
         <%- prefix %>tcolumn = <%- prefix %>column;
     }
     function <%- prefix %>returnToken(){
-        <%- prefix %>emit('token', <%- prefix %>tokenNames[<%- prefix %>token.id], <%- prefix %>token.val);
+        <%- prefix %>emit('token', <%- prefix %>token);
         <%- prefix %>consumeTokens(<%- prefix %>token);
         <%- prefix %>token.id = -1;
     }
@@ -610,6 +613,9 @@ function create<%- className %>()<%- ts(': ' + className) %> {
         tokenObj(){
             echo(prefix + 'token');
         }, // $token
+        matched(){
+            echo(prefix + 'matched');
+        },
         lhs(){
             echo(prefix + "top");
         }, // $$

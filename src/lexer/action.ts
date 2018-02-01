@@ -7,6 +7,16 @@ import { Position } from "../parser/node";
 //     token: number;
 // };
 type Codecb = (c: CodeGenerator) => any;
+export function pushStateAction(sn: number): Codecb{
+    return c => {
+        c.pushLexState(sn);
+    }
+}
+export function switchToStateAction(sn: number): Codecb{
+    return c => {
+        c.switchToLexState(sn);
+    }
+}
 export class LexAction{
     token: TokenDef = null;
     actions: Codecb[] = [];
@@ -21,14 +31,10 @@ export class LexAction{
         this.token = tk;
     }
     raw(s: string){
-        this.actions.push(c => {
-            c.raw(s);
-        });
+        this.actions.push(c => c.raw(s));
     }
     pushState(n: number){
-        this.actions.push(c => {
-            c.pushLexState(n);
-        });
+        this.actions.push(pushStateAction(n));
     }
     placeHolder(){
         let ret = this.actions.length;
@@ -39,80 +45,24 @@ export class LexAction{
         this.actions[n] = cb;
     }
     popState(){
-        this.actions.push(c => {
-            c.popLexState();
-        });
+        this.actions.push(c => c.popLexState());
     }
     beginBlock(pos: Position){
-        this.actions.push(c => {
-            c.beginBlock(pos);
-        });
+        this.actions.push(c => c.beginBlock(pos));
     }
     setImg(s: string){
-        this.actions.push(c => {
-            c.setImg(s);
-        });
+        this.actions.push(c => c.setImg(s));
     }
     endBlock(pos: Position){
-        this.actions.push(c => {
-            c.endBlock(pos);
-        });
+        this.actions.push(c => c.endBlock(pos));
     }
     lhs(){
-        this.actions.push(c => {
-            c.lhs();
-        });
+        this.actions.push(c => c.lhs());
     }
     tokenObj(){
-        this.actions.push(c => {
-            c.tokenObj();
-        });
+        this.actions.push(c => c.tokenObj());
+    }
+    matched(){
+        this.actions.push(c => c.matched());
     }
 }
-// export type LexAction = (c: CodeGenerator) => any; 
-// function noCode(c: CodeGenerator){
-
-// }
-
-// export function returnToken(tk: TokenDef): LexAction{
-//     return {
-//         toCode: noCode,
-//         token: tk.index
-//     };
-// }
-
-// export function pushState(n: number): LexAction{
-//     return {
-//         toCode(c){
-//             c.pushLexState(n);
-//         },
-//         token: -1
-//     };
-// }
-
-// export function popState(): LexAction{
-//     return {
-//         toCode(c){
-//             c.popLexState();
-//         },
-//         token: -1
-//     };
-// }
-
-// export function blockAction(b: string, line: number): LexAction{
-//     return {
-//         toCode(c){
-//             c.addBlock(b, line);
-//         },
-//         token: -1
-//     };
-// }
-
-// export function setImg(img: string): LexAction{
-//     return {
-//         toCode(c){
-//             c.setImg(img);
-//         },
-//         token: -1
-//     };
-// }

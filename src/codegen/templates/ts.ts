@@ -318,6 +318,9 @@ function printTable<T>(tname: string, type: string, t: T[], align: number, lc: n
         tokenObj(){
             echo(prefix + 'token');
         }, // $token
+        matched(){
+            echo(prefix + 'matched');
+        },
         lhs(){
             echo(prefix + "sematicVal");
         }, // $$
@@ -549,7 +552,9 @@ function printTable<T>(tname: string, type: string, t: T[], align: number, lc: n
     echoLine(";");
     echo("    var ");
     echo(prefix );
-    echoLine("emittedTokens: number[];");
+    echo("emittedTokens");
+    echo(ts(": number[]") );
+    echoLine(";");
     echoLine("");
     echo("    var ");
     echo(prefix );
@@ -714,11 +719,7 @@ function printTable<T>(tname: string, type: string, t: T[], align: number, lc: n
     echo(prefix );
     echo("emit('token', ");
     echo(prefix );
-    echo("tokenNames[");
-    echo(prefix );
-    echo("token.id], ");
-    echo(prefix );
-    echoLine("token.val);");
+    echoLine("token);");
     echo("        ");
     echo(prefix );
     echo("consumeTokens(");
@@ -1164,6 +1165,9 @@ function printTable<T>(tname: string, type: string, t: T[], align: number, lc: n
         tokenObj(){
             echo(prefix + 'token');
         }, // $token
+        matched(){
+            echo(prefix + 'matched');
+        },
         lhs(){
             echo(prefix + "top");
         }, // $$

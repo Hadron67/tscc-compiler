@@ -6,7 +6,7 @@ import { Assoc, TokenDef } from '../grammar/token-entry';
 import { JsccError, JsccWarning } from '../util/E';
 import { Context } from '../util/context';
 import { LexBuilder, createLexBuilder } from '../lexer/builder';
-import { LexAction } from '../lexer/action';
+import { LexAction, pushStateAction, switchToStateAction } from '../lexer/action';
 import { Coroutine, CoroutineMgr } from '../util/coroutine';
 import { Located } from '../util/located';
 import { JNode, newNode, markPosition, Position, posToString } from './node';
@@ -74,7 +74,6 @@ export function createFileBuilder(ctx: Context): GBuilder{
     let _sematicVar: JNode = null;
 
     let _ntTable: {[s: string]: NtDef} = {};
-    // ntPlaceHolders: {[s: string]: RuleLoc[]} = {};
     let _requiringNt: CoroutineMgr<NtDef> = null;
     let _requiringToken: CoroutineMgr<TokenDef> = null;
 
@@ -377,9 +376,9 @@ export function createFileBuilder(ctx: Context): GBuilder{
         }
         t.action = b;
         if(_sematicVar !== null){
-            t.vars[_sematicVar.val] = { val: t.rhs.length, pos: _sematicVar };
-            _sematicVar = null;
             _splitAction();
+            t.vars[_sematicVar.val] = { val: t.rhs.length - 1, pos: _sematicVar };
+            _sematicVar = null;
         }
     }
     function defineRulePr(token: JNode, type: TokenRefType){
@@ -417,9 +416,7 @@ export function createFileBuilder(ctx: Context): GBuilder{
         let n = act.placeHolder();
         lexBuilder.requiringState.wait(vn.val, (su, sn) => {
             if(su){
-                act.set(n, c => {
-                    c.pushLexState(sn);
-                });
+                act.set(n, pushStateAction(sn));
             }
             else {
                 singlePosErr(`state "${vn.val}" is undefined`, vn);
@@ -430,9 +427,7 @@ export function createFileBuilder(ctx: Context): GBuilder{
         let n = act.placeHolder();
         lexBuilder.requiringState.wait(vn.val, (su, sn) => {
             if(su){
-                act.set(n, c => {
-                    c.switchToLexState(sn);
-                });
+                act.set(n, switchToStateAction(sn));
             }
             else {
                 singlePosErr(`state "${vn.val}" is undefined`, vn);
@@ -444,7 +439,7 @@ export function createFileBuilder(ctx: Context): GBuilder{
         _requiringToken.wait(tn.val, (success, tdef) => {
             if(success){
                 act.set(n, c => {
-                    // TODO: emit token
+                    c.emitToken(tdef.index);
                 });
             }
             else {

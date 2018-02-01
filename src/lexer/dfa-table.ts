@@ -35,6 +35,12 @@ export class DFATable<T>{
     classTable: number[];
     unicodeClassTable: number[];
 
+    private _trim(){
+        while(this.pnext[this.pnext.length - 1] === null){
+            this.pnext.pop();
+            this.checknext.pop();
+        }
+    }
     constructor(dfa: DFA<T>, public maxAsicii: number = 255){
         function emitClassInterval(a: number, b: number, cl: number){
             for(; a <= b; a++){
@@ -80,6 +86,7 @@ export class DFATable<T>{
                 }
             }
         }
+        this._trim();
     }
     lookup(s: number, c: number): Arc<T>{
         let ind = this.disnext[s] + c;

@@ -43,7 +43,7 @@ let escapes: {[s: string]: string} = {
     '"': '"',
     "'": "'"
 };
-function unescape(s: string){
+function unescape(s: string): string{
     let ret = '';
     let i = 0;
     while(i < s.length){
@@ -99,7 +99,7 @@ function unescape(s: string){
     
     < ["\n", "\t", " ", "\r"]+ >: [='']
     < "/*" ([^"*", "/"]|[^"*"]"/"|"*"[^"/"])* "*/" >: [='']
-    < "//" [^"\n"]* >: [='']
+    < ("//"|'#') [^"\n"]* >: [='']
 
     < NAME: <ID> >: { $$ = nodeFromToken($token); }
     < STRING: 
@@ -145,20 +145,24 @@ function unescape(s: string){
 }
 
 %lex <IN_BLOCK> {
-    < ANY_CODE: ( [^"{", "}", "\\"] | "\\" [^"{", "}"] )* >: { $$ = newNode($token.val); }
+    < ANY_CODE: ( [^"{", "}", "\\"] | "\\" [^"{", "}"] )+ >: { $$ = newNode($token.val); }
     < ESCAPED_CHAR_IN_BLOCK: "\\" ["{", "}"] >: { $$ = newNode($token.val.charAt(1)); }
     < OPEN_BLOCK: "{" >: { $$ = nodeFromTrivalToken($token); }
     < CLOSE_BLOCK: "}" >: { $$ = nodeFromTrivalToken($token); }
 }
 
 %lex <IN_ACTION_BLOCK> {
-    < ANY_CODE: "$"? ( [^"{", "}", "\\", "$"] | "\\" [^"{", "}", "$"] )* >: { $$ = nodeFromToken($token); }
+    < ANY_CODE: 
+        ( [^"{", "}", "\\", "$"] | "\\" [^"{", "}", "$"] )+ 
+    |   "$" ( [^"{", "}", "\\"] | "\\" [^"{", "}", "$"] )*
+    >: { $$ = nodeFromToken($token); }
     < ESCAPED_CHAR_IN_BLOCK: "\\" ["{", "}", "$"] >: { $$ = nodeFromToken($token); $$.val = $$.val.charAt(1); }
     < OPEN_BLOCK: "{" >: { $$ = nodeFromTrivalToken($token); }
     < CLOSE_BLOCK: "}" >: { $$ = nodeFromTrivalToken($token); }
 
     < LHS_REF: %least "$$" >
     < TOKEN_REF: %least "$token" >
+    < MATCHED: %least "$matched" >
     < EMIT_TOKEN: %least "$emit<" <ID> ">" >
     : { $$ = nodeFromToken($token); $$.val = $$.val.substr(6, $$.val.length - 7); }
 }
@@ -337,7 +341,7 @@ innerBlockItem:
 ;
 
 actionBlock: 
-    [+IN_ACTION_BLOCK] open = "{" { lexact.beginBlock(open); }
+    [+IN_ACTION_BLOCK] open = "{" t = { lexact.beginBlock(open); }
     innerActionBlock [-] close = "}" { lexact.endBlock(close); }
 ;
 innerActionBlock: innerActionBlock innerActionBlockItem |;
@@ -346,6 +350,7 @@ innerActionBlockItem:
 |   c = <ESCAPED_CHAR_IN_BLOCK> { lexact.raw(c.val); }
 |   <LHS_REF> { lexact.lhs(); }
 |   <TOKEN_REF> { lexact.tokenObj(); }
+|   <MATCHED> { lexact.matched(); }
 |   t = <EMIT_TOKEN> { gb.addEmitTokenAction(lexact, t); }
 |   [+IN_ACTION_BLOCK] '{' { lexact.raw('\{'); } innerActionBlock [-] '}' { lexact.raw('\}'); }
 ;

@@ -204,8 +204,12 @@ export function createLexBuilder<T>(ctx: Context): LexBuilder<T>{
     //#region union
     function enterUnion(){
         _emit(() => {
+            var nhead = new State<T>();
+            _currentState.epsilonTo(nhead);
+            _currentState = new State<T>();
+            nhead.epsilonTo(_currentState);
             _unionStack.push({
-                head: _currentState,
+                head: nhead,
                 tail: new State<T>()
             });
         });
@@ -214,7 +218,8 @@ export function createLexBuilder<T>(ctx: Context): LexBuilder<T>{
         _emit(() => {
             let top = _unionStack[_unionStack.length - 1];
             _currentState.epsilonTo(top.tail);
-            _currentState = top.head;
+            _currentState = new State<T>();
+            top.head.epsilonTo(_currentState);
         });
     }
     function leaveUnion(){

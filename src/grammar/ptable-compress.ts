@@ -62,6 +62,16 @@ export class CompressedPTable implements IParseTable{
     disgoto: number[];
     checkgoto: number[];
 
+    private _trim(){
+        while(this.pact[this.pact.length - 1] === null){
+            this.pact.pop();
+            this.checkact.pop();
+        }
+        while(this.pgoto[this.pgoto.length - 1] === null){
+            this.pgoto.pop();
+            this.checkgoto.pop();
+        }
+    }
     constructor(ptable: ParseTable){
         this.g = ptable.g;
         this.defred = ptable.defred;
@@ -88,6 +98,7 @@ export class CompressedPTable implements IParseTable{
             cela.pgoto[cela.disgoto[state] + nt] = it;
             cela.checkgoto[cela.disgoto[state] + nt] = state;
         });
+        this._trim();
     }
     lookupShift(state: number, token: number){
         let index = this.disact[state] + token;

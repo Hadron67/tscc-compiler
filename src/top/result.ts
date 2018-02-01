@@ -80,7 +80,7 @@ export function genResult(source: string, fname: string): Result{
         if(!s.used){
             let msg = `token <${s.sym}> is never used, definations are(is):` + endl;
             for(let pos of s.appears){
-                msg += markPosition(pos, lines);
+                msg += markPosition(pos, lines) + endl;
             }
             warn(new JsccWarning(msg));
         }
@@ -114,7 +114,7 @@ export function genResult(source: string, fname: string): Result{
     }
 
     for(let dfa of file.lexDFA){
-        file.dfaTables.push(new DFATable<LexAction[]>(dfa));
+        file.dfaTables.push(new DFATable<LexAction>(dfa));
     }
 
     return ret;

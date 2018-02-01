@@ -12,6 +12,7 @@ export interface CodeGenerator{
     setImg(n: string);
     
     tokenObj(); // $token
+    matched(); // $matched
     lhs(); // $$
     emitToken(tid: number);
 };
