@@ -1,19 +1,31 @@
 %header {
+// universal module defination
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
 	(factory((global.zend = {})));
 }(this, (function (exports) \{ 'use strict';
-
+var toString = {}.toString;
+function isArray(a){
+    return toString.call(a) === '[object Array]';
+}
 function ZNode(type, child, val, pos){
+    this.parent = null;
     this.type = type;
     this.val = val || null;
-    this.child = typeof child === 'array' ? child : typeof child === 'undefined' ? [] : [child];
+    this.child = isArray(child) ? child : child === null || typeof child === 'undefined' ? [] : [child];
     this.pos = pos || null;
+    for(var i = 0, _a = this.child; i < _a.length; i++){
+        _a[i] !== ZNode.NONE && (_a[i].parent = this);
+    }
 }
 ZNode.NONE = new ZNode(AST_NONE);
 ZNode.prototype.add = function(c){
     this.child.push(c);
+    c.parent = this;
+}
+ZNode.prototype.toString = function(){
+
 }
 
 function nodeFromToken(t){
@@ -30,6 +42,14 @@ function nodeFromTrivalToken(t){
         startColumn: t.startColumn,
         endLine: t.endLine,
         endColumn: t.endColumn
+    });
+}
+function nodeBetween(from, to, val){
+    return new ZNode(AST_NONE, null, val, {
+        startLine: from.startLine,
+        startColumn: from.startColumn,
+        endLine: to.endLine,
+        endColumn: to.endColumn
     });
 }
 var escapes = {
@@ -71,48 +91,78 @@ function unescape(s){
     return ret;
 }
 var cc = 0;
-var OP_NOP = cc++;
-var OP_PUSH = cc++;
-var OP_POP = cc++;
-var OP_GETVAR = cc++;
-var OP_SETVAR = cc++;
-var OP_SETPROP = cc++;
-var OP_GETPROP = cc++;
-var OP_GETOFFSET = cc++;
-var OP_SETOFFSET = cc++;
+function defineOpcode(name, handler){
+    return {
+        code: cc++,
+        name: name,
+        handler: handler || null
+    };
+}
+var OP_NOP = defineOpcode('nop');
+var OP_PUSH = defineOpcode('push');
+var OP_POP = defineOpcode('pop');
+var OP_DUP = defineOpcode('dup');
+var OP_GETVAR = defineOpcode('getVar');
+var OP_SETVAR = defineOpcode('setVar');
+var OP_SETPROP = defineOpcode('setProp');
+var OP_GETPROP = defineOpcode('getProp');
+var OP_GETOFFSET = defineOpcode('getOffset');
+var OP_SETOFFSET = defineOpcode('setOffset');
+var OP_GETMAXOFFSET = defineOpcode('getMaxOffset');
+var OP_SETMAXOFFSET = defineOpcode('setMaxOffset');
+var OP_GETCONST = defineOpcode('getConst');
+var OP_SETLOCAL = defineOpcode('setLocal');
+var OP_GETLOCAL = defineOpcode('getLocal');
 
-var OP_PLUS = cc++;
-var OP_MINUS = cc++;
-var OP_TIMES = cc++;
-var OP_DIVIDE = cc++;
-var OP_POW = cc++;
-var OP_MOD = cc++;
-var OP_BITAND = cc++;
-var OP_BITOR = cc++;
-var OP_BITXOR = cc++;
-var OP_BITNOT = cc++;
-var OP_AND = cc++;
-var OP_OR = cc++;
-var OP_NOT = cc++;
-var OP_XOR = cc++;
-var OP_LEFTSHIFT = cc++;
-var OP_RIGHTSHIFT = cc++;
-var OP_POSITIVE = cc++;
-var OP_NEGATIVE = cc++;
-var OP_INC = cc++;
-var OP_DEC = cc++;
-var OP_GREATERTHAN = cc++;
-var OP_LESSTHAN = cc++;
-var OP_EQUAL = cc++;
-var OP_IDENTICAL = cc++;
-var OP_GREATERTHANOREQUAL = cc++;
-var OP_LESSTHANOREQUAL = cc++;
-var OP_NOTEQUAL = cc++;
-var OP_NOTIDENTICAL = cc++;
+var OP_PLUS = defineOpcode('plus');
+var OP_MINUS = defineOpcode('minus');
+var OP_TIMES = defineOpcode('times');
+var OP_DIVIDE = defineOpcode('divide');
+var OP_POW = defineOpcode('pow');
+var OP_CONCAT = defineOpcode('concat');
+var OP_MOD = defineOpcode('mod');
+var OP_BITAND = defineOpcode('bitAnd');
+var OP_BITOR = defineOpcode('bitOr');
+var OP_BITXOR = defineOpcode('bitXor');
+var OP_BITNOT = defineOpcode('bitNot');
+var OP_AND = defineOpcode('and');
+var OP_OR = defineOpcode('or');
+var OP_NOT = defineOpcode('not');
+var OP_XOR = defineOpcode('xor');
+var OP_LEFTSHIFT = defineOpcode('leftShift');
+var OP_RIGHTSHIFT = defineOpcode('rightShift');
+var OP_POSITIVE = defineOpcode('positive');
+var OP_NEGATIVE = defineOpcode('negative');
+var OP_INC = defineOpcode('inc');
+var OP_DEC = defineOpcode('dec');
+var OP_GREATERTHAN = defineOpcode('greaterThan');
+var OP_LESSTHAN = defineOpcode('lessThan');
+var OP_EQUAL = defineOpcode('equal');
+var OP_IDENTICAL = defineOpcode('identical');
+var OP_GREATERTHANOREQUAL = defineOpcode('greaterThanOrEqual');
+var OP_LESSTHANOREQUAL = defineOpcode('lessThanOrEqual');
+var OP_NOTEQUAL = defineOpcode('notEqual');
+var OP_NOTIDENTICAL = defineOpcode('notIdentical');
+var OP_ECHO = defineOpcode('echo');
 
-var OP_CALL = cc++;
-var OP_NEW = cc++;
-var OP_DEFINEFUNCTION = cc++;
+var OP_INVOKE = defineOpcode('invoke');
+var OP_INVOKENAME = defineOpcode('invokeName');
+var OP_INVOKEMETHOD = defineOpcode('invokeMethod');
+var OP_INVOKEMETHODNAME = defineOpcode('invokeMethodName');
+var OP_NEW = defineOpcode('new');
+var OP_DEFINEFUNCTION = defineOpcode('defineFunction');
+var OP_ENTRY = defineOpcode('entry');
+var OP_PARAM = defineOpcode('param');
+var OP_USE = defineOpcode('use');
+var OP_ENDFUNCTION = defineOpcode('endFunction');
+
+var OP_JMP = defineOpcode('jmp');
+var OP_JZ = defineOpcode('jz');
+var OP_JNZ = defineOpcode('jnz');
+var OP_RETURN = defineOpcode('return');
+var OP_RETURNNULL = defineOpcode('returnNull');
+var OP_CODE = defineOpcode('code');
+var OP_ENDCODE = defineOpcode('endCode');
 
 cc = 0;
 var AST_NONE = cc++;
@@ -128,7 +178,13 @@ var AST_CONDITIONALEXPR = cc++;
 var AST_ARGLIST = cc++;
 var AST_PARAMLIST = cc++;
 var AST_LEXICALVARLIST = cc++;
-var AST_FUNCCALL = cc++;
+var AST_FUNCTIONCALL = cc++;
+var AST_METHODCALL = cc++;
+var AST_FUNCTION = cc++;
+var AST_ANONYFUNCTION = cc++;
+var AST_BREAK = cc++;
+var AST_CONTINUE = cc++;
+var AST_RETURN = cc++;
 
 var AST_VARIABLE = cc++;
 var AST_PROPERTY = cc++;
@@ -149,6 +205,7 @@ var AST_FLOAT = cc++;
 var AST_STRING = cc++;
 var AST_ARRAY = cc++;
 var AST_ARRAYPAIR = cc++;
+var AST_LOCAL = cc++;
 
 }
 
@@ -156,10 +213,10 @@ var AST_ARRAYPAIR = cc++;
 
 %lex {
     NEWLINE = < "\n"|"\r"|"\r\n" >
-
-    < INLINE_HTML: [^'<']+ | '<' [^]* >: { $$ = nodeFromToken($token); }
-    < %lease "<?php" ([" ", "\t"]|<NEWLINE>) >: [='', +IN_SCRIPTING]
-    < ECHO_TAG: %lease "<?=" >: [+IN_SCRIPTING]
+    
+    < INLINE_HTML: [^'<']+ | '<'[^"<"]* >: { $$ = nodeFromToken($token); }
+    < %least "<?php" ([" ", "\t"]|<NEWLINE>) >: [+IN_SCRIPTING]
+    < ECHO_TAG: %least "<?=" >: [+IN_SCRIPTING]
 }
 
 %lex <IN_SCRIPTING> {
@@ -246,9 +303,13 @@ var AST_ARRAYPAIR = cc++;
     < WHILE: 'while' >
     < DO: 'do' >
     < FOR: 'for' >
-    < FUNCTION: 'function' >
+    < FUNCTION: 'function' >: { $$ = nodeFromTrivalToken($token); }
     < LIST: 'list' >
     < USE: 'use' >
+    < BREAK: 'break' >: { $$ = nodeFromTrivalToken($token); }
+    < CONTINUE: 'continue' >: { $$ = nodeFromTrivalToken($token); }
+    < RETURN: 'return' >
+    < DOT: '.' >
 }
 
 %lex <LOOKING_FOR_PROPERTY> {
@@ -277,7 +338,7 @@ var AST_ARRAYPAIR = cc++;
 
 %token <END_OF_HEREDOC>
 
-%right 'else'
+%right 'else' <INLINE_HTML>
 
 %left 'OR' 'XOR' 'AND'
 %right '=' '+=' '-=' '*=' '/=' '&=' '|=' '^=' '>>=' '<<=' '%=' '**='
@@ -291,7 +352,7 @@ var AST_ARRAYPAIR = cc++;
 %right '~' '++' '--'
 %left '>' '<' '>=' '<=' '==' '!=' '===' '!=='
 %left '>>' '<<'
-%left '+' '-'
+%left '+' '-' '.'
 %left '*' '/' '%'
 %right '**'
 %left UNARY
@@ -325,8 +386,8 @@ statement_list:
 statement:
     '{' l = statement_list '}' { $$ = l; }
 |   ';' { $$ = null; }
-|   expr ';'
-|   h = <INLINE_HTML> { h.type = AST_STRING; $$ = new ZNode(AST_ECHO, h); }
+|   e = expr ';' { $$ = new ZNode(AST_EXPR_LIST, e); }
+|   h = <INLINE_HTML> { $$ = new ZNode(AST_ECHO, h); h.type = AST_STRING; }
 |   <ECHO_TAG> e = expr <INLINE_HTML> { $$ = new ZNode(AST_ECHO, e); }
 |   'echo' e = expr ';' { $$ = new ZNode(AST_ECHO, e); }
 |   if_statement
@@ -335,7 +396,12 @@ statement:
     { $$ = new ZNode(AST_DO_WHILE, [cond, s]); }
 |   'for' '(' e1 = for_exprs ';' e2 = for_exprs ';' e3 = for_exprs ')' s = statement
     { $$ = new ZNode(AST_FOR, [e1, e2, e3, s]); }
+|   'return' e = optional_expr ';' { $$ = new ZNode(AST_RETURN, e); }
+|   'break' n = optional_num ';' { $$.type = AST_BREAK; $$.add(n); }
+|   'continue' n = optional_num ';' { $$.type = AST_CONTINUE; $$.add(n); }
 ;
+
+optional_num: <INT> | { $$ = ZNode.NONE; } ;
 
 if_statement:
     'if' '(' c = expr ')' s = statement %prec 'else' { $$ = new ZNode(AST_IF, [c, s, ZNode.NONE]); }
@@ -369,13 +435,15 @@ dereferencable:
 
 var:
     callable_variable
-|   v = dereferencable [+LOOKING_FOR_PROPERTY] '->' [-] pn = property_name
+|   v = dereferencable pn = arrow_and_property
     { $$ = new ZNode(AST_PROPERTY, [v, pn]); }
 ;
 callable_variable:
     simple_var
 |   v = dereferencable '[' e = optional_expr ']' 
     { $$ = new ZNode(AST_OFFSET, [v, e]); }
+|   v = dereferencable pn = arrow_and_property '(' l = argument_list ')'
+    { $$ = new ZNode(AST_METHODCALL, [v, pn, l]); }
 ;
 simple_var: 
     v = <VARIABLE> { v.type = AST_STRING; $$ = new ZNode(AST_VARIABLE, v); }
@@ -383,6 +451,9 @@ simple_var:
 |   '$' v = simple_var { $$ = new ZNode(AST_VARIABLE, v); }
 ;
 
+arrow_and_property:
+    [+LOOKING_FOR_PROPERTY] '->' [-] pn = property_name { $$ = pn; }
+;
 property_name:
     n = <NAME> { $$.type = AST_STRING; }
 |   '{' e = expr '}' { $$ = e; }
@@ -395,8 +466,10 @@ optional_expr:
 ;
 
 function_call:
-    <NAME> '(' argument_list ')'
-|   callable_expr '(' argument_list ')'
+    fn = <NAME> '(' l = argument_list ')'
+    { fn.type = AST_STRING; $$ = new ZNode(AST_FUNCTIONCALL, [fn, l]); }
+|   f = callable_expr '(' l = argument_list ')'
+    { $$ = new ZNode(AST_FUNCTIONCALL, [f, l]); }
 ;
 
 argument_list:
@@ -437,51 +510,53 @@ expr_without_var:
 |   a = expr '?' b = expr ':' c = expr { $$ = new ZNode(AST_CONDITIONALEXPR, [a, b, c]); }
 |   a = expr '?' ':' c = expr { $$ = new ZNode(AST_CONDITIONALEXPR, [a, ZNode.NONE, c]); }
 
-|   a = expr '>' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_GREATERTHAN); }
-|   a = expr '<' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_LESSTHAN); }
-|   a = expr '>=' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_GREATERTHANOREQUAL); }
-|   a = expr '<=' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_LESSTHANOREQUAL); }
-|   a = expr '==' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_EQUAL); }
-|   a = expr '===' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_IDENTICAL); }
-|   a = expr '!=' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_NOTEQUAL); }
-|   a = expr '!==' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_NOTIDENTICAL); }
+|   a = expr '>' b = expr   { $$ = new ZNode(AST_BINARYOP, [a, b], OP_GREATERTHAN);        }
+|   a = expr '<' b = expr   { $$ = new ZNode(AST_BINARYOP, [a, b], OP_LESSTHAN);           }
+|   a = expr '>=' b = expr  { $$ = new ZNode(AST_BINARYOP, [a, b], OP_GREATERTHANOREQUAL); }
+|   a = expr '<=' b = expr  { $$ = new ZNode(AST_BINARYOP, [a, b], OP_LESSTHANOREQUAL);    }
+|   a = expr '==' b = expr  { $$ = new ZNode(AST_BINARYOP, [a, b], OP_EQUAL);              }
+|   a = expr '===' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_IDENTICAL);          }
+|   a = expr '!=' b = expr  { $$ = new ZNode(AST_BINARYOP, [a, b], OP_NOTEQUAL);           }
+|   a = expr '!==' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_NOTIDENTICAL);       }
 
-|   a = expr '^' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_BITXOR); }
-|   a = expr '|' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_BITOR); }
-|   a = expr '&' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_BITAND); }
+|   a = expr '^' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_BITXOR);      }
+|   a = expr '|' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_BITOR);       }
+|   a = expr '&' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_BITAND);      }
 |   a = expr '>>' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_RIGHTSHIFT); }
-|   a = expr '<<' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_LEFTSHIFT); }
+|   a = expr '<<' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_LEFTSHIFT);  }
 
 |   a = expr '&&' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_AND); }
-|   a = expr '||' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_OR); }
+|   a = expr '||' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_OR);  }
 
-|   a = expr 'OR' b = expr { $$ = new ZNode(AST_LOGICALOR, [a, b]); }
+|   a = expr 'OR' b = expr { $$ = new ZNode(AST_LOGICALOR, [a, b]);         }
 |   a = expr 'XOR' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_XOR); }
-|   a = expr 'AND' b = expr { $$ = new ZNode(AST_LOGICALAND, [a, b]); }
+|   a = expr 'AND' b = expr { $$ = new ZNode(AST_LOGICALAND, [a, b]);       }
 
-|   a = expr '+' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_PLUS); }
-|   a = expr '-' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_MINUS); }
-|   a = expr '*' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_TIMES); }
+|   a = expr '+' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_PLUS);   }
+|   a = expr '-' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_MINUS);  }
+|   a = expr '*' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_TIMES);  }
 |   a = expr '/' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_DIVIDE); }
-|   a = expr '%' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_MOD); }
-|   a = expr '**' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_POW); }
+|   a = expr '%' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_MOD);    }
+|   a = expr '**' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_POW);   }
+|   a = expr '.' b = expr { $$ = new ZNode(AST_BINARYOP, [a, b], OP_CONCAT); }
 |   '(' a = expr ')' { $$ = a; }
 |   '+' a = expr %prec UNARY { $$ = new ZNode(AST_UNARYOP, a, OP_POSITIVE); }
 |   '-' a = expr %prec UNARY { $$ = new ZNode(AST_UNARYOP, a, OP_NEGATIVE); }
-|   '!' a = expr { $$ = new ZNode(AST_UNARYOP, a, OP_NOT); }
+|   '!' a = expr { $$ = new ZNode(AST_UNARYOP, a, OP_NOT);    }
 |   '~' a = expr { $$ = new ZNode(AST_UNARYOP, a, OP_BITNOT); }
-|   '++' a = var { $$ = new ZNode(AST_POSTINC, a); }
-|   '--' a = var { $$ = new ZNode(AST_POSTDEC, a); }
+|   '++' a = var { $$ = new ZNode(AST_POSTINC, a);   }
+|   '--' a = var { $$ = new ZNode(AST_POSTDEC, a);  }
 |   a = var '++' { $$ = new ZNode(AST_SUFFIXINC, a); }
 |   a = var '--' { $$ = new ZNode(AST_SUFFIXDEC, a); }
 |   primitive
-|   'function' '(' l = parameter_list ')' lexical_vars '{' b = statement_list '}'
+|   'function' '(' l = parameter_list ')' ll = lexical_vars '{' b = statement_list '}'
+    { $$ = new ZNode(AST_ANONYFUNCTION, [l, ll, b]); }
 |   function_call
 ;
 
 function_declaration_statement:
     'function' n = <NAME> '(' l = parameter_list ')' '{' b = statement_list '}'
-    { $$ = vm.emitFunction(n, l, b); }
+    { n.type = AST_STRING; $$ = new ZNode(AST_FUNCTION, [n, l, b]); }
 ;
 parameter_list:
     /* empty */ { $$ = new ZNode(AST_PARAMLIST); }
@@ -491,7 +566,7 @@ non_empty_parameter_list:
     non_empty_parameter_list ',' p = parameter { $$.add(p); }
 |   p = parameter { $$ = new ZNode(AST_PARAMLIST, p); }
 ;
-parameter: p = <NAME> { p.type = AST_STRING; $$ = p; };
+parameter: <VARIABLE> { $$.type = AST_STRING; };
 
 lexical_vars:
     /* empty */ { $$ = new ZNode(AST_LEXICALVARLIST); }
@@ -522,7 +597,420 @@ array_pair:
 ;
 %%
 
-exports.compile = function compile(source, errs){
+function OpArray(){
+    this.opcode = [];
+    this.opCount = 0;
+    this.functions = [];
+}
+OpArray.prototype.dump = function(){
+    var ret = [];
+    var labels = [];
+    var labelCount = 0;
+    var labelOps = [];
+    for(var i = 0, _a = this.opcode; i < this.opCount; i++){
+        var op = _a[2 * i];
+        var line = op.name;
+        var arg = _a[2 * i + 1];
+        if(op === OP_JMP || op === OP_JZ || op === OP_JNZ || op === OP_ENTRY){
+            labels[arg] = labelCount++;
+            labelOps.push({ op: op, loc: i, target: arg });
+            ret.push(null);
+        }
+        else {
+            if(arg !== null){
+                if(isArray(arg)){
+                    for(var j = 0; j < arg.length; j++){
+                        line += ' ' + arg[j];
+                    }
+                }
+                else {
+                    if(typeof arg === 'string'){
+                        arg = '"' + arg.replace(/\n/g, '\\n') + '"';
+                    }
+                    line += ' ' + String(arg);
+                }
+            }
+            ret.push(line);
+        }
+    }
+    for(var i = 0; i < labels.length; i++){
+        var l = labels[i];
+        if(l !== undefined){
+            ret[i] = ('label' + l) + ': ' + ret[i];
+        }
+    }
+    for(var i = 0, _a = labelOps; i < _a.length; i++){
+        ret[_a[i].loc] = _a[i].op.name + ' label' + labels[_a[i].target];
+    }
+    return ret;
+}
+
+function createCompiler(fname){
+    var opa = new OpArray();
+    var registers = [];
+    var scope = [];
+    var onErr = [];
+    var funcQueue = [];
+
+    var localNode = new ZNode(AST_LOCAL);
+    
+    function LoopInfo(allowBreak, allowContinue){
+        this.allowBreak = allowBreak;
+        this.allowContinue = allowContinue;
+        this.breaks = [];
+        this.continues = [];
+    }
+    LoopInfo.prototype.done = function(bl, cl){
+        for(var i = 0, _a = this.breaks; i < _a.length; i++){
+            setArg(_a[i], bl);
+        }
+        for(var i = 0, _a = this.continues; i < _a.length; i++){
+            setArg(_a[i], cl);
+        }
+    }
+
+    return {
+        compile: compile,
+        addErrHandler: addErrHandler
+    };
+
+    function addErrHandler(cb){
+        onErr.push(cb);
+    }
+    function err(msg){
+        for(var i = 0; i < onErr.length; i++){
+            onErr[i](msg);
+        }
+    }
+    function singlePosErr(msg, pos){
+        err(msg + ' (at line ' + (pos.startLine + 1) + ')');
+    }
+    function allocateRegister(){
+        var i = 0;
+        while(registers[i] !== undefined){ i++; };
+        registers[i] = true;
+        return i;
+    }
+    function releaseRegister(i){
+        if(i === registers.length - 1){
+            registers.pop();
+        }
+        else {
+            registers[i] = undefined;
+        }
+    }
+    function pushScope(){
+        scope.push(registers);
+        registers = [];
+    }
+    function popScope(){
+        registers = scope.pop();
+    }
+    function emit(s, args){
+        opa.opcode.push(s);
+        opa.opcode.push(typeof args !== 'undefined' ? args : null);
+        return opa.opCount++;
+    }
+    function setArg(op, arg){
+        opa.opcode[op * 2 + 1] = arg;
+    }
+    function breakTarget(ast, level){
+        level = level || 1;
+        var p = ast;
+        while(level --> 0 && p !== null){
+            while(p !== null){
+                if(p.val instanceof LoopInfo && p.val.allowBreak){
+                    break;
+                }
+                p = p.parent;
+            }
+        }
+        return p;
+    }
+    function continueTarget(ast, level){
+        level = level || 1;
+        var p = ast;
+        while(level --> 0 && p !== null){
+            while(p !== null){
+                if(p.val instanceof LoopInfo && p.val.allowContinue){
+                    break;
+                }
+                p = p.parent;
+            }
+        }
+        return p;
+    }
+
+    function compile(astRoot){
+        compileBlock(astRoot);
+        return opa;
+    }
+    function compileBlock(ast){
+        for(var i = 0, _a = ast.child; i < _a.length; i++){
+            var func = _a[i];
+            if(func.type === AST_FUNCTION){
+                emit(OP_DEFINEFUNCTION, func.child[0].val);
+                var entry = emit(OP_ENTRY);
+                var params = [];
+                for(var j = 0, _b = func.child[1].child; i < _b.length; i++){
+                    params.push(_b[j].val);
+                }
+                emit(OP_PARAM, params);
+                emit(OP_ENDFUNCTION);
+                funcQueue.push({ body: func.child[2], entryOp: entry });   
+            }
+        }
+        for(var i = 0, _a = ast.child; i < _a.length; i++){
+            compileStatement(_a[i]);
+        }
+        emit(OP_RETURNNULL);
+    }
+    function compileStatement(ast){
+        switch(ast.type){
+            case AST_NONE: break;
+            case AST_STATEMENTLIST:
+                for(var i = 0, _a = ast.child; i < _a.length; i++){
+                    compileStatement(_a[i]);
+                }
+                break;
+            case AST_ECHO:
+                compileExpression(ast.child[0]);
+                emit(OP_ECHO);
+                break;
+            case AST_EXPR_LIST:
+                compileExpression(ast.child[0]);
+                emit(OP_POP);
+                break;
+            case AST_BREAK:
+                var leveln = ast.child[0];
+                var target = breakTarget(ast, leveln === ZNode.NONE ? 1 : leveln.val);
+                if(target === null){
+                    singlePosErr('invalid break statement', ast.pos);
+                }
+                else {
+                    target.val.breaks.push(emit(OP_JMP));
+                }
+                break;
+            case AST_CONTINUE:
+                var leveln = ast.child[0];
+                var target = continueTarget(ast, leveln === ZNode.NONE ? 1 : leveln.val);
+                if(target === null){
+                    singlePosErr('invalid continue statement', ast.pos);
+                }
+                else {
+                    target.val.continues.push(emit(OP_JMP));
+                }
+                break;
+            case AST_RETURN:
+                if(ast.child[0] === ZNode.NONE){
+                    emit(OP_RETURNNULL);
+                }
+                else {
+                    compileExpression(ast.child[0]);
+                    emit(OP_RETURN);
+                }
+                break;
+            case AST_IF:
+                compileExpression(ast.child[0]);
+                var line1 = emit(OP_JZ);
+                compileStatement(ast.child[1]);
+                var line2 = emit(OP_JMP);
+                setArg(line1, opa.opCount);
+                ast.child[2] !== ZNode.NONE && compileStatement(ast.child[2]);
+                setArg(line2, opa.opCount);
+                break;
+            case AST_WHILE:
+                ast.val = new LoopInfo(true, true);
+                var line1 = opa.opCount;
+                compileExpression(ast.child[0]);
+                var line2 = emit(OP_JZ);
+                compileStatement(ast.child[1]);
+                emit(OP_JMP, line1);
+                setArg(line2, opa.opCount);
+                ast.val.done(opa.opCount, line1);
+                break;
+            case AST_DO_WHILE:
+                ast.val = new LoopInfo(true, true);
+                var line1 = opa.opCount;
+                compileStatement(ast.child[1]);
+                var line2 = opa.opCount;
+                compileExpression(ast.child[0]);
+                emit(OP_JNZ, line1);
+                ast.val.done(opa.opCount, line2);
+                break;
+            case AST_FOR:
+                ast.val = new LoopInfo(true, true);
+                compileExpression(ast.child[0]);
+                var line1 = opa.opCount;
+                compileExpression(ast.child[1]);
+                var line2 = emit(OP_JZ);
+                compileStatement(ast.child[3]);
+                var line3 = opa.opCount;
+                compileExpression(ast.child[2]);
+                emit(OP_JMP, line1);
+                setArg(line2, opa.opCount);
+                ast.val.done(opa.opCount, line3);
+                break;
+        }
+    }
+    function compileExpression(root){
+        switch(root.type){
+            case AST_NONE: break;
+            case AST_EXPR_LIST:
+                for(var i = 0, _a = root.child; i < _a.length; i++){
+                    compileExpression(_a[i]);
+                    i < _a.length - 1 && emit(OP_POP);
+                }
+                break;
+            case AST_BINARYOP:
+                compileExpression(root.child[0]);
+                compileExpression(root.child[1]);
+                emit(root.val);
+                break;
+            case AST_UNARYOP:
+                compileExpression(root.child[0]);
+                emit(root.val);
+                break;
+            case AST_POSTINC:
+                compileExpression(root.child[0]);
+                emit(OP_INC);
+                compileAssignTop(root.child[0]);
+                break;
+            case AST_POSTDEC:
+                compileExpression(root.child[0]);
+                emit(OP_DEC);
+                compileAssignTop(root.child[0]);
+                break;
+            case AST_SUFFIXINC:
+                compileExpression(root.child[0]);
+                emit(OP_DUP);
+                emit(OP_INC);
+                compileAssignTop(root.child[0]);
+                emit(OP_POP);
+                break;
+            case AST_SUFFIXDEC:
+                compileExpression(root.child[0]);
+                emit(OP_DUP);
+                emit(OP_DEC);
+                compileAssignTop(root.child[0]);
+                emit(OP_POP);
+                break;
+            case AST_ASSIGN:
+                if(root.val === null){
+                    compileAssign(root.child[0], root.child[1]);
+                }
+                else {
+                    compileExpression(root.child[0]);
+                    compileExpression(root.child[1]);
+                    emit(root.val);
+                    compileAssignTop(root.child[0]);
+                }
+                break;
+            case AST_VARIABLE:
+                compileExpression(root.child[0]);
+                emit(OP_GETVAR);
+                break;
+            case AST_PROPERTY:
+                compileExpression(root.child[0]);
+                compileExpression(root.child[1]);
+                emit(OP_GETPROP);
+                break;
+            case AST_OFFSET:
+                compileExpression(root.child[0]);
+                if(root.child[1] === ZNode.NONE){
+                    emit(OP_GETMAXOFFSET);
+                }
+                else {
+                    compileExpression(root.child[1]);
+                    emit(OP_GETOFFSET);
+                }
+                break;
+            case AST_FUNCTIONCALL:
+                if(root.child[0].type === AST_STRING){
+                    for(var i = 0, _a = root.child[1].child; i < _a.length; i++){
+                        compileExpression(_a[i]);
+                    }
+                    emit(OP_INVOKENAME, [root.child[0].val, root.child[1].child.length]);
+                }
+                else {
+                    compileExpression(root.child[0]);
+                    for(var i = 0, _a = root.child[1].child; i < _a.length; i++){
+                        compileExpression(_a[i]);
+                    }
+                    emit(OP_INVOKE, root.child[1].child.length);
+                }
+                break;
+            case AST_METHODCALL:
+                compileExpression(root.child[0]);
+                if(root.child[1].type === AST_STRING){
+                    for(var i = 0, _a = root.child[2].child; i < _a.length; i++){
+                        compileExpression(_a[i]);
+                    }
+                    emit(OP_INVOKEMETHODNAME, [root.child[1].val, root.child[2].length]);
+                }
+                else {
+                    compileExpression(root.child[1]);
+                    for(var i = 0, _a = root.child[2].child; i < _a.length; i++){
+                        compileExpression(_a[i]);
+                    }
+                    emit(OP_INVOKEMETHOD, root.child[2].length);
+                }
+                break;
+            case AST_LOCAL:
+                emit(OP_GETLOCAL, root.val);
+                break;
+            case AST_INTEGER:
+            case AST_FLOAT:
+            case AST_STRING:
+                emit(OP_PUSH, root.val);
+                break;
+            case AST_CONST:
+                emit(OP_GETCONST, root.val);
+                break;
+        }
+    }
+    function compileAssign(dest, src){
+        switch(dest.type){
+            case AST_LOCAL:
+                compileExpression(src);
+                emit(OP_SETLOCAL, dest.val);
+                break;
+            case AST_VARIABLE:
+                compileExpression(dest.child[0]);
+                compileExpression(src);
+                emit(OP_SETVAR);
+                break;
+            case AST_PROPERTY:
+                compileExpression(dest.child[0]);
+                compileExpression(dest.child[1]);
+                compileExpression(src);
+                emit(OP_SETPROP);
+                break;
+            case AST_OFFSET:
+                compileExpression(dest.child[0]);
+                if(dest.child[0] === ZNode.NONE){
+                    compileExpression(src);
+                    emit(OP_SETMAXOFFSET);
+                }
+                else {
+                    compileExpression(dest.child[1]);
+                    compileExpression(src);
+                    emit(OP_SETOFFSET);
+                }
+                break;
+            default:;
+        }
+    }
+    function compileAssignTop(dest){
+        localNode.val = allocateRegister();
+        emit(OP_SETLOCAL, localNode.val);
+        emit(OP_POP);
+        compileAssign(dest, localNode);
+        releaseRegister(localNode.val);
+    }
+}
+
+exports.compile = function compile(fname, source, errs){
     var parser = createParser();
     var outputs = { astRoot: null };
     var err = false;
@@ -545,7 +1033,11 @@ exports.compile = function compile(source, errs){
         return null;
     }
     else {
-        return outputs.astRoot;
+        var cp = createCompiler(fname);
+        cp.addErrHandler(function(msg){
+            errs.push(msg);
+        });
+        return cp.compile(outputs.astRoot);
     }
 }
 

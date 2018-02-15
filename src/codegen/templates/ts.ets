@@ -225,7 +225,7 @@ var <%- prefix %>actERR = <%- pt.stateCount + 1 %>;
             echo(prefix + "sematicVal");
         }, // $$
         emitToken(tid: number){
-            echo(`${prefix}emittedTokens.push(${tid})`);
+            echo(`${prefix}tokenQueue.push(new Token(${tid}, null, -1, 0, 0, 0))`);
         }
     };
     let statevn = prefix + 'staten'; %>
@@ -333,7 +333,7 @@ function create<%- className %>()<%- ts(': ' + className) %> {
     var <%- prefix %>lrState<%- ts(": number[]") %>;
     var <%- prefix %>sematicS<%- ts(': ' + stype + '[]') %>;
     var <%- prefix %>sematicVal<%- ts(': ' + stype) %>;
-    var <%- prefix %>emittedTokens<%- ts(": number[]") %>;
+    var <%- prefix %>tokenQueue<%- ts(": Token[]") %>;
 
     var <%- prefix %>stop;
 
@@ -372,7 +372,7 @@ function create<%- className %>()<%- ts(': ' + className) %> {
         <%- prefix %>lrState = [ 0 ];
         <%- prefix %>sematicS = [];
         <%- prefix %>sematicVal = null;
-        <%- prefix %>emittedTokens = [];
+        <%- prefix %>tokenQueue = [];
 
         <%- prefix %>stop = false;
         <%- n(input.file.initBody) %>
@@ -393,14 +393,11 @@ function create<%- className %>()<%- ts(': ' + className) %> {
         <%- prefix %>token.endLine = <%- prefix %>line;
         <%- prefix %>token.endColumn = <%- prefix %>column - 1;
 
+        <%- prefix %>tokenQueue.push(<%- prefix %>token);
+
         <%- prefix %>matched = '';
         <%- prefix %>tline = <%- prefix %>line;
         <%- prefix %>tcolumn = <%- prefix %>column;
-    }
-    function <%- prefix %>returnToken(){
-        <%- prefix %>emit('token', <%- prefix %>token);
-        <%- prefix %>consumeTokens(<%- prefix %>token);
-        <%- prefix %>token.id = -1;
     }
     function <%- prefix %>emit(name<%- ts(": string") + ts(", a1?, a2?, a3?", ", a1, a2, a3") %>){
         var cbs = <%- prefix %>handlers[name];
@@ -431,7 +428,7 @@ function create<%- className %>()<%- ts(': ' + className) %> {
 <% } %>
             default:;
         }
-        <%- prefix %>token.id !== -1 && <%- prefix %>returnToken();
+        <%- prefix %>tokenQueue.length > 0 && <%- prefix %>acceptToken(null);
     }
     function <%- prefix %>rollback()<%- ts(": string") %>{
         var ret = <%- prefix %>matched.substr(<%- prefix %>matched.length - <%- prefix %>backupCount, <%- prefix %>backupCount);
@@ -541,7 +538,7 @@ function create<%- className %>()<%- ts(': ' + className) %> {
         if(<%- prefix %>state === 0){
             // recover
             <%- prefix %>prepareToken(0);
-            <%- prefix %>returnToken();
+            <%- prefix %>acceptToken(null);
             return true;
         }
         else {
@@ -620,7 +617,7 @@ function create<%- className %>()<%- ts(': ' + className) %> {
             echo(prefix + "top");
         }, // $$
         emitToken(tid: number){
-            echo(`${prefix}emittedTokens.push(${tid})`);
+            echo(`${prefix}tokenQueue.push(new Token(${tid}, null, -1, 0, 0, 0))`);
         }
     };
     for(let rule of input.file.grammar.rules){
@@ -654,55 +651,59 @@ function create<%- className %>()<%- ts(': ' + className) %> {
         <%- prefix %>sematicS.length -= <%- prefix %>ruleLen[<%- prefix %>rulenum];
         <%- prefix %>sematicS.push(<%- prefix %>top);
     }
-    function <%- prefix%>consumeTokens(t<%- ts(': Token') %>){
-        if(t !== null){
-            while(!<%- prefix %>stop && !<%- prefix %>acceptToken(<%- prefix %>token));
-        }
-        while(!<%- prefix %>stop && <%- prefix %>emittedTokens.length > 0){
-            <%- prefix %>acceptToken(new Token(<%- prefix %>emittedTokens[0], null, 0, 0, 0, 0)) && <%- prefix %>emittedTokens.shift();
-        }
-    }
-    function <%- prefix %>acceptToken(t<%- ts(": Token") %>){
+    function <%- prefix %>acceptToken(tk<%- ts(": Token") %>){
         // look up action table
-        var cstate = <%- prefix %>lrState[<%- prefix %>lrState.length - 1];
-        var ind = <%- prefix %>disact[cstate] + t.id;
-        var act = 0;
-        if(ind < 0 || ind >= <%- prefix %>pact.length || <%- prefix %>checkact[ind] !== cstate){
-            act = -<%- prefix %>defred[cstate] - 1;
-        }
-        else {
-            act = <%- prefix %>pact[ind];
-        }
-        if(act === <%- prefix %>actERR){
-            // explicit error
-            <%- prefix %>syntaxError(t);
-            return true;
-        }
-        else if(act > 0){
-            // shift
-            if(t.id === 0){
-                // end of file
-                <%- prefix %>stop = true;
-                <%- prefix %>emit('accept');
-                return true;
+        var shifted = false;
+        tk !== null && <%- prefix %>tokenQueue.push(tk);
+        while(!<%- prefix %>stop && <%- prefix %>tokenQueue.length > 0){
+            var t = <%- prefix %>tokenQueue[0];
+            var cstate = <%- prefix %>lrState[<%- prefix %>lrState.length - 1];
+            var ind = <%- prefix %>disact[cstate] + t.id;
+            var act = 0;
+            if(ind < 0 || ind >= <%- prefix %>pact.length || <%- prefix %>checkact[ind] !== cstate){
+                act = -<%- prefix %>defred[cstate] - 1;
             }
             else {
-                <%- prefix %>lrState.push(act - 1);
-                <%- prefix %>sematicS.push(<%- prefix %>sematicVal);
-                <%- prefix %>sematicVal = null;
-                // token consumed
-                return true;
+                act = <%- prefix %>pact[ind];
+            }
+            if(act === <%- prefix %>actERR){
+                // explicit error
+                <%- prefix %>syntaxError(t);
+                <%- prefix %>tokenQueue.shift();
+            }
+            else if(act > 0){
+                // shift
+                if(t.id === 0){
+                    // end of file
+                    <%- prefix %>stop = true;
+                    <%- prefix %>emit('accept');
+                    <%- prefix %>tokenQueue.shift();
+                }
+                else {
+                    <%- prefix %>lrState.push(act - 1);
+                    <%- prefix %>sematicS.push(<%- prefix %>sematicVal);
+                    <%- prefix %>sematicVal = null;
+                    // <%- prefix %>tryReduce();
+                    // token consumed
+                    <%- prefix %>tokenQueue.shift();
+                }
+            }
+            else if(act < 0){
+                <%- prefix %>doReduction(-act - 1);
+            }
+            else {
+                // error
+                <%- prefix %>syntaxError(t);
+                // force consume
+                <%- prefix %>tokenQueue.shift();
             }
         }
-        else if(act < 0){
-            <%- prefix %>doReduction(-act - 1);
-            return false;
-        }
-        else {
-            // error
-            <%- prefix %>syntaxError(t);
-            // force consume
-            return true;
+    }
+    function <%- prefix %>tryReduce(){
+        var cstate = <%- prefix %>lrState[<%- prefix %>lrState.length - 1];
+        var act;
+        while(<%- prefix %>disact[cstate] === -<%- prefix %>tokenCount && (act = <%- prefix %>defred[cstate]) !== -1){
+
         }
     }
     function <%- prefix %>syntaxError(t<%- ts(": Token") %>){

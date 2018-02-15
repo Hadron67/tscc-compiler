@@ -819,148 +819,68 @@ var jjlextable1: DFATable = {
     hasArc: jjlexhasArc1
 };
 var jjlexpnext2: number[] = [ 
-        13,    14,    13,    13,    13,    13,    13,    13,    13,    13,
-        13,    13,    13,    13,    13,    13,    13,    13,    14,    14,
-        13,    13,     1,     2,     1,     1,     1,     1,     3,     1,
+        11,    12,    11,    11,    11,    11,    11,    11,    11,    11,
+        11,    11,    11,    11,    11,    11,    11,    11,    12,    12,
+        11,    11,     1,     2,     1,     1,     1,     1,     3,     1,
          1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-         4,     5,     1,     1,     7,    31,    32,     7,    33,    31,
-         9,    31,    31,    31,    31,    31,    31,    31,    31,    31,
-        31,    31,    -1,    -1,    34,    35,     7,    31,    32,     7,
-        33,    31,     9,    31,    31,    31,    31,    31,    31,    31,
-        31,    31,    31,    31,    -1,    -1,    34,    35,     7,    31,
-        32,     7,    33,    31,     9,    31,    31,    31,    31,    31,
-        31,    31,    31,    31,    31,    31,    -1,    -1,    34,    35,
-         7,    31,    32,     7,    33,    31,     9,    31,    31,    31,
-        31,    31,    31,    31,    31,    31,    31,    31,    -1,    -1,
-        34,    35,     7,     7,     7,     7,     7,     7,     9,     7,
-         7,    36,     7,     7,     7,     7,     7,     7,     7,     7,
-        -1,    -1,     7,     7,     7,    31,    32,     7,    33,    31,
-         9,    31,    31,    31,    31,    31,    31,    31,    31,    31,
-        31,    31,    -1,    -1,    34,    35,     7,    31,    32,     7,
-        33,    31,     9,    31,    31,    31,    31,    31,    31,    31,
-        31,    31,    31,    31,    -1,    -1,    34,    35,     7,     7,
-         7,     7,     7,     7,     9,     7,     7,     7,    30,     7,
-         7,     7,     7,     7,     7,     7,    -1,    -1,     7,     7,
-         7,    28,     7,     7,     7,    28,     9,    28,    28,    28,
-        28,    28,    28,    28,    28,    28,    28,    28,    -1,    -1,
-        29,     7,     7,     7,     7,     7,     7,     7,     9,     7,
-         7,     7,     7,     7,     7,     7,     7,    27,     7,     7,
-        -1,    -1,     7,     7,     7,     7,     7,     7,     7,     7,
-         9,     7,     7,     7,     7,    26,     7,     7,     7,     7,
-         7,     7,    -1,    -1,     7,     7,     7,     7,     7,    25,
-         7,     7,     9,     7,     7,     7,     7,     7,     7,     7,
-         7,     7,     7,     7,    -1,    -1,     7,     7,     7,     7,
-         7,     7,     7,     7,     9,     7,     7,     7,    24,     7,
-         7,     7,     7,     7,     7,     7,    -1,    -1,     7,     7,
-         7,     7,     7,     7,     7,     7,     9,     7,    23,     7,
-         7,     7,     7,     7,     7,     7,     7,     7,    -1,    -1,
-         7,     7,     7,     7,     7,     7,     7,     7,     9,     7,
-         7,     7,     7,     7,     7,     7,     7,     7,     7,    22,
-        -1,    -1,     7,     7,     7,     7,     7,     7,     7,     7,
-         9,     7,     7,     7,     7,     7,     7,    21,     7,     7,
-         7,     7,    -1,    -1,     7,     7,     7,     7,     7,     7,
-         7,     7,     9,     7,     7,     7,     7,     7,     7,     7,
-         7,     7,     7,    20,    -1,    -1,     7,     7,     7,     7,
-         7,     7,     7,     7,     9,     7,     7,     7,     7,     7,
-        19,     7,     7,     7,     7,     7,    -1,    -1,     7,     7,
-         7,     7,     7,     7,     7,     7,     9,     7,     7,     7,
-         7,     7,     7,     7,     7,     7,     7,     7,    -1,    -1,
-         7,     7,     7,     7,     7,     7,     7,     7,     9,     7,
-         7,     7,     7,     7,     7,     7,     7,     7,    18,     7,
-        -1,    -1,     7,     7,     7,     7,     7,     7,     7,     7,
-         9,    17,     7,     7,     7,     7,     7,     7,     7,     7,
-         7,     7,    -1,    -1,     7,     7,     7,     7,     7,     7,
-         7,     7,     9,     7,     7,     7,     7,     7,     7,     7,
-        16,     7,     7,     7,    -1,    -1,     7,     7,     7,     7,
-         7,     7,     7,     7,     9,     7,     7,     7,     7,     7,
-         7,     7,     7,     7,     7,     7,    -1,    -1,     7,     7,
-         7,     8,     7,     7,     7,     7,     9,     7,     7,     7,
-        10,     7,     7,     7,    11,     7,     7,    12,    -1,    -1,
-         7,     7,     1,    -1,     1,     1,     1,     1,     6,     1,
-         1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-        -1,    -1,     1,     1,    15,    -1,    15,    15,    15,    15,
-        15,    15,    15,    15,    15,    15,    15,    15,    15,    15,
-        15,    15,    -1,    -1,    15,    15,    13,    -1,    13,    13,
-        13,    13,    13,    13,    13,    13,    13,    13,    13,    13,
-        13,    13,    13,    13,    -1,    -1,    13,    13,     1,    -1,
+         4,     5,     1,     1,     1,    33,     1,     1,     1,     1,
+         6,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+         1,     1,    27,    24,     1,     1,    11,    23,    11,    11,
+        11,    11,    11,    11,    11,    11,    11,    11,    11,    11,
+        11,    11,    11,    11,    22,    21,    11,    11,     1,    20,
          1,     1,     1,     1,     6,     1,     1,     1,     1,     1,
-         1,     1,     1,     1,     1,     1,    -1,    -1,     1,     1,
-    
+         1,     1,     1,     1,     1,     1,    19,    18,     1,     1,
+        28,    29,    17,    30,    28,    16,    28,    28,    28,    28,
+        28,    28,    28,    28,    28,    28,    28,    15,    14,    31,
+        32,    28,    29,    13,    30,    28,    -1,    28,    28,    28,
+        28,    28,    28,    28,    28,    28,    28,    28,    -1,    -1,
+        31,    32,    28,    29,    -1,    30,    28,    -1,    28,    28,
+        28,    28,    28,    28,    28,    28,    28,    28,    28,    -1,
+        -1,    31,    32,    28,    29,    -1,    30,    28,    -1,    28,
+        28,    28,    28,    28,    28,    28,    28,    28,    28,    28,
+        -1,    -1,    31,    32,    28,    29,    -1,    30,    28,    -1,
+        28,    28,    28,    28,    28,    28,    28,    28,    28,    28,
+        28,    -1,    -1,    31,    32,    28,    29,    -1,    30,    28,
+        -1,    28,    28,    28,    28,    28,    28,    28,    28,    28,
+        28,    28,    25,    -1,    31,    32,    25,    -1,    25,    25,
+        25,    25,    25,    25,    25,    25,    25,    25,    25,     7,
+        -1,    26,    -1,    -1,    -1,    -1,    -1,    -1,     8,    -1,
+        -1,    -1,     9,    -1,    -1,    10,
 ]; 
 var jjlexdisnext2: number[] = [ 
-        22,   638,   550,     0,   -22,   -22,   616,   528,   -22,   594,
-       506,   484,   462,   572,   -22,   440,   418,   396,   374,   352,
-       330,   308,   286,   264,   242,   220,   198,   -22,   176,   154,
-       132,   110,    88,   -22,    66,    44,   -22,
+        22,    88,   248,     0,   -22,   -22,    66,   -22,   119,   121,
+       111,    44,   -22,   103,    95,    94,    89,    81,    75,    81,
+        56,    48,   231,    52,   -22,   214,   193,    36,   172,   151,
+       -22,   130,   109,   -22,
 ]; 
 var jjlexchecknext2: number[] = [ 
          3,     3,     3,     3,     3,     3,     3,     3,     3,     3,
          3,     3,     3,     3,     3,     3,     3,     3,     3,     3,
          3,     3,     0,     0,     0,     0,     0,     0,     0,     0,
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-         0,     0,     0,     0,    35,    35,    35,    35,    35,    35,
-        35,    35,    35,    35,    35,    35,    35,    35,    35,    35,
-        35,    35,    -1,    -1,    35,    35,    34,    34,    34,    34,
-        34,    34,    34,    34,    34,    34,    34,    34,    34,    34,
-        34,    34,    34,    34,    -1,    -1,    34,    34,    32,    32,
-        32,    32,    32,    32,    32,    32,    32,    32,    32,    32,
-        32,    32,    32,    32,    32,    32,    -1,    -1,    32,    32,
-        31,    31,    31,    31,    31,    31,    31,    31,    31,    31,
-        31,    31,    31,    31,    31,    31,    31,    31,    -1,    -1,
-        31,    31,    30,    30,    30,    30,    30,    30,    30,    30,
-        30,    30,    30,    30,    30,    30,    30,    30,    30,    30,
-        -1,    -1,    30,    30,    29,    29,    29,    29,    29,    29,
-        29,    29,    29,    29,    29,    29,    29,    29,    29,    29,
-        29,    29,    -1,    -1,    29,    29,    28,    28,    28,    28,
-        28,    28,    28,    28,    28,    28,    28,    28,    28,    28,
-        28,    28,    28,    28,    -1,    -1,    28,    28,    26,    26,
-        26,    26,    26,    26,    26,    26,    26,    26,    26,    26,
-        26,    26,    26,    26,    26,    26,    -1,    -1,    26,    26,
-        25,    25,    25,    25,    25,    25,    25,    25,    25,    25,
-        25,    25,    25,    25,    25,    25,    25,    25,    -1,    -1,
-        25,    25,    24,    24,    24,    24,    24,    24,    24,    24,
-        24,    24,    24,    24,    24,    24,    24,    24,    24,    24,
-        -1,    -1,    24,    24,    23,    23,    23,    23,    23,    23,
-        23,    23,    23,    23,    23,    23,    23,    23,    23,    23,
-        23,    23,    -1,    -1,    23,    23,    22,    22,    22,    22,
-        22,    22,    22,    22,    22,    22,    22,    22,    22,    22,
-        22,    22,    22,    22,    -1,    -1,    22,    22,    21,    21,
-        21,    21,    21,    21,    21,    21,    21,    21,    21,    21,
-        21,    21,    21,    21,    21,    21,    -1,    -1,    21,    21,
-        20,    20,    20,    20,    20,    20,    20,    20,    20,    20,
-        20,    20,    20,    20,    20,    20,    20,    20,    -1,    -1,
-        20,    20,    19,    19,    19,    19,    19,    19,    19,    19,
-        19,    19,    19,    19,    19,    19,    19,    19,    19,    19,
-        -1,    -1,    19,    19,    18,    18,    18,    18,    18,    18,
-        18,    18,    18,    18,    18,    18,    18,    18,    18,    18,
-        18,    18,    -1,    -1,    18,    18,    17,    17,    17,    17,
-        17,    17,    17,    17,    17,    17,    17,    17,    17,    17,
-        17,    17,    17,    17,    -1,    -1,    17,    17,    16,    16,
-        16,    16,    16,    16,    16,    16,    16,    16,    16,    16,
-        16,    16,    16,    16,    16,    16,    -1,    -1,    16,    16,
-        15,    15,    15,    15,    15,    15,    15,    15,    15,    15,
-        15,    15,    15,    15,    15,    15,    15,    15,    -1,    -1,
-        15,    15,    12,    12,    12,    12,    12,    12,    12,    12,
-        12,    12,    12,    12,    12,    12,    12,    12,    12,    12,
-        -1,    -1,    12,    12,    11,    11,    11,    11,    11,    11,
+         0,     0,     0,     0,    11,    27,    11,    11,    11,    11,
         11,    11,    11,    11,    11,    11,    11,    11,    11,    11,
-        11,    11,    -1,    -1,    11,    11,    10,    10,    10,    10,
-        10,    10,    10,    10,    10,    10,    10,    10,    10,    10,
-        10,    10,    10,    10,    -1,    -1,    10,    10,     7,     7,
-         7,     7,     7,     7,     7,     7,     7,     7,     7,     7,
-         7,     7,     7,     7,     7,     7,    -1,    -1,     7,     7,
-         2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-         2,     2,     2,     2,     2,     2,     2,     2,    -1,    -1,
-         2,     2,    13,    -1,    13,    13,    13,    13,    13,    13,
-        13,    13,    13,    13,    13,    13,    13,    13,    13,    13,
-        -1,    -1,    13,    13,     9,    -1,     9,     9,     9,     9,
-         9,     9,     9,     9,     9,     9,     9,     9,     9,     9,
-         9,     9,    -1,    -1,     9,     9,     6,    -1,     6,     6,
+        11,    11,    23,    21,    11,    11,     6,    20,     6,     6,
          6,     6,     6,     6,     6,     6,     6,     6,     6,     6,
-         6,     6,     6,     6,    -1,    -1,     6,     6,     1,    -1,
+         6,     6,     6,     6,    19,    18,     6,     6,     1,    17,
          1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-         1,     1,     1,     1,     1,     1,    -1,    -1,     1,     1,
-    
+         1,     1,     1,     1,     1,     1,    16,    15,     1,     1,
+        32,    32,    14,    32,    32,    13,    32,    32,    32,    32,
+        32,    32,    32,    32,    32,    32,    32,    10,     9,    32,
+        32,    31,    31,     8,    31,    31,    -1,    31,    31,    31,
+        31,    31,    31,    31,    31,    31,    31,    31,    -1,    -1,
+        31,    31,    29,    29,    -1,    29,    29,    -1,    29,    29,
+        29,    29,    29,    29,    29,    29,    29,    29,    29,    -1,
+        -1,    29,    29,    28,    28,    -1,    28,    28,    -1,    28,
+        28,    28,    28,    28,    28,    28,    28,    28,    28,    28,
+        -1,    -1,    28,    28,    26,    26,    -1,    26,    26,    -1,
+        26,    26,    26,    26,    26,    26,    26,    26,    26,    26,
+        26,    -1,    -1,    26,    26,    25,    25,    -1,    25,    25,
+        -1,    25,    25,    25,    25,    25,    25,    25,    25,    25,
+        25,    25,    22,    -1,    25,    25,    22,    -1,    22,    22,
+        22,    22,    22,    22,    22,    22,    22,    22,    22,     2,
+        -1,    22,    -1,    -1,    -1,    -1,    -1,    -1,     2,    -1,
+        -1,    -1,     2,    -1,    -1,     2,
 ]; 
 var jjlexclassTable2: number[] = [ 
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
@@ -1295,14 +1215,14 @@ var jjlexunicodeClassTable2: number[] = [
      65498, 65500,     0, 65501,Infinity,
 ]; 
 var jjlexisEnd2: number[] = [ 
-    0,1,1,0,1,1,0,1,1,0,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,
+    0,1,0,0,1,1,0,1,0,0,0,1,1,0,0,
+    0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,
+    1,0,0,1,
 ]; 
 var jjlexhasArc2: number[] = [ 
-    1,1,1,1,0,0,1,1,0,1,1,1,1,1,0,
-    1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,
-    1,1,1,0,1,1,0,
+    1,1,1,1,0,0,1,0,1,1,1,1,0,1,1,
+    1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,
+    0,1,1,0,
 ]; 
 var jjlextable2: DFATable = {
     pnext: jjlexpnext2,
@@ -1416,10 +1336,10 @@ var jjlexTokens1: number[] = [
         -1,    39,    -1,     3,     4,    -1,    39,    40,
 ]; 
 var jjlexTokens2: number[] = [ 
-        -1,    39,    39,    -1,     3,     4,    -1,    39,    41,    -1,
-        39,    39,    39,    39,    40,    39,    39,    39,    39,    39,
-        39,    39,    39,    39,    39,    39,    39,    42,    39,    39,
-        39,    39,    39,    44,    39,    39,    43,
+        -1,    39,    -1,    -1,     3,     4,    -1,    41,    -1,    -1,
+        -1,    39,    40,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+        -1,    -1,    -1,    -1,    42,    -1,    -1,    -1,    -1,    -1,
+        44,    -1,    -1,    43,
 ]; 
 var jjlexTokens3: number[] = [ 
         -1,    45,
@@ -1707,7 +1627,7 @@ function createParser(): Parser {
     var jjlrState: number[];
     var jjsematicS: JNode[];
     var jjsematicVal: JNode;
-    var jjemittedTokens: number[];
+    var jjtokenQueue: Token[];
 
     var jjstop;
 
@@ -1743,7 +1663,7 @@ function createParser(): Parser {
         jjlrState = [ 0 ];
         jjsematicS = [];
         jjsematicVal = null;
-        jjemittedTokens = [];
+        jjtokenQueue = [];
 
         jjstop = false;
         
@@ -1767,14 +1687,11 @@ function createParser(): Parser {
         jjtoken.endLine = jjline;
         jjtoken.endColumn = jjcolumn - 1;
 
+        jjtokenQueue.push(jjtoken);
+
         jjmatched = '';
         jjtline = jjline;
         jjtcolumn = jjcolumn;
-    }
-    function jjreturnToken(){
-        jjemit('token', jjtoken);
-        jjconsumeTokens(jjtoken);
-        jjtoken.id = -1;
     }
     function jjemit(name: string, a1?, a2?, a3?){
         var cbs = jjhandlers[name];
@@ -1869,92 +1786,20 @@ function createParser(): Parser {
             case 1:
                 { jjsematicVal = nodeFromToken(jjtoken); }
                 break;
-            case 2:
-                { jjsematicVal = nodeFromToken(jjtoken); }
-                break;
             case 4:
                 { jjsematicVal = nodeFromTrivalToken(jjtoken); }
                 break;
             case 5:
                 { jjsematicVal = nodeFromTrivalToken(jjtoken); }
                 break;
-            case 7:
-                { jjsematicVal = nodeFromToken(jjtoken); }
-                break;
-            case 10:
-                { jjsematicVal = nodeFromToken(jjtoken); }
-                break;
             case 11:
                 { jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 12:
-                { jjsematicVal = nodeFromToken(jjtoken); }
-                break;
-            case 13:
-                { jjsematicVal = nodeFromToken(jjtoken); }
-                break;
-            case 14:
                 { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.charAt(1); }
                 break;
-            case 15:
-                { jjsematicVal = nodeFromToken(jjtoken); }
-                break;
-            case 16:
-                { jjsematicVal = nodeFromToken(jjtoken); }
-                break;
-            case 17:
-                { jjsematicVal = nodeFromToken(jjtoken); }
-                break;
-            case 18:
-                { jjsematicVal = nodeFromToken(jjtoken); }
-                break;
-            case 19:
-                { jjsematicVal = nodeFromToken(jjtoken); }
-                break;
-            case 20:
-                { jjsematicVal = nodeFromToken(jjtoken); }
-                break;
-            case 21:
-                { jjsematicVal = nodeFromToken(jjtoken); }
-                break;
-            case 22:
-                { jjsematicVal = nodeFromToken(jjtoken); }
-                break;
-            case 23:
-                { jjsematicVal = nodeFromToken(jjtoken); }
-                break;
-            case 24:
-                { jjsematicVal = nodeFromToken(jjtoken); }
-                break;
-            case 25:
-                { jjsematicVal = nodeFromToken(jjtoken); }
-                break;
-            case 26:
-                { jjsematicVal = nodeFromToken(jjtoken); }
-                break;
-            case 28:
-                { jjsematicVal = nodeFromToken(jjtoken); }
-                break;
-            case 29:
-                { jjsematicVal = nodeFromToken(jjtoken); }
-                break;
             case 30:
-                { jjsematicVal = nodeFromToken(jjtoken); }
-                break;
-            case 31:
-                { jjsematicVal = nodeFromToken(jjtoken); }
-                break;
-            case 32:
-                { jjsematicVal = nodeFromToken(jjtoken); }
-                break;
-            case 33:
                 { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(6, jjsematicVal.val.length - 7); }
-                break;
-            case 34:
-                { jjsematicVal = nodeFromToken(jjtoken); }
-                break;
-            case 35:
-                { jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             default:;
         }
@@ -1990,7 +1835,7 @@ function createParser(): Parser {
                 break;
             default:;
         }
-        jjtoken.id !== -1 && jjreturnToken();
+        jjtokenQueue.length > 0 && jjacceptToken(null);
     }
     function jjrollback(): string{
         var ret = jjmatched.substr(jjmatched.length - jjbackupCount, jjbackupCount);
@@ -2100,7 +1945,7 @@ function createParser(): Parser {
         if(jjstate === 0){
             // recover
             jjprepareToken(0);
-            jjreturnToken();
+            jjacceptToken(null);
             return true;
         }
         else {
@@ -2576,55 +2421,59 @@ function createParser(): Parser {
         jjsematicS.length -= jjruleLen[jjrulenum];
         jjsematicS.push(jjtop);
     }
-    function jjconsumeTokens(t: Token){
-        if(t !== null){
-            while(!jjstop && !jjacceptToken(jjtoken));
-        }
-        while(!jjstop && jjemittedTokens.length > 0){
-            jjacceptToken(new Token(jjemittedTokens[0], null, 0, 0, 0, 0)) && jjemittedTokens.shift();
-        }
-    }
-    function jjacceptToken(t: Token){
+    function jjacceptToken(tk: Token){
         // look up action table
-        var cstate = jjlrState[jjlrState.length - 1];
-        var ind = jjdisact[cstate] + t.id;
-        var act = 0;
-        if(ind < 0 || ind >= jjpact.length || jjcheckact[ind] !== cstate){
-            act = -jjdefred[cstate] - 1;
-        }
-        else {
-            act = jjpact[ind];
-        }
-        if(act === jjactERR){
-            // explicit error
-            jjsyntaxError(t);
-            return true;
-        }
-        else if(act > 0){
-            // shift
-            if(t.id === 0){
-                // end of file
-                jjstop = true;
-                jjemit('accept');
-                return true;
+        var shifted = false;
+        tk !== null && jjtokenQueue.push(tk);
+        while(!jjstop && jjtokenQueue.length > 0){
+            var t = jjtokenQueue[0];
+            var cstate = jjlrState[jjlrState.length - 1];
+            var ind = jjdisact[cstate] + t.id;
+            var act = 0;
+            if(ind < 0 || ind >= jjpact.length || jjcheckact[ind] !== cstate){
+                act = -jjdefred[cstate] - 1;
             }
             else {
-                jjlrState.push(act - 1);
-                jjsematicS.push(jjsematicVal);
-                jjsematicVal = null;
-                // token consumed
-                return true;
+                act = jjpact[ind];
+            }
+            if(act === jjactERR){
+                // explicit error
+                jjsyntaxError(t);
+                jjtokenQueue.shift();
+            }
+            else if(act > 0){
+                // shift
+                if(t.id === 0){
+                    // end of file
+                    jjstop = true;
+                    jjemit('accept');
+                    jjtokenQueue.shift();
+                }
+                else {
+                    jjlrState.push(act - 1);
+                    jjsematicS.push(jjsematicVal);
+                    jjsematicVal = null;
+                    // jjtryReduce();
+                    // token consumed
+                    jjtokenQueue.shift();
+                }
+            }
+            else if(act < 0){
+                jjdoReduction(-act - 1);
+            }
+            else {
+                // error
+                jjsyntaxError(t);
+                // force consume
+                jjtokenQueue.shift();
             }
         }
-        else if(act < 0){
-            jjdoReduction(-act - 1);
-            return false;
-        }
-        else {
-            // error
-            jjsyntaxError(t);
-            // force consume
-            return true;
+    }
+    function jjtryReduce(){
+        var cstate = jjlrState[jjlrState.length - 1];
+        var act;
+        while(jjdisact[cstate] === -jjtokenCount && (act = jjdefred[cstate]) !== -1){
+
         }
     }
     function jjsyntaxError(t: Token){

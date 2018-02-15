@@ -154,7 +154,7 @@ function unescape(s: string): string{
 %lex <IN_ACTION_BLOCK> {
     < ANY_CODE: 
         ( [^"{", "}", "\\", "$"] | "\\" [^"{", "}", "$"] )+ 
-    |   "$" ( [^"{", "}", "\\"] | "\\" [^"{", "}", "$"] )*
+//    |   "$" ( [^"{", "}", "\\", "$"] | "\\" [^"{", "}", "$"] )*
     >: { $$ = nodeFromToken($token); }
     < ESCAPED_CHAR_IN_BLOCK: "\\" ["{", "}", "$"] >: { $$ = nodeFromToken($token); $$.val = $$.val.charAt(1); }
     < OPEN_BLOCK: "{" >: { $$ = nodeFromTrivalToken($token); }
