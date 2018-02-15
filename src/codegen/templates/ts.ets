@@ -376,6 +376,8 @@ function create<%- className %>()<%- ts(': ' + className) %> {
 
         <%- prefix %>stop = false;
         <%- n(input.file.initBody) %>
+
+        <%- prefix %>tryReduce();
     }
     /**
      *  set 
@@ -683,7 +685,7 @@ function create<%- className %>()<%- ts(': ' + className) %> {
                     <%- prefix %>lrState.push(act - 1);
                     <%- prefix %>sematicS.push(<%- prefix %>sematicVal);
                     <%- prefix %>sematicVal = null;
-                    // <%- prefix %>tryReduce();
+                    <%- prefix %>tryReduce();
                     // token consumed
                     <%- prefix %>tokenQueue.shift();
                 }
@@ -703,7 +705,8 @@ function create<%- className %>()<%- ts(': ' + className) %> {
         var cstate = <%- prefix %>lrState[<%- prefix %>lrState.length - 1];
         var act;
         while(<%- prefix %>disact[cstate] === -<%- prefix %>tokenCount && (act = <%- prefix %>defred[cstate]) !== -1){
-
+            <%- prefix %>doReduction(act);
+            cstate = <%- prefix %>lrState[<%- prefix %>lrState.length - 1];
         }
     }
     function <%- prefix %>syntaxError(t<%- ts(": Token") %>){

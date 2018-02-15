@@ -641,6 +641,10 @@ function printTable<T>(tname: string, type: string, t: T[], align: number, lc: n
     echo("        ");
     echo(n(input.file.initBody) );
     echoLine("");
+    echoLine("");
+    echo("        ");
+    echo(prefix );
+    echoLine("tryReduce();");
     echoLine("    }");
     echoLine("    /**");
     echoLine("     *  set ");
@@ -1359,7 +1363,7 @@ function printTable<T>(tname: string, type: string, t: T[], align: number, lc: n
     echo("                    ");
     echo(prefix );
     echoLine("sematicVal = null;");
-    echo("                    // ");
+    echo("                    ");
     echo(prefix );
     echoLine("tryReduce();");
     echoLine("                    // token consumed");
@@ -1401,7 +1405,14 @@ function printTable<T>(tname: string, type: string, t: T[], align: number, lc: n
     echo("tokenCount && (act = ");
     echo(prefix );
     echoLine("defred[cstate]) !== -1){");
-    echoLine("");
+    echo("            ");
+    echo(prefix );
+    echoLine("doReduction(act);");
+    echo("            cstate = ");
+    echo(prefix );
+    echo("lrState[");
+    echo(prefix );
+    echoLine("lrState.length - 1];");
     echoLine("        }");
     echoLine("    }");
     echo("    function ");

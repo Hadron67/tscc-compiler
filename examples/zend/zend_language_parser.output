@@ -3439,9 +3439,9 @@ state 19
     [ 111: parameter_list => . non_empty_parameter_list ]
     [ 112: non_empty_parameter_list => . non_empty_parameter_list "," parameter ]
     [ 113: non_empty_parameter_list => . parameter ]
-    [ 114: parameter => . <NAME> ]
+    [ 114: parameter => . <VARIABLE> ]
     default action: reduce with rule 110
-    <NAME> : shift, and go to state 22
+    <VARIABLE> : shift, and go to state 22
     parameter_list : go to state 55
     non_empty_parameter_list : go to state 20
     parameter : go to state 21
@@ -3460,7 +3460,7 @@ state 21
 
 
 state 22
-    [ 114: parameter => <NAME> . ]*
+    [ 114: parameter => <VARIABLE> . ]*
     default action: reduce with rule 114
 
 
@@ -4836,9 +4836,9 @@ state 55
 
 state 56
     [ 112: non_empty_parameter_list => non_empty_parameter_list "," . parameter ]*
-    [ 114: parameter => . <NAME> ]
+    [ 114: parameter => . <VARIABLE> ]
     no default action
-    <NAME> : shift, and go to state 22
+    <VARIABLE> : shift, and go to state 22
     parameter : go to state 120
 
 
@@ -9457,9 +9457,9 @@ state 112
     [ 111: parameter_list => . non_empty_parameter_list ]
     [ 112: non_empty_parameter_list => . non_empty_parameter_list "," parameter ]
     [ 113: non_empty_parameter_list => . parameter ]
-    [ 114: parameter => . <NAME> ]
+    [ 114: parameter => . <VARIABLE> ]
     default action: reduce with rule 110
-    <NAME> : shift, and go to state 22
+    <VARIABLE> : shift, and go to state 22
     parameter_list : go to state 181
     non_empty_parameter_list : go to state 20
     parameter : go to state 21

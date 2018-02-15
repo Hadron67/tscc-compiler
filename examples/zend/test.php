@@ -10,7 +10,6 @@ if($e === 0){
 }
 else {
     echo 'soor';
-    break;
 }
 ?></head>
 </html>

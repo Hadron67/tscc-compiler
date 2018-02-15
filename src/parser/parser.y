@@ -154,7 +154,7 @@ function unescape(s: string): string{
 %lex <IN_ACTION_BLOCK> {
     < ANY_CODE: 
         ( [^"{", "}", "\\", "$"] | "\\" [^"{", "}", "$"] )+ 
-//    |   "$" ( [^"{", "}", "\\", "$"] | "\\" [^"{", "}", "$"] )*
+    |   "$" ( [^"{", "}", "\\", "$"] | "\\" [^"{", "}", "$"] )*
     >: { $$ = nodeFromToken($token); }
     < ESCAPED_CHAR_IN_BLOCK: "\\" ["{", "}", "$"] >: { $$ = nodeFromToken($token); $$.val = $$.val.charAt(1); }
     < OPEN_BLOCK: "{" >: { $$ = nodeFromTrivalToken($token); }
@@ -175,7 +175,7 @@ function unescape(s: string): string{
 
 %%
 
-start: options '%%' body [+IN_EPILOGUE] '%%' epilogue;
+start: options '%%' body '%%' [+IN_EPILOGUE] epilogue;
 options: options option | /* empty */;
 option:
     '%lex' { gb.lexBuilder.prepareLex(); } states_ '{' lexBody '}'
@@ -329,20 +329,20 @@ rulePrec:
 |   '%prec' t = tokenRef { gb.defineRulePr(t, t.ext); }
 ;
 
-block: [+IN_BLOCK] open = "{" bl = innerBlock [-] close = "}" 
+block: open = "{" [+IN_BLOCK] bl = innerBlock close = "}" [-]
     { $$ = nodeBetween(open, close, bl.val); }
 ;
 innerBlock: innerBlock b = innerBlockItem { $$.val += b.val; } | { $$ = newNode(''); };
 innerBlockItem: 
     <ANY_CODE> 
 |   <ESCAPED_CHAR_IN_BLOCK>
-|   [+IN_BLOCK] '{' b = innerBlock [-] '}' 
+|   '{' [+IN_BLOCK] b = innerBlock '}' [-] 
     { $$ = newNode(''); $$.val = '{' + b.val + '}'; }
 ;
 
 actionBlock: 
-    [+IN_ACTION_BLOCK] open = "{" t = { lexact.beginBlock(open); }
-    innerActionBlock [-] close = "}" { lexact.endBlock(close); }
+    open = "{" [+IN_ACTION_BLOCK] t = { lexact.beginBlock(open); }
+    innerActionBlock close = "}" [-] { lexact.endBlock(close); }
 ;
 innerActionBlock: innerActionBlock innerActionBlockItem |;
 innerActionBlockItem:
@@ -352,7 +352,7 @@ innerActionBlockItem:
 |   <TOKEN_REF> { lexact.tokenObj(); }
 |   <MATCHED> { lexact.matched(); }
 |   t = <EMIT_TOKEN> { gb.addEmitTokenAction(lexact, t); }
-|   [+IN_ACTION_BLOCK] '{' { lexact.raw('\{'); } innerActionBlock [-] '}' { lexact.raw('\}'); }
+|   '{' [+IN_ACTION_BLOCK] { lexact.raw('\{'); } innerActionBlock '}' [-] { lexact.raw('\}'); }
 ;
 %%
 function charPosition(c: string, line: number, column: number): Position{

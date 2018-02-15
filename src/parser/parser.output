@@ -2007,66 +2007,181 @@ state 1:
     c20: state 1
     c21: state 1
 state 2:
-    c1: state 7
-    c10: state 8
-    c14: state 9
-    c17: state 10
-state 3:
-    c0: state 11
-    c1: state 12
-    c2: state 11
-    c3: state 11
-    c4: state 11
-    c5: state 11
-    c6: state 11
-    c7: state 11
-    c8: state 11
-    c9: state 11
-    c10: state 11
-    c11: state 11
-    c12: state 11
-    c13: state 11
+    end = 45
+    c0: state 7
+    c1: state 8
+    c2: state 7
+    c3: state 7
+    c4: state 7
+    c5: state 7
+    c6: state 9
+    c7: state 7
+    c8: state 7
+    c9: state 7
+    c10: state 10
+    c11: state 7
+    c12: state 7
+    c13: state 7
     c14: state 11
-    c15: state 11
-    c16: state 11
-    c17: state 11
-    c18: state 12
-    c19: state 12
-    c20: state 11
-    c21: state 11
+    c15: state 7
+    c16: state 7
+    c17: state 12
+    c20: state 7
+    c21: state 7
+state 3:
+    c0: state 13
+    c1: state 14
+    c2: state 13
+    c3: state 13
+    c4: state 13
+    c5: state 13
+    c6: state 13
+    c7: state 13
+    c8: state 13
+    c9: state 13
+    c10: state 13
+    c11: state 13
+    c12: state 13
+    c13: state 13
+    c14: state 13
+    c15: state 13
+    c16: state 13
+    c17: state 13
+    c18: state 14
+    c19: state 14
+    c20: state 13
+    c21: state 13
 state 4:
     end = 47
 state 5:
     end = 48
 state 6:
-    c0: state 11
-    c2: state 11
-    c3: state 11
-    c4: state 11
-    c5: state 11
-    c6: state 11
-    c7: state 11
-    c8: state 11
-    c9: state 11
-    c10: state 11
-    c11: state 11
-    c12: state 11
-    c13: state 11
-    c14: state 11
-    c15: state 11
-    c16: state 11
-    c17: state 11
-    c20: state 11
-    c21: state 11
-state 7:
-    end = 49
-state 8:
+    c0: state 13
+    c2: state 13
+    c3: state 13
+    c4: state 13
+    c5: state 13
+    c6: state 13
+    c7: state 13
+    c8: state 13
+    c9: state 13
+    c10: state 13
+    c11: state 13
+    c12: state 13
+    c13: state 13
     c14: state 13
+    c15: state 13
+    c16: state 13
+    c17: state 13
+    c20: state 13
+    c21: state 13
+state 7:
+    end = 45
+    c0: state 7
+    c2: state 7
+    c3: state 7
+    c4: state 7
+    c5: state 7
+    c6: state 9
+    c7: state 7
+    c8: state 7
+    c9: state 7
+    c10: state 7
+    c11: state 7
+    c12: state 7
+    c13: state 7
+    c14: state 7
+    c15: state 7
+    c16: state 7
+    c17: state 7
+    c20: state 7
+    c21: state 7
+state 8:
+    end = 49
 state 9:
-    c7: state 14
-state 10:
+    c0: state 15
+    c2: state 15
+    c3: state 15
+    c4: state 15
+    c5: state 15
+    c6: state 15
+    c7: state 15
+    c8: state 15
+    c9: state 15
+    c10: state 15
+    c11: state 15
+    c12: state 15
+    c13: state 15
+    c14: state 15
+    c15: state 15
     c16: state 15
+    c17: state 15
+    c20: state 15
+    c21: state 15
+state 10:
+    end = 45
+    c0: state 7
+    c2: state 7
+    c3: state 7
+    c4: state 7
+    c5: state 7
+    c6: state 9
+    c7: state 7
+    c8: state 7
+    c9: state 7
+    c10: state 7
+    c11: state 7
+    c12: state 7
+    c13: state 7
+    c14: state 16
+    c15: state 7
+    c16: state 7
+    c17: state 7
+    c20: state 7
+    c21: state 7
 state 11:
+    end = 45
+    c0: state 7
+    c2: state 7
+    c3: state 7
+    c4: state 7
+    c5: state 7
+    c6: state 9
+    c7: state 17
+    c8: state 7
+    c9: state 7
+    c10: state 7
+    c11: state 7
+    c12: state 7
+    c13: state 7
+    c14: state 7
+    c15: state 7
+    c16: state 7
+    c17: state 7
+    c20: state 7
+    c21: state 7
+state 12:
+    end = 45
+    c0: state 7
+    c2: state 7
+    c3: state 7
+    c4: state 7
+    c5: state 7
+    c6: state 9
+    c7: state 7
+    c8: state 7
+    c9: state 7
+    c10: state 7
+    c11: state 7
+    c12: state 7
+    c13: state 7
+    c14: state 7
+    c15: state 7
+    c16: state 18
+    c17: state 7
+    c20: state 7
+    c21: state 7
+state 13:
     end = 45
     c0: state 1
     c2: state 1
@@ -2087,158 +2202,511 @@ state 11:
     c17: state 1
     c20: state 1
     c21: state 1
-state 12:
-    end = 46
-state 13:
-    c12: state 16
 state 14:
-    c17: state 17
+    end = 46
 state 15:
-    c13: state 18
+    end = 45
+    c0: state 7
+    c2: state 7
+    c3: state 7
+    c4: state 7
+    c5: state 7
+    c6: state 9
+    c7: state 7
+    c8: state 7
+    c9: state 7
+    c10: state 7
+    c11: state 7
+    c12: state 7
+    c13: state 7
+    c14: state 7
+    c15: state 7
+    c16: state 7
+    c17: state 7
+    c20: state 7
+    c21: state 7
 state 16:
-    c17: state 19
+    end = 45
+    c0: state 7
+    c2: state 7
+    c3: state 7
+    c4: state 7
+    c5: state 7
+    c6: state 9
+    c7: state 7
+    c8: state 7
+    c9: state 7
+    c10: state 7
+    c11: state 7
+    c12: state 19
+    c13: state 7
+    c14: state 7
+    c15: state 7
+    c16: state 7
+    c17: state 7
+    c20: state 7
+    c21: state 7
 state 17:
-    c8: state 20
+    end = 45
+    c0: state 7
+    c2: state 7
+    c3: state 7
+    c4: state 7
+    c5: state 7
+    c6: state 9
+    c7: state 7
+    c8: state 7
+    c9: state 7
+    c10: state 7
+    c11: state 7
+    c12: state 7
+    c13: state 7
+    c14: state 7
+    c15: state 7
+    c16: state 7
+    c17: state 20
+    c20: state 7
+    c21: state 7
 state 18:
-    c10: state 21
+    end = 45
+    c0: state 7
+    c2: state 7
+    c3: state 7
+    c4: state 7
+    c5: state 7
+    c6: state 9
+    c7: state 7
+    c8: state 7
+    c9: state 7
+    c10: state 7
+    c11: state 7
+    c12: state 7
+    c13: state 21
+    c14: state 7
+    c15: state 7
+    c16: state 7
+    c17: state 7
+    c20: state 7
+    c21: state 7
 state 19:
-    c3: state 22
+    end = 45
+    c0: state 7
+    c2: state 7
+    c3: state 7
+    c4: state 7
+    c5: state 7
+    c6: state 9
+    c7: state 7
+    c8: state 7
+    c9: state 7
+    c10: state 7
+    c11: state 7
+    c12: state 7
+    c13: state 7
+    c14: state 7
+    c15: state 7
+    c16: state 7
+    c17: state 22
+    c20: state 7
+    c21: state 7
 state 20:
-    c11: state 23
+    end = 45
+    c0: state 7
+    c2: state 7
+    c3: state 7
+    c4: state 7
+    c5: state 7
+    c6: state 9
+    c7: state 7
+    c8: state 23
+    c9: state 7
+    c10: state 7
+    c11: state 7
+    c12: state 7
+    c13: state 7
+    c14: state 7
+    c15: state 7
+    c16: state 7
+    c17: state 7
+    c20: state 7
+    c21: state 7
 state 21:
-    c15: state 24
+    end = 45
+    c0: state 7
+    c2: state 7
+    c3: state 7
+    c4: state 7
+    c5: state 7
+    c6: state 9
+    c7: state 7
+    c8: state 7
+    c9: state 7
+    c10: state 24
+    c11: state 7
+    c12: state 7
+    c13: state 7
+    c14: state 7
+    c15: state 7
+    c16: state 7
+    c17: state 7
+    c20: state 7
+    c21: state 7
 state 22:
-    c1: state 25
-    c5: state 25
-    c7: state 25
-    c8: state 25
-    c9: state 25
-    c10: state 25
-    c11: state 25
-    c12: state 25
-    c13: state 25
-    c14: state 25
-    c15: state 25
-    c16: state 25
-    c17: state 25
-    c20: state 26
+    end = 45
+    c0: state 7
+    c2: state 7
+    c3: state 25
+    c4: state 7
+    c5: state 7
+    c6: state 9
+    c7: state 7
+    c8: state 7
+    c9: state 7
+    c10: state 7
+    c11: state 7
+    c12: state 7
+    c13: state 7
+    c14: state 7
+    c15: state 7
+    c16: state 7
+    c17: state 7
+    c20: state 7
+    c21: state 7
 state 23:
-    c10: state 27
+    end = 45
+    c0: state 7
+    c2: state 7
+    c3: state 7
+    c4: state 7
+    c5: state 7
+    c6: state 9
+    c7: state 7
+    c8: state 7
+    c9: state 7
+    c10: state 7
+    c11: state 26
+    c12: state 7
+    c13: state 7
+    c14: state 7
+    c15: state 7
+    c16: state 7
+    c17: state 7
+    c20: state 7
+    c21: state 7
 state 24:
-    end = 50
+    end = 45
+    c0: state 7
+    c2: state 7
+    c3: state 7
+    c4: state 7
+    c5: state 7
+    c6: state 9
+    c7: state 7
+    c8: state 7
+    c9: state 7
+    c10: state 7
+    c11: state 7
+    c12: state 7
+    c13: state 7
+    c14: state 7
+    c15: state 27
+    c16: state 7
+    c17: state 7
+    c20: state 7
+    c21: state 7
 state 25:
+    end = 45
+    c0: state 7
     c1: state 28
-    c2: state 29
-    c4: state 30
-    c5: state 28
-    c7: state 28
-    c8: state 28
-    c9: state 28
-    c10: state 28
-    c11: state 28
-    c12: state 28
-    c13: state 28
-    c14: state 28
-    c15: state 28
-    c16: state 28
-    c17: state 28
-    c20: state 31
-    c21: state 32
+    c2: state 7
+    c3: state 7
+    c4: state 7
+    c5: state 29
+    c6: state 9
+    c7: state 29
+    c8: state 29
+    c9: state 29
+    c10: state 29
+    c11: state 29
+    c12: state 29
+    c13: state 29
+    c14: state 29
+    c15: state 29
+    c16: state 29
+    c17: state 29
+    c20: state 30
+    c21: state 7
 state 26:
-    c1: state 28
-    c2: state 29
-    c4: state 30
-    c5: state 28
-    c7: state 28
-    c8: state 28
-    c9: state 28
-    c10: state 28
-    c11: state 28
-    c12: state 28
-    c13: state 28
-    c14: state 28
-    c15: state 28
-    c16: state 28
-    c17: state 28
-    c20: state 31
-    c21: state 32
+    end = 45
+    c0: state 7
+    c2: state 7
+    c3: state 7
+    c4: state 7
+    c5: state 7
+    c6: state 9
+    c7: state 7
+    c8: state 7
+    c9: state 7
+    c10: state 31
+    c11: state 7
+    c12: state 7
+    c13: state 7
+    c14: state 7
+    c15: state 7
+    c16: state 7
+    c17: state 7
+    c20: state 7
+    c21: state 7
 state 27:
-    c9: state 33
+    end = 50
 state 28:
-    c1: state 28
-    c2: state 29
-    c4: state 30
-    c5: state 28
-    c7: state 28
-    c8: state 28
-    c9: state 28
-    c10: state 28
-    c11: state 28
-    c12: state 28
-    c13: state 28
-    c14: state 28
-    c15: state 28
-    c16: state 28
-    c17: state 28
-    c20: state 31
-    c21: state 32
+    c1: state 32
+    c2: state 33
+    c4: state 34
+    c5: state 32
+    c7: state 32
+    c8: state 32
+    c9: state 32
+    c10: state 32
+    c11: state 32
+    c12: state 32
+    c13: state 32
+    c14: state 32
+    c15: state 32
+    c16: state 32
+    c17: state 32
+    c20: state 35
+    c21: state 36
 state 29:
-    c1: state 28
-    c2: state 29
-    c4: state 30
-    c5: state 28
-    c7: state 28
-    c8: state 28
-    c9: state 28
-    c10: state 28
-    c11: state 28
-    c12: state 28
-    c13: state 28
-    c14: state 28
-    c15: state 28
-    c16: state 28
-    c17: state 28
-    c20: state 31
-    c21: state 32
+    end = 45
+    c0: state 7
+    c1: state 32
+    c2: state 37
+    c3: state 7
+    c4: state 38
+    c5: state 39
+    c6: state 9
+    c7: state 39
+    c8: state 39
+    c9: state 39
+    c10: state 39
+    c11: state 39
+    c12: state 39
+    c13: state 39
+    c14: state 39
+    c15: state 39
+    c16: state 39
+    c17: state 39
+    c20: state 40
+    c21: state 41
 state 30:
-    end = 52
+    end = 45
+    c0: state 7
+    c1: state 32
+    c2: state 37
+    c3: state 7
+    c4: state 38
+    c5: state 39
+    c6: state 9
+    c7: state 39
+    c8: state 39
+    c9: state 39
+    c10: state 39
+    c11: state 39
+    c12: state 39
+    c13: state 39
+    c14: state 39
+    c15: state 39
+    c16: state 39
+    c17: state 39
+    c20: state 40
+    c21: state 41
 state 31:
-    c1: state 28
-    c2: state 29
-    c4: state 30
-    c5: state 28
-    c7: state 28
-    c8: state 28
-    c9: state 28
-    c10: state 28
-    c11: state 28
-    c12: state 28
-    c13: state 28
-    c14: state 28
-    c15: state 28
-    c16: state 28
-    c17: state 28
-    c20: state 31
-    c21: state 32
+    end = 45
+    c0: state 7
+    c2: state 7
+    c3: state 7
+    c4: state 7
+    c5: state 7
+    c6: state 9
+    c7: state 7
+    c8: state 7
+    c9: state 42
+    c10: state 7
+    c11: state 7
+    c12: state 7
+    c13: state 7
+    c14: state 7
+    c15: state 7
+    c16: state 7
+    c17: state 7
+    c20: state 7
+    c21: state 7
 state 32:
-    c1: state 28
-    c2: state 29
-    c4: state 30
-    c5: state 28
-    c7: state 28
-    c8: state 28
-    c9: state 28
-    c10: state 28
-    c11: state 28
-    c12: state 28
-    c13: state 28
-    c14: state 28
-    c15: state 28
-    c16: state 28
-    c17: state 28
-    c20: state 31
-    c21: state 32
+    c1: state 32
+    c2: state 33
+    c4: state 34
+    c5: state 32
+    c7: state 32
+    c8: state 32
+    c9: state 32
+    c10: state 32
+    c11: state 32
+    c12: state 32
+    c13: state 32
+    c14: state 32
+    c15: state 32
+    c16: state 32
+    c17: state 32
+    c20: state 35
+    c21: state 36
 state 33:
+    c1: state 32
+    c2: state 33
+    c4: state 34
+    c5: state 32
+    c7: state 32
+    c8: state 32
+    c9: state 32
+    c10: state 32
+    c11: state 32
+    c12: state 32
+    c13: state 32
+    c14: state 32
+    c15: state 32
+    c16: state 32
+    c17: state 32
+    c20: state 35
+    c21: state 36
+state 34:
+    end = 52
+state 35:
+    c1: state 32
+    c2: state 33
+    c4: state 34
+    c5: state 32
+    c7: state 32
+    c8: state 32
+    c9: state 32
+    c10: state 32
+    c11: state 32
+    c12: state 32
+    c13: state 32
+    c14: state 32
+    c15: state 32
+    c16: state 32
+    c17: state 32
+    c20: state 35
+    c21: state 36
+state 36:
+    c1: state 32
+    c2: state 33
+    c4: state 34
+    c5: state 32
+    c7: state 32
+    c8: state 32
+    c9: state 32
+    c10: state 32
+    c11: state 32
+    c12: state 32
+    c13: state 32
+    c14: state 32
+    c15: state 32
+    c16: state 32
+    c17: state 32
+    c20: state 35
+    c21: state 36
+state 37:
+    end = 45
+    c0: state 7
+    c1: state 32
+    c2: state 37
+    c3: state 7
+    c4: state 38
+    c5: state 39
+    c6: state 9
+    c7: state 39
+    c8: state 39
+    c9: state 39
+    c10: state 39
+    c11: state 39
+    c12: state 39
+    c13: state 39
+    c14: state 39
+    c15: state 39
+    c16: state 39
+    c17: state 39
+    c20: state 40
+    c21: state 41
+state 38:
+    end = 52
+state 39:
+    end = 45
+    c0: state 7
+    c1: state 32
+    c2: state 37
+    c3: state 7
+    c4: state 38
+    c5: state 39
+    c6: state 9
+    c7: state 39
+    c8: state 39
+    c9: state 39
+    c10: state 39
+    c11: state 39
+    c12: state 39
+    c13: state 39
+    c14: state 39
+    c15: state 39
+    c16: state 39
+    c17: state 39
+    c20: state 40
+    c21: state 41
+state 40:
+    end = 45
+    c0: state 7
+    c1: state 32
+    c2: state 37
+    c3: state 7
+    c4: state 38
+    c5: state 39
+    c6: state 9
+    c7: state 39
+    c8: state 39
+    c9: state 39
+    c10: state 39
+    c11: state 39
+    c12: state 39
+    c13: state 39
+    c14: state 39
+    c15: state 39
+    c16: state 39
+    c17: state 39
+    c20: state 40
+    c21: state 41
+state 41:
+    end = 45
+    c0: state 7
+    c1: state 32
+    c2: state 37
+    c3: state 7
+    c4: state 38
+    c5: state 39
+    c6: state 9
+    c7: state 39
+    c8: state 39
+    c9: state 39
+    c10: state 39
+    c11: state 39
+    c12: state 39
+    c13: state 39
+    c14: state 39
+    c15: state 39
+    c16: state 39
+    c17: state 39
+    c20: state 40
+    c21: state 41
+state 42:
     end = 51
 
 
@@ -2276,7 +2744,7 @@ state 1:
 
 state 0
     [ 0: (accept) => . start <EOF> ]*
-    [ 2: start => . options "%%" body @0 "%%" epilogue ]
+    [ 2: start => . options "%%" body "%%" @0 epilogue ]
     [ 3: options => . options option ]
     [ 4: options => . ]
     default action: reduce with rule 4
@@ -2291,7 +2759,7 @@ state 1
 
 
 state 2
-    [ 2: start => options . "%%" body @0 "%%" epilogue ]*
+    [ 2: start => options . "%%" body "%%" @0 epilogue ]*
     [ 3: options => options . option ]*
     [ 6: option => . "%lex" @1 states_ "{" lexBody "}" ]
     [ 7: option => . associativeDir assocTokens ]
@@ -2328,7 +2796,7 @@ state 3
 
 
 state 4
-    [ 2: start => options "%%" . body @0 "%%" epilogue ]*
+    [ 2: start => options "%%" . body "%%" @0 epilogue ]*
     [ 79: body => . body bodyItem ]
     [ 80: body => . bodyItem ]
     [ 81: bodyItem => . compoundRule ]
@@ -2377,38 +2845,34 @@ state 8
 
 state 9
     [ 9: option => "%header" . block ]*
-    [ 114: block => . @10 "{" innerBlock @11 "}" ]
-    [ 112: @10 => . ]
-    default action: reduce with rule 112
+    [ 114: block => . "{" @10 innerBlock "}" @11 ]
+    no default action
+    "{" : shift, and go to state 29
     block : go to state 28
-    @10 : go to state 29
 
 
 state 10
     [ 10: option => "%extra_arg" . block ]*
-    [ 114: block => . @10 "{" innerBlock @11 "}" ]
-    [ 112: @10 => . ]
-    default action: reduce with rule 112
+    [ 114: block => . "{" @10 innerBlock "}" @11 ]
+    no default action
+    "{" : shift, and go to state 29
     block : go to state 30
-    @10 : go to state 29
 
 
 state 11
     [ 11: option => "%type" . block ]*
-    [ 114: block => . @10 "{" innerBlock @11 "}" ]
-    [ 112: @10 => . ]
-    default action: reduce with rule 112
+    [ 114: block => . "{" @10 innerBlock "}" @11 ]
+    no default action
+    "{" : shift, and go to state 29
     block : go to state 31
-    @10 : go to state 29
 
 
 state 12
     [ 12: option => "%init" . block block ]*
-    [ 114: block => . @10 "{" innerBlock @11 "}" ]
-    [ 112: @10 => . ]
-    default action: reduce with rule 112
+    [ 114: block => . "{" @10 innerBlock "}" @11 ]
+    no default action
+    "{" : shift, and go to state 29
     block : go to state 32
-    @10 : go to state 29
 
 
 state 13
@@ -2442,14 +2906,13 @@ state 17
 
 
 state 18
-    [ 2: start => options "%%" body . @0 "%%" epilogue ]*
+    [ 2: start => options "%%" body . "%%" @0 epilogue ]*
     [ 79: body => body . bodyItem ]*
-    [ 1: @0 => . ]
     [ 81: bodyItem => . compoundRule ]
     [ 83: compoundRule => . <NAME> @7 arrow rules ";" ]
-    default action: reduce with rule 1
+    no default action
     <NAME> : shift, and go to state 21
-    @0 : go to state 36
+    "%%" : shift, and go to state 36
     bodyItem : go to state 37
     compoundRule : go to state 20
 
@@ -2524,9 +2987,10 @@ state 28
 
 
 state 29
-    [ 114: block => @10 . "{" innerBlock @11 "}" ]*
-    no default action
-    "{" : shift, and go to state 43
+    [ 114: block => "{" . @10 innerBlock "}" @11 ]*
+    [ 112: @10 => . ]
+    default action: reduce with rule 112
+    @10 : go to state 43
 
 
 state 30
@@ -2541,11 +3005,10 @@ state 31
 
 state 32
     [ 12: option => "%init" block . block ]*
-    [ 114: block => . @10 "{" innerBlock @11 "}" ]
-    [ 112: @10 => . ]
-    default action: reduce with rule 112
+    [ 114: block => . "{" @10 innerBlock "}" @11 ]
+    no default action
+    "{" : shift, and go to state 29
     block : go to state 44
-    @10 : go to state 29
 
 
 state 33
@@ -2567,9 +3030,10 @@ state 35
 
 
 state 36
-    [ 2: start => options "%%" body @0 . "%%" epilogue ]*
-    no default action
-    "%%" : shift, and go to state 47
+    [ 2: start => options "%%" body "%%" . @0 epilogue ]*
+    [ 1: @0 => . ]
+    default action: reduce with rule 1
+    @0 : go to state 47
 
 
 state 37
@@ -2616,7 +3080,7 @@ state 42
 
 
 state 43
-    [ 114: block => @10 "{" . innerBlock @11 "}" ]*
+    [ 114: block => "{" @10 . innerBlock "}" @11 ]*
     [ 115: innerBlock => . innerBlock innerBlockItem ]
     [ 116: innerBlock => . ]
     default action: reduce with rule 116
@@ -2641,7 +3105,7 @@ state 46
 
 
 state 47
-    [ 2: start => options "%%" body @0 "%%" . epilogue ]*
+    [ 2: start => options "%%" body "%%" @0 . epilogue ]*
     [ 17: epilogue => . ]
     [ 18: epilogue => . <ANY_EPLOGUE_CODE> ]
     default action: reduce with rule 17
@@ -2704,20 +3168,17 @@ state 55
 
 
 state 56
-    [ 114: block => @10 "{" innerBlock . @11 "}" ]*
+    [ 114: block => "{" @10 innerBlock . "}" @11 ]*
     [ 115: innerBlock => innerBlock . innerBlockItem ]*
-    [ 113: @11 => . ]
     [ 117: innerBlockItem => . <ANY_CODE> ]
     [ 118: innerBlockItem => . <ESCAPED_CHAR_IN_BLOCK> ]
-    [ 121: innerBlockItem => . @12 "{" innerBlock @13 "}" ]
-    [ 119: @12 => . ]
-    default action: reduce with rule 113
+    [ 121: innerBlockItem => . "{" @12 innerBlock "}" @13 ]
+    no default action
+    "{" : shift, and go to state 72
+    "}" : shift, and go to state 68
     <ANY_CODE> : shift, and go to state 70
     <ESCAPED_CHAR_IN_BLOCK> : shift, and go to state 71
-    "{" : reduce with rule 119
-    @11 : go to state 68
     innerBlockItem : go to state 69
-    @12 : go to state 72
 
 
 state 57
@@ -2732,7 +3193,7 @@ state 58
 
 
 state 59
-    [ 2: start => options "%%" body @0 "%%" epilogue . ]*
+    [ 2: start => options "%%" body "%%" @0 epilogue . ]*
     default action: reduce with rule 2
 
 
@@ -2795,9 +3256,10 @@ state 67
 
 
 state 68
-    [ 114: block => @10 "{" innerBlock @11 . "}" ]*
-    no default action
-    "}" : shift, and go to state 84
+    [ 114: block => "{" @10 innerBlock "}" . @11 ]*
+    [ 113: @11 => . ]
+    default action: reduce with rule 113
+    @11 : go to state 84
 
 
 state 69
@@ -2816,9 +3278,10 @@ state 71
 
 
 state 72
-    [ 121: innerBlockItem => @12 . "{" innerBlock @13 "}" ]*
-    no default action
-    "{" : shift, and go to state 85
+    [ 121: innerBlockItem => "{" . @12 innerBlock "}" @13 ]*
+    [ 119: @12 => . ]
+    default action: reduce with rule 119
+    @12 : go to state 85
 
 
 state 73
@@ -2893,12 +3356,12 @@ state 83
 
 
 state 84
-    [ 114: block => @10 "{" innerBlock @11 "}" . ]*
+    [ 114: block => "{" @10 innerBlock "}" @11 . ]*
     default action: reduce with rule 114
 
 
 state 85
-    [ 121: innerBlockItem => @12 "{" . innerBlock @13 "}" ]*
+    [ 121: innerBlockItem => "{" @12 . innerBlock "}" @13 ]*
     [ 115: innerBlock => . innerBlock innerBlockItem ]
     [ 116: innerBlock => . ]
     default action: reduce with rule 116
@@ -2977,20 +3440,17 @@ state 92
 
 
 state 93
-    [ 121: innerBlockItem => @12 "{" innerBlock . @13 "}" ]*
+    [ 121: innerBlockItem => "{" @12 innerBlock . "}" @13 ]*
     [ 115: innerBlock => innerBlock . innerBlockItem ]*
-    [ 120: @13 => . ]
     [ 117: innerBlockItem => . <ANY_CODE> ]
     [ 118: innerBlockItem => . <ESCAPED_CHAR_IN_BLOCK> ]
-    [ 121: innerBlockItem => . @12 "{" innerBlock @13 "}" ]
-    [ 119: @12 => . ]
-    default action: reduce with rule 119
+    [ 121: innerBlockItem => . "{" @12 innerBlock "}" @13 ]
+    no default action
+    "{" : shift, and go to state 72
+    "}" : shift, and go to state 107
     <ANY_CODE> : shift, and go to state 70
     <ESCAPED_CHAR_IN_BLOCK> : shift, and go to state 71
-    "}" : reduce with rule 120
     innerBlockItem : go to state 69
-    @12 : go to state 72
-    @13 : go to state 107
 
 
 state 94
@@ -3103,9 +3563,10 @@ state 106
 
 
 state 107
-    [ 121: innerBlockItem => @12 "{" innerBlock @13 . "}" ]*
-    no default action
-    "}" : shift, and go to state 122
+    [ 121: innerBlockItem => "{" @12 innerBlock "}" . @13 ]*
+    [ 120: @13 => . ]
+    default action: reduce with rule 120
+    @13 : go to state 122
 
 
 state 108
@@ -3205,7 +3666,7 @@ state 121
 
 
 state 122
-    [ 121: innerBlockItem => @12 "{" innerBlock @13 "}" . ]*
+    [ 121: innerBlockItem => "{" @12 innerBlock "}" @13 . ]*
     default action: reduce with rule 121
 
 
@@ -3317,11 +3778,10 @@ state 140
 
 state 141
     [ 44: lexAction => @4 . actionBlock ]*
-    [ 125: actionBlock => . @14 "{" @15 innerActionBlock @16 "}" ]
-    [ 122: @14 => . ]
-    default action: reduce with rule 122
+    [ 125: actionBlock => . "{" @14 @15 innerActionBlock "}" @16 ]
+    no default action
+    "{" : shift, and go to state 151
     actionBlock : go to state 150
-    @14 : go to state 151
 
 
 state 142
@@ -3360,16 +3820,15 @@ state 145
     [ 49: lexActionItem => . "=>" <NAME> ]
     [ 50: lexActionItem => . "=" <STRING> ]
     [ 51: lexActionItem => . actionBlock ]
-    [ 125: actionBlock => . @14 "{" @15 innerActionBlock @16 "}" ]
-    [ 122: @14 => . ]
-    default action: reduce with rule 122
+    [ 125: actionBlock => . "{" @14 @15 innerActionBlock "}" @16 ]
+    no default action
+    "{" : shift, and go to state 151
     "=" : shift, and go to state 134
     "+" : shift, and go to state 131
     "-" : shift, and go to state 132
     "=>" : shift, and go to state 133
     lexActionItem : go to state 160
     actionBlock : go to state 135
-    @14 : go to state 151
 
 
 state 146
@@ -3396,9 +3855,9 @@ state 149
     [ 49: lexActionItem => . "=>" <NAME> ]
     [ 50: lexActionItem => . "=" <STRING> ]
     [ 51: lexActionItem => . actionBlock ]
-    [ 125: actionBlock => . @14 "{" @15 innerActionBlock @16 "}" ]
-    [ 122: @14 => . ]
-    default action: reduce with rule 122
+    [ 125: actionBlock => . "{" @14 @15 innerActionBlock "}" @16 ]
+    no default action
+    "{" : shift, and go to state 151
     "=" : shift, and go to state 134
     "+" : shift, and go to state 131
     "-" : shift, and go to state 132
@@ -3406,7 +3865,6 @@ state 149
     lexActions : go to state 161
     lexActionItem : go to state 130
     actionBlock : go to state 135
-    @14 : go to state 151
 
 
 state 150
@@ -3415,9 +3873,10 @@ state 150
 
 
 state 151
-    [ 125: actionBlock => @14 . "{" @15 innerActionBlock @16 "}" ]*
-    no default action
-    "{" : shift, and go to state 162
+    [ 125: actionBlock => "{" . @14 @15 innerActionBlock "}" @16 ]*
+    [ 122: @14 => . ]
+    default action: reduce with rule 122
+    @14 : go to state 162
 
 
 state 152
@@ -3499,7 +3958,7 @@ state 161
 
 
 state 162
-    [ 125: actionBlock => @14 "{" . @15 innerActionBlock @16 "}" ]*
+    [ 125: actionBlock => "{" @14 . @15 innerActionBlock "}" @16 ]*
     [ 123: @15 => . ]
     default action: reduce with rule 123
     @15 : go to state 182
@@ -3621,9 +4080,10 @@ state 179
 
 
 state 180
-    [ 137: innerActionBlockItem => @17 . "{" @18 innerActionBlock @19 "}" ]*
-    no default action
-    "{" : shift, and go to state 194
+    [ 137: innerActionBlockItem => "{" . @17 @18 innerActionBlock "}" @19 ]*
+    [ 134: @17 => . ]
+    default action: reduce with rule 134
+    @17 : go to state 194
 
 
 state 181
@@ -3632,7 +4092,7 @@ state 181
 
 
 state 182
-    [ 125: actionBlock => @14 "{" @15 . innerActionBlock @16 "}" ]*
+    [ 125: actionBlock => "{" @14 @15 . innerActionBlock "}" @16 ]*
     [ 126: innerActionBlock => . innerActionBlock innerActionBlockItem ]
     [ 127: innerActionBlock => . ]
     default action: reduce with rule 127
@@ -3716,35 +4176,32 @@ state 193
 
 
 state 194
-    [ 137: innerActionBlockItem => @17 "{" . @18 innerActionBlock @19 "}" ]*
+    [ 137: innerActionBlockItem => "{" @17 . @18 innerActionBlock "}" @19 ]*
     [ 135: @18 => . ]
     default action: reduce with rule 135
     @18 : go to state 200
 
 
 state 195
-    [ 125: actionBlock => @14 "{" @15 innerActionBlock . @16 "}" ]*
+    [ 125: actionBlock => "{" @14 @15 innerActionBlock . "}" @16 ]*
     [ 126: innerActionBlock => innerActionBlock . innerActionBlockItem ]*
-    [ 124: @16 => . ]
     [ 128: innerActionBlockItem => . <ANY_CODE> ]
     [ 129: innerActionBlockItem => . <ESCAPED_CHAR_IN_BLOCK> ]
     [ 130: innerActionBlockItem => . "$$" ]
     [ 131: innerActionBlockItem => . "$token" ]
     [ 132: innerActionBlockItem => . "$matched" ]
     [ 133: innerActionBlockItem => . <EMIT_TOKEN> ]
-    [ 137: innerActionBlockItem => . @17 "{" @18 innerActionBlock @19 "}" ]
-    [ 134: @17 => . ]
-    default action: reduce with rule 124
+    [ 137: innerActionBlockItem => . "{" @17 @18 innerActionBlock "}" @19 ]
+    no default action
+    "{" : shift, and go to state 180
+    "}" : shift, and go to state 201
     <ANY_CODE> : shift, and go to state 174
     <ESCAPED_CHAR_IN_BLOCK> : shift, and go to state 175
     "$$" : shift, and go to state 176
     "$token" : shift, and go to state 177
     "$matched" : shift, and go to state 178
     <EMIT_TOKEN> : shift, and go to state 179
-    "{" : reduce with rule 134
-    @16 : go to state 201
     innerActionBlockItem : go to state 173
-    @17 : go to state 180
 
 
 state 196
@@ -3770,7 +4227,7 @@ state 199
 
 
 state 200
-    [ 137: innerActionBlockItem => @17 "{" @18 . innerActionBlock @19 "}" ]*
+    [ 137: innerActionBlockItem => "{" @17 @18 . innerActionBlock "}" @19 ]*
     [ 126: innerActionBlock => . innerActionBlock innerActionBlockItem ]
     [ 127: innerActionBlock => . ]
     default action: reduce with rule 127
@@ -3778,9 +4235,10 @@ state 200
 
 
 state 201
-    [ 125: actionBlock => @14 "{" @15 innerActionBlock @16 . "}" ]*
-    no default action
-    "}" : shift, and go to state 205
+    [ 125: actionBlock => "{" @14 @15 innerActionBlock "}" . @16 ]*
+    [ 124: @16 => . ]
+    default action: reduce with rule 124
+    @16 : go to state 205
 
 
 state 202
@@ -3794,43 +4252,41 @@ state 203
 
 
 state 204
-    [ 137: innerActionBlockItem => @17 "{" @18 innerActionBlock . @19 "}" ]*
+    [ 137: innerActionBlockItem => "{" @17 @18 innerActionBlock . "}" @19 ]*
     [ 126: innerActionBlock => innerActionBlock . innerActionBlockItem ]*
-    [ 136: @19 => . ]
     [ 128: innerActionBlockItem => . <ANY_CODE> ]
     [ 129: innerActionBlockItem => . <ESCAPED_CHAR_IN_BLOCK> ]
     [ 130: innerActionBlockItem => . "$$" ]
     [ 131: innerActionBlockItem => . "$token" ]
     [ 132: innerActionBlockItem => . "$matched" ]
     [ 133: innerActionBlockItem => . <EMIT_TOKEN> ]
-    [ 137: innerActionBlockItem => . @17 "{" @18 innerActionBlock @19 "}" ]
-    [ 134: @17 => . ]
-    default action: reduce with rule 134
+    [ 137: innerActionBlockItem => . "{" @17 @18 innerActionBlock "}" @19 ]
+    no default action
+    "{" : shift, and go to state 180
+    "}" : shift, and go to state 206
     <ANY_CODE> : shift, and go to state 174
     <ESCAPED_CHAR_IN_BLOCK> : shift, and go to state 175
     "$$" : shift, and go to state 176
     "$token" : shift, and go to state 177
     "$matched" : shift, and go to state 178
     <EMIT_TOKEN> : shift, and go to state 179
-    "}" : reduce with rule 136
     innerActionBlockItem : go to state 173
-    @17 : go to state 180
-    @19 : go to state 206
 
 
 state 205
-    [ 125: actionBlock => @14 "{" @15 innerActionBlock @16 "}" . ]*
+    [ 125: actionBlock => "{" @14 @15 innerActionBlock "}" @16 . ]*
     default action: reduce with rule 125
 
 
 state 206
-    [ 137: innerActionBlockItem => @17 "{" @18 innerActionBlock @19 . "}" ]*
-    no default action
-    "}" : shift, and go to state 207
+    [ 137: innerActionBlockItem => "{" @17 @18 innerActionBlock "}" . @19 ]*
+    [ 136: @19 => . ]
+    default action: reduce with rule 136
+    @19 : go to state 207
 
 
 state 207
-    [ 137: innerActionBlockItem => @17 "{" @18 innerActionBlock @19 "}" . ]*
+    [ 137: innerActionBlockItem => "{" @17 @18 innerActionBlock "}" @19 . ]*
     default action: reduce with rule 137
 
 

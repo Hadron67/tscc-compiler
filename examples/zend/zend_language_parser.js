@@ -155,7 +155,10 @@ var OP_INVOKEMETHOD = defineOpcode('invokeMethod');
 var OP_INVOKEMETHODNAME = defineOpcode('invokeMethodName');
 var OP_NEW = defineOpcode('new');
 var OP_DEFINEFUNCTION = defineOpcode('defineFunction');
-var OP_CREATEFUNCTION = defineOpcode('createFunction');
+var OP_ENTRY = defineOpcode('entry');
+var OP_PARAM = defineOpcode('param');
+var OP_USE = defineOpcode('use');
+var OP_ENDFUNCTION = defineOpcode('endFunction');
 
 var OP_JMP = defineOpcode('jmp');
 var OP_JZ = defineOpcode('jz');
@@ -1764,17 +1767,17 @@ var jjpact = [
 */
 var jjdisact = [ 
        -83,   250,   227,   -83,   -83,   -83,   -83,   193,    55,   191,
-       -83,   191,  4769,   177,   -83,   183,   173,   -83,   157,   214,
+       -83,   191,  4769,   177,   -83,   183,   173,   -83,   157,   207,
        159,   -83,   -83,  1689,  1335,   157,  1630,   151,   -83,  1276,
        292,   -83,   154,   150,  4716,  4699,  4646,  4629,  4576,   107,
         21,   -83,   150,   -83,   -83,   -83,   -83,   -83,   149,  4559,
-       -83,  4506,  4489,  4436,   -83,   147,   195,   -83,  4419,  4366,
+       -83,  4506,  4489,  4436,   -83,   147,   188,   -83,  4419,  4366,
       4349,  2664,  4296,  4279,  4226,  4209,  4156,  4139,  4086,  4069,
       4016,  3999,  3946,  3929,  3876,  3859,  3806,  3789,  3736,  3719,
       3666,  3649,  3596,  3579,  3526,  3509,  3456,  3439,  3386,  3369,
       3316,  3299,  3246,  3229,  3176,  3159,  3106,  3089,  3036,   -83,
        -83,   146,  3019,   143,  1217,   -83,   -83,  2639,   164,     1,
-       -83,    -4,   189,  2966,   128,   129,   123,  1158,   118,   122,
+       -83,    -4,   182,  2966,   128,   129,   123,  1158,   118,   122,
        -83,   -83,   -83,  1099,   -83,  2949,  2896,   -83,   121,   607,
        120,  2879,   165,   164,   117,  1571,   -83,  1512,  1040,  2826,
        808,   749,   690,   623,   544,   468,   392,   350,    13,   242,
@@ -2619,7 +2622,7 @@ function createParser() {
     var jjlrState;
     var jjsematicS;
     var jjsematicVal;
-    var jjemittedTokens;
+    var jjtokenQueue;
 
     var jjstop;
 
@@ -2650,12 +2653,14 @@ function createParser() {
         jjlrState = [ 0 ];
         jjsematicS = [];
         jjsematicVal = null;
-        jjemittedTokens = [];
+        jjtokenQueue = [];
 
         jjstop = false;
         
     outputs = outputs1;
 
+
+        jjtryReduce();
     }
     /**
      *  set 
@@ -2673,14 +2678,11 @@ function createParser() {
         jjtoken.endLine = jjline;
         jjtoken.endColumn = jjcolumn - 1;
 
+        jjtokenQueue.push(jjtoken);
+
         jjmatched = '';
         jjtline = jjline;
         jjtcolumn = jjcolumn;
-    }
-    function jjreturnToken(){
-        jjemit('token', jjtoken);
-        jjconsumeTokens(jjtoken);
-        jjtoken.id = -1;
     }
     function jjemit(name, a1, a2, a3){
         var cbs = jjhandlers[name];
@@ -2999,7 +3001,7 @@ function createParser() {
                 break;
             default:;
         }
-        jjtoken.id !== -1 && jjreturnToken();
+        jjtokenQueue.length > 0 && jjacceptToken(null);
     }
     function jjrollback(){
         var ret = jjmatched.substr(jjmatched.length - jjbackupCount, jjbackupCount);
@@ -3109,7 +3111,7 @@ function createParser() {
         if(jjstate === 0){
             // recover
             jjprepareToken(0);
-            jjreturnToken();
+            jjacceptToken(null);
             return true;
         }
         else {
@@ -3688,9 +3690,8 @@ function createParser() {
                 { jjtop = new ZNode(AST_PARAMLIST, p); } 
                 break;
             case 114:
-                /* 114: parameter => <NAME> */
-                var p = jjsematicS[jjsp - 1];
-                { p.type = AST_STRING; jjtop = p; } 
+                /* 114: parameter => <VARIABLE> */
+                { jjtop.type = AST_STRING; } 
                 break;
             case 115:
                 /* 115: lexical_vars => */
@@ -3769,55 +3770,60 @@ function createParser() {
         jjsematicS.length -= jjruleLen[jjrulenum];
         jjsematicS.push(jjtop);
     }
-    function jjconsumeTokens(t){
-        if(t !== null){
-            while(!jjstop && !jjacceptToken(jjtoken));
-        }
-        while(!jjstop && jjemittedTokens.length > 0){
-            jjacceptToken(new Token(jjemittedTokens[0], null, 0, 0, 0, 0)) && jjemittedTokens.shift();
-        }
-    }
-    function jjacceptToken(t){
+    function jjacceptToken(tk){
         // look up action table
-        var cstate = jjlrState[jjlrState.length - 1];
-        var ind = jjdisact[cstate] + t.id;
-        var act = 0;
-        if(ind < 0 || ind >= jjpact.length || jjcheckact[ind] !== cstate){
-            act = -jjdefred[cstate] - 1;
-        }
-        else {
-            act = jjpact[ind];
-        }
-        if(act === jjactERR){
-            // explicit error
-            jjsyntaxError(t);
-            return true;
-        }
-        else if(act > 0){
-            // shift
-            if(t.id === 0){
-                // end of file
-                jjstop = true;
-                jjemit('accept');
-                return true;
+        var shifted = false;
+        tk !== null && jjtokenQueue.push(tk);
+        while(!jjstop && jjtokenQueue.length > 0){
+            var t = jjtokenQueue[0];
+            var cstate = jjlrState[jjlrState.length - 1];
+            var ind = jjdisact[cstate] + t.id;
+            var act = 0;
+            if(ind < 0 || ind >= jjpact.length || jjcheckact[ind] !== cstate){
+                act = -jjdefred[cstate] - 1;
             }
             else {
-                jjlrState.push(act - 1);
-                jjsematicS.push(jjsematicVal);
-                jjsematicVal = null;
-                // token consumed
-                return true;
+                act = jjpact[ind];
+            }
+            if(act === jjactERR){
+                // explicit error
+                jjsyntaxError(t);
+                jjtokenQueue.shift();
+            }
+            else if(act > 0){
+                // shift
+                if(t.id === 0){
+                    // end of file
+                    jjstop = true;
+                    jjemit('accept');
+                    jjtokenQueue.shift();
+                }
+                else {
+                    jjlrState.push(act - 1);
+                    jjsematicS.push(jjsematicVal);
+                    jjsematicVal = null;
+                    jjtryReduce();
+                    // token consumed
+                    jjtokenQueue.shift();
+                }
+            }
+            else if(act < 0){
+                jjdoReduction(-act - 1);
+            }
+            else {
+                // error
+                jjsyntaxError(t);
+                // force consume
+                jjtokenQueue.shift();
             }
         }
-        else if(act < 0){
-            jjdoReduction(-act - 1);
-            return false;
-        }
-        else {
-            // error
-            jjsyntaxError(t);
-            // force consume
-            return true;
+    }
+    function jjtryReduce(){
+        var cstate = jjlrState[jjlrState.length - 1];
+        var act;
+        while(jjdisact[cstate] === -jjtokenCount && (act = jjdefred[cstate]) !== -1){
+            jjdoReduction(act);
+            cstate = jjlrState[jjlrState.length - 1];
         }
     }
     function jjsyntaxError(t){
@@ -3859,7 +3865,7 @@ OpArray.prototype.dump = function(){
         var op = _a[2 * i];
         var line = op.name;
         var arg = _a[2 * i + 1];
-        if(op === OP_JMP || op === OP_JZ || op === OP_JNZ){
+        if(op === OP_JMP || op === OP_JZ || op === OP_JNZ || op === OP_ENTRY){
             labels[arg] = labelCount++;
             labelOps.push({ op: op, loc: i, target: arg });
             ret.push(null);
@@ -3898,7 +3904,7 @@ function createCompiler(fname){
     var registers = [];
     var scope = [];
     var onErr = [];
-    var compileQueue = [];
+    var funcQueue = [];
 
     var localNode = new ZNode(AST_LOCAL);
     
@@ -3931,7 +3937,7 @@ function createCompiler(fname){
         }
     }
     function singlePosErr(msg, pos){
-        err(msg + ' (at line ' + pos.startLine + ')');
+        err(msg + ' (at line ' + (pos.startLine + 1) + ')');
     }
     function allocateRegister(){
         var i = 0;
@@ -3994,6 +4000,20 @@ function createCompiler(fname){
         return opa;
     }
     function compileBlock(ast){
+        for(var i = 0, _a = ast.child; i < _a.length; i++){
+            var func = _a[i];
+            if(func.type === AST_FUNCTION){
+                emit(OP_DEFINEFUNCTION, func.child[0].val);
+                var entry = emit(OP_ENTRY);
+                var params = [];
+                for(var j = 0, _b = func.child[1].child; i < _b.length; i++){
+                    params.push(_b[j].val);
+                }
+                emit(OP_PARAM, params);
+                emit(OP_ENDFUNCTION);
+                funcQueue.push({ body: func.child[2], entryOp: entry });   
+            }
+        }
         for(var i = 0, _a = ast.child; i < _a.length; i++){
             compileStatement(_a[i]);
         }
