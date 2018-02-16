@@ -692,6 +692,7 @@ function create<%- className %>()<%- ts(': ' + className) %> {
             }
             else if(act < 0){
                 <%- prefix %>doReduction(-act - 1);
+                <%- prefix %>tryReduce();
             }
             else {
                 // error

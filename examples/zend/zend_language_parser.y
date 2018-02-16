@@ -60,7 +60,8 @@ var escapes = {
     't': '\t',
     '\\': '\\',
     '"': '"',
-    "'": "'"
+    "'": "'",
+    '`': '`'
 };
 function unescape(s){
     let ret = '';
@@ -90,6 +91,15 @@ function unescape(s){
     }
     return ret;
 }
+function extractHeredocStart(s){
+    s = s.substr(3, s.length - 4).trim();
+    if(s.charAt(0) === '"' || s.charAt(0) === "'"){
+        s = s.substr(1, s.length - 2);
+    }
+    return s;
+}
+
+
 var cc = 0;
 function defineOpcode(name, handler){
     return {
@@ -203,6 +213,8 @@ var AST_CONST = cc++;
 var AST_INTEGER = cc++;
 var AST_FLOAT = cc++;
 var AST_STRING = cc++;
+var AST_STRING_LIST = cc++;
+var AST_NONE_END_LABEL = cc++;
 var AST_ARRAY = cc++;
 var AST_ARRAYPAIR = cc++;
 var AST_LOCAL = cc++;
@@ -228,6 +240,8 @@ var AST_LOCAL = cc++;
     ESCAPE_CHAR = < "\\" ( ['n', 'r', 'f', 'b', 't', '\\', '"', "'"] | ['u', 'x'] <HEX>+ ) >
 
     < <WHITESPACE> >: [='']
+    < ('#'|'//') [^'\n']* >: [='']
+    < "/*" ([^"*", "/"]|[^"*"]"/"|"*"[^"/"])* "*/" >: [='']
     < '?>' >: [='', -]
 
     < NAME: <LABEL> >: { $$ = nodeFromToken($token); }
@@ -280,7 +294,12 @@ var AST_LOCAL = cc++;
     < LEFT_SHIFT: '<<' >
     < RIGHT_SHIFT: '>>' >
 
-    < HEREDOC_HEADER: '<<<' >
+    < HEREDOC_HEADER: 
+        '<<<' <TAB_AND_SPACE> (<LABEL> | '"' <LABEL> '"' ) <NEWLINE>
+    >: { $$ = nodeFromToken($token); $$.val = extractHeredocStart($$.val); }
+    < NOWDOC_HEADER: 
+        '<<<' <TAB_AND_SPACE> "'" <LABEL> "'" <NEWLINE>
+    >: { $$ = nodeFromToken($token); $$.val = extractHeredocStart($$.val); }
     < ARROW: '=>' >
     < PROPERTY_ARROW: '->' >
     < BRA: '(' >
@@ -322,18 +341,38 @@ var AST_LOCAL = cc++;
 }
 
 %lex <IN_DOUBLE_QUOTE> {
-    < ANY_CONTENT: [^"$", '"']+ | "$" [^"$", '"']* >
-    < DOUBLE_QUOTE: '"' >
+    < ANY_CONTENT: [^"$", '\\', '"', '\n', '\r']+ >: { $$ = nodeFromToken($token); }
+    < DOUBLE_QUOTE: '"' >: { $$ = nodeFromTrivalToken($token); }
+}
+
+%lex <IN_BACKQUOTE> {
+    < ANY_CONTENT: [^"$", '\\', '`']+ >: { $$ = nodeFromToken($token); }
+    < BACK_QUOTE: '`' >: { $$ = nodeFromTrivalToken($token); }
 }
 
 %lex <IN_HEREDOC> {
-
+    < ANY_CONTENT: [^"$", '\n', '\r', '\\']+ | <NEWLINE> >: { $$ = nodeFromToken($token); }
+    < HEREDOC_END_LABEL: <NEWLINE> <LABEL> >: { $$ = nodeFromToken($token); }
 }
 
-%lex <IN_DOUBLE_QUOTE, IN_HEREDOC> {
-    < VARIABLE_IN_STRING: "$" <LABEL> >
-    < PROPERTY_IN_STRING: "$" <LABEL> '->' <LABEL> >
-    < OFFSET_IN_STRING: "$" <LABEL> "[" >
+%lex <IN_NOWDOC> {
+    < ANY_CONTENT: [^'\n', '\r']+ | <NEWLINE> >: { $$ = nodeFromToken($token); }
+    < HEREDOC_END_LABEL: <NEWLINE> <LABEL> >: { $$ = nodeFromToken($token); }
+}
+
+%lex <IN_DOUBLE_QUOTE, IN_BACKQUOTE, IN_HEREDOC> {
+    < ANY_CONTENT: '\\' <ESCAPE_CHAR> >: { $$ = nodeFromToken($token); }
+    < ANY_CONTENT: '\\$' >: { $$ = nodeFromToken($token); $$.val = '$'; }
+    < VARIABLE_IN_STRING: "$" <LABEL> >: { $$ = nodeFromToken($token); $$.val = $$.val.substr(1, $$.val.length - 1); }
+    < VARIABLE_IN_STRING: "${" <LABEL> "}" >: { $$ = nodeFromToken($token); $$.val = $$.val.substr(2, $$.val.length - 3); }
+    < PROPERTY_IN_STRING: "$" <LABEL> '->' <LABEL> >: {
+        $$ = nodeFromToken($token);
+        var parts = $$.val.substr(1, $$.val.length - 1).split('->');
+        $$.val = parts[0];
+        propertyName = parts[1];
+    }
+    < OFFSET_IN_STRING: "$" <LABEL> "[" >: { $$ = nodeFromToken($token); $$.val = $$.val.substr(1, $$.val.length - 2); }
+    < OPEN_CURLY_BRACE: '${' >
 }
 
 %token <END_OF_HEREDOC>
@@ -359,10 +398,13 @@ var AST_LOCAL = cc++;
 
 %extra_arg {
     var outputs;
+    var heredocStart;
+    var propertyName;
 }
 
 %init {outputs1}{
     outputs = outputs1;
+    heredocStart = [];
 }
 
 %%
@@ -387,9 +429,10 @@ statement:
     '{' l = statement_list '}' { $$ = l; }
 |   ';' { $$ = null; }
 |   e = expr ';' { $$ = new ZNode(AST_EXPR_LIST, e); }
-|   h = <INLINE_HTML> { $$ = new ZNode(AST_ECHO, h); h.type = AST_STRING; }
+|   l = inline_html_list %prec <INLINE_HTML> 
+    { $$ = new ZNode(AST_ECHO, l); }
 |   <ECHO_TAG> e = expr <INLINE_HTML> { $$ = new ZNode(AST_ECHO, e); }
-|   'echo' e = expr ';' { $$ = new ZNode(AST_ECHO, e); }
+|   'echo' e = echo_expr_list ';' { $$ = e; }
 |   if_statement
 |   'while' '(' cond = expr ')' s = statement { $$ = new ZNode(AST_WHILE, [cond, s]); }
 |   'do' s = statement 'while' '(' cond = expr ')' ';' 
@@ -399,6 +442,16 @@ statement:
 |   'return' e = optional_expr ';' { $$ = new ZNode(AST_RETURN, e); }
 |   'break' n = optional_num ';' { $$.type = AST_BREAK; $$.add(n); }
 |   'continue' n = optional_num ';' { $$.type = AST_CONTINUE; $$.add(n); }
+;
+
+inline_html_list:
+    inline_html_list h = <INLINE_HTML> { $$ = nodeBetween($$, h, $$.val + h.val); $$.type = AST_STRING; }
+|   <INLINE_HTML> { $$.type = AST_STRING; }
+;
+
+echo_expr_list:
+    echo_expr_list ',' e = expr { $$.add(e); }
+|   e = expr { $$ = new ZNode(AST_ECHO, e); }
 ;
 
 optional_num: <INT> | { $$ = ZNode.NONE; } ;
@@ -452,7 +505,7 @@ simple_var:
 ;
 
 arrow_and_property:
-    [+LOOKING_FOR_PROPERTY] '->' [-] pn = property_name { $$ = pn; }
+    '->' [+LOOKING_FOR_PROPERTY] pn = property_name [-] { $$ = pn; }
 ;
 property_name:
     n = <NAME> { $$.type = AST_STRING; }
@@ -584,6 +637,49 @@ primitive:
 |   s = <NAME> { s.type = AST_CONST; $$ = s; }
 |   '[' a = array_pair_list ']' { $$ = a; }
 |   'list' '(' a = array_pair_list ')' { $$ = a; }
+|   '"' [+IN_DOUBLE_QUOTE] l = quote_list '"' [-] { $$ = l; }
+|   '`' [+IN_BACKQUOTE] l = quote_list '`' [-] { $$ = l; }
+|   h = <HEREDOC_HEADER> [+IN_HEREDOC] { heredocStart.push(h.val); } 
+    l = heredoc_list <END_OF_HEREDOC> [-] { $$ = l; }
+|   h = <NOWDOC_HEADER> [+IN_NOWDOC] { heredocStart.push(h.val); } 
+    l = heredoc_list <END_OF_HEREDOC> [-] { $$ = l; }
+;
+
+heredoc_list:
+    heredoc_list i = heredoc_item { i !== null && $$.add(i); }
+|   { $$ = new ZNode(AST_STRING_LIST); } 
+;
+heredoc_item:
+    n = <HEREDOC_END_LABEL> { 
+        if(n.val.trim() === heredocStart[heredocStart.length - 1]){ 
+            $emit<END_OF_HEREDOC>; 
+            heredocStart.pop(); 
+            $$ = null; 
+        }
+        else {
+            $$.type = AST_STRING;
+        }
+    }
+|   encaps
+;
+
+quote_list:
+    quote_list e = encaps { $$.add(e); }
+|   { $$ = new ZNode(AST_STRING_LIST); }
+;
+
+encaps:
+    <ANY_CONTENT> { $$.type = AST_STRING; $$.val = unescape($$.val); }
+|   v = <VARIABLE_IN_STRING> { v.type = AST_STRING; $$ = new ZNode(AST_VARIABLE, v); }
+|   pn = <PROPERTY_IN_STRING> { 
+        pn.type = AST_STRING; 
+        $$ = new ZNode(AST_PROPERTY, [new ZNode(AST_VARIABLE, pn), new ZNode(AST_STRING, null, propertyName, pn)]); 
+    }
+|   v = <OFFSET_IN_STRING> [+IN_SCRIPTING] e = expr ']' [-] {
+        v.type = AST_STRING;
+        $$ = new ZNode(AST_OFFSET, [new ZNode(AST_VARIABLE, v), e]); 
+    }
+|   '${' [+IN_SCRIPTING] e = expr '}' [-] { $$ = e; }
 ;
 
 array_pair_list: non_empty_array_pair_list | /* empty */ { $$ = new ZNode(AST_ARRAY); };
@@ -774,8 +870,10 @@ function createCompiler(fname){
                 }
                 break;
             case AST_ECHO:
-                compileExpression(ast.child[0]);
-                emit(OP_ECHO);
+                for(var i = 0, _a = ast.child; i < _a.length; i++){
+                    compileExpression(_a[i]);
+                    emit(OP_ECHO);
+                }
                 break;
             case AST_EXPR_LIST:
                 compileExpression(ast.child[0]);
@@ -964,10 +1062,32 @@ function createCompiler(fname){
             case AST_STRING:
                 emit(OP_PUSH, root.val);
                 break;
+            case AST_STRING_LIST:
+                compileStringList(root);
+                break;
             case AST_CONST:
                 emit(OP_GETCONST, root.val);
                 break;
         }
+    }
+    function compileStringList(list){
+        var s = '', sc = 0;
+        for(var i = 0, _a = list.child; i < _a.length; i++){
+            if(_a[i].type === AST_STRING){
+                s += _a[i].val;
+            }
+            else {
+                sc++;
+                emit(OP_PUSH, s);
+                s = '';
+                compileExpression(_a[i]);
+            }
+        }
+        if(s !== ''){
+            sc++;
+            emit(OP_PUSH, s);
+        }
+        emit(OP_CONCAT, sc);
     }
     function compileAssign(dest, src){
         switch(dest.type){

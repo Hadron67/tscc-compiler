@@ -2644,6 +2644,7 @@ function createParser(): Parser {
             }
             else if(act < 0){
                 jjdoReduction(-act - 1);
+                jjtryReduce();
             }
             else {
                 // error

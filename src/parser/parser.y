@@ -226,10 +226,10 @@ lexBodyItem:
     '=' '<' regexp '>' { gb.lexBuilder.endVar(); }
 |   newState '<' regexp '>' lexAction_ { gb.lexBuilder.end(lexact, least, '(untitled)'); }
 |   newState '<' tn = <NAME> ':' regexp '>' lexAction_ { 
-    let tdef = gb.defToken(tn, gb.lexBuilder.getPossibleAlias());
-    lexact.returnToken(tdef);
-    gb.lexBuilder.end(lexact, least, tn.val);
-}
+        let tdef = gb.defToken(tn, gb.lexBuilder.getPossibleAlias());
+        lexact.returnToken(tdef);
+        gb.lexBuilder.end(lexact, least, tn.val);
+    }
 ;
 
 newState: { gb.lexBuilder.newState(); };

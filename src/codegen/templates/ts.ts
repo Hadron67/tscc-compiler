@@ -1376,6 +1376,9 @@ function printTable<T>(tname: string, type: string, t: T[], align: number, lc: n
     echo("                ");
     echo(prefix );
     echoLine("doReduction(-act - 1);");
+    echo("                ");
+    echo(prefix );
+    echoLine("tryReduce();");
     echoLine("            }");
     echoLine("            else {");
     echoLine("                // error");
