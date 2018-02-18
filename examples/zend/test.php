@@ -45,5 +45,11 @@ $a = `new lines are allowed in back quote strings.
 e+ e- -> q qbar gammar
 $p->photonCount photons are emitted
 `;
+
+$low_interest = [
+    'hkm' => 'soor',
+    'rfnj' => '你肯定在'
+];
+$low_interest[] = 5;
 ?></head>
 </html>

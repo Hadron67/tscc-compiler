@@ -155,6 +155,12 @@ var OP_NOTEQUAL = defineOpcode('notEqual');
 var OP_NOTIDENTICAL = defineOpcode('notIdentical');
 var OP_ECHO = defineOpcode('echo');
 
+var OP_ARRAY = defineOpcode('array');
+var OP_ADDARRAYITEM = defineOpcode('addArrayItem');
+var OP_ADDARRAYPAIR = defineOpcode('addArrayPair');
+
+var OP_BOOLCAST = defineOpcode('boolCast');
+
 var OP_INVOKE = defineOpcode('invoke');
 var OP_INVOKENAME = defineOpcode('invokeName');
 var OP_INVOKEMETHOD = defineOpcode('invokeMethod');
@@ -232,7 +238,7 @@ var AST_LOCAL = cc++;
 }
 
 %lex <IN_SCRIPTING> {
-    LABEL = < ['a'-'z', 'A'-'Z', '\x80'-'\xff']['a'-'z', 'A'-'Z', '0'-'9', '\x80'-'\xff']* >
+    LABEL = < ['a'-'z', 'A'-'Z', '_', '\x80'-'\xff']['a'-'z', 'A'-'Z', '_', '0'-'9', '\x80'-'\xff']* >
     NUM = < ['0'-'9'] >
     HEX = < ['a'-'f', 'A'-'F', '0'-'9'] >
     TAB_AND_SPACE = < ["\t", " "]+ >
@@ -248,7 +254,7 @@ var AST_LOCAL = cc++;
     < DECIMAL: ( <NUM>+ ('.' <NUM>*)? | '.' <NUM>+ ) (['e', 'E']['+', '-']?<NUM>+)? >
     : { $$ = nodeFromToken($token); $$.val = Number($$.val); }
     < INT: <NUM>+ >: { $$ = nodeFromToken($token); $$.val = Number($$.val); }
-    < STRING: "'" ( [^"'", "\n", "\\"] | <ESCAPE_CHAR> )* "'"  >
+    < STRING: "'" ( [^"'", "\\"] | <ESCAPE_CHAR> )* "'"  >
     : { $$ = nodeFromToken($token); $$.val = unescape($$.val.substr(1, $$.val.length - 2)); }
     < DOUBLE_QUOTE: '"' >
     < BACK_QUOTE: '`' >
@@ -341,7 +347,7 @@ var AST_LOCAL = cc++;
 }
 
 %lex <IN_DOUBLE_QUOTE> {
-    < ANY_CONTENT: [^"$", '\\', '"', '\n', '\r']+ >: { $$ = nodeFromToken($token); }
+    < ANY_CONTENT: [^"$", '\\', '"']+ >: { $$ = nodeFromToken($token); }
     < DOUBLE_QUOTE: '"' >: { $$ = nodeFromTrivalToken($token); }
 }
 
@@ -356,12 +362,12 @@ var AST_LOCAL = cc++;
 }
 
 %lex <IN_NOWDOC> {
-    < ANY_CONTENT: [^'\n', '\r']+ | <NEWLINE> >: { $$ = nodeFromToken($token); }
+    < ANY_CONTENT: [^'\n', '\r', '\\']+ | <NEWLINE> >: { $$ = nodeFromToken($token); }
     < HEREDOC_END_LABEL: <NEWLINE> <LABEL> >: { $$ = nodeFromToken($token); }
 }
 
 %lex <IN_DOUBLE_QUOTE, IN_BACKQUOTE, IN_HEREDOC> {
-    < ANY_CONTENT: '\\' <ESCAPE_CHAR> >: { $$ = nodeFromToken($token); }
+    < ANY_CONTENT: '\\' <ESCAPE_CHAR> >: { $$ = nodeFromToken($token); $$.val = unescape($$.val); }
     < ANY_CONTENT: '\\$' >: { $$ = nodeFromToken($token); $$.val = '$'; }
     < VARIABLE_IN_STRING: "$" <LABEL> >: { $$ = nodeFromToken($token); $$.val = $$.val.substr(1, $$.val.length - 1); }
     < VARIABLE_IN_STRING: "${" <LABEL> "}" >: { $$ = nodeFromToken($token); $$.val = $$.val.substr(2, $$.val.length - 3); }
@@ -669,7 +675,7 @@ quote_list:
 ;
 
 encaps:
-    <ANY_CONTENT> { $$.type = AST_STRING; $$.val = unescape($$.val); }
+    <ANY_CONTENT> { $$.type = AST_STRING; }
 |   v = <VARIABLE_IN_STRING> { v.type = AST_STRING; $$ = new ZNode(AST_VARIABLE, v); }
 |   pn = <PROPERTY_IN_STRING> { 
         pn.type = AST_STRING; 
@@ -699,8 +705,17 @@ function OpArray(){
     this.functions = [];
 }
 OpArray.prototype.dump = function(){
+    function rightAlign(s, al){
+        function repeat(s, t){
+            let ret = '';
+            while(t --> 0) ret += s;
+            return ret;
+        }
+        return s + (s.length < al ? repeat(' ', al - s.length) : '');
+    }
     var ret = [];
     var labels = [];
+    var labelMaxLen = 0;
     var labelCount = 0;
     var labelOps = [];
     for(var i = 0, _a = this.opcode; i < this.opCount; i++){
@@ -708,7 +723,8 @@ OpArray.prototype.dump = function(){
         var line = op.name;
         var arg = _a[2 * i + 1];
         if(op === OP_JMP || op === OP_JZ || op === OP_JNZ || op === OP_ENTRY){
-            labels[arg] = labelCount++;
+            var l = labels[arg] = 'label' + labelCount++;
+            l.length > labelMaxLen && (labelMaxLen = l.length);
             labelOps.push({ op: op, loc: i, target: arg });
             ret.push(null);
         }
@@ -729,14 +745,17 @@ OpArray.prototype.dump = function(){
             ret.push(line);
         }
     }
-    for(var i = 0; i < labels.length; i++){
+    for(var i = 0, _a = labelOps; i < _a.length; i++){
+        ret[_a[i].loc] = _a[i].op.name + ' ' + labels[_a[i].target];
+    }
+    for(var i = 0; i < ret.length; i++){
         var l = labels[i];
         if(l !== undefined){
-            ret[i] = ('label' + l) + ': ' + ret[i];
+            ret[i] = rightAlign(l + ':', labelMaxLen + 2) + ret[i];
         }
-    }
-    for(var i = 0, _a = labelOps; i < _a.length; i++){
-        ret[_a[i].loc] = _a[i].op.name + ' label' + labels[_a[i].target];
+        else {
+            ret[i] = rightAlign('', labelMaxLen + 2) + ret[i];
+        }
     }
     return ret;
 }
@@ -993,6 +1012,31 @@ function createCompiler(fname){
                 compileAssignTop(root.child[0]);
                 emit(OP_POP);
                 break;
+            case AST_CONDITIONALEXPR:
+                compileExpression(root.child[0]);
+                var line1 = emit(OP_JZ);
+                root.child[1] === ZNode.NONE ? emit(OP_PUSH, true) : compileExpression(root.child[1]);
+                var line2 = emit(OP_JMP);
+                setArg(line1, opa.opCount);
+                compileExpression(root.child[2]);
+                setArg(line2, opa.opCount);
+                break;
+            case AST_LOGICALOR:
+                compileExpression(root.child[0]);
+                emit(OP_BOOLCAST);
+                var line1 = emit(OP_JNZ);
+                compileExpression(root.child[1]);
+                emit(OP_BOOLCAST);
+                setArg(line1, opa.opCount);
+                break;
+            case AST_LOGICALAND:
+                compileExpression(root.child[0]);
+                emit(OP_BOOLCAST);
+                var line1 = emit(OP_JZ);
+                compileExpression(root.child[1]);
+                emit(OP_BOOLCAST);
+                setArg(line1, opa.opCount);
+                break;
             case AST_ASSIGN:
                 if(root.val === null){
                     compileAssign(root.child[0], root.child[1]);
@@ -1057,6 +1101,20 @@ function createCompiler(fname){
             case AST_LOCAL:
                 emit(OP_GETLOCAL, root.val);
                 break;
+            case AST_ARRAY:
+                emit(OP_ARRAY);
+                for(var i = 0, _a = root.child; i < _a.length; i++){
+                    var item = _a[i];
+                    compileExpression(item.child[0]);
+                    if(item.type === AST_ARRAYPAIR){
+                        compileExpression(item.child[1]);
+                        emit(OP_ADDARRAYPAIR);
+                    }
+                    else {
+                        emit(OP_ADDARRAYITEM);
+                    }
+                }
+                break;
             case AST_INTEGER:
             case AST_FLOAT:
             case AST_STRING:
@@ -1067,6 +1125,9 @@ function createCompiler(fname){
                 break;
             case AST_CONST:
                 emit(OP_GETCONST, root.val);
+                break;
+            case AST_ANONYFUNCTION:
+                
                 break;
         }
     }
@@ -1108,7 +1169,7 @@ function createCompiler(fname){
                 break;
             case AST_OFFSET:
                 compileExpression(dest.child[0]);
-                if(dest.child[0] === ZNode.NONE){
+                if(dest.child[1] === ZNode.NONE){
                     compileExpression(src);
                     emit(OP_SETMAXOFFSET);
                 }

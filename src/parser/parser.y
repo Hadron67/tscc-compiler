@@ -54,7 +54,7 @@ function unescape(s: string): string{
                 ret += escapes[c];
                 i++;
             }
-            else if(c === 'u' || c === 'x'){
+            else if(c === 'u' || c === 'x' || c === 'U' || c === 'X'){
                 c = s.charAt(++i);
                 let hex = '';
                 while(/[0-9a-fA-F]/.test(c)){
@@ -95,7 +95,7 @@ function unescape(s: string): string{
 
     HEX = < ['0'-'9', 'a'-'f', 'A'-'F'] >
     ESCAPE_CHAR = < "\\" (['n', 't', 'b', 'r', 'f', '"', "'", "\\"] | <UNICODE>) >
-    UNICODE = < ['x', 'u'] <HEX>+ >
+    UNICODE = < ['x', 'u', 'X', 'U'] <HEX>+ >
     
     < ["\n", "\t", " ", "\r"]+ >: [='']
     < "/*" ([^"*", "/"]|[^"*"]"/"|"*"[^"/"])* "*/" >: [='']

@@ -40,16 +40,16 @@ export function genInitialSet(g: Grammar): ItemSet{
  * @param g 
  */
 export function genItemSets(g: Grammar): { result: List<ItemSet>, iterations: number }{
-    var htable = {}; 
+    var htable: {[s: string]: ItemSet[]} = {}; 
     var iterations = 0;
-    function addToTable(iset){
+    function addToTable(iset: ItemSet){
         var h = iset.kernelHash();
         if(htable[h] === undefined){
             htable[h] = [];
         }
         htable[h].push(iset);
     }
-    function forEachInBucket(set,cb){
+    function forEachInBucket(set: ItemSet, cb: (s: ItemSet) => any){
         var b = htable[set.kernelHash()];
         if(b !== undefined){
             for(var i = 0;i < b.length;i++){
@@ -103,7 +103,7 @@ export function genItemSets(g: Grammar): { result: List<ItemSet>, iterations: nu
             });
             var merged = null;
 
-            forEachInBucket(set,function(gSet){
+            forEachInBucket(set, gSet => {
                 if(gSet.canMergeTo(set)){
                     if(gSet.mergeTo(set)){
                         if(gSet.complete){
@@ -138,7 +138,7 @@ export function genItemSets(g: Grammar): { result: List<ItemSet>, iterations: nu
         iterations++;
     }
     var i = 0;
-    doneList.forEach(function(set){
+    doneList.forEach(set => {
         set.stateIndex = i++;
     });
 
@@ -205,8 +205,8 @@ export function genParseTable(g: Grammar, doneList: List<ItemSet>): { result: Pa
         }
     }
     var ptable = new ParseTable(g,doneList.size);
-    doneList.forEach(function(set){
-        set.forEach(function(item){
+    doneList.forEach(set => {
+        set.forEach(item => {
             if(item.actionType === Action.SHIFT){
                 var sItem = item.getShift();
                 if(g.isToken(sItem)){
