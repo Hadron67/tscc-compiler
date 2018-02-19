@@ -168,7 +168,7 @@ function unescape(s: string): string{
 }
 
 %lex <IN_EPILOGUE> {
-    < ANY_EPLOGUE_CODE: [^]+ >: { $$ = nodeFromToken($token); }
+    < ANY_CODE: [^]+ >: { $$ = nodeFromToken($token); }
 }
 
 %type {JNode}
@@ -194,7 +194,7 @@ tokenDefs:
 ;
 epilogue:
     /* empty */
-|   ep = <ANY_EPLOGUE_CODE> { gb.setEpilogue(ep); }
+|   ep = <ANY_CODE> { gb.setEpilogue(ep); }
 ;
 associativeDir:
     '%left' { assoc = Assoc.LEFT; }

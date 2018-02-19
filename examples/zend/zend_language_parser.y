@@ -27,6 +27,22 @@ ZNode.prototype.add = function(c){
 ZNode.prototype.toString = function(){
 
 }
+ZNode.prototype.getPos = function(){
+    var start = this;
+    var end = this;
+    while(start.child.length > 0){
+        start = start.child[0];
+    }
+    while(end.child.length > 0){
+        end = end.child[end.child.length - 1];
+    }
+    return {
+        startLine: start.pos.startLine,
+        startColumn: start.pos.startColumn,
+        endLine: end.pos.endLine,
+        endColumn: end.pos.endColumn
+    };
+}
 
 function nodeFromToken(t){
     return new ZNode(AST_NONE, null, t.val, {
@@ -46,10 +62,10 @@ function nodeFromTrivalToken(t){
 }
 function nodeBetween(from, to, val){
     return new ZNode(AST_NONE, null, val, {
-        startLine: from.startLine,
-        startColumn: from.startColumn,
-        endLine: to.endLine,
-        endColumn: to.endColumn
+        startLine: from.pos.startLine,
+        startColumn: from.pos.startColumn,
+        endLine: to.pos.endLine,
+        endColumn: to.pos.endColumn
     });
 }
 var escapes = {
@@ -301,7 +317,7 @@ var AST_LOCAL = cc++;
     < RIGHT_SHIFT: '>>' >
 
     < HEREDOC_HEADER: 
-        '<<<' <TAB_AND_SPACE> (<LABEL> | '"' <LABEL> '"' ) <NEWLINE>
+        '<<<' <TAB_AND_SPACE> ( <LABEL> | '"' <LABEL> '"' ) <NEWLINE>
     >: { $$ = nodeFromToken($token); $$.val = extractHeredocStart($$.val); }
     < NOWDOC_HEADER: 
         '<<<' <TAB_AND_SPACE> "'" <LABEL> "'" <NEWLINE>
@@ -312,7 +328,7 @@ var AST_LOCAL = cc++;
     < KET: ')' >
     < CBRA: '[' >
     < CKET: ']' >
-    < COMMA: ',' >
+    < COMMA: ',' >: { $$ = nodeFromTrivalToken($token); }
     < BBRA: '{' >
     < BKET: '}' >
     < EOL: ';' >
@@ -330,6 +346,7 @@ var AST_LOCAL = cc++;
     < FOR: 'for' >
     < FUNCTION: 'function' >: { $$ = nodeFromTrivalToken($token); }
     < LIST: 'list' >
+    < ARRAY: 'array' >
     < USE: 'use' >
     < BREAK: 'break' >: { $$ = nodeFromTrivalToken($token); }
     < CONTINUE: 'continue' >: { $$ = nodeFromTrivalToken($token); }
@@ -490,6 +507,13 @@ callable_expr:
 dereferencable:
     var
 |   '(' e = expr ')' { $$ = e; }
+|   dereferencable_primitive
+;
+
+dereferencable_primitive:
+    '[' a = array_pair_list ']' { $$ = a; }
+|   'array' '(' a = array_pair_list ')' { $$ = a; }
+|   <STRING> { $$.type = AST_STRING; }
 ;
 
 var:
@@ -541,7 +565,11 @@ non_empty_argument_list:
 ;
 
 expr_without_var:
-    a = var '=' b = expr 
+    'list' '(' l = array_pair_list ')' '=' e = expr 
+    { $$ = new ZNode(AST_ASSIGN, [l, e]); }
+|   '[' l = array_pair_list ']' '=' e = expr 
+    { $$ = new ZNode(AST_ASSIGN, [l, e]); }
+|   a = var '=' b = expr 
     { $$ = new ZNode(AST_ASSIGN, [a, b]); }
 |   a = var '+=' b = expr 
     { $$ = new ZNode(AST_ASSIGN, [a, b], OP_PLUS); }
@@ -607,6 +635,7 @@ expr_without_var:
 |   '--' a = var { $$ = new ZNode(AST_POSTDEC, a);  }
 |   a = var '++' { $$ = new ZNode(AST_SUFFIXINC, a); }
 |   a = var '--' { $$ = new ZNode(AST_SUFFIXDEC, a); }
+|   '`' [+IN_BACKQUOTE] l = quote_list '`' [-] { $$ = l; }
 |   primitive
 |   'function' '(' l = parameter_list ')' ll = lexical_vars '{' b = statement_list '}'
     { $$ = new ZNode(AST_ANONYFUNCTION, [l, ll, b]); }
@@ -639,16 +668,13 @@ lexical_var_list:
 primitive:
     s = <INT> { s.type = AST_INTEGER; $$ = s; }
 |   s = <DECIMAL> { s.type = AST_FLOAT; $$ = s; }
-|   s = <STRING> { s.type = AST_STRING; $$ = s; }
 |   s = <NAME> { s.type = AST_CONST; $$ = s; }
-|   '[' a = array_pair_list ']' { $$ = a; }
-|   'list' '(' a = array_pair_list ')' { $$ = a; }
 |   '"' [+IN_DOUBLE_QUOTE] l = quote_list '"' [-] { $$ = l; }
-|   '`' [+IN_BACKQUOTE] l = quote_list '`' [-] { $$ = l; }
 |   h = <HEREDOC_HEADER> [+IN_HEREDOC] { heredocStart.push(h.val); } 
     l = heredoc_list <END_OF_HEREDOC> [-] { $$ = l; }
 |   h = <NOWDOC_HEADER> [+IN_NOWDOC] { heredocStart.push(h.val); } 
     l = heredoc_list <END_OF_HEREDOC> [-] { $$ = l; }
+|   dereferencable_primitive
 ;
 
 heredoc_list:
@@ -688,11 +714,14 @@ encaps:
 |   '${' [+IN_SCRIPTING] e = expr '}' [-] { $$ = e; }
 ;
 
-array_pair_list: non_empty_array_pair_list | /* empty */ { $$ = new ZNode(AST_ARRAY); };
+array_pair_list: non_empty_array_pair_list;
 non_empty_array_pair_list:
     non_empty_array_pair_list ',' a = array_pair { $$.add(a); }
-|   a = array_pair { $$ = new ZNode(AST_ARRAY, a); }
+    // get line information for an empty entry
+|   non_empty_array_pair_list a = ',' { a.type = AST_NONE; $$.add(a); }
+|   a = possible_array_pair { $$ = new ZNode(AST_ARRAY, a); }
 ;
+possible_array_pair: array_pair | /* empty */ { $$ = ZNode.NONE; };
 array_pair:
     expr
 |   a = expr '=>' b = expr { $$ = new ZNode(AST_ARRAYPAIR, [a, b]); }
@@ -798,7 +827,8 @@ function createCompiler(fname){
         }
     }
     function singlePosErr(msg, pos){
-        err(msg + ' (at line ' + (pos.startLine + 1) + ')');
+        var p = pos.getPos();
+        err(msg + ' (at line ' + (p.startLine + 1) + ')');
     }
     function allocateRegister(){
         var i = 0;
@@ -900,7 +930,7 @@ function createCompiler(fname){
                 break;
             case AST_BREAK:
                 var leveln = ast.child[0];
-                var target = breakTarget(ast, leveln === ZNode.NONE ? 1 : leveln.val);
+                var target = breakTarget(ast, leveln.type === AST_NONE ? 1 : leveln.val);
                 if(target === null){
                     singlePosErr('invalid break statement', ast.pos);
                 }
@@ -910,7 +940,7 @@ function createCompiler(fname){
                 break;
             case AST_CONTINUE:
                 var leveln = ast.child[0];
-                var target = continueTarget(ast, leveln === ZNode.NONE ? 1 : leveln.val);
+                var target = continueTarget(ast, leveln.type === AST_NONE ? 1 : leveln.val);
                 if(target === null){
                     singlePosErr('invalid continue statement', ast.pos);
                 }
@@ -919,7 +949,7 @@ function createCompiler(fname){
                 }
                 break;
             case AST_RETURN:
-                if(ast.child[0] === ZNode.NONE){
+                if(ast.child[0].type === AST_NONE){
                     emit(OP_RETURNNULL);
                 }
                 else {
@@ -933,7 +963,7 @@ function createCompiler(fname){
                 compileStatement(ast.child[1]);
                 var line2 = emit(OP_JMP);
                 setArg(line1, opa.opCount);
-                ast.child[2] !== ZNode.NONE && compileStatement(ast.child[2]);
+                ast.child[2].type !== AST_NONE && compileStatement(ast.child[2]);
                 setArg(line2, opa.opCount);
                 break;
             case AST_WHILE:
@@ -1015,7 +1045,7 @@ function createCompiler(fname){
             case AST_CONDITIONALEXPR:
                 compileExpression(root.child[0]);
                 var line1 = emit(OP_JZ);
-                root.child[1] === ZNode.NONE ? emit(OP_PUSH, true) : compileExpression(root.child[1]);
+                root.child[1].type === AST_NONE ? emit(OP_PUSH, true) : compileExpression(root.child[1]);
                 var line2 = emit(OP_JMP);
                 setArg(line1, opa.opCount);
                 compileExpression(root.child[2]);
@@ -1059,7 +1089,7 @@ function createCompiler(fname){
                 break;
             case AST_OFFSET:
                 compileExpression(root.child[0]);
-                if(root.child[1] === ZNode.NONE){
+                if(root.child[1].type === AST_NONE){
                     emit(OP_GETMAXOFFSET);
                 }
                 else {
@@ -1105,12 +1135,17 @@ function createCompiler(fname){
                 emit(OP_ARRAY);
                 for(var i = 0, _a = root.child; i < _a.length; i++){
                     var item = _a[i];
-                    compileExpression(item.child[0]);
-                    if(item.type === AST_ARRAYPAIR){
+                    if(item.type === AST_NONE){
+                        emit(OP_PUSH, 0);
+                        emit(OP_ADDARRAYITEM);
+                    }
+                    else if(item.type === AST_ARRAYPAIR){
+                        compileExpression(item.child[0]);
                         compileExpression(item.child[1]);
                         emit(OP_ADDARRAYPAIR);
                     }
                     else {
+                        compileExpression(item);
                         emit(OP_ADDARRAYITEM);
                     }
                 }
@@ -1169,7 +1204,7 @@ function createCompiler(fname){
                 break;
             case AST_OFFSET:
                 compileExpression(dest.child[0]);
-                if(dest.child[1] === ZNode.NONE){
+                if(dest.child[1].type === AST_NONE){
                     compileExpression(src);
                     emit(OP_SETMAXOFFSET);
                 }
@@ -1179,7 +1214,11 @@ function createCompiler(fname){
                     emit(OP_SETOFFSET);
                 }
                 break;
-            default:;
+            case AST_ARRAY:
+                compileListAssign(dest, src);
+                break;
+            default:
+                singlePosErr('invalid left hand side value in assignment', dest);
         }
     }
     function compileAssignTop(dest){
@@ -1188,6 +1227,46 @@ function createCompiler(fname){
         emit(OP_POP);
         compileAssign(dest, localNode);
         releaseRegister(localNode.val);
+    }
+    function compileListAssign(list, src){
+        if(list.child.length === 0){
+            singlePosErr('cannot use empty arrays in assignment', list);
+            return;
+        }
+        compileExpression(src);
+        var reg = allocateRegister();
+        emit(OP_SETLOCAL, reg);
+        emit(OP_POP);
+        var keyed = list.child[0].type === AST_ARRAYPAIR;
+        for(var i = 0, _a = list.child; i < _a.length; i++){
+            var n = _a[i];
+            if(n.type === AST_NONE && keyed){
+                singlePosErr("cannot use empty array entries in key'd array assignment", n);
+                continue;
+            }
+            if(keyed && n.type !== AST_ARRAYPAIR || !keyed && n.type === AST_ARRAYPAIR){
+                singlePosErr("cannot mix key'd and unkey'd elements in array assigment", n);
+                continue;
+            }
+            if(keyed){
+                var key = n.child[0];
+                var val = n.child[1];
+                emit(OP_GETLOCAL, reg);
+                compileExpression(key);
+                emit(OP_GETOFFSET);
+                compileAssignTop(val);
+                emit(OP_POP);
+            }
+            else if(n.type !== AST_NONE){
+                emit(OP_GETLOCAL, reg);
+                emit(OP_PUSH, i);
+                emit(OP_GETOFFSET);
+                compileAssignTop(n);
+                emit(OP_POP);
+            }
+        }
+        emit(OP_GETLOCAL, reg);
+        releaseRegister(reg);
     }
 }
 

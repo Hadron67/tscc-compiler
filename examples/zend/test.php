@@ -47,9 +47,14 @@ $p->photonCount photons are emitted
 `;
 
 $low_interest = [
-    'hkm' => 'soor',
-    'rfnj' => '你肯定在'
+    'hkm' => '“好嘛”的双拼，',
+    'rfnj' => '“人喃”的双拼，用于问抖群里面有没人，带有“等生在否”的意味',
+    'soor' => '嘿'
 ];
 $low_interest[] = 5;
+// list assignment
+list($e, $r) = ['r', 'k'];
+// new list assignment, available in php7
+['hkm' => $e, 'soor' => $r, 'rfnj' => $h] = $low_interest;
 ?></head>
 </html>

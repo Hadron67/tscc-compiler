@@ -3135,9 +3135,9 @@ state 46
 state 47
     [ 2: start => options "%%" body "%%" @0 . epilogue ]*
     [ 17: epilogue => . ]
-    [ 18: epilogue => . <ANY_EPLOGUE_CODE> ]
+    [ 18: epilogue => . <ANY_CODE> ]
     default action: reduce with rule 17
-    <ANY_EPLOGUE_CODE> : shift, and go to state 60
+    <ANY_CODE> : shift, and go to state 60
     epilogue : go to state 59
 
 
@@ -3226,7 +3226,7 @@ state 59
 
 
 state 60
-    [ 18: epilogue => <ANY_EPLOGUE_CODE> . ]*
+    [ 18: epilogue => <ANY_CODE> . ]*
     default action: reduce with rule 18
 
 
