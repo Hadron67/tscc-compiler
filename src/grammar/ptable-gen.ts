@@ -76,7 +76,7 @@ export function genItemSets(g: Grammar): { result: List<ItemSet>, iterations: nu
                     newSet.index = index++;
                     todoList.append(newSet);
                     //mark all the symbols in 'set'
-                    set.forEach(function(item1){
+                    set.forEach(item1 => {
                         if(item1.canShift()){
                             var rItem = item1.getShift();
                             if(rItem === shift){
@@ -96,7 +96,7 @@ export function genItemSets(g: Grammar): { result: List<ItemSet>, iterations: nu
         while(!todoList.isEmpty()){
             var set = todoList.pull();
             set.closure();
-            set.forEach(function(item){
+            set.forEach(item => {
                 if(!item.canShift()){
                     item.actionType = Action.REDUCE;
                 }

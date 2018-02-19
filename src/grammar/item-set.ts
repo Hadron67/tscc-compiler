@@ -78,7 +78,10 @@ export class Item{
 
 export class ItemSet implements ListNode<ItemSet>{
     g: Grammar;
-    it: { [s: string]: Item } = {};
+    // it: { [s: string]: Item } = {};
+    items: Item[] = [];
+    // item table, indexed by rule number
+    itemTable: Item[][] = [];
     complete: boolean = false;
 
     index: number = -1;
@@ -95,15 +98,16 @@ export class ItemSet implements ListNode<ItemSet>{
     }
 
     add(rule: Rule, marker: number, ik: boolean, lah: TokenSet, reset: boolean): boolean{
-        var h = rule.index + '-' + marker;
-        var it = this.it[h];
+        var entry = this.itemTable[rule.index] = this.itemTable[rule.index] || [];
+        var it = entry[marker];
         if(it === undefined){
             var n = new Item(rule,ik);
             n.marker = marker;
             if(lah){
                 n.lah.union(lah);
             }
-            this.it[h] = n;
+            entry[marker] = n;
+            this.items.push(n);
             return true;
         }
         else if(lah){
@@ -124,15 +128,14 @@ export class ItemSet implements ListNode<ItemSet>{
         var cela = this;
         while(changed){
             changed = false;
-            for(var hash in this.it){
-                var item = this.it[hash];
+            for(var item of this.items){
                 if(item.changed && item.canShift()){
                     var ritem = item.getShift();
                     if(ritem < 0){
                         tSet.removeAll();
                         item.getFollowSet(tSet);
-                        this.g.forEachRuleOfNt(-ritem - 1,function(rule){
-                            changed = cela.add(rule,0,false,tSet,false) || changed;
+                        this.g.forEachRuleOfNt(-ritem - 1, rule => {
+                            changed = cela.add(rule, 0, false, tSet, false) || changed;
                             return false;
                         });
                     }
@@ -162,15 +165,14 @@ export class ItemSet implements ListNode<ItemSet>{
             }
         }
         ret += ')' + endl;
-        for(var hash in this.it){
-            ret += this.it[hash].toString(opt2) + endl;
+        for(var item of this.items){
+            ret += item.toString(opt2) + endl;
         }
         return ret;
     }
     kernelHash(): string{
         var ret = 0;
-        for(var hash in this.it){
-            var item = this.it[hash];
+        for(var item of this.items){
             if(item.isKernel){
                 ret += item.rule.index << 5 + item.rule.index + item.marker;
             }
@@ -178,36 +180,59 @@ export class ItemSet implements ListNode<ItemSet>{
         return String(ret);
     }
     forEach(cb: (it: Item) => void){
-        for(var h in this.it){
-            cb(this.it[h]);
+        for(var item of this.items){
+            cb(item);
         }
     }
     canMergeTo(s: ItemSet): boolean{
-        for(var h1 in this.it){
-            var it1 = this.it[h1];
-            var found = false,hasConflict = false,hasIdentical = false;
-            for(var h2 in s.it){
-                var it2 = s.it[h2];
-                if(it1.rule.index === it2.rule.index && it1.marker === it2.marker){
-                    hasIdentical = it1.lah.equals(it2.lah);
-                    found = it1.isKernel && it2.isKernel;
+        // for(var h1 in this.it){
+        //     var it1 = this.it[h1];
+        //     var found = false,hasConflict = false,hasIdentical = false;
+        //     for(var h2 in s.it){
+        //         var it2 = s.it[h2];
+        //         if(it1.rule.index === it2.rule.index && it1.marker === it2.marker){
+        //             hasIdentical = it1.lah.equals(it2.lah);
+        //             found = it1.isKernel && it2.isKernel;
+        //         }
+        //         hasConflict = hasConflict || it1.hasRRConflictWith(it2);
+        //         if(it2.isKernel && this.it[h2] === undefined){
+        //             return false;
+        //         }
+        //     }
+        //     if(it1.isKernel && !found || hasConflict && !hasIdentical){
+        //         return false;
+        //     }
+        // }
+        for(var i = 0; i < this.g.rules.length; i++){
+            var t1 = this.itemTable[i], t2 = s.itemTable[i];
+            if(t1 || t2){
+                var rhs = this.g.rules[i].rhs;
+                // check for identical LR0 kernel items
+                for(var j = 0; j <= rhs.length; j++){
+                    if(
+                        t1 && t1[j] && t1[j].isKernel && (!t2 || !t2[j] || !t2[j].isKernel)
+                    ||  t2 && t2[j] && t2[j].isKernel && (!t1 || !t1[j] || !t1[j].isKernel)
+                    ){
+                        return false;
+                    }
                 }
-                hasConflict = hasConflict || it1.hasRRConflictWith(it2);
-                if(it2.isKernel && this.it[h2] === undefined){
+                // check for RR conflict
+                if(
+                    t1 && t2
+                &&  t1[j] && t2[j]  
+                &&  !t1[j].lah.equals(t2[j].lah) 
+                &&  t1[j].lah.hasIntersection(t2[j].lah)
+                ){
                     return false;
                 }
-            }
-            if(it1.isKernel && !found || hasConflict && !hasIdentical){
-                return false;
             }
         }
         return true;
     }
     mergeTo(s: ItemSet): boolean{
         var ret = false;
-        for(var h in s.it){
-            var it = s.it[h];
-            ret = this.add(it.rule,it.marker,it.isKernel,it.lah,true) || ret;
+        for(var it of s.items){
+            ret = this.add(it.rule, it.marker, it.isKernel, it.lah, true) || ret;
         }
         this.merges.push(s.index);
         return ret;
