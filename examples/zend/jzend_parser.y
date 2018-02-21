@@ -137,6 +137,7 @@ var OP_SETOFFSET = defineOpcode('setOffset');
 var OP_GETMAXOFFSET = defineOpcode('getMaxOffset');
 var OP_SETMAXOFFSET = defineOpcode('setMaxOffset');
 var OP_GETCONST = defineOpcode('getConst');
+var OP_DEFCONST = defineOpcode('defConst');
 var OP_SETLOCAL = defineOpcode('setLocal');
 var OP_GETLOCAL = defineOpcode('getLocal');
 
@@ -170,6 +171,7 @@ var OP_LESSTHANOREQUAL = defineOpcode('lessThanOrEqual');
 var OP_NOTEQUAL = defineOpcode('notEqual');
 var OP_NOTIDENTICAL = defineOpcode('notIdentical');
 var OP_ECHO = defineOpcode('echo');
+var OP_PRINT = defineOpcode('print');
 
 var OP_ARRAY = defineOpcode('array');
 var OP_ADDARRAYITEM = defineOpcode('addArrayItem');
@@ -182,25 +184,28 @@ var OP_INVOKENAME = defineOpcode('invokeName');
 var OP_INVOKEMETHOD = defineOpcode('invokeMethod');
 var OP_INVOKEMETHODNAME = defineOpcode('invokeMethodName');
 var OP_NEW = defineOpcode('new');
-var OP_DEFINEFUNCTION = defineOpcode('defineFunction');
-var OP_ENTRY = defineOpcode('entry');
-var OP_PARAM = defineOpcode('param');
-var OP_USE = defineOpcode('use');
-var OP_ENDFUNCTION = defineOpcode('endFunction');
+var OP_CREATEFUNCTION = defineOpcode('createFunction');
+
+var OP_CREATEITERATOR = defineOpcode('createIterator');
+var OP_ITERATORISEND = defineOpcode('iteratorIsEnd');
+var OP_ITERATORNEXT = defineOpcode('iteratorNext');
+var OP_GETITERATORKEY = defineOpcode('getIteratorKey');
+var OP_GETITERATORVALUE = defineOpcode('getIteratorValue');
 
 var OP_JMP = defineOpcode('jmp');
 var OP_JZ = defineOpcode('jz');
 var OP_JNZ = defineOpcode('jnz');
 var OP_RETURN = defineOpcode('return');
 var OP_RETURNNULL = defineOpcode('returnNull');
-var OP_CODE = defineOpcode('code');
-var OP_ENDCODE = defineOpcode('endCode');
 
 cc = 0;
 var AST_NONE = cc++;
 var AST_TOPLIST = cc++;
 var AST_STATEMENTLIST = cc++;
+var AST_CONST_LIST = cc++;
 var AST_ECHO = cc++;
+var AST_ECHO_EXPR = cc++;
+var AST_PRINT = cc++;
 var AST_IF = cc++;
 var AST_WHILE = cc++;
 var AST_DO_WHILE = cc++;
@@ -217,6 +222,8 @@ var AST_ANONYFUNCTION = cc++;
 var AST_BREAK = cc++;
 var AST_CONTINUE = cc++;
 var AST_RETURN = cc++;
+var AST_FOREACH = cc++;
+var AST_DOUBLE_ARROW = cc++;
 
 var AST_VARIABLE = cc++;
 var AST_PROPERTY = cc++;
@@ -249,8 +256,8 @@ var AST_LOCAL = cc++;
     NEWLINE = < "\n"|"\r"|"\r\n" >
     
     < INLINE_HTML: [^'<']+ | '<'[^"<"]* >: { $$ = nodeFromToken($token); }
-    < %least "<?php" ([" ", "\t"]|<NEWLINE>) >: [+IN_SCRIPTING]
-    < ECHO_TAG: %least "<?=" >: [+IN_SCRIPTING]
+    < %least "<?php" ([" ", "\t"]|<NEWLINE>) >: [+IN_SCRIPTING, ='']
+    < ECHO_TAG: %least "<?=" >: [+IN_SCRIPTING, ='']
 }
 
 %lex <IN_SCRIPTING> {
@@ -338,12 +345,16 @@ var AST_LOCAL = cc++;
     < LOGICAL_AND: 'AND' >
     < LOGICAL_XOR: 'XOR' >
     < NOT: '!' >
+    < CONST: 'const' >
     < IF: 'if' >
     < ELSE: 'else' >
     < ECHO: "echo" >
+    < PRINT: 'print' >
     < WHILE: 'while' >
     < DO: 'do' >
     < FOR: 'for' >
+    < FOREACH: 'foreach' >
+    < AS: 'as' >
     < FUNCTION: 'function' >: { $$ = nodeFromTrivalToken($token); }
     < LIST: 'list' >
     < ARRAY: 'array' >
@@ -384,7 +395,7 @@ var AST_LOCAL = cc++;
 }
 
 %lex <IN_DOUBLE_QUOTE, IN_BACKQUOTE, IN_HEREDOC> {
-    < ANY_CONTENT: '\\' <ESCAPE_CHAR> >: { $$ = nodeFromToken($token); $$.val = unescape($$.val); }
+    < ANY_CONTENT: <ESCAPE_CHAR> >: { $$ = nodeFromToken($token); $$.val = unescape($$.val); }
     < ANY_CONTENT: '\\$' >: { $$ = nodeFromToken($token); $$.val = '$'; }
     < VARIABLE_IN_STRING: "$" <LABEL> >: { $$ = nodeFromToken($token); $$.val = $$.val.substr(1, $$.val.length - 1); }
     < VARIABLE_IN_STRING: "${" <LABEL> "}" >: { $$ = nodeFromToken($token); $$.val = $$.val.substr(2, $$.val.length - 3); }
@@ -402,7 +413,10 @@ var AST_LOCAL = cc++;
 
 %right 'else' <INLINE_HTML>
 
-%left 'OR' 'XOR' 'AND'
+%left 'OR' 
+%left 'XOR' 
+%left 'AND'
+%left 'print'
 %right '=' '+=' '-=' '*=' '/=' '&=' '|=' '^=' '>>=' '<<=' '%=' '**='
 %left '?' ':'
 %left '||'
@@ -440,8 +454,16 @@ top_statement_list:
 top_statement:
     statement
 |   function_declaration_statement
+|   'const' const_list ';'
 |   "__halt_compiler" '(' ')' ';' { halt(); }
 ;
+
+const_list:
+    const_list ',' c = const_decl { $$.add(c); }
+|   c = const_decl { $$ = new ZNode(AST_CONST, c); }
+;
+
+const_decl: cn = <NAME> '=' e = expr { $$ = new ZNode(AST_ASSIGN, [cn, e]); };
 
 statement_list: 
     statement_list st = statement { st !== null && $$.add(st); }
@@ -454,7 +476,7 @@ statement:
 |   e = expr ';' { $$ = new ZNode(AST_EXPR_LIST, e); }
 |   l = inline_html_list %prec <INLINE_HTML> 
     { $$ = new ZNode(AST_ECHO, l); }
-|   <ECHO_TAG> e = expr <INLINE_HTML> { $$ = new ZNode(AST_ECHO, e); }
+|   <ECHO_TAG> e = expr l = inline_html_list %prec <INLINE_HTML> { $$ = new ZNode(AST_ECHO_EXPR, [e, l]); }
 |   'echo' e = echo_expr_list ';' { $$ = e; }
 |   if_statement
 |   'while' '(' cond = expr ')' s = statement { $$ = new ZNode(AST_WHILE, [cond, s]); }
@@ -462,9 +484,21 @@ statement:
     { $$ = new ZNode(AST_DO_WHILE, [cond, s]); }
 |   'for' '(' e1 = for_exprs ';' e2 = for_exprs ';' e3 = for_exprs ')' s = statement
     { $$ = new ZNode(AST_FOR, [e1, e2, e3, s]); }
+|   'foreach' '(' e = expr 'as' a = foreach_as ')' s = statement { $$ = new ZNode(AST_FOREACH, [e, a, s]); }
 |   'return' e = optional_expr ';' { $$ = new ZNode(AST_RETURN, e); }
 |   'break' n = optional_num ';' { $$.type = AST_BREAK; $$.add(n); }
 |   'continue' n = optional_num ';' { $$.type = AST_CONTINUE; $$.add(n); }
+;
+
+foreach_as:
+    foreach_variable
+|   a = foreach_variable '=>' b = foreach_variable { $$ = new ZNode(AST_DOUBLE_ARROW, [a, b]); }
+;
+
+foreach_variable:
+    var
+|   'list' '(' l = array_pair_list ')' { $$ = l; }
+|   '[' l = array_pair_list ']' { $$ = l; }
 ;
 
 inline_html_list:
@@ -631,6 +665,7 @@ expr_without_var:
 |   '-' a = expr %prec UNARY { $$ = new ZNode(AST_UNARYOP, a, OP_NEGATIVE); }
 |   '!' a = expr { $$ = new ZNode(AST_UNARYOP, a, OP_NOT);    }
 |   '~' a = expr { $$ = new ZNode(AST_UNARYOP, a, OP_BITNOT); }
+|   'print' a = expr { $$ = new ZNode(AST_PRINT, a); }
 |   '++' a = var { $$ = new ZNode(AST_POSTINC, a);   }
 |   '--' a = var { $$ = new ZNode(AST_POSTDEC, a);  }
 |   a = var '++' { $$ = new ZNode(AST_SUFFIXINC, a); }
@@ -742,20 +777,36 @@ OpArray.prototype.dump = function(){
         }
         return s + (s.length < al ? repeat(' ', al - s.length) : '');
     }
+    function emitLabel(label, loc){
+        var l = labels[loc] = label;
+        l.length > labelMaxLen && (labelMaxLen = l.length);
+    }
     var ret = [];
     var labels = [];
     var labelMaxLen = 0;
     var labelCount = 0;
-    var labelOps = [];
+    var postTasks = [];
+    var codebase = this.functions.length;
+    for(var i = 0, _a = this.functions; i < _a.length; i++){
+        var func = _a[i];
+        var loc = ret.length;
+        var label = 'func' + i;
+        emitLabel(label, codebase + func.entry);
+        ret.push('define function #' + i + ' ' + func.name + '(' + func.paramList.join(', ') + ')' + 
+            ' use(' + func.useList.join(', ') + ')' + ' entry = ' + label
+        );
+    }
     for(var i = 0, _a = this.opcode; i < this.opCount; i++){
         var op = _a[2 * i];
         var line = op.name;
         var arg = _a[2 * i + 1];
-        if(op === OP_JMP || op === OP_JZ || op === OP_JNZ || op === OP_ENTRY){
-            var l = labels[arg] = 'label' + labelCount++;
-            l.length > labelMaxLen && (labelMaxLen = l.length);
-            labelOps.push({ op: op, loc: i, target: arg });
-            ret.push(null);
+        if(op === OP_JMP || op === OP_JZ || op === OP_JNZ){
+            var label = labels[codebase + arg];
+            if(!label){
+                label = 'label' + labelCount++;
+                emitLabel(label, codebase + arg);
+            }
+            ret.push(op.name + ' ' + label);
         }
         else {
             if(arg !== null){
@@ -774,8 +825,8 @@ OpArray.prototype.dump = function(){
             ret.push(line);
         }
     }
-    for(var i = 0, _a = labelOps; i < _a.length; i++){
-        ret[_a[i].loc] = _a[i].op.name + ' ' + labels[_a[i].target];
+    for(var i = 0, _a = postTasks; i < _a.length; i++){
+        _a[i]();
     }
     for(var i = 0; i < ret.length; i++){
         var l = labels[i];
@@ -795,6 +846,7 @@ function createCompiler(fname){
     var scope = [];
     var onErr = [];
     var funcQueue = [];
+    var tasks = [];
 
     var localNode = new ZNode(AST_LOCAL);
     
@@ -887,32 +939,82 @@ function createCompiler(fname){
     }
 
     function compile(astRoot){
-        compileBlock(astRoot);
+        tasks.push(function(){
+            compileBlock(astRoot);
+        });
+        while(tasks.length > 0){
+            tasks.shift()();
+        }
         return opa;
     }
     function compileBlock(ast){
-        for(var i = 0, _a = ast.child; i < _a.length; i++){
-            var func = _a[i];
-            if(func.type === AST_FUNCTION){
-                emit(OP_DEFINEFUNCTION, func.child[0].val);
-                var entry = emit(OP_ENTRY);
-                var params = [];
-                for(var j = 0, _b = func.child[1].child; i < _b.length; i++){
-                    params.push(_b[j].val);
-                }
-                emit(OP_PARAM, params);
-                emit(OP_ENDFUNCTION);
-                funcQueue.push({ body: func.child[2], entryOp: entry });   
-            }
-        }
         for(var i = 0, _a = ast.child; i < _a.length; i++){
             compileStatement(_a[i]);
         }
         emit(OP_RETURNNULL);
     }
+    function compileFunction(func){
+        if(func.type === AST_ANONYFUNCTION){
+            var arglist = func.child[0];
+            var lexicalVars = func.child[1];
+            var body = func.child[2];
+
+            var plist = [];
+            var uselist = [];
+            for(var i = 0, _a = arglist.child; i < _a.length; i++){
+                plist.push(_a[i].val);
+            }
+            for(var i = 0, _a = lexicalVars.child; i < _a.length; i++){
+                uselist.push(_a[i].val);
+                emit(OP_PUSH, _a[i].val);
+                emit(OP_GETVAR);
+            }
+            var n = opa.functions.length;
+            opa.functions.push({
+                name: '',
+                paramList: plist,
+                useList: uselist,
+                entry: 0
+            });
+            emit(OP_CREATEFUNCTION, [n, lexicalVars.child.length]);
+            tasks.push(function(){
+                opa.functions[n].entry = opa.opCount;
+                compileBlock(body);
+            });
+        }
+        else {
+            var fname = func.child[0];
+            var arglist = func.child[1];
+            var body = func.child[2];
+            var plist = [];
+            for(var i = 0, _a = arglist.child; i < _a.length; i++){
+                plist.push(_a[i].val);
+            }
+            var n = opa.functions.length;
+            opa.functions.push({
+                name: fname.val,
+                paramList: plist,
+                useList: [],
+                entry: 0
+            });
+            tasks.push(function(){
+                opa.functions[n].entry = opa.opCount;
+                compileBlock(body);
+            });
+        }
+    }
     function compileStatement(ast){
         switch(ast.type){
             case AST_NONE: break;
+            case AST_FUNCTION:
+                compileFunction(ast);
+                break;
+            case AST_CONST_LIST:
+                for(var i = 0, _a = ast.child; i < _a.length; i++){
+                    compileExpression(_a[i].child[1]);
+                    emit(OP_DEFCONST, _a[i].child[0]);
+                }
+                break;
             case AST_STATEMENTLIST:
                 for(var i = 0, _a = ast.child; i < _a.length; i++){
                     compileStatement(_a[i]);
@@ -923,6 +1025,12 @@ function createCompiler(fname){
                     compileExpression(_a[i]);
                     emit(OP_ECHO);
                 }
+                break;
+            case AST_ECHO_EXPR:
+                compileExpression(ast.child[0]);
+                emit(OP_ECHO);
+                emit(OP_PUSH, ast.child[1].val);
+                emit(OP_ECHO);
                 break;
             case AST_EXPR_LIST:
                 compileExpression(ast.child[0]);
@@ -998,6 +1106,43 @@ function createCompiler(fname){
                 setArg(line2, opa.opCount);
                 ast.val.done(opa.opCount, line3);
                 break;
+            case AST_FOREACH:
+                ast.val = new LoopInfo(true, true);
+                compileExpression(ast.child[0]);
+                emit(OP_CREATEITERATOR);
+                var itReg = allocateRegister();
+                emit(OP_SETLOCAL, itReg);
+                emit(OP_POP);
+
+                var line1 = emit(OP_GETLOCAL, itReg);
+                emit(OP_ITERATORISEND);
+                var line2 = emit(OP_JNZ);
+                var asVar = ast.child[1];
+                if(asVar.type === AST_DOUBLE_ARROW){
+                    emit(OP_GETLOCAL, itReg);
+                    emit(OP_GETITERATORKEY);
+                    compileAssignTop(asVar.child[0]);
+                    emit(OP_POP);
+                    emit(OP_GETLOCAL, itReg);
+                    emit(OP_GETITERATORVALUE);
+                    compileAssignTop(asVar.child[1]);
+                    emit(OP_POP);
+                }
+                else {
+                    emit(OP_GETLOCAL, itReg);
+                    emit(OP_GETITERATORVALUE);
+                    compileAssignTop(asVar);
+                    emit(OP_POP);
+                }
+                compileStatement(ast.child[2]);
+                var line3 = emit(OP_GETLOCAL, itReg);
+                emit(OP_ITERATORNEXT);
+                emit(OP_JMP, line1);
+                setArg(line2, opa.opCount);
+
+                ast.val.done(opa.opCount, line3);
+                releaseRegister(itReg);
+                break;
         }
     }
     function compileExpression(root){
@@ -1017,6 +1162,10 @@ function createCompiler(fname){
             case AST_UNARYOP:
                 compileExpression(root.child[0]);
                 emit(root.val);
+                break;
+            case AST_PRINT:
+                compileExpression(root.child[0]);
+                emit(OP_PRINT);
                 break;
             case AST_POSTINC:
                 compileExpression(root.child[0]);
@@ -1118,14 +1267,14 @@ function createCompiler(fname){
                     for(var i = 0, _a = root.child[2].child; i < _a.length; i++){
                         compileExpression(_a[i]);
                     }
-                    emit(OP_INVOKEMETHODNAME, [root.child[1].val, root.child[2].length]);
+                    emit(OP_INVOKEMETHODNAME, [root.child[1].val, root.child[2].child.length]);
                 }
                 else {
                     compileExpression(root.child[1]);
                     for(var i = 0, _a = root.child[2].child; i < _a.length; i++){
                         compileExpression(_a[i]);
                     }
-                    emit(OP_INVOKEMETHOD, root.child[2].length);
+                    emit(OP_INVOKEMETHOD, root.child[2].child.length);
                 }
                 break;
             case AST_LOCAL:
@@ -1162,26 +1311,27 @@ function createCompiler(fname){
                 emit(OP_GETCONST, root.val);
                 break;
             case AST_ANONYFUNCTION:
-                
+                compileFunction(root);
                 break;
         }
     }
     function compileStringList(list){
-        var s = '', sc = 0;
-        for(var i = 0, _a = list.child; i < _a.length; i++){
+        var sc = 0;
+        for(var i = 0, _a = list.child; i < _a.length;){
             if(_a[i].type === AST_STRING){
-                s += _a[i].val;
+                var s = '';
+                while(i < _a.length && _a[i].type === AST_STRING){
+                    s += _a[i].val;
+                    i++;
+                }
+                emit(OP_PUSH, s);
+                sc++;
             }
             else {
-                sc++;
-                emit(OP_PUSH, s);
-                s = '';
                 compileExpression(_a[i]);
+                sc++;
+                i++;
             }
-        }
-        if(s !== ''){
-            sc++;
-            emit(OP_PUSH, s);
         }
         emit(OP_CONCAT, sc);
     }
@@ -1269,6 +1419,628 @@ function createCompiler(fname){
         releaseRegister(reg);
     }
 }
+
+function createVM(){
+    var ar = [];
+
+    var functions = {};
+    var constants = {};
+
+    var pc = 0;
+    var opArray;
+    var funcTable = [];
+    var vars = {};
+    var locals = [];
+    var stack = [];
+    var returnCb = null;
+
+    var run = false;
+
+    var scope = [];
+    
+    var opHandlers = [];
+
+    var onErr = [];
+    var out = null;
+    var stdout = null;
+
+    function ZendIterator(a){
+        this.a = a;
+        this.keys = Object.keys(a);
+        this.ptr = 0;
+    }
+    ZendIterator.prototype.next = function(){ this.ptr++; }
+    ZendIterator.prototype.isEnd = function(){ return this.ptr >= this.keys.length; }
+    ZendIterator.prototype.getKey = function(){ return this.keys[this.ptr]; }
+    ZendIterator.prototype.getVal = function(){ return this.a[this.keys[this.ptr]]; }
+
+    function createFunctionFromOpArray(opa){
+        for(var i = 0, _a = opa.functions; i < _a.length; i++){
+            var func = _a[i];
+            if(func.name.length > 0){
+                functions[func.name] = createFunction(opa, func);
+            }
+        }
+        return function(acc){
+            returnCb = acc;
+            opArray = opa;
+            run = true;
+            exec();
+        }
+    }
+    function createFunction(opa, func){
+        return function(args, acc){
+            pushScope();
+            opArray = opa;
+            pc = func.entry;
+            returnCb = acc;
+            for(var j = 0, _b = func.paramList; j < _b.length; j++){
+                vars[_b[j]] = args[j];
+            }
+        }
+    }
+    function createClosure(opa, index, lexicalVars){
+        var func = opa.functions[index];
+        return function(args, acc){
+            pushScope();
+            opArray = opa;
+            pc = func.entry;
+            returnCb = acc;
+            for(var j = 0, _b = func.paramList; j < _b.length; j++){
+                vars[_b[j]] = args[j];
+            }
+            for(var i = 0, _a = func.useList; i < _a.length; i++){
+                vars[_a[i]] = lexicalVars[i];
+            }
+        }
+    }
+    function createIterator(v){
+        return new ZendIterator(v);
+    }
+    function err(msg){
+        stdout && stdout('error: ' + msg);
+    }
+    function notice(msg){
+        stdout && stdout('notice: ' + msg);
+    }
+    function echo(s){
+        out && out(s);
+    }
+    function defineInterface(it){
+        it.out && (out = it.out);
+        it.stdout && (stdout = it.stdout);
+    }
+    function defineHandler(op, handler){
+        opHandlers[op.code] = handler;
+    }
+    function defineFunction(fname, f){
+        functions[fname] = function(args, acc){ acc(f(args)); };
+    }
+    function pushScope(){
+        scope.push({
+            pc: pc,
+            opArray: opArray,
+            vars: vars,
+            locals: locals,
+            stack: stack,
+            returnCb: returnCb
+        });
+        pc = 0;
+        opArray = null;
+        vars = {};
+        locals = [];
+        stack = [];
+        returnCb = null;
+    }
+    function popScope(){
+        var s = scope.pop();
+        pc = s.pc;
+        opArray = s.opArray;
+        vars = s.vars;
+        locals = s.locals;
+        stack = s.stack;
+        returnCb = s.returnCb;
+    }
+    function exec(){
+        while(run){
+            var op = opArray.opcode[2 * pc];
+            var arg = opArray.opcode[2 * pc + 1];
+            pc++;
+            opHandlers[op.code](arg);
+        }
+    }
+    var NULL = null;
+    function toNumber(v){
+        if(v === NULL){
+            return 0;
+        }
+        var ret = Number(v);
+        return ret === NaN ? 0 : ret;
+    }
+    function toBool(s){
+        if(s === NULL){
+            return false;
+        }
+        switch(typeof s){
+            case 'boolean': return s;
+            case 'number': return s !== 0;
+            case 'string': return s === 'true' ? true : s === 'false' ? false : true;
+            default: return true;
+        }
+    }
+    function toString(v){
+        return v === NULL ? '' : v.toString();
+    }
+    defineHandler(OP_NOP, function(arg){});
+    defineHandler(OP_PUSH, function(arg){ stack.push(arg); });
+    defineHandler(OP_POP, function(arg){ stack.pop(); });
+    defineHandler(OP_DUP, function(arg){ stack.push(stack[stack.length - 1]); });
+    defineHandler(OP_GETVAR, function(arg){ 
+        var vname = toString(stack.pop());
+        var v = vars[vname];
+        if(v === undefined){
+            err('use of undefined variable ' + vname);
+            stack.push(NULL);
+        }
+        else {
+            stack.push(v);
+        }
+    });
+    defineHandler(OP_SETVAR, function(arg){
+        var v = stack.pop();
+        var vname = toString(stack.pop());
+        vars[vname] = v;
+        stack.push(v);
+    });
+    defineHandler(OP_SETPROP, function(){
+        var val = stack.pop();
+        var propname = toString(stack.pop());
+        var v = stack.pop();
+        if(v.__zendProps === undefined){
+            err('variable is not an object');
+            stack.push(NULL);
+        }
+        else {
+            if(v.__zendProps[propname] === undefined){
+                err('variable does not have property ' + propname);
+                stack.push(NULL);
+            }
+            else {
+                v.__zendProps[propname] = val;
+                stack.push(val);
+            }
+        }
+    });
+    defineHandler(OP_GETPROP, function(){
+        var propname = toString(stack.pop());
+        var v = stack.pop();
+        if(v.__zendProps === undefined){
+            err('variable is not an object');
+            stack.push(NULL);
+        }
+        else {
+            if(v.__zendProps[propname] === undefined){
+                err('variable does not have property ' + propname);
+                stack.push(NULL);
+            }
+            else {
+                stack.push(v.__zendProps[propname]);
+            }
+        }
+    });
+    defineHandler(OP_GETOFFSET, function(){
+        var offset = stack.pop();
+        if(typeof offset !== 'number'){
+            offset = toString(offset);
+        }
+        var v = stack.pop();
+        if(isArray(v)){
+            var r = v[offset];
+            if(r === undefined){
+                notice('undefined array index ' + offset);
+                stack.push(NULL);
+            }
+            else {
+                stack.push(r);
+            }
+        }
+        else if(typeof v === 'string'){
+            if(typeof offset !== 'number'){
+                offset = toNumber(offset);
+            }
+            stack.push(v.charAt(offset));
+        }
+        else {
+            notice('cannot get index of a non-array ');
+            stack.push(NULL);
+        }
+    });
+    defineHandler(OP_SETOFFSET, function(){
+        var val = stack.pop();
+        var offset = stack.pop();
+        if(typeof offset !== 'number'){
+            offset = toString(offset);
+        }
+        var v = stack.pop();
+        if(isArray(v)){
+            var r = v[offset];
+            if(r === undefined){
+                notice('undefined array index ' + offset);
+                stack.push(NULL);
+            }
+            else {
+                v[offset] = val;
+                stack.push(val);
+            }
+        }
+        else {
+            notice('cannot set index of a non-array ');
+            stack.push(NULL);
+        }
+    });
+    defineHandler(OP_GETMAXOFFSET, function(){
+        var v = stack.pop();
+        if(isArray(v)){
+            stack.push(v[v.length - 1]);
+        }
+        else {
+            notice('cannot get index of a non-array ');
+            stack.push(NULL);
+        }
+    });
+    defineHandler(OP_SETMAXOFFSET, function(){
+        var val = stack.pop();
+        var v = stack.pop();
+        if(isArray(v)){
+            v[v.length - 1] = val;
+            stack.push(val);
+        }
+        else {
+            notice('cannot set index of a non-array ');
+            stack.push(NULL);
+        }
+    });
+    defineHandler(OP_DEFCONST, function(cn){
+        var v = stack.pop();
+        if(constants[cn]){
+            notice('redefine constant ' + cn);
+        }
+        else {
+            constants[cn] = v;
+        }
+    });
+    defineHandler(OP_GETCONST, function(arg){
+        var c = constants[arg];
+        if(c === undefined){
+            notice('use of undefined constant ' + arg);
+            stack.push(NULL);
+        }
+        else {
+            stack.push(c);
+        }
+    });
+    defineHandler(OP_SETLOCAL, function(arg){
+        locals[arg] = stack[stack.length - 1];
+    });
+    defineHandler(OP_GETLOCAL, function(arg){
+        stack.push(locals[arg]);
+    });
+
+    defineHandler(OP_PLUS, function(arg){
+        var b = toNumber(stack.pop());
+        var a = toNumber(stack.pop());
+        stack.push(a + b);
+    });
+    defineHandler(OP_MINUS, function(arg){
+        var b = toNumber(stack.pop());
+        var a = toNumber(stack.pop());
+        stack.push(a - b);
+    });
+    defineHandler(OP_TIMES, function(arg){
+        var b = toNumber(stack.pop());
+        var a = toNumber(stack.pop());
+        stack.push(a * b);
+    });
+    defineHandler(OP_DIVIDE, function(arg){
+        var b = toNumber(stack.pop());
+        var a = toNumber(stack.pop());
+        stack.push(a / b);
+    });
+    defineHandler(OP_POW, function(arg){
+        var b = toNumber(stack.pop());
+        var a = toNumber(stack.pop());
+        stack.push(Math.pow(a, b));
+    });
+    defineHandler(OP_CONCAT, function(arg){
+        if(arg === null){
+            var b = toString(stack.pop());
+            var a = toString(stack.pop());
+            stack.push(a + b);
+        }
+        else {
+            var s = '';
+            while(arg --> 0){
+                s = toString(stack.pop()) + s;
+            }
+            stack.push(s);
+        }
+    });
+    defineHandler(OP_MOD, function(arg){
+        var b = toNumber(stack.pop());
+        var a = toNumber(stack.pop());
+        stack.push(a % b);
+    });
+    defineHandler(OP_BITAND, function(arg){
+        var b = toNumber(stack.pop()) | 0;
+        var a = toNumber(stack.pop()) | 0;
+        stack.push(a & b);
+    });
+    defineHandler(OP_BITOR, function(arg){
+        var b = toNumber(stack.pop()) | 0;
+        var a = toNumber(stack.pop()) | 0;
+        stack.push(a | b);
+    });
+    defineHandler(OP_BITXOR, function(arg){
+        var b = toNumber(stack.pop()) | 0;
+        var a = toNumber(stack.pop()) | 0;
+        stack.push(a ^ b);
+    });
+    defineHandler(OP_BITNOT, function(arg){
+        var a = toNumber(stack.pop()) | 0;
+        stack.push(~a);
+    });
+    defineHandler(OP_AND, function(arg){
+        var b = toBool(stack.pop());
+        var a = toBool(stack.pop());
+        stack.push(a && b);
+    });
+    defineHandler(OP_OR, function(arg){
+        var b = toBool(stack.pop());
+        var a = toBool(stack.pop());
+        stack.push(a || b);
+    });
+    defineHandler(OP_XOR, function(arg){
+        var b = toBool(stack.pop());
+        var a = toBool(stack.pop());
+        stack.push(!a && b || a && !b);
+    });
+    defineHandler(OP_NOT, function(arg){
+        var a = toBool(stack.pop());
+        stack.push(!a);
+    });
+    defineHandler(OP_LEFTSHIFT, function(arg){
+        var b = toNumber(stack.pop()) | 0;
+        var a = toNumber(stack.pop()) | 0;
+        stack.push(a << b);
+    });
+    defineHandler(OP_RIGHTSHIFT, function(arg){
+        var b = toNumber(stack.pop()) | 0;
+        var a = toNumber(stack.pop()) | 0;
+        stack.push(a >> b);
+    });
+    defineHandler(OP_POSITIVE, function(arg){
+        var a = toNumber(stack.pop());
+        stack.push(a);
+    });
+    defineHandler(OP_NEGATIVE, function(arg){
+        var a = toNumber(stack.pop());
+        stack.push(-a);
+    });
+    defineHandler(OP_INC, function(arg){
+        var a = toNumber(stack.pop());
+        stack.push(a + 1);
+    });
+    defineHandler(OP_DEC, function(arg){
+        var a = toNumber(stack.pop());
+        stack.push(a - 1);
+    });
+    defineHandler(OP_GREATERTHAN, function(){
+        var b = toNumber(stack.pop());
+        var a = toNumber(stack.pop());
+        stack.push(a > b);
+    });
+    defineHandler(OP_GREATERTHANOREQUAL, function(){
+        var b = toNumber(stack.pop());
+        var a = toNumber(stack.pop());
+        stack.push(a >= b);
+    });
+    defineHandler(OP_LESSTHAN, function(){
+        var b = toNumber(stack.pop());
+        var a = toNumber(stack.pop());
+        stack.push(a < b);
+    });
+    defineHandler(OP_LESSTHANOREQUAL, function(){
+        var b = toNumber(stack.pop());
+        var a = toNumber(stack.pop());
+        stack.push(a <= b);
+    });
+    defineHandler(OP_EQUAL, function(){
+        var b = stack.pop();
+        var a = stack.pop();
+        stack.push(a == b);
+    });
+    defineHandler(OP_NOTEQUAL, function(){
+        var b = stack.pop();
+        var a = stack.pop();
+        stack.push(a != b);
+    });
+    defineHandler(OP_IDENTICAL, function(){
+        var b = stack.pop();
+        var a = stack.pop();
+        stack.push(a === b);
+    });
+    defineHandler(OP_NOTIDENTICAL, function(){
+        var b = stack.pop();
+        var a = stack.pop();
+        stack.push(a !== b);
+    });
+    defineHandler(OP_ECHO, function(){
+        echo(toString(stack.pop()));
+    });
+    defineHandler(OP_PRINT, function(){
+        echo(toString(stack.pop()));
+        stack.push(1);
+    });
+
+    defineHandler(OP_ARRAY, function(){ stack.push([]); });
+    defineHandler(OP_ADDARRAYITEM, function(){
+        var v = stack.pop();
+        var a = stack.pop();
+        a.push(v);
+        stack.push(a);
+    });
+    defineHandler(OP_ADDARRAYPAIR, function(){
+        var val = stack.pop();
+        var key = toString(stack.pop());
+        var a = stack.pop();
+        a[key] = val;
+        stack.push(a);
+    });
+
+    defineHandler(OP_BOOLCAST, function(){ stack.push(toBool(stack.pop())); });
+
+    defineHandler(OP_INVOKE, function(argc){
+        var args = [];
+        for(var i = argc - 1; i >= 0; i--){
+            args[i] = stack.pop();
+        }
+        var func = stack.pop();
+        if(typeof func === 'function'){
+            func(args, function(ret){
+                stack.push(ret);
+            });
+        }
+        else {
+            notice('cannot invoke a non-function object');
+            stack.push(NULL);
+        }
+    });
+    defineHandler(OP_INVOKENAME, function(arg){
+        var argc = arg[1];
+        var fname = arg[0];
+        var args = [];
+        for(var i = argc - 1; i >= 0; i--){
+            args[i] = stack.pop();
+        }
+        var func = functions[fname];
+        if(func !== undefined){
+            func(args, function(ret){
+                stack.push(ret);
+            });
+        }
+        else {
+            notice('use of undefined function ' + fname);
+            stack.push(NULL);
+        }
+    });
+    defineHandler(OP_INVOKEMETHOD, function(argc){
+        var args = [];
+        for(var i = argc - 1; i >= 0; i--){
+            args[i] = stack.pop();
+        }
+        var methodName = toString(stack.pop());
+        var cela = stack.pop();
+        if(cela.__zendProto !== undefined){
+            var method = cela.__zendProto[methodName];
+            if(method !== undefined){
+                method.call(cela, args, function(ret){
+                    stack.push(ret);
+                });
+            }
+            else {
+                notice('object has no method ' + methodName);
+                stack.push(NULL);
+            }
+        }
+        else {
+            notice('cannot invoke method of a non-object');
+            stack.push(NULL);
+        }
+    });
+    defineHandler(OP_INVOKEMETHODNAME, function(arg){
+        var argc = arg[1];
+        var methodName = arg[0];
+        var args = [];
+        for(var i = argc - 1; i >= 0; i--){
+            args[i] = stack.pop();
+        }
+        var cela = stack.pop();
+        if(cela.__zendProto !== undefined){
+            var method = cela.__zendProto[methodName];
+            if(method !== undefined){
+                method.call(cela, args, function(ret){
+                    stack.push(ret);
+                });
+            }
+            else {
+                notice('object has no method ' + methodName);
+                stack.push(NULL);
+            }
+        }
+        else {
+            notice('cannot invoke method of a non-object');
+            stack.push(NULL);
+        }
+    });
+    defineHandler(OP_NEW, function(){
+        // TODO
+        stack.push(NULL);
+    });
+    defineHandler(OP_CREATEFUNCTION, function(arg){
+        var index = arg[0];
+        var useCount = arg[1];
+        var args = [];
+        for(var i = useCount - 1; i >= 0; i--){
+            args[i] = stack.pop();
+        }
+        stack.push(createClosure(opArray, index, args));
+    });
+    defineHandler(OP_CREATEITERATOR, function(){
+        var v = stack.pop();
+        if(isArray(v)){
+            stack.push(createIterator(v));
+        }
+        else {
+            notice('cannot iterate a non-array');
+            stack.push(createIterator([]));
+        }
+    });
+    defineHandler(OP_ITERATORISEND, function(){
+        stack.push(stack.pop().isEnd());
+    });
+    defineHandler(OP_ITERATORNEXT, function(){
+        stack.pop().next();
+    });
+    defineHandler(OP_GETITERATORKEY, function(){
+        stack.push(stack.pop().getKey());
+    });
+    defineHandler(OP_GETITERATORVALUE, function(){
+        stack.push(stack.pop().getVal());
+    });
+
+    defineHandler(OP_JMP, function(arg){ pc = arg; });
+    defineHandler(OP_JZ, function(arg){ !toBool(stack.pop()) && (pc = arg); });
+    defineHandler(OP_JNZ, function(arg){ toBool(stack.pop()) && (pc = arg); });
+    defineHandler(OP_RETURN, function(){
+        var r = stack.pop();
+        var cb = returnCb;
+        scope.length > 0 ? popScope() : (run = false);
+        cb(r);
+    });
+    defineHandler(OP_RETURNNULL, function(){
+        var cb = returnCb;
+        scope.length > 0 ? popScope() : (run = false);
+        cb(NULL);
+    });
+
+    return {
+        createFunctionFromOpArray: createFunctionFromOpArray,
+        defineFunction: defineFunction,
+        defineInterface: defineInterface,
+    };
+}
+
+exports.createVM = createVM;
 
 exports.compile = function compile(fname, source, errs){
     var parser = createParser();

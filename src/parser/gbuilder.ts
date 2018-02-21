@@ -452,6 +452,7 @@ export function createFileBuilder(ctx: Context): GBuilder{
         grammar.tokens[0].used = true;// end of file
         grammar.nts[0].used = true;// (accept)
 
+        ctx.beginTime('building grammar');
         for(let nt of grammar.nts){
             nt.firstSet = new TokenSet(grammar.tokenCount);
             for(let rule of nt.rules){
@@ -464,7 +465,12 @@ export function createFileBuilder(ctx: Context): GBuilder{
                 }
             }
         }
+
+        ctx.endTime();
+
+        ctx.beginTime('building lexical DFAs');
         file.lexDFA = lexBuilder.build();
+        ctx.endTime();
 
         for(let cb of _onDone){
             cb();

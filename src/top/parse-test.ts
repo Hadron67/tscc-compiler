@@ -4,27 +4,30 @@ import { Grammar, Rule } from '../grammar/grammar';
 import { ParseTable, IParseTable } from '../grammar/ptable';
 import { TokenDef, convertTokenToString } from '../grammar/token-entry';
 
-function testParse(g: Grammar, pt: IParseTable, tokens: string[]): string[]{
+function testParse(g: Grammar, pt: IParseTable, tokens: string[], onErr: (msg: string) => any): string[]{
     var tk: TokenDef[] = [];
     for(let tname of tokens){
         let tdef: TokenDef;
         if(/<[^>]+>/.test(tname)){
             tdef = g.findTokenByName(tname.substr(1, tname.length - 2));
             if(tdef === null){
-                throw new E(`cannot recognize ${tname} as a token`);
+                onErr(`cannot recognize ${tname} as a token`);
+                return [];
             }
         }
         else {
             let defs = g.findTokensByAlias(tname);
             if(defs.length === 0){
-                throw new E(`cannot recognize "${tname}" as a token`);
+                onErr(`cannot recognize "${tname}" as a token`);
+                return [];
             }
             if(defs.length > 1){
                 let msg = '';
                 for(let def of defs){
                     msg += `<${def.sym}> `;
                 }
-                throw new E(`cannot recognize "${tname}" as a token, since it can be ${msg}`);
+                onErr(`cannot recognize "${tname}" as a token, since it can be ${msg}`);
+                return [];
             }
             tdef = defs[0];
         }

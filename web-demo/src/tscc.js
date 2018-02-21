@@ -1888,7 +1888,7 @@ function genParseTable(g, doneList) {
     };
 }
 
-function testParse(g, pt, tokens) {
+function testParse(g, pt, tokens, onErr) {
     var tk = [];
     for (var _i = 0, tokens_1 = tokens; _i < tokens_1.length; _i++) {
         var tname = tokens_1[_i];
@@ -1896,13 +1896,15 @@ function testParse(g, pt, tokens) {
         if (/<[^>]+>/.test(tname)) {
             tdef = g.findTokenByName(tname.substr(1, tname.length - 2));
             if (tdef === null) {
-                throw new JsccError("cannot recognize " + tname + " as a token");
+                onErr("cannot recognize " + tname + " as a token");
+                return [];
             }
         }
         else {
             var defs = g.findTokensByAlias(tname);
             if (defs.length === 0) {
-                throw new JsccError("cannot recognize \"" + tname + "\" as a token");
+                onErr("cannot recognize \"" + tname + "\" as a token");
+                return [];
             }
             if (defs.length > 1) {
                 var msg = '';
@@ -1910,7 +1912,8 @@ function testParse(g, pt, tokens) {
                     var def = defs_1[_a];
                     msg += "<" + def.sym + "> ";
                 }
-                throw new JsccError("cannot recognize \"" + tname + "\" as a token, since it can be " + msg);
+                onErr("cannot recognize \"" + tname + "\" as a token, since it can be " + msg);
+                return [];
             }
             tdef = defs[0];
         }
@@ -3214,6 +3217,7 @@ function createFileBuilder(ctx) {
         grammar.tokenCount = grammar.tokens.length;
         grammar.tokens[0].used = true;
         grammar.nts[0].used = true;
+        ctx.beginTime('building grammar');
         for (var _i = 0, _a = grammar.nts; _i < _a.length; _i++) {
             var nt = _a[_i];
             nt.firstSet = new TokenSet(grammar.tokenCount);
@@ -3231,7 +3235,10 @@ function createFileBuilder(ctx) {
                 }
             }
         }
+        ctx.endTime();
+        ctx.beginTime('building lexical DFAs');
         file.lexDFA = lexBuilder.build();
+        ctx.endTime();
         for (var _d = 0, _onDone_1 = _onDone; _d < _onDone_1.length; _d++) {
             var cb = _onDone_1[_d];
             cb();
@@ -5968,8 +5975,10 @@ function parse(ctx, source) {
     });
     var gb = createFileBuilder(ctx);
     parser.init(ctx, gb);
+    ctx.beginTime('parse grammar file');
     parser.accept(source);
     parser.end();
+    ctx.endTime();
     if (err) {
         return null;
     }
@@ -7452,7 +7461,7 @@ var templates = {};
 function defineTemplate(name, render) {
     templates[name] = render;
 }
-function generateCode(lang, input, fc, cb) {
+function generateCode(lang, input, fc) {
     var g = templates[lang];
     if (g === undefined) {
         throw ("template for language \"" + lang + "\" is not implemented yet");
@@ -7647,21 +7656,25 @@ function genResult(source, fname) {
     var warnings = [];
     var needLinecbs = [];
     var terminated = false;
+    var timers = [];
     var ret = {
         warn: warn,
         err: err,
         printItemSets: printItemSets,
         printTable: printTable,
         printDFA: printDFA,
-        testParse: testParse$$1,
+        testParse: function (tokens, onErr) { return testParse(g, parseTable, tokens, onErr); },
         printError: printError,
         printWarning: printWarning,
+        printDetailedTime: printDetailedTime,
         hasWarning: hasWarning,
         hasError: hasError,
-        warningSummary: warningSummary,
+        warningSummary: function () { return warnings.length + " warning(s), " + errors.length + " error(s)"; },
         getTemplateInput: getTemplateInput,
         requireLines: function (cb) { return needLinecbs.push(cb); },
-        isTerminated: function () { return terminated; }
+        isTerminated: function () { return terminated; },
+        beginTime: beginTime,
+        endTime: endTime
     };
     var f = parse(ret, source);
     var lines = source.split('\n');
@@ -7702,36 +7715,58 @@ function genResult(source, fname) {
         terminated = true;
         return ret;
     }
+    beginTime('generate first sets');
     g.genFirstSets();
+    endTime();
+    beginTime('generate item sets');
     var temp = genItemSets(g);
+    endTime();
     itemSets = temp.result;
     iterationCount = temp.iterations;
+    beginTime('generate parse table');
     var temp2 = genParseTable(g, itemSets);
+    endTime();
     temp2.result.findDefAct();
+    beginTime('compress parse table');
     parseTable = new CompressedPTable(temp2.result);
+    endTime();
     for (var _g = 0, _h = temp2.conflicts; _g < _h.length; _g++) {
         var cf = _h[_g];
         warn(new JsccWarning(cf.toString()));
     }
+    beginTime('generate lexical DFA tables');
     for (var _j = 0, _k = file.lexDFA; _j < _k.length; _j++) {
         var dfa = _k[_j];
         file.dfaTables.push(new DFATable(dfa));
     }
+    endTime();
     return ret;
+    function beginTime(name) {
+        timers.push({ name: name, start: new Date(), end: null });
+    }
+    function endTime() {
+        timers[timers.length - 1].end = new Date();
+    }
     function warn(w) {
         warnings.push(w);
     }
     function err(e) {
         errors.push(e);
     }
-    function printItemSets(stream) {
-        stream.writeln(itemSets.size + ' state(s) in total,finished in ' + iterationCount + ' iteration(s).');
+    function printItemSets(os) {
+        os.writeln(itemSets.size + ' state(s) in total,finished in ' + iterationCount + ' iteration(s).');
         itemSets.forEach(function (s) {
-            stream.writeln(s.toString({ showTrailer: true }));
+            os.writeln(s.toString({ showTrailer: true }));
         });
     }
     function printTable(os) {
         printParseTable(os, parseTable, itemSets);
+    }
+    function printDetailedTime(os) {
+        for (var _i = 0, timers_1 = timers; _i < timers_1.length; _i++) {
+            var t = timers_1[_i];
+            os.writeln(t.name + ": " + (t.end.valueOf() - t.start.valueOf()) / 1000 + "s");
+        }
     }
     function printDFA(os) {
         for (var _i = 0, _a = file.dfaTables; _i < _a.length; _i++) {
@@ -7740,9 +7775,6 @@ function genResult(source, fname) {
             os.writeln();
             os.writeln();
         }
-    }
-    function testParse$$1(tokens) {
-        return testParse(file.grammar, parseTable, tokens);
     }
     function printError(os, opt) {
         for (var _i = 0, errors_1 = errors; _i < errors_1.length; _i++) {
@@ -7764,9 +7796,6 @@ function genResult(source, fname) {
     function hasError() {
         return errors.length > 0;
     }
-    function warningSummary() {
-        return warnings.length + " warning(s), " + errors.length + " error(s)";
-    }
     function getTemplateInput() {
         return {
             endl: '\n',
@@ -7785,13 +7814,65 @@ var debug = Object.freeze({
 	createClassFinder: createClassFinder
 });
 
+function deleteSuffix(s) {
+    var i = s.lastIndexOf('.');
+    return i === -1 ? s : s.substr(0, i);
+}
+
+function main(opt) {
+    var stdout = opt.stdout;
+    var echo = function (s) { return stdout.writeln(s); };
+    var result = null;
+    do {
+        var startTime = new Date();
+        result = genResult(opt.input, deleteSuffix(opt.inputFile));
+        if (result.hasWarning()) {
+            result.printWarning(stdout);
+        }
+        if (result.hasError()) {
+            result.printError(stdout);
+            result.isTerminated() && echo('compilation terminated');
+            break;
+        }
+        if (opt.outputFile) {
+            var out = new StringOS();
+            result.beginTime('generate output file');
+            result.printDFA(out);
+            result.printTable(out);
+            result.endTime();
+            opt.writeFile(opt.outputFile, out.s);
+        }
+        var templateIn = result.getTemplateInput();
+        var current = new StringOS();
+        result.beginTime('generate parser code');
+        generateCode(templateIn.output, templateIn, {
+            save: function (fname) { return opt.writeFile(fname, current.s); },
+            write: function (s) { return current.write(s); },
+            writeln: function (s) { return current.writeln(s); }
+        });
+        result.endTime();
+        if (opt.testInput) {
+            echo("preparing for test");
+            for (var _i = 0, _a = result.testParse(opt.testInput.split(/[ ]+/g), function (msg) { return echo(msg); }); _i < _a.length; _i++) {
+                var line = _a[_i];
+                echo(line);
+            }
+        }
+        echo("compilation done in " + (new Date().valueOf() - startTime.valueOf()) / 1000 + "s");
+        opt.printDetailedTime && result.printDetailedTime(stdout);
+    } while (false);
+    echo(result.warningSummary());
+    return result.hasError() ? -1 : 0;
+}
+
 exports.Pattern = pattern;
 exports.io = io;
-exports.debug = debug;
-exports.setDebugger = setDebugger;
-exports.setTab = setTab;
 exports.genResult = genResult;
 exports.generateCode = generateCode;
+exports.debug = debug;
+exports.main = main;
+exports.setDebugger = setDebugger;
+exports.setTab = setTab;
 exports.defineTemplate = defineTemplate;
 
 Object.defineProperty(exports, '__esModule', { value: true });

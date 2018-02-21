@@ -74,8 +74,7 @@ var jjlexpnext0 = [
         20,    18,    12,    10,     1,    13,    11,     9,    14,    15,
         16,    17,    14,    19,    14,    15,    16,    17,    14,    19,
         14,    15,    16,    17,    14,    12,    14,    15,    16,    17,
-        14,    20,    -1,    15,    16,    17,    -1,    -1,    -1,    -1,
-    
+        14,    20,    -1,    15,    16,    17,
 ]; 
 var jjlexdisnext0 = [ 
          0,    14,   -17,   -17,   -17,   -17,   -17,     4,   -17,     9,
@@ -87,8 +86,7 @@ var jjlexchecknext0 = [
         14,    10,     7,     0,     1,     9,     0,     9,     9,     9,
          9,     9,     9,    19,    19,    19,    19,    19,    19,    13,
         13,    13,    13,    13,    13,    12,    12,    12,    12,    12,
-        12,    20,    -1,    20,    20,    20,    -1,    -1,    -1,    -1,
-    
+        12,    20,    -1,    20,    20,    20,
 ]; 
 var jjlexclassTable0 = [ 
         -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,     0,
@@ -191,8 +189,7 @@ var jjpact = [
         11,    12,     0,     0,    14,    13,     0,     9,     4,     5,
          6,     7,    16,    17,    18,    19,    14,    13,    31,     9,
         16,    17,    18,    19,    30,    16,    17,    18,    19,     0,
-         0,    29,    16,    17,    18,    19,     0,     0,     0,     0,
-    
+         0,    29,    16,    17,    18,    19,
 ]; 
 /*
     displacement of action table.
@@ -221,8 +218,7 @@ var jjcheckact = [
          0,     0,     0,     0,     0,     0,     0,     0,    17,    17,
         17,    17,    23,    23,    23,    23,    17,    17,    23,    17,
         22,    22,    22,    22,    22,    21,    21,    21,    21,     0,
-         0,    21,     2,     2,     2,     2,     0,     0,     0,     0,
-    
+         0,    21,     2,     2,     2,     2,
 ]; 
 /*
     default action table. action = jjdefred[STATE-NUM],
@@ -330,8 +326,9 @@ function createParser() {
 
     // members for parser
     var jjlrState;
-    var jjsematicS = [];
+    var jjsematicS;
     var jjsematicVal;
+    var jjtokenQueue;
 
     var jjstop;
 
@@ -362,11 +359,14 @@ function createParser() {
         jjlrState = [ 0 ];
         jjsematicS = [];
         jjsematicVal = null;
+        jjtokenQueue = [];
 
         jjstop = false;
         
     out = out1;
 
+
+        jjtryReduce();
     }
     /**
      *  set 
@@ -384,14 +384,11 @@ function createParser() {
         jjtoken.endLine = jjline;
         jjtoken.endColumn = jjcolumn - 1;
 
+        jjtokenQueue.push(jjtoken);
+
         jjmatched = '';
         jjtline = jjline;
         jjtcolumn = jjcolumn;
-    }
-    function jjreturnToken(){
-        jjemit('token', jjtokenNames[jjtoken.id], jjtoken.val);
-        while(!jjstop && !jjacceptToken(jjtoken));
-        jjtoken.id = -1;
     }
     function jjemit(name, a1, a2, a3){
         var cbs = jjhandlers[name];
@@ -410,31 +407,31 @@ function createParser() {
         jjtk !== -1 && jjprepareToken(jjtk);
         switch(jjstaten){
             case 1:
-                jjsetImg("");
+                jjsetImg(""); 
                 break;
             case 9:
-                 jjsematicVal = new Quaternion(Number(jjtoken.val), 0, 0, 0); 
+                { jjsematicVal = new Quaternion(Number(jjtoken.val), 0, 0, 0); }
                 break;
             case 12:
-                 jjsematicVal = new Quaternion(Number(jjtoken.val), 0, 0, 0); 
+                { jjsematicVal = new Quaternion(Number(jjtoken.val), 0, 0, 0); }
                 break;
             case 13:
-                 jjsematicVal = new Quaternion(Number(jjtoken.val), 0, 0, 0); 
+                { jjsematicVal = new Quaternion(Number(jjtoken.val), 0, 0, 0); }
                 break;
             case 15:
-                 jjsematicVal = new Quaternion(0, Number(cut(jjtoken.val)), 0, 0); 
+                { jjsematicVal = new Quaternion(0, Number(cut(jjtoken.val)), 0, 0); }
                 break;
             case 16:
-                 jjsematicVal = new Quaternion(0, 0, Number(cut(jjtoken.val)), 0); 
+                { jjsematicVal = new Quaternion(0, 0, Number(cut(jjtoken.val)), 0); }
                 break;
             case 17:
-                 jjsematicVal = new Quaternion(0, 0, 0, Number(cut(jjtoken.val))); 
+                { jjsematicVal = new Quaternion(0, 0, 0, Number(cut(jjtoken.val))); }
                 break;
             case 19:
-                 jjsematicVal = new Quaternion(Number(jjtoken.val), 0, 0, 0); 
+                { jjsematicVal = new Quaternion(Number(jjtoken.val), 0, 0, 0); }
                 break;
             case 20:
-                 jjsematicVal = new Quaternion(Number(jjtoken.val), 0, 0, 0); 
+                { jjsematicVal = new Quaternion(Number(jjtoken.val), 0, 0, 0); }
                 break;
             default:;
         }
@@ -451,7 +448,7 @@ function createParser() {
                 break;
             default:;
         }
-        jjtoken.id !== -1 && jjreturnToken();
+        jjtokenQueue.length > 0 && jjacceptToken(null);
     }
     function jjrollback(){
         var ret = jjmatched.substr(jjmatched.length - jjbackupCount, jjbackupCount);
@@ -561,7 +558,7 @@ function createParser() {
         if(jjstate === 0){
             // recover
             jjprepareToken(0);
-            jjreturnToken();
+            jjacceptToken(null);
             return true;
         }
         else {
@@ -615,61 +612,61 @@ function createParser() {
             case 1:
                 /* 1: start => expr */
                 var a = jjsematicS[jjsp - 1];
-                { out.val = a; }
+                { out.val = a; } 
                 break;
             case 2:
                 /* 2: expr => expr "+" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = Quaternion.addQ(a, b); }
+                { jjtop = Quaternion.addQ(a, b); } 
                 break;
             case 3:
                 /* 3: expr => expr "-" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = Quaternion.minusQ(a, b); }
+                { jjtop = Quaternion.minusQ(a, b); } 
                 break;
             case 4:
                 /* 4: expr => expr "*" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = Quaternion.multiQ(a, b); }
+                { jjtop = Quaternion.multiQ(a, b); } 
                 break;
             case 5:
                 /* 5: expr => expr "/" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = Quaternion.multiQ(a, b.inv()) }
+                { jjtop = Quaternion.multiQ(a, b.inv()) } 
                 break;
             case 6:
                 /* 6: expr => "+" expr */
                 var a = jjsematicS[jjsp - 1];
-                { jjtop = a; }
+                { jjtop = a; } 
                 break;
             case 7:
                 /* 7: expr => "-" expr */
                 var a = jjsematicS[jjsp - 1];
-                { jjtop = a.neg(); }
+                { jjtop = a.neg(); } 
                 break;
             case 8:
                 /* 8: expr => expr "*" */
                 var a = jjsematicS[jjsp - 2];
-                { jjtop = a.dagger(); }
+                { jjtop = a.dagger(); } 
                 break;
             case 9:
                 /* 9: expr => "(" expr ")" */
                 var a = jjsematicS[jjsp - 2];
-                { jjtop = a; }
+                { jjtop = a; } 
                 break;
             case 10:
                 /* 10: expr => "|" expr "|" */
                 var a = jjsematicS[jjsp - 2];
-                { jjtop = a.module(); }
+                { jjtop = a.module(); } 
                 break;
             case 16:
                 /* 16: funcs => "exp" "(" expr ")" */
                 var a = jjsematicS[jjsp - 2];
-                { jjtop = Quaternion.exp(a); }
+                { jjtop = Quaternion.exp(a); } 
                 break;
         }
         jjlrState.length -= jjruleLen[jjrulenum];
@@ -679,48 +676,61 @@ function createParser() {
         jjsematicS.length -= jjruleLen[jjrulenum];
         jjsematicS.push(jjtop);
     }
-
-    function jjacceptToken(t){
+    function jjacceptToken(tk){
         // look up action table
-        var cstate = jjlrState[jjlrState.length - 1];
-        var ind = jjdisact[cstate] + t.id;
-        var act = 0;
-        if(ind < 0 || ind >= jjpact.length || jjcheckact[ind] !== cstate){
-            act = -jjdefred[cstate] - 1;
-        }
-        else {
-            act = jjpact[ind];
-        }
-        if(act === jjactERR){
-            // explicit error
-            jjsyntaxError(t);
-            return true;
-        }
-        else if(act > 0){
-            // shift
-            if(t.id === 0){
-                // end of file
-                jjstop = true;
-                jjemit('accept');
-                return true;
+        var shifted = false;
+        tk !== null && jjtokenQueue.push(tk);
+        while(!jjstop && jjtokenQueue.length > 0){
+            var t = jjtokenQueue[0];
+            var cstate = jjlrState[jjlrState.length - 1];
+            var ind = jjdisact[cstate] + t.id;
+            var act = 0;
+            if(ind < 0 || ind >= jjpact.length || jjcheckact[ind] !== cstate){
+                act = -jjdefred[cstate] - 1;
             }
             else {
-                jjlrState.push(act - 1);
-                jjsematicS.push(jjsematicVal);
-                jjsematicVal = null;
-                // token consumed
-                return true;
+                act = jjpact[ind];
+            }
+            if(act === jjactERR){
+                // explicit error
+                jjsyntaxError(t);
+                jjtokenQueue.shift();
+            }
+            else if(act > 0){
+                // shift
+                if(t.id === 0){
+                    // end of file
+                    jjstop = true;
+                    jjemit('accept');
+                    jjtokenQueue.shift();
+                }
+                else {
+                    jjlrState.push(act - 1);
+                    jjsematicS.push(jjsematicVal);
+                    jjsematicVal = null;
+                    jjtryReduce();
+                    // token consumed
+                    jjtokenQueue.shift();
+                }
+            }
+            else if(act < 0){
+                jjdoReduction(-act - 1);
+                jjtryReduce();
+            }
+            else {
+                // error
+                jjsyntaxError(t);
+                // force consume
+                jjtokenQueue.shift();
             }
         }
-        else if(act < 0){
-            jjdoReduction(-act - 1);
-            return false;
-        }
-        else {
-            // error
-            jjsyntaxError(t);
-            // force consume
-            return true;
+    }
+    function jjtryReduce(){
+        var cstate = jjlrState[jjlrState.length - 1];
+        var act;
+        while(jjdisact[cstate] === -jjtokenCount && (act = jjdefred[cstate]) !== -1){
+            jjdoReduction(act);
+            cstate = jjlrState[jjlrState.length - 1];
         }
     }
     function jjsyntaxError(t){

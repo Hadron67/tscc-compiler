@@ -18,7 +18,8 @@ module.exports = function (args){
         input: null,
         output: null,
         test: null,
-        help: false
+        help: false,
+        detailedTime: false
     };
     out:
     while(args.length > 0){
@@ -37,6 +38,11 @@ module.exports = function (args){
             case '--test':  
                 args.shift();
                 ret.test = requireArg('-t(--test) requires one argument');
+                break;
+            case '-d':
+            case '--detail-time':
+                args.shift();
+                ret.detailedTime = true;
                 break;
             default:
                 if(ret.input){

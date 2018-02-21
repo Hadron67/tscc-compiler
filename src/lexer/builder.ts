@@ -121,7 +121,6 @@ export function createLexBuilder<T>(ctx: Context): LexBuilder<T>{
         _simpleStack.length = 0;
         _currentArc = null;
         _isInverse = false;
-
         _ar.length = 0;
         _ar.push({
             pc: 0,

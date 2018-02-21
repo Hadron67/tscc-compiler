@@ -308,7 +308,7 @@ itemName:
     itn = <NAME> '=' { gb.addRuleSematicVar(itn); } 
 |   /* empty */
 ;
-ruleItem: 
+ruleItem0: 
     t = <NAME> { gb.addRuleItem(t, TokenRefType.NAME); }
 |   vn = <NAME> '=' { gb.addRuleSematicVar(vn); } 
     t = <NAME> { gb.addRuleItem(t, TokenRefType.NAME); }
@@ -387,8 +387,12 @@ export function parse(ctx: Context, source: string): File{
     });
     let gb = createFileBuilder(ctx);
     parser.init(ctx, gb);
+
+    ctx.beginTime('parse grammar file');
     parser.accept(source);
     parser.end();
+    ctx.endTime();
+
     if(err){
         return null;
     }

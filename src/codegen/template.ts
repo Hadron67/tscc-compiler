@@ -15,7 +15,7 @@ export function defineTemplate(name: string, render: (input: TemplateInput, fc: 
     templates[name] = render;
 }
 
-export function generateCode(lang: string, input: TemplateInput, fc: FileCreator, cb: (err: string) => any){
+export function generateCode(lang: string, input: TemplateInput, fc: FileCreator){
     let g = templates[lang];
     if(g === undefined){
         throw (`template for language "${lang}" is not implemented yet`);

@@ -8,12 +8,12 @@ export interface Console{
 }
 
 export var console: Console = {
-    assert: function(expr){
+    assert(expr){
         if(!expr){
             throw new Error('Assertion failed');
         }
     },
-    log: function(s){},
+    log(s){},
 };
 
 export function setDebugger(d: Console){

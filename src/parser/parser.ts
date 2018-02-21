@@ -2722,8 +2722,12 @@ export function parse(ctx: Context, source: string): File{
     });
     let gb = createFileBuilder(ctx);
     parser.init(ctx, gb);
+
+    ctx.beginTime('parse grammar file');
     parser.accept(source);
     parser.end();
+    ctx.endTime();
+
     if(err){
         return null;
     }

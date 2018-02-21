@@ -1,7 +1,6 @@
 import { genItemSets,genParseTable, Conflict } from '../grammar/ptable-gen';
-// import { parseSource } from '../parser/gparser';
 import { lexer } from '../lexer/pattern';
-import { testParse as testParse2 } from './parse-test';
+import { testParse } from './parse-test';
 import { YYTAB } from '../util/common';
 import { File } from '../parser/file';
 import { ItemSet } from '../grammar/item-set';
@@ -26,12 +25,13 @@ export interface Result extends Context{
     printItemSets(stream: OutputStream);
     printTable (os: OutputStream);
     printDFA(os: OutputStream);
-    testParse(tokens: string[]): string[];
-    printError(os: OutputStream, opt: Option);
-    printWarning(os: OutputStream, opt: Option);
+    testParse(tokens: string[], onErr: (msg: string) => any): string[];
+    printError(os: OutputStream, opt?: Option);
+    printWarning(os: OutputStream, opt?: Option);
+    printDetailedTime(os: OutputStream);
     hasWarning(): boolean;
     hasError(): boolean;
-    warningSummary();
+    warningSummary(): string;
     getTemplateInput(): TemplateInput;
     isTerminated(): boolean;
 }
@@ -46,21 +46,26 @@ export function genResult(source: string, fname: string): Result{
     let needLinecbs: ((ctx: Context, lines: string[]) => any)[] = [];
     let terminated = false;
 
+    let timers: {name: string, start: Date, end: Date}[] = [];
+
     let ret: Result = {
         warn,
         err,
         printItemSets,
         printTable,
         printDFA,
-        testParse,
+        testParse: (tokens, onErr) => testParse(g, parseTable, tokens, onErr),
         printError,
         printWarning,
+        printDetailedTime,
         hasWarning,
         hasError,
-        warningSummary,
+        warningSummary: () => `${warnings.length} warning(s), ${errors.length} error(s)`,
         getTemplateInput,
         requireLines: cb => needLinecbs.push(cb),
-        isTerminated: () => terminated
+        isTerminated: () => terminated,
+        beginTime,
+        endTime
     };
 
     var f = parse(ret, source);
@@ -75,7 +80,7 @@ export function genResult(source: string, fname: string): Result{
     f.name = fname;
     var g = f.grammar;
     file = f;
-    // we still could have error here
+    // we still could have errors here
     for(var s of g.tokens){
         if(!s.used){
             let msg = `token <${s.sym}> is never used, definations are(is):` + endl;
@@ -101,38 +106,64 @@ export function genResult(source: string, fname: string): Result{
         return ret;
     }
     // don't proceed if any error has been detected
+    beginTime('generate first sets');
     g.genFirstSets();
+    endTime();
 
+    beginTime('generate item sets');
     var temp = genItemSets(g);
+    endTime();
+
     itemSets = temp.result;
     iterationCount = temp.iterations;
+
+    beginTime('generate parse table');
     var temp2 = genParseTable(g, itemSets);
+    endTime();
+
     temp2.result.findDefAct();
+
+    beginTime('compress parse table');
     parseTable = new CompressedPTable(temp2.result);
+    endTime();
+
     for(let cf of temp2.conflicts){
         warn(new JsccWarning(cf.toString()));
     }
 
+    beginTime('generate lexical DFA tables');
     for(let dfa of file.lexDFA){
         file.dfaTables.push(new DFATable<LexAction>(dfa));
     }
+    endTime();
 
     return ret;
 
+    function beginTime(name: string){
+        timers.push({ name, start: new Date(), end: null});
+    }
+    function endTime(){
+        timers[timers.length - 1].end = new Date();
+    }
     function warn(w: JsccWarning){
         warnings.push(w);
     }
     function err(e: JsccError){
         errors.push(e);
     }
-    function printItemSets(stream: OutputStream){
-        stream.writeln(itemSets.size + ' state(s) in total,finished in ' + iterationCount + ' iteration(s).');
+    function printItemSets(os: OutputStream){
+        os.writeln(itemSets.size + ' state(s) in total,finished in ' + iterationCount + ' iteration(s).');
         itemSets.forEach(function(s){
-            stream.writeln(s.toString({ showTrailer: true }));
+            os.writeln(s.toString({ showTrailer: true }));
         });
     }
     function printTable (os: OutputStream){
         printParseTable(os, parseTable, itemSets);
+    }
+    function printDetailedTime(os: OutputStream){
+        for(var t of timers){
+            os.writeln(`${t.name}: ${(t.end.valueOf() - t.start.valueOf()) / 1000}s`);
+        }
     }
     function printDFA(os: OutputStream){
         for(let s of file.dfaTables){
@@ -141,16 +172,13 @@ export function genResult(source: string, fname: string): Result{
             os.writeln();
         }
     }
-    function testParse(tokens: string[]){
-        return testParse2(file.grammar,parseTable,tokens);
-    }
-    function printError(os: OutputStream, opt: Option){
+    function printError(os: OutputStream, opt?: Option){
         for(let e of errors){
             os.writeln(e.toString(opt));
         }
         os.writeln();
     }
-    function printWarning(os: OutputStream, opt: Option){
+    function printWarning(os: OutputStream, opt?: Option){
         for(let w of warnings){
             os.writeln(w.toString(opt));
         }
@@ -161,9 +189,6 @@ export function genResult(source: string, fname: string): Result{
     }
     function hasError(){
         return errors.length > 0;
-    }
-    function warningSummary(){
-        return `${warnings.length} warning(s), ${errors.length} error(s)`;
     }
     function getTemplateInput(): TemplateInput{
         return {

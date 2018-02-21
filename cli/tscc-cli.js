@@ -2,7 +2,7 @@
 
 var fs = require('fs');
 // var Promise = require('bluebird');
-var jscc = require('../lib/tscc.js');
+var tscc = require('../lib/tscc.js').main;
 var parseArgs = require('./arg.js');
 var pkg = require('../package.json');
 
@@ -11,36 +11,11 @@ var help =
    or  ${pkg.name} --help|-h
 
 options:
-    -o, --output  Specify output file;
-    -t, --test    Run test on the given input string;
-    -h, --help    Print this help message and exit.
+    -o, --output       Specify output file;
+    -t, --test         Run test on the given input string;
+    -d, --detail-time  Print the time costs of different phases;
+    -h, --help         Print this help message and exit.
 `;
-function changeSuffix(s,suf){
-    var i = s.lastIndexOf('.');
-    return (i === -1 ? s : s.substr(0,i)) + suf;
-}
-function deleteSuffix(s){
-    var i = s.lastIndexOf('.');
-    return i === -1 ? s : s.substr(0,i);
-}
-
-function stream(st){
-    return {
-        write: function(s){
-            st.write(s);
-        },
-        writeln: function(s){
-            s && (st.write(s) || console.assert(false));
-            st.write('\n');
-        }
-    }
-}
-
-function pass(a){
-    return new Promise(function(acc){
-        acc(a);
-    });
-}
 
 function readFile(fname){
     return new Promise(function(accept, reject){
@@ -58,75 +33,33 @@ function writeFile(fname, data){
     });
 }
 
-function genCode(result, arg){
-    var tempIn = result.getTemplateInput();
-    var files = [];
-    var current = new jscc.io.StringOS();
-    jscc.generateCode(tempIn.output, tempIn, {
-        save: function(fname){
-            files.push(writeFile(fname, current.s));
-            current.reset();
-        },
+function main(arg){
+    var stdout = {
         write: function(s){
-            current.write(s);
+            process.stdout.write(s);
         },
         writeln: function(s){
-            current.writeln(s);
+            console.log(s || '');
         }
-    }, function(err){
-        err ? reject(err) : accept();
-    });
-    return Promise.all(files);
-}
-
-function writeOutput(result){
-    var out = new jscc.io.StringOS();
-    result.printDFA(out);
-    result.printTable(out);
-}
-
-function generate(arg){
-    jscc.setDebugger(console);
-    var consoleStream = stream(process.stdout);
-
+    }
+    var files = [];
     return readFile(arg.input)
     .then(function(input){
-        var result = jscc.genResult(input, deleteSuffix(arg.input));
-        if(result.hasWarning()){
-            result.printWarning(consoleStream);
-        }
-        if(result.hasError()){
-            result.printError(consoleStream);
-            result.isTerminated() && console.log('compilation terminated');
-            return pass(result);
-        }
-    
-        // no console output from now on
-        var out = new jscc.io.StringOS();
-        result.printDFA(out);
-        result.printTable(out);
-        return writeFile(arg.output, out.s)
-        .then(function(){
-            return genCode(result, arg);
-        })
-        .then(function(){
-            return result;
+        var status = tscc({
+            inputFile: arg.input,
+            input: input,
+            outputFile: arg.output,
+            stdout: stdout,
+            writeFile: function(path, content){
+                files.push(writeFile(path, content));
+            },
+            testInput: arg.test,
+            printDetailedTime: arg.detailedTime
         });
-    });
-}
-
-function main(arg){
-    return generate(arg)
-    .then(function(result){
-        console.log(result.warningSummary());
-        
-        if(arg.test){
-            console.log("preparing for test");
-            var r = result.testParse(arg.test.split(/[ ]+/g));
-            for(var i = 0;i < r.length;i++){
-                console.log(r[i]);
-            }
-        }
+        return Promise.all(files)
+        .then(function(){
+            return status;
+        });
     });
 }
 
@@ -146,8 +79,8 @@ module.exports = function(options){
         process.exit(0);
     }
     return main(arg)
-    .then(function(){
-        process.exit(0);
+    .then(function(status){
+        process.exit(status);
     })
     .catch(function(e){
         console.log(e.toString());
