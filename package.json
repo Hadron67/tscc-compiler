@@ -20,6 +20,10 @@
   ],
   "author": "hadroncfy",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Hadron67/tscc-compiler.git"
+  },
   "dependencies": {
     "bluebird": "^3.3.1"
   },

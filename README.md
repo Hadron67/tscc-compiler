@@ -2,7 +2,7 @@
 An LALR(1) compiler generator written in typescript. It generates both the tokenizer and the parser.
 Currently it can generate parsers written in javascript and typescript. More target languages will be supported in future releases.
 
-Check out [wiki]() for tscc-compiler!
+Check out [wiki](https://github.com/Hadron67/tscc-compiler/wiki) for tscc-compiler!
 
 ## Installation
 To use it in node, you can install tscc-compiler via npm:
@@ -88,7 +88,7 @@ compilation done in 0.071s
 ```
 
 ## Grammar file
-The syntax of the grammar specifying file used by tscc is similiar to yacc. Checkout wiki for tscc-compiler for a specification of grammar file, and [examples](examples) for explicit usages.
+The syntax of the grammar specifying file used by tscc is similiar to yacc. Checkout [wiki](https://github.com/Hadron67/tscc-compiler/wiki) for tscc-compiler for a specification of grammar file, and `examples/` for explicit usages.
 
 ## License
 MIT.
