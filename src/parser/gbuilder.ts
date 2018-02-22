@@ -41,6 +41,7 @@ export interface GBuilder{
     getTokenByAlias(a: JNode): TokenDef;
     getTokenByName(t: JNode): TokenDef;
     defineTokenPrec(tid: JNode, assoc: Assoc, type: TokenRefType);
+    setLineTerminator(eol: string);
     setOpt(name: JNode, value: JNode);
     setOutput(n: JNode);
     setHeader(h: JNode);
@@ -97,6 +98,7 @@ export function createFileBuilder(ctx: Context): GBuilder{
         getTokenByAlias,
         getTokenByName,
         defineTokenPrec,
+        setLineTerminator,
         setOpt,
         setOutput,
         setHeader,
@@ -241,6 +243,9 @@ export function createFileBuilder(ctx: Context): GBuilder{
                 pos: tid
             };
         }
+    }
+    function setLineTerminator(eol: string){
+        file.eol = eol;
     }
     function setOpt(name: JNode, value: JNode){
         file.opt[name.val] = { name: name, val: value };

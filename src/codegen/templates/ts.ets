@@ -47,7 +47,8 @@ var <%- prefix + tname + ts(': ' + type + '[]')%> = [
 /*
     constants
 */
-var <%- prefix %>eol = '\n'.charCodeAt(0);
+var <%- prefix %>lf = '\n'.charCodeAt(0);
+var <%- prefix %>cr = '\r'.charCodeAt(0);
 <% if(ists){ %>
 interface DFATable{
     pnext: number[];
@@ -284,6 +285,8 @@ class Token {
 interface <%- className %>{
     init(<%- n(input.file.initArg) %>);
     accept(s: string);
+    setLineTerminator(lt: LineTerm);
+    getLineTerminator(): LineTerm;
     end();
     halt();
     on(ent: string, cb: (a1?, a2?, a3?) => any);
@@ -313,6 +316,24 @@ Token.prototype.toString = function(){
         '"' + <%- prefix %>tokenAlias[this.id] + '"') + "(" + this.val + ")";
 }
 <% } %>
+<% if(ists){ %>
+enum LineTerm{
+    NONE = 1,
+    AUTO,
+    CR,
+    LF,
+    CRLF
+};
+<% } else { %>
+var LineTerm = {
+    NONE: 1,
+    AUTO: 2,
+    CR: 3,
+    LF: 4,
+    CRLF: 5
+};
+<% } %>
+
 <% let stype = n(input.file.sematicType, 'any'); %>
 function create<%- className %>()<%- ts(': ' + className) %> {
     // members for lexer
@@ -335,7 +356,10 @@ function create<%- className %>()<%- ts(': ' + className) %> {
     var <%- prefix %>sematicVal<%- ts(': ' + stype) %>;
     var <%- prefix %>tokenQueue<%- ts(": Token[]") %>;
 
-    var <%- prefix %>stop;
+    var <%- prefix %>stop<%- ts(': boolean') %>;
+
+    var <%- prefix %>lineTerm<%- ts(': LineTerm') %>;
+    var <%- prefix %>lastCR<%- ts(': boolean') %>
 
     var <%- prefix %>handlers<%- ts(": {[s: string]: ((a1?, a2?, a3?) => any)[]}") %> = {};
 
@@ -346,6 +370,8 @@ function create<%- className %>()<%- ts(': ' + className) %> {
     return {
         init,
         on,
+        setLineTerminator,
+        getLineTerminator: () => <%- prefix %>lineTerm,
         accept,
         end,
         halt
@@ -354,6 +380,8 @@ function create<%- className %>()<%- ts(': ' + className) %> {
     return {
         init: init,
         on: on,
+        setLineTerminator: setLineTerminator,
+        getLineTerminator: function() { return <%- prefix %>lineTerm; },
         accept: accept,
         end: end,
         halt: halt
@@ -375,6 +403,8 @@ function create<%- className %>()<%- ts(': ' + className) %> {
         <%- prefix %>tokenQueue = [];
 
         <%- prefix %>stop = false;
+        <%- prefix %>lineTerm = LineTerm.AUTO;
+        var <%- prefix %>lastCR = false;
         <%- n(input.file.initBody) %>
 
         <%- prefix %>tryReduce();
@@ -449,7 +479,56 @@ function create<%- className %>()<%- ts(': ' + className) %> {
         <%- prefix %>backupCount = 0;
     }
     function <%- prefix %>consume(c<%- ts(": number") %>){
-        c === <%- prefix %>eol ? (<%- prefix %>line++, <%- prefix %>column = 0) : (<%- prefix %>column += c > 0xff ? 2 : 1);
+        // c === <%- prefix %>eol ? (<%- prefix %>line++, <%- prefix %>column = 0) : (<%- prefix %>column += c > 0xff ? 2 : 1);
+        switch(<%- prefix%>lineTerm){
+            case LineTerm.NONE:
+                <%- prefix %>column += c > 0xff ? 2 : 1;
+                break;
+            case LineTerm.CR:
+                c === <%- prefix %>cr ? (<%- prefix %>line++, <%- prefix %>column = 0) : (<%- prefix %>column += c > 0xff ? 2 : 1);
+                break;
+            case LineTerm.LF:
+                c === <%- prefix %>lf ? (<%- prefix %>line++, <%- prefix %>column = 0) : (<%- prefix %>column += c > 0xff ? 2 : 1);
+                break;
+            case LineTerm.CRLF:
+                if(<%- prefix %>lastCR){
+                    if(c === <%- prefix %>lf){
+                        <%- prefix %>line++, <%- prefix %>column = 0;
+                        <%- prefix %>lastCR = false;
+                    }
+                    else {
+                        <%- prefix %>column += c > 0xff ? 2 : 1;
+                        <%- prefix %>lastCR = c === <%- prefix %>cr;
+                    }
+                }
+                else {
+                    <%- prefix %>column += c > 0xff ? 2 : 1;
+                    <%- prefix %>lastCR = c === <%- prefix %>cr;
+                }
+                break;
+            case LineTerm.AUTO:
+                if(<%- prefix %>lastCR){
+                    if(c === <%- prefix %>lf){
+                        <%- prefix %>line++, <%- prefix %>column = 0;
+                        <%- prefix %>lastCR = false;
+                        <%- prefix%>lineTerm = LineTerm.CRLF;
+                    }
+                    else {
+                        <%- prefix %>line++, <%- prefix %>column = 0;
+                        <%- prefix%>lineTerm = LineTerm.CR;
+                        c === <%- prefix %>cr ? (<%- prefix %>line++, <%- prefix %>column = 0) : (<%- prefix %>column += c > 0xff ? 2 : 1);
+                    }
+                }
+                else if(c === <%- prefix %>lf){
+                    <%- prefix %>line++, <%- prefix %>column = 0;
+                    <%- prefix%>lineTerm = LineTerm.LF;
+                }
+                else {
+                    <%- prefix %>column += c > 0xff ? 2 : 1;
+                    <%- prefix %>lastCR = c === <%- prefix %>cr;
+                }
+                break;
+        }
         <%- prefix %>matched += String.fromCharCode(c);
         <%- prefix %>marker.state !== -1 && (<%- prefix %>backupCount++);
         return true;
@@ -565,6 +644,9 @@ function create<%- className %>()<%- ts(': ' + className) %> {
                 return true;
             }
         }
+    }
+    function setLineTerminator(lt: LineTerm){
+        <%- prefix %>lineTerm = lt;
     }
     /**
      *  input a string

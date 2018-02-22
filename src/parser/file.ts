@@ -6,6 +6,7 @@ import { DFATable } from '../lexer/dfa-table';
 
 export class File{
     name: string;
+    eol: string = '\n';
     grammar: Grammar = null;
     lexDFA: DFA<LexAction>[] = [];
     dfaTables: DFATable<LexAction>[] = [];

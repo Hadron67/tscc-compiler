@@ -3,6 +3,7 @@ import { Console } from './util/common';
 import { genResult, Result } from './top/result';
 import { generateCode } from './codegen/template';
 
+export { Assoc } from './grammar/token-entry';
 export { setDebugger, setTab } from './util/common';
 export { defineTemplate } from './codegen/template';
 export { io, genResult, generateCode };

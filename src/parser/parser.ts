@@ -74,7 +74,8 @@ function unescape(s: string): string{
 /*
     constants
 */
-var jjeol = '\n'.charCodeAt(0);
+var jjlf = '\n'.charCodeAt(0);
+var jjcr = '\r'.charCodeAt(0);
 interface DFATable{
     pnext: number[];
     disnext: number[];
@@ -1711,10 +1712,20 @@ class Token {
 interface Parser{
     init(ctx1: Context, b: GBuilder);
     accept(s: string);
+    setLineTerminator(lt: LineTerm);
+    getLineTerminator(): LineTerm;
     end();
     halt();
     on(ent: string, cb: (a1?, a2?, a3?) => any);
 }
+enum LineTerm{
+    NONE = 1,
+    AUTO,
+    CR,
+    LF,
+    CRLF
+};
+
 function createParser(): Parser {
     // members for lexer
     var jjlexState: number[];
@@ -1736,7 +1747,10 @@ function createParser(): Parser {
     var jjsematicVal: JNode;
     var jjtokenQueue: Token[];
 
-    var jjstop;
+    var jjstop: boolean;
+
+    var jjlineTerm: LineTerm;
+    var jjlastCR: boolean
 
     var jjhandlers: {[s: string]: ((a1?, a2?, a3?) => any)[]} = {};
 
@@ -1753,6 +1767,8 @@ function createParser(): Parser {
     return {
         init,
         on,
+        setLineTerminator,
+        getLineTerminator: () => jjlineTerm,
         accept,
         end,
         halt
@@ -1773,6 +1789,8 @@ function createParser(): Parser {
         jjtokenQueue = [];
 
         jjstop = false;
+        jjlineTerm = LineTerm.AUTO;
+        var jjlastCR = false;
         
     gb = b;
     ctx = ctx1;
@@ -2038,7 +2056,56 @@ function createParser(): Parser {
         jjbackupCount = 0;
     }
     function jjconsume(c: number){
-        c === jjeol ? (jjline++, jjcolumn = 0) : (jjcolumn += c > 0xff ? 2 : 1);
+        // c === jjeol ? (jjline++, jjcolumn = 0) : (jjcolumn += c > 0xff ? 2 : 1);
+        switch(jjlineTerm){
+            case LineTerm.NONE:
+                jjcolumn += c > 0xff ? 2 : 1;
+                break;
+            case LineTerm.CR:
+                c === jjcr ? (jjline++, jjcolumn = 0) : (jjcolumn += c > 0xff ? 2 : 1);
+                break;
+            case LineTerm.LF:
+                c === jjlf ? (jjline++, jjcolumn = 0) : (jjcolumn += c > 0xff ? 2 : 1);
+                break;
+            case LineTerm.CRLF:
+                if(jjlastCR){
+                    if(c === jjlf){
+                        jjline++, jjcolumn = 0;
+                        jjlastCR = false;
+                    }
+                    else {
+                        jjcolumn += c > 0xff ? 2 : 1;
+                        jjlastCR = c === jjcr;
+                    }
+                }
+                else {
+                    jjcolumn += c > 0xff ? 2 : 1;
+                    jjlastCR = c === jjcr;
+                }
+                break;
+            case LineTerm.AUTO:
+                if(jjlastCR){
+                    if(c === jjlf){
+                        jjline++, jjcolumn = 0;
+                        jjlastCR = false;
+                        jjlineTerm = LineTerm.CRLF;
+                    }
+                    else {
+                        jjline++, jjcolumn = 0;
+                        jjlineTerm = LineTerm.CR;
+                        c === jjcr ? (jjline++, jjcolumn = 0) : (jjcolumn += c > 0xff ? 2 : 1);
+                    }
+                }
+                else if(c === jjlf){
+                    jjline++, jjcolumn = 0;
+                    jjlineTerm = LineTerm.LF;
+                }
+                else {
+                    jjcolumn += c > 0xff ? 2 : 1;
+                    jjlastCR = c === jjcr;
+                }
+                break;
+        }
         jjmatched += String.fromCharCode(c);
         jjmarker.state !== -1 && (jjbackupCount++);
         return true;
@@ -2154,6 +2221,9 @@ function createParser(): Parser {
                 return true;
             }
         }
+    }
+    function setLineTerminator(lt: LineTerm){
+        jjlineTerm = lt;
     }
     /**
      *  input a string
@@ -2732,6 +2802,14 @@ export function parse(ctx: Context, source: string): File{
         return null;
     }
     else {
+        var eol = parser.getLineTerminator();
+        if(eol !== LineTerm.NONE && eol !== LineTerm.AUTO){
+            gb.setLineTerminator(
+                eol === LineTerm.CR ? '\r' : 
+                eol === LineTerm.LF ? '\n' :
+                eol === LineTerm.CRLF ? '\r\n' : null
+            );
+        }
         return gb.build();
     }
 }

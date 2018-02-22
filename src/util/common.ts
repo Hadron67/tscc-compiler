@@ -3,8 +3,8 @@ export var YYTAB: string = '    ';
 export var DEBUG: boolean = true;
 
 export interface Console{
-    assert: (expr: boolean) => any;
-    log: (s: string) => void;
+    assert(expr: boolean): any;
+    log(s: string): void;
 }
 
 export var console: Console = {

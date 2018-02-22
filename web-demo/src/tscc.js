@@ -30,6 +30,90 @@ function __extends(d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 }
 
+var endl = '\n';
+var OutputStream = (function () {
+    function OutputStream() {
+    }
+    OutputStream.prototype.writeln = function (s) {
+        s && this.write(s);
+        this.write(endl);
+    };
+    return OutputStream;
+}());
+var StringOS = (function (_super) {
+    __extends(StringOS, _super);
+    function StringOS() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.s = '';
+        return _this;
+    }
+    StringOS.prototype.write = function (s) {
+        this.s += s;
+    };
+    StringOS.prototype.reset = function () {
+        this.s = '';
+    };
+    return StringOS;
+}(OutputStream));
+function StringIS(s) {
+    var i = 0;
+    return {
+        peek: function () {
+            return s.charAt(i) || null;
+        },
+        next: function () {
+            var ret = this.peek();
+            i++;
+            return ret;
+        }
+    };
+}
+function biss(iss) {
+    var backup = [];
+    return {
+        peek: function () {
+            return backup.length > 0 ? backup[backup.length - 1] : iss.peek();
+        },
+        next: function () {
+            if (backup.length > 0) {
+                return backup.pop();
+            }
+            else {
+                return iss.next();
+            }
+        },
+        backup: function (c) {
+            backup.push(c);
+        }
+    };
+}
+
+
+var io = Object.freeze({
+	endl: endl,
+	OutputStream: OutputStream,
+	StringOS: StringOS,
+	StringIS: StringIS,
+	biss: biss
+});
+
+var YYTAB = '    ';
+var DEBUG = true;
+var console$1 = {
+    assert: function (expr) {
+        if (!expr) {
+            throw new Error('Assertion failed');
+        }
+    },
+    log: function (s) { }
+};
+function setDebugger(d) {
+    return console$1.log = d.log;
+}
+function setTab(t) {
+    return YYTAB = t;
+}
+
 var BSIZE = 32;
 var BitSet = (function () {
     function BitSet(_size) {
@@ -110,22 +194,1180 @@ var BitSet = (function () {
     return BitSet;
 }());
 
-var YYTAB = '    ';
-var DEBUG = true;
-var console$1 = {
-    assert: function (expr) {
-        if (!expr) {
-            throw new Error('Assertion failed');
+var TokenSet = (function (_super) {
+    __extends(TokenSet, _super);
+    function TokenSet(tcount) {
+        return _super.call(this, tcount) || this;
+    }
+    TokenSet.prototype.toString = function (g) {
+        var ret = '';
+        var first = true;
+        if (this.contains(0)) {
+            ret += '""';
+            first = false;
         }
-    },
-    log: function (s) { }
-};
-function setDebugger(d) {
-    return console$1.log = d.log;
+        for (var i = 0; i < g.tokenCount; i++) {
+            if (this.contains(i + 1)) {
+                if (!first) {
+                    ret += ',';
+                }
+                ret += '"' + g.tokens[i].sym + '"';
+                first = false;
+            }
+        }
+        return ret;
+    };
+    return TokenSet;
+}(BitSet));
+
+var Action;
+(function (Action) {
+    Action[Action["NONE"] = 1] = "NONE";
+    Action[Action["SHIFT"] = 2] = "SHIFT";
+    Action[Action["REDUCE"] = 3] = "REDUCE";
+})(Action || (Action = {}));
+var Item = (function () {
+    function Item(rule, ik) {
+        this.marker = 0;
+        this.shift = null;
+        this.actionType = Action.NONE;
+        this.changed = true;
+        this.rule = rule;
+        this.isKernel = ik;
+        this.lah = new TokenSet(rule.g.tokenCount);
+    }
+    Item.prototype.canShift = function () {
+        return this.rule.rhs.length > this.marker;
+    };
+    Item.prototype.getShift = function () {
+        return this.rule.rhs[this.marker];
+    };
+    Item.prototype.toString = function (opt) {
+        if (opt === void 0) { opt = {}; }
+        var showlah = (opt && opt.showlah) || false;
+        var showTrailer = (opt && opt.showTrailer) || false;
+        var ret = '[ ' + this.rule.toString(this.marker) + (showlah ? ',{ ' + this.lah.toString(this.rule.g) + ' }' : '') + ' ]';
+        this.isKernel && (ret += '*');
+        if (showTrailer) {
+            switch (this.actionType) {
+                case Action.NONE:
+                    ret += '(-)';
+                    break;
+                case Action.SHIFT:
+                    ret += '(s' + this.shift.stateIndex + ')';
+                    break;
+                case Action.REDUCE:
+                    ret += '(r)';
+                    break;
+            }
+        }
+        return ret;
+    };
+    Item.prototype.hash = function () {
+        return this.rule.index + '-' + this.marker;
+    };
+    Item.prototype.hasRRConflictWith = function (i) {
+        return this.actionType === Action.REDUCE && i.actionType === Action.REDUCE && this.rule.index !== i.rule.index && this.lah.hasIntersection(i.lah);
+    };
+    Item.prototype.getFollowSet = function (set) {
+        var g = this.rule.g;
+        var i;
+        for (i = this.marker + 1; i < this.rule.rhs.length; i++) {
+            var mItem = this.rule.rhs[i];
+            if (g.isToken(mItem)) {
+                set.add(mItem + 1);
+                break;
+            }
+            else {
+                var set1 = g.nts[-mItem - 1].firstSet;
+                set.union(set1);
+                set.remove(0);
+                if (!set1.contains(0)) {
+                    break;
+                }
+            }
+        }
+        if (i === this.rule.rhs.length) {
+            set.union(this.lah);
+        }
+    };
+    Item.NULL = {};
+    return Item;
+}());
+var ItemSet = (function () {
+    function ItemSet(g) {
+        this.items = [];
+        this.itemTable = [];
+        this.complete = false;
+        this.index = -1;
+        this.stateIndex = 0;
+        this.prev = null;
+        this.next = null;
+        this.merges = [];
+        this.g = g;
+        this.data = this;
+    }
+    ItemSet.prototype.add = function (rule, marker, ik, lah, reset) {
+        var entry = this.itemTable[rule.index] = this.itemTable[rule.index] || [];
+        var it = entry[marker];
+        if (it === undefined) {
+            var n = new Item(rule, ik);
+            n.marker = marker;
+            if (lah) {
+                n.lah.union(lah);
+            }
+            entry[marker] = n;
+            this.items.push(n);
+            return true;
+        }
+        else if (lah) {
+            var ret = it.lah.union(lah);
+            if (reset && ret && it.canShift()) {
+                it.actionType = Action.NONE;
+            }
+            ret && (it.changed = true);
+            return ret;
+        }
+    };
+    ItemSet.prototype.contains = function () {
+    };
+    ItemSet.prototype.closure = function () {
+        var changed = true;
+        var tSet = new TokenSet(this.g.tokenCount);
+        var cela = this;
+        while (changed) {
+            changed = false;
+            for (var _i = 0, _a = this.items; _i < _a.length; _i++) {
+                var item = _a[_i];
+                if (item.changed && item.canShift()) {
+                    var ritem = item.getShift();
+                    if (ritem < 0) {
+                        tSet.removeAll();
+                        item.getFollowSet(tSet);
+                        this.g.forEachRuleOfNt(-ritem - 1, function (rule) {
+                            changed = cela.add(rule, 0, false, tSet, false) || changed;
+                            return false;
+                        });
+                    }
+                }
+                item.changed = false;
+            }
+        }
+    };
+    ItemSet.prototype.toString = function (opt) {
+        var showTrailer = (opt && opt.showTrailer) || false;
+        var opt2 = { showTrailer: showTrailer };
+        var ret = 's' + this.stateIndex + '';
+        if (this.index !== null) {
+            ret += '(i' + this.index;
+        }
+        else {
+            ret += '(i?';
+        }
+        if (this.merges.length > 0) {
+            ret += ',merged from ';
+            for (var i = 0; i < this.merges.length; i++) {
+                if (i > 0) {
+                    ret += ',';
+                }
+                ret += 'i' + this.merges[i];
+            }
+        }
+        ret += ')' + endl;
+        for (var _i = 0, _a = this.items; _i < _a.length; _i++) {
+            var item = _a[_i];
+            ret += item.toString(opt2) + endl;
+        }
+        return ret;
+    };
+    ItemSet.prototype.kernelHash = function () {
+        var ret = 0;
+        for (var _i = 0, _a = this.items; _i < _a.length; _i++) {
+            var item = _a[_i];
+            if (item.isKernel) {
+                ret += item.rule.index << 5 + item.rule.index + item.marker;
+            }
+        }
+        return String(ret);
+    };
+    ItemSet.prototype.forEach = function (cb) {
+        for (var _i = 0, _a = this.items; _i < _a.length; _i++) {
+            var item = _a[_i];
+            cb(item);
+        }
+    };
+    ItemSet.prototype.canMergeTo = function (s) {
+        for (var i = 0; i < this.g.rules.length; i++) {
+            var t1 = this.itemTable[i], t2 = s.itemTable[i];
+            if (t1 || t2) {
+                var rhs = this.g.rules[i].rhs;
+                for (var j = 0; j <= rhs.length; j++) {
+                    if (t1 && t1[j] && t1[j].isKernel && (!t2 || !t2[j] || !t2[j].isKernel)
+                        || t2 && t2[j] && t2[j].isKernel && (!t1 || !t1[j] || !t1[j].isKernel)) {
+                        return false;
+                    }
+                }
+                if (t1 && t2
+                    && t1[j] && t2[j]
+                    && !t1[j].lah.equals(t2[j].lah)
+                    && t1[j].lah.hasIntersection(t2[j].lah)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    };
+    ItemSet.prototype.mergeTo = function (s) {
+        var ret = false;
+        for (var _i = 0, _a = s.items; _i < _a.length; _i++) {
+            var it = _a[_i];
+            ret = this.add(it.rule, it.marker, it.isKernel, it.lah, true) || ret;
+        }
+        this.merges.push(s.index);
+        return ret;
+    };
+    return ItemSet;
+}());
+
+var List = (function () {
+    function List() {
+        this.size = 0;
+        this.head = { prev: null, next: null, data: null };
+        this.tail = { prev: null, next: null, data: null };
+        this.head.next = this.tail;
+        this.tail.prev = this.head;
+    }
+    List.prototype.append = function (n) {
+        n.prev = this.tail.prev;
+        n.next = this.tail;
+        this.tail.prev.next = n;
+        this.tail.prev = n;
+        this.size++;
+    };
+    List.prototype.pull = function () {
+        var n = this.head.next;
+        this.head.next = n.next;
+        n.next.prev = this.head;
+        n.prev = n.next = null;
+        this.size--;
+        return n.data;
+    };
+    List.prototype.isEmpty = function () {
+        return this.size === 0;
+    };
+    List.prototype.forEach = function (cb) {
+        for (var a = this.head.next; a !== this.tail; a = a.next) {
+            cb(a.data);
+        }
+    };
+    List.prototype.remove = function (n) {
+        n.next.prev = n.prev;
+        n.prev.next = n.next;
+        this.size--;
+    };
+    List.prototype.iterator = function () {
+        var p = this.head;
+        var cela = this;
+        return function () {
+            return p !== cela.tail ? (p = p.next, p.data) : null;
+        };
+    };
+    return List;
+}());
+
+(function (Assoc) {
+    Assoc[Assoc["UNDEFINED"] = 0] = "UNDEFINED";
+    Assoc[Assoc["LEFT"] = 1] = "LEFT";
+    Assoc[Assoc["RIGHT"] = 2] = "RIGHT";
+    Assoc[Assoc["NON"] = 3] = "NON";
+})(exports.Assoc || (exports.Assoc = {}));
+
+function convertTokenToString(t) {
+    return t.alias === null ? "<" + t.sym + ">" : "\"" + t.alias + "\"";
 }
-function setTab(t) {
-    return YYTAB = t;
+
+function printParseTable(os, cela, doneList) {
+    var g = cela.g;
+    var tokenCount = g.tokenCount;
+    var ntCount = g.nts.length;
+    doneList.forEach(function (set) {
+        var i = set.stateIndex;
+        var shift = '';
+        var reduce = '';
+        var gotot = '';
+        os.writeln("state " + i);
+        set.forEach(function (item) {
+            os.writeln(YYTAB + item.toString({ showTrailer: false }));
+        });
+        if (cela.defred[i] !== -1) {
+            os.writeln(YYTAB + "default action: reduce with rule " + cela.defred[i]);
+        }
+        else {
+            os.writeln(YYTAB + 'no default action');
+        }
+        for (var j = 0; j < tokenCount; j++) {
+            var item = cela.lookupShift(i, j);
+            if (item !== null && item !== Item.NULL) {
+                if (item.actionType === Action.SHIFT) {
+                    shift += "" + YYTAB + convertTokenToString(g.tokens[j]) + " : shift, and go to state " + item.shift.stateIndex + endl;
+                }
+                else {
+                    reduce += "" + YYTAB + convertTokenToString(g.tokens[j]) + " : reduce with rule " + item.rule.index + endl;
+                }
+            }
+        }
+        for (var j = 0; j < ntCount; j++) {
+            var item = cela.lookupGoto(i, j);
+            if (item !== null) {
+                gotot += "" + YYTAB + g.nts[j].sym + " : go to state " + item.shift.stateIndex + endl;
+            }
+        }
+        os.writeln(shift + reduce + gotot);
+        os.writeln('');
+    });
 }
+var ParseTable = (function () {
+    function ParseTable(g, stateCount) {
+        this.defred = null;
+        this.g = g;
+        var tokenCount = g.tokenCount;
+        var ntCount = g.nts.length;
+        this.stateCount = stateCount;
+        this.shift = new Array(tokenCount * stateCount);
+        this.gotot = new Array(ntCount * stateCount);
+        for (var i = 0; i < this.shift.length; i++) {
+            this.shift[i] = null;
+        }
+        for (var i = 0; i < this.gotot.length; i++) {
+            this.gotot[i] = null;
+        }
+    }
+    ParseTable.prototype.forEachShift = function (cb) {
+        for (var state = 0; state < this.stateCount; state++) {
+            for (var tk = 0; tk < this.g.tokens.length; tk++) {
+                var item = this.lookupShift(state, tk);
+                item && cb(item, state, tk);
+            }
+        }
+    };
+    ParseTable.prototype.forEachGoto = function (cb) {
+        for (var state = 0; state < this.stateCount; state++) {
+            for (var nt = 0; nt < this.g.nts.length; nt++) {
+                var item = this.lookupGoto(state, nt);
+                item && cb(item, state, nt);
+            }
+        }
+    };
+    ParseTable.prototype.lookupShift = function (state, token) {
+        return this.shift[this.g.tokenCount * state + token];
+    };
+    ParseTable.prototype.lookupGoto = function (state, nt) {
+        return this.gotot[this.g.nts.length * state + nt];
+    };
+    ParseTable.prototype._getDefRed = function (state, apool) {
+        for (var i = 0; i < apool.length; i++) {
+            apool[i] = 0;
+        }
+        for (var tk = 0; tk < this.g.tokenCount; tk++) {
+            var item = this.lookupShift(state, tk);
+            item && item.actionType === Action.REDUCE && apool[item.rule.index]++;
+        }
+        var ret = 0;
+        for (var i = 0; i < apool.length; i++) {
+            apool[i] > apool[ret] && (ret = i);
+        }
+        return apool[ret] > 0 ? ret : -1;
+    };
+    ParseTable.prototype.findDefAct = function () {
+        this.defred = new Array(this.stateCount);
+        var apool = new Array(this.g.rules.length);
+        for (var i = 0; i < this.stateCount; i++) {
+            var def = this._getDefRed(i, apool);
+            this.defred[i] = def;
+            if (def !== -1) {
+                for (var tk = 0; tk < this.g.tokens.length; tk++) {
+                    var item = this.lookupShift(i, tk);
+                    item && item.actionType === Action.REDUCE && item.rule.index === def &&
+                        (this.shift[this.g.tokenCount * i + tk] = null);
+                }
+            }
+        }
+    };
+    return ParseTable;
+}());
+
+var ConflictType;
+(function (ConflictType) {
+    ConflictType[ConflictType["RR"] = 0] = "RR";
+    ConflictType[ConflictType["SR"] = 1] = "SR";
+})(ConflictType || (ConflictType = {}));
+
+var Conflict = (function () {
+    function Conflict() {
+    }
+    Conflict.prototype.toString = function () {
+        return "state " + this.set.stateIndex + ", " + Conflict.cNames[this.type] + " conflict:" + endl +
+            (YYTAB + "token: " + convertTokenToString(this.token) + endl) +
+            (YYTAB + "used rule: " + this.used.toString() + endl) +
+            (YYTAB + "discarded rule: " + this.discarded.toString());
+    };
+    Conflict.cNames = ['reduce/reduce', 'shift/reduce'];
+    return Conflict;
+}());
+function genInitialSet(g) {
+    var start = g.nts[0].rules[0];
+    var iset = new ItemSet(g);
+    iset.index = 0;
+    var set1 = new TokenSet(g.tokenCount);
+    set1.add(1);
+    iset.add(start, 0, true, set1, false);
+    return iset;
+}
+function genItemSets(g) {
+    var htable = {};
+    var iterations = 0;
+    function addToTable(iset) {
+        var h = iset.kernelHash();
+        if (htable[h] === undefined) {
+            htable[h] = [];
+        }
+        htable[h].push(iset);
+    }
+    function forEachInBucket(set, cb) {
+        var b = htable[set.kernelHash()];
+        if (b !== undefined) {
+            for (var i = 0; i < b.length; i++) {
+                if (cb(b[i]))
+                    break;
+            }
+        }
+    }
+    var index = 1;
+    var todoList = new List();
+    var incList = new List();
+    var doneList = new List();
+    todoList.append(genInitialSet(g));
+    while (!todoList.isEmpty() || !incList.isEmpty()) {
+        var comeFrom = null;
+        if (!incList.isEmpty()) {
+            var set = comeFrom = incList.pull();
+            set.forEach(function (item) {
+                if (item.actionType === Action.NONE) {
+                    console$1.assert(item.canShift());
+                    var shift = item.getShift();
+                    var newSet = new ItemSet(g);
+                    newSet.index = index++;
+                    todoList.append(newSet);
+                    set.forEach(function (item1) {
+                        if (item1.canShift()) {
+                            var rItem = item1.getShift();
+                            if (rItem === shift) {
+                                item1.actionType = Action.SHIFT;
+                                item1.shift = newSet;
+                                newSet.add(item1.rule, item1.marker + 1, true, item1.lah, false);
+                            }
+                        }
+                    });
+                }
+            });
+            set.complete = true;
+            doneList.append(set);
+        }
+        while (!todoList.isEmpty()) {
+            var set = todoList.pull();
+            set.closure();
+            set.forEach(function (item) {
+                if (!item.canShift()) {
+                    item.actionType = Action.REDUCE;
+                }
+            });
+            var merged = null;
+            forEachInBucket(set, function (gSet) {
+                if (gSet.canMergeTo(set)) {
+                    if (gSet.mergeTo(set)) {
+                        if (gSet.complete) {
+                            merged = gSet;
+                        }
+                    }
+                    if (comeFrom !== null) {
+                        comeFrom.forEach(function (sItem) {
+                            if (sItem.actionType === Action.SHIFT && sItem.shift === set) {
+                                sItem.shift = gSet;
+                            }
+                        });
+                    }
+                    set = null;
+                    return true;
+                }
+                return false;
+            });
+            if (merged !== null) {
+                doneList.remove(merged);
+                incList.append(merged);
+                merged.complete = false;
+            }
+            else if (set !== null) {
+                incList.append(set);
+                addToTable(set);
+            }
+        }
+        iterations++;
+    }
+    var i = 0;
+    doneList.forEach(function (set) {
+        set.stateIndex = i++;
+    });
+    return {
+        result: doneList,
+        iterations: iterations
+    };
+}
+function genParseTable(g, doneList) {
+    var conflicts = [];
+    function resolveSRConflict(set, shift, reduce) {
+        var token = g.tokens[shift.getShift()];
+        if (token.assoc !== exports.Assoc.UNDEFINED) {
+            var ruleP = reduce.rule.pr;
+            if (ruleP !== -1) {
+                if (ruleP > token.pr) {
+                    return reduce;
+                }
+                else if (ruleP < token.pr) {
+                    return shift;
+                }
+                else {
+                    if (token.assoc === exports.Assoc.LEFT) {
+                        return reduce;
+                    }
+                    else if (token.assoc === exports.Assoc.RIGHT) {
+                        return shift;
+                    }
+                    else if (token.assoc === exports.Assoc.NON) {
+                        return Item.NULL;
+                    }
+                    else {
+                        console$1.assert(false);
+                    }
+                }
+            }
+        }
+        var cf = new Conflict();
+        cf.type = ConflictType.SR;
+        cf.set = set;
+        cf.token = token;
+        cf.used = shift;
+        cf.discarded = reduce;
+        conflicts.push(cf);
+        return shift;
+    }
+    function resolveRRConflict(set, r1, r2, token) {
+        var tdef = g.tokens[token];
+        if (r1.rule.pr !== -1 && r2.rule.pr !== -1 && r1.rule.pr !== r2.rule.pr) {
+            return r1.rule.pr > r2.rule.pr ? r1 : r2;
+        }
+        else {
+            var used = r1.rule.index > r2.rule.index ? r2 : r1;
+            var discarded = r1.rule.index > r2.rule.index ? r1 : r2;
+            var cf = new Conflict();
+            cf.type = ConflictType.RR;
+            cf.set = set;
+            cf.token = tdef;
+            cf.used = used;
+            cf.discarded = discarded;
+            conflicts.push(cf);
+            return used;
+        }
+    }
+    var ptable = new ParseTable(g, doneList.size);
+    doneList.forEach(function (set) {
+        set.forEach(function (item) {
+            if (item.actionType === Action.SHIFT) {
+                var sItem = item.getShift();
+                if (g.isToken(sItem)) {
+                    var tindex = set.stateIndex * g.tokenCount + sItem;
+                    var cItem = ptable.shift[tindex];
+                    if (cItem !== null) {
+                        if (cItem.actionType === Action.REDUCE) {
+                            ptable.shift[tindex] = resolveSRConflict(set, item, cItem);
+                        }
+                        else {
+                            console$1.assert(cItem.shift === item.shift);
+                        }
+                    }
+                    else {
+                        ptable.shift[tindex] = item;
+                    }
+                }
+                else {
+                    var tindex = set.stateIndex * g.nts.length + (-sItem - 1);
+                    ptable.gotot[tindex] = item;
+                }
+            }
+            else if (item.actionType === Action.REDUCE) {
+                for (var i = 0; i < g.tokenCount; i++) {
+                    if (item.lah.contains(i + 1)) {
+                        var index = set.stateIndex * g.tokenCount + i;
+                        var cItem = ptable.shift[index];
+                        if (cItem !== null) {
+                            if (cItem.actionType === Action.REDUCE) {
+                                ptable.shift[index] = resolveRRConflict(set, cItem, item, i);
+                            }
+                            else if (cItem.actionType === Action.SHIFT) {
+                                ptable.shift[index] = resolveSRConflict(set, cItem, item);
+                            }
+                        }
+                        else {
+                            ptable.shift[index] = item;
+                        }
+                    }
+                }
+            }
+            else {
+                console$1.assert(false);
+            }
+        });
+    });
+    return {
+        result: ptable,
+        conflicts: conflicts
+    };
+}
+
+function testParse(g, pt, tokens, onErr) {
+    var tk = [];
+    for (var _i = 0, tokens_1 = tokens; _i < tokens_1.length; _i++) {
+        var tname = tokens_1[_i];
+        var tdef = void 0;
+        if (/<[^>]+>/.test(tname)) {
+            tdef = g.findTokenByName(tname.substr(1, tname.length - 2));
+            if (tdef === null) {
+                onErr("cannot recognize " + tname + " as a token");
+                return [];
+            }
+        }
+        else {
+            var defs = g.findTokensByAlias(tname);
+            if (defs.length === 0) {
+                onErr("cannot recognize \"" + tname + "\" as a token");
+                return [];
+            }
+            if (defs.length > 1) {
+                var msg = '';
+                for (var _a = 0, defs_1 = defs; _a < defs_1.length; _a++) {
+                    var def = defs_1[_a];
+                    msg += "<" + def.sym + "> ";
+                }
+                onErr("cannot recognize \"" + tname + "\" as a token, since it can be " + msg);
+                return [];
+            }
+            tdef = defs[0];
+        }
+        tk.push(tdef);
+    }
+    var state = [0];
+    var stack = [];
+    var ret = [];
+    function s() {
+        return state[state.length - 1];
+    }
+    function shift(ns) {
+        state.push(ns);
+        var tdef = tk.shift();
+        stack.push(convertTokenToString(tdef));
+    }
+    function reduce(rule) {
+        state.length -= rule.rhs.length;
+        stack.length -= rule.rhs.length;
+        stack.push(rule.lhs.sym);
+        var gotot = pt.lookupGoto(s(), rule.lhs.index).shift.stateIndex;
+        state.push(gotot);
+    }
+    function dump() {
+        var ret = '';
+        for (var _i = 0, stack_1 = stack; _i < stack_1.length; _i++) {
+            var s_1 = stack_1[_i];
+            ret += s_1 + ' ';
+        }
+        ret += '| ';
+        for (var _a = 0, tk_1 = tk; _a < tk_1.length; _a++) {
+            var tdef = tk_1[_a];
+            ret += convertTokenToString(tdef);
+            ret += ' ';
+        }
+        return ret;
+    }
+    ret.push(dump());
+    do {
+        var item = pt.lookupShift(s(), tk[0] ? tk[0].index : 0);
+        if (item !== null) {
+            if (item === Item.NULL) {
+                ret.push('syntax error!');
+                break;
+            }
+            else if (item.actionType === Action.SHIFT) {
+                if (tk.length === 0) {
+                    ret.push('accepted!');
+                    break;
+                }
+                shift(item.shift.stateIndex);
+            }
+            else if (item.actionType === Action.REDUCE) {
+                if (reduce(item.rule)) {
+                    break;
+                }
+            }
+            else {
+                console.assert(false);
+            }
+        }
+        else {
+            var ri = pt.defred[s()];
+            if (ri !== -1) {
+                reduce(g.rules[ri]);
+            }
+            else {
+                ret.push('syntax error!');
+                break;
+            }
+        }
+        ret.push(dump());
+    } while (true);
+    return ret;
+}
+
+var InternalError = (function () {
+    function InternalError(msg) {
+        this.msg = msg;
+    }
+    InternalError.prototype.toString = function () {
+        return this.msg;
+    };
+    return InternalError;
+}());
+var JsccError = (function () {
+    function JsccError(msg, type) {
+        if (type === void 0) { type = 'Error'; }
+        this.msg = msg;
+        this.type = type;
+    }
+    JsccError.prototype.toString = function (opt) {
+        if (opt === void 0) { opt = {}; }
+        var escape = !!opt.escape;
+        var ret = this.type;
+        if (opt.typeClass) {
+            ret = "<span class=\"" + opt.typeClass + "\">" + ret + "</span>";
+        }
+        ret += ': ';
+        ret += escape ? this.msg.replace(/</g, '&lt').replace(/>/g, '&gt') : this.msg;
+        return ret;
+    };
+    return JsccError;
+}());
+var CompilationError = (function (_super) {
+    __extends(CompilationError, _super);
+    function CompilationError(msg, line) {
+        var _this = _super.call(this, msg, 'CompilationError') || this;
+        _this.line = line;
+        return _this;
+    }
+    CompilationError.prototype.toString = function (opt) {
+        return _super.prototype.toString.call(this, opt) + " (at line " + this.line + ")";
+    };
+    return CompilationError;
+}(JsccError));
+var JsccWarning = (function (_super) {
+    __extends(JsccWarning, _super);
+    function JsccWarning(msg) {
+        return _super.call(this, msg, 'Warning') || this;
+    }
+    return JsccWarning;
+}(JsccError));
+
+function sorter(cmp) {
+    var a = [];
+    function insert(i, obj) {
+        a.push(null);
+        for (var j = a.length - 1; j > i; j--) {
+            a[j] = a[j - 1];
+        }
+        a[i] = obj;
+    }
+    return {
+        add: function (b) {
+            var i;
+            for (i = 0; i < a.length; i++) {
+                if ((i === 0 || cmp(b, a[i - 1]) >= 0) && cmp(b, a[i]) <= 0) {
+                    break;
+                }
+            }
+            insert(i, b);
+        },
+        done: function () {
+            return a;
+        }
+    };
+}
+var RowEntry = (function () {
+    function RowEntry(emptyCount, row) {
+        this.emptyCount = emptyCount;
+        this.row = row;
+        this.dp = 0;
+    }
+    return RowEntry;
+}());
+function compress(source) {
+    function empty(i, j) {
+        j = j - sorted[i].dp;
+        return j < 0 || j >= source.columns || source.isEmpty(sorted[i].row, j);
+    }
+    function fit(i, dp) {
+        for (var j = 0; j < source.columns; j++) {
+            if (!empty(i, j)) {
+                for (var k = 0; k < i; k++) {
+                    if (!empty(k, j + dp)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+    function getFitdp(i) {
+        var dp = 0;
+        while (-dp < source.columns && source.isEmpty(sorted[i].row, -dp)) {
+            dp--;
+        }
+        while (!fit(i, dp)) {
+            dp++;
+        }
+        return dp;
+    }
+    var tmpsorted = sorter(function (a, b) {
+        return a.emptyCount < b.emptyCount ? -1 :
+            a.emptyCount > b.emptyCount ? 1 : 0;
+    });
+    for (var i = 0; i < source.rows; i++) {
+        tmpsorted.add(new RowEntry(source.emptyCount(i), i));
+    }
+    var sorted = tmpsorted.done();
+    var maxdp = 0, mindp = 0;
+    var dps = new Array(source.rows);
+    var initDp = 0;
+    while (-initDp < source.columns && source.isEmpty(sorted[0].row, -initDp)) {
+        initDp--;
+    }
+    dps[sorted[0].row] = sorted[0].dp = initDp;
+    for (var i = 1; i < sorted.length; i++) {
+        var row = sorted[i].row;
+        var dp = getFitdp(i);
+        dps[row] = sorted[i].dp = dp;
+        dp > maxdp && (maxdp = dp);
+        dp < mindp && (mindp = dp);
+    }
+    return {
+        dps: dps,
+        len: maxdp + source.columns
+    };
+}
+
+function initArray(len, cb) {
+    var ret = new Array(len);
+    for (var i = 0; i < len; i++) {
+        ret[i] = cb(i);
+    }
+    return ret;
+}
+
+function action(pt) {
+    var emCount = [];
+    for (var state = 0; state < pt.stateCount; state++) {
+        emCount.push(0);
+        for (var tk = 0; tk < pt.g.tokens.length; tk++) {
+            pt.lookupShift(state, tk) === null && (emCount[state]++);
+        }
+    }
+    return {
+        rows: pt.stateCount,
+        columns: pt.g.tokens.length,
+        isEmpty: function (state, token) {
+            return pt.lookupShift(state, token) === null;
+        },
+        emptyCount: function (state) {
+            return emCount[state];
+        }
+    };
+}
+function gotot(pt) {
+    var emCount = [];
+    for (var state = 0; state < pt.stateCount; state++) {
+        emCount.push(0);
+        for (var nt = 0; nt < pt.g.nts.length; nt++) {
+            pt.lookupShift(state, nt) === null && (emCount[state]++);
+        }
+    }
+    return {
+        rows: pt.stateCount,
+        columns: pt.g.nts.length,
+        isEmpty: function (state, nt) {
+            return pt.lookupGoto(state, nt) === null;
+        },
+        emptyCount: function (nt) {
+            return emCount[nt];
+        }
+    };
+}
+var CompressedPTable = (function () {
+    function CompressedPTable(ptable) {
+        this.g = ptable.g;
+        this.defred = ptable.defred;
+        this.stateCount = ptable.stateCount;
+        var actionCResult = compress(action(ptable));
+        var gotoCResult = compress(gotot(ptable));
+        this.disact = actionCResult.dps;
+        this.disgoto = gotoCResult.dps;
+        this.pact = initArray(actionCResult.len, function () { return null; });
+        this.checkact = initArray(actionCResult.len, function () { return 0; });
+        var cela = this;
+        ptable.forEachShift(function (it, state, token) {
+            console$1.assert(cela.pact[cela.disact[state] + token] === null);
+            cela.pact[cela.disact[state] + token] = it;
+            cela.checkact[cela.disact[state] + token] = state;
+        });
+        this.pgoto = initArray(gotoCResult.len, function () { return null; });
+        this.checkgoto = initArray(gotoCResult.len, function () { return 0; });
+        ptable.forEachGoto(function (it, state, nt) {
+            console$1.assert(cela.pgoto[cela.disgoto[state] + nt] === null);
+            cela.pgoto[cela.disgoto[state] + nt] = it;
+            cela.checkgoto[cela.disgoto[state] + nt] = state;
+        });
+        this._trim();
+    }
+    CompressedPTable.prototype._trim = function () {
+        while (this.pact[this.pact.length - 1] === null) {
+            this.pact.pop();
+            this.checkact.pop();
+        }
+        while (this.pgoto[this.pgoto.length - 1] === null) {
+            this.pgoto.pop();
+            this.checkgoto.pop();
+        }
+    };
+    CompressedPTable.prototype.lookupShift = function (state, token) {
+        var index = this.disact[state] + token;
+        if (index >= 0 && index < this.pact.length && this.checkact[index] === state) {
+            return this.pact[this.disact[state] + token];
+        }
+        else {
+            return null;
+        }
+    };
+    CompressedPTable.prototype.lookupGoto = function (state, nt) {
+        var index = this.disgoto[state] + nt;
+        if (index >= 0 && index < this.pgoto.length && this.checkgoto[index] === state) {
+            return this.pgoto[this.disgoto[state] + nt];
+        }
+        else {
+            return null;
+        }
+    };
+    return CompressedPTable;
+}());
+
+var Rule = (function () {
+    function Rule(g, lhs, pos) {
+        this.g = g;
+        this.lhs = lhs;
+        this.pos = pos;
+        this.pr = -1;
+        this.rhs = [];
+        this.action = null;
+        this.index = 0;
+        this.vars = {};
+        this.usedVars = {};
+    }
+    Rule.prototype.calcPr = function () {
+        if (this.pr === -1) {
+            for (var i = this.rhs.length - 1; i >= 0; i--) {
+                var item = this.rhs[i];
+                if (item >= 0) {
+                    this.g.tokens[item].assoc !== exports.Assoc.UNDEFINED &&
+                        (this.pr = this.g.tokens[item].pr);
+                }
+            }
+        }
+    };
+    Rule.prototype.getVarSp = function (v, ecb) {
+        if (this.lhs.parents.length !== 1) {
+            if (this.lhs.parents.length > 1) {
+                ecb("LHS of the rule is referenced by more than one rule");
+            }
+            else {
+                ecb("this rule is unreachable");
+            }
+            return null;
+        }
+        var ret = this.rhs.length;
+        var pos = this.lhs.parents[0].pos;
+        var rule = this.lhs.parents[0].rule;
+        while (true) {
+            var vdef = rule.vars[v];
+            if (vdef !== undefined && vdef.val < pos) {
+                ret += pos - vdef.val;
+                return ret;
+            }
+            if (rule.lhs.parents.length !== 1) {
+                if (rule.lhs.parents.length > 1) {
+                    ecb("\"" + rule.lhs.sym + "\" is referenced by more than one rule or unreachable");
+                }
+                else {
+                    ecb("variable is undefined");
+                }
+                return null;
+            }
+            ret += pos;
+            pos = rule.lhs.parents[0].pos;
+            rule = rule.lhs.parents[0].rule;
+        }
+    };
+    Rule.prototype.toString = function (marker) {
+        var ret = this.index + ': ' + this.lhs.sym + ' =>';
+        for (var i = 0; i < this.rhs.length; i++) {
+            var r = this.rhs[i];
+            if (marker === i) {
+                ret += ' .';
+            }
+            if (r >= 0) {
+                ret += ' ' + convertTokenToString(this.g.tokens[r]);
+            }
+            else {
+                ret += ' ' + this.g.nts[-r - 1].sym;
+            }
+        }
+        if (marker === this.rhs.length) {
+            ret += ' .';
+        }
+        return ret;
+    };
+    return Rule;
+}());
+var Grammar = (function () {
+    function Grammar() {
+        this.tokens = [];
+        this.tokenCount = 0;
+        this.nts = [];
+        this.rules = [];
+    }
+    Grammar.prototype.isToken = function (t) {
+        return t >= 0;
+    };
+    Grammar.prototype.forEachRule = function (cb) {
+        for (var i = 0; i < this.nts.length; i++) {
+            var rules = this.nts[i].rules;
+            for (var j = 0; j < rules.length; j++) {
+                cb(i, rules[j]);
+            }
+        }
+    };
+    Grammar.prototype.forEachRuleOfNt = function (lhs, cb) {
+        var rules = this.nts[lhs].rules;
+        for (var j = 0; j < rules.length; j++) {
+            if (cb(rules[j])) {
+                break;
+            }
+        }
+    };
+    Grammar.prototype.genFirstSets = function () {
+        var changed = true;
+        var mask = new TokenSet(this.tokens.length);
+        mask.addAll();
+        mask.remove(0);
+        while (changed) {
+            changed = false;
+            for (var nt = 0; nt < this.nts.length; nt++) {
+                var rules = this.nts[nt].rules;
+                var firstSet = this.nts[nt].firstSet;
+                for (var j = 0; j < rules.length; j++) {
+                    var rule = rules[j];
+                    for (var k = 0; k < rule.rhs.length; k++) {
+                        var ritem = rule.rhs[k];
+                        if (this.isToken(ritem)) {
+                            changed = firstSet.add(ritem + 1) || changed;
+                            break;
+                        }
+                        else {
+                            ritem = -ritem - 1;
+                            if (nt !== ritem) {
+                                changed = firstSet.union(this.nts[ritem].firstSet, mask) || changed;
+                            }
+                            if (!this.nts[ritem].firstSet.contains(0)) {
+                                break;
+                            }
+                        }
+                    }
+                    k === rule.rhs.length && (changed = firstSet.add(0) || changed);
+                }
+            }
+        }
+    };
+    Grammar.prototype.toString = function (opt) {
+        if (opt === void 0) { opt = {}; }
+        opt = opt || {};
+        var endl = opt.endl || endl;
+        var escape = opt.escape || false;
+        var ret = '';
+        this.forEachRule(function (lhs, rule) {
+            var s = rule.toString();
+            ret += s + endl;
+        });
+        if (opt.firstSets) {
+            for (var i = 0; i < this.nts.length; i++) {
+                var s = this.nts[i];
+                ret += "First(" + s.sym + ") = { " + s.firstSet.toString(this) + " }" + endl;
+            }
+        }
+        if (escape) {
+            ret = ret.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+        return ret.replace(/\n/g, endl);
+    };
+    Grammar.prototype.findTokenByName = function (t) {
+        for (var _i = 0, _a = this.tokens; _i < _a.length; _i++) {
+            var tk = _a[_i];
+            if (tk.sym === t) {
+                return tk;
+            }
+        }
+        return null;
+    };
+    Grammar.prototype.findTokensByAlias = function (t) {
+        var ret = [];
+        for (var _i = 0, _a = this.tokens; _i < _a.length; _i++) {
+            var tk = _a[_i];
+            tk.alias === t && ret.push(tk);
+        }
+        return ret;
+    };
+    return Grammar;
+}());
+
+var File = (function () {
+    function File() {
+        this.eol = '\n';
+        this.grammar = null;
+        this.lexDFA = [];
+        this.dfaTables = [];
+        this.opt = {};
+        this.prefix = 'jj';
+        this.header = [];
+        this.output = null;
+        this.extraArgs = null;
+        this.initArg = null;
+        this.initBody = null;
+        this.epilogue = null;
+        this.sematicType = null;
+    }
+    return File;
+}());
 
 var oo = Number.POSITIVE_INFINITY;
 var _oo = Number.NEGATIVE_INFINITY;
@@ -396,79 +1638,12 @@ var CharSet = (function (_super) {
     return CharSet;
 }(IntervalSet));
 
-var endl = '\n';
-var OutputStream = (function () {
-    function OutputStream() {
-    }
-    OutputStream.prototype.writeln = function (s) {
-        s && this.write(s);
-        this.write(endl);
-    };
-    return OutputStream;
-}());
-var StringOS = (function (_super) {
-    __extends(StringOS, _super);
-    function StringOS() {
-        var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.s = '';
-        return _this;
-    }
-    StringOS.prototype.write = function (s) {
-        this.s += s;
-    };
-    StringOS.prototype.reset = function () {
-        this.s = '';
-    };
-    return StringOS;
-}(OutputStream));
-function StringIS(s) {
-    var i = 0;
-    return {
-        peek: function () {
-            return s.charAt(i) || null;
-        },
-        next: function () {
-            var ret = this.peek();
-            i++;
-            return ret;
-        }
-    };
-}
-function biss(iss) {
-    var backup = [];
-    return {
-        peek: function () {
-            return backup.length > 0 ? backup[backup.length - 1] : iss.peek();
-        },
-        next: function () {
-            if (backup.length > 0) {
-                return backup.pop();
-            }
-            else {
-                return iss.next();
-            }
-        },
-        backup: function (c) {
-            backup.push(c);
-        }
-    };
-}
-
-
-var io = Object.freeze({
-	endl: endl,
-	OutputStream: OutputStream,
-	StringOS: StringOS,
-	StringIS: StringIS,
-	biss: biss
-});
-
-var Action;
+var Action$1;
 (function (Action) {
     Action[Action["START"] = 0] = "START";
     Action[Action["END"] = 1] = "END";
     Action[Action["NONE"] = 2] = "NONE";
-})(Action || (Action = {}));
+})(Action$1 || (Action$1 = {}));
 var Arc = (function () {
     function Arc(from, to) {
         this.chars = new CharSet();
@@ -903,1476 +2078,6 @@ var DFA = (function () {
         };
     };
     return DFA;
-}());
-
-var InternalError = (function () {
-    function InternalError(msg) {
-        this.msg = msg;
-    }
-    InternalError.prototype.toString = function () {
-        return this.msg;
-    };
-    return InternalError;
-}());
-var JsccError = (function () {
-    function JsccError(msg, type) {
-        if (type === void 0) { type = 'Error'; }
-        this.msg = msg;
-        this.type = type;
-    }
-    JsccError.prototype.toString = function (opt) {
-        if (opt === void 0) { opt = {}; }
-        var escape = !!opt.escape;
-        var ret = this.type;
-        if (opt.typeClass) {
-            ret = "<span class=\"" + opt.typeClass + "\">" + ret + "</span>";
-        }
-        ret += ': ';
-        ret += escape ? this.msg.replace(/</g, '&lt').replace(/>/g, '&gt') : this.msg;
-        return ret;
-    };
-    return JsccError;
-}());
-var CompilationError = (function (_super) {
-    __extends(CompilationError, _super);
-    function CompilationError(msg, line) {
-        var _this = _super.call(this, msg, 'CompilationError') || this;
-        _this.line = line;
-        return _this;
-    }
-    CompilationError.prototype.toString = function (opt) {
-        return _super.prototype.toString.call(this, opt) + " (at line " + this.line + ")";
-    };
-    return CompilationError;
-}(JsccError));
-var JsccWarning = (function (_super) {
-    __extends(JsccWarning, _super);
-    function JsccWarning(msg) {
-        return _super.call(this, msg, 'Warning') || this;
-    }
-    return JsccWarning;
-}(JsccError));
-
-var PatternException = (function (_super) {
-    __extends(PatternException, _super);
-    function PatternException(msg) {
-        return _super.call(this, msg, 'PatternException') || this;
-    }
-    return PatternException;
-}(JsccError));
-
-function stackReader(str, strs) {
-    var stack = [{ sptr: 0, s: str, name: '' }];
-    var top = stack[0];
-    function checkNested(name) {
-        for (var i = 0; i < stack.length; i++) {
-            if (stack[i].name === name) {
-                throw new PatternException('cannot use pattern "' + name + '" which leads to loop reference');
-            }
-        }
-    }
-    return {
-        next: function () {
-            top.sptr++;
-            if (top.sptr >= top.s.length) {
-                stack.length > 1 && stack.pop();
-                top = stack[stack.length - 1];
-            }
-        },
-        peek: function () {
-            return top.s[top.sptr] || null;
-        },
-        pushTo: function (name) {
-            var nn = strs ? strs[name] : null;
-            if (!nn) {
-                throw new PatternException('undefined name "' + name + '"');
-            }
-            checkNested(name);
-            stack.push({ sptr: 0, s: '(' + nn + ')', name: name });
-            top = stack[stack.length - 1];
-        }
-    };
-}
-function compile(input, regs) {
-    if (regs === void 0) { regs = {}; }
-    var reader = stackReader(input, regs);
-    var c = reader.peek();
-    function nc() {
-        reader.next();
-        c = reader.peek();
-    }
-    function notEof(reason) {
-        if (c === null) {
-            throw new PatternException('unexpected end of string' + (reason ? ', ' + reason : ''));
-        }
-    }
-    function ns() {
-        var s = new State();
-        return s;
-    }
-    function eof() {
-        return c === null;
-    }
-    function expect(c1) {
-        if (c !== c1) {
-            throw new PatternException('unexpected character "' + c + '",expecting "' + c1 + '"');
-        }
-        nc();
-    }
-    function rexp(start) {
-        var ret = simpleRE(start);
-        while (!eof() && c === '|') {
-            nc();
-            var es = ns();
-            start.epsilonTo(es);
-            simpleRE(es).epsilonTo(ret);
-        }
-        return ret;
-    }
-    function simpleRE(start) {
-        var ret = start;
-        do {
-            ret = basicRE(ret);
-        } while (!eof() && c !== '|' && c !== ')');
-        return ret;
-    }
-    function basicRE(start) {
-        var holder = ns();
-        start.epsilonTo(holder);
-        var ret = primitive(holder);
-        if (c === '*') {
-            nc();
-            ret.epsilonTo(holder);
-            var nn = ns();
-            holder.epsilonTo(nn);
-            return nn;
-        }
-        else if (c === '+') {
-            nc();
-            var count = ns();
-            ret.epsilonTo(count);
-            count.epsilonTo(holder);
-            return count;
-        }
-        else if (c === '?') {
-            nc();
-            var nn2 = ns();
-            holder.epsilonTo(nn2);
-            ret.epsilonTo(nn2);
-            return nn2;
-        }
-        else {
-            return ret;
-        }
-    }
-    function primitive(start) {
-        notEof();
-        if (c === '(') {
-            nc();
-            var ret = rexp(start);
-            expect(')');
-            return ret;
-        }
-        else if (c === '.') {
-            nc();
-            var ret = ns();
-            start.to(ret).chars.addAll();
-            return ret;
-        }
-        else if (c === '[') {
-            nc();
-            var neg = c === '^';
-            neg && nc();
-            var ret = ns();
-            var set = start.to(ret).chars;
-            neg && set.addAll();
-            while (c !== ']' && !eof()) {
-                setItem(set, neg);
-            }
-            expect(']');
-            return ret;
-        }
-        else if (c === '{') {
-            nc();
-            var name = '';
-            while (c !== '}') {
-                notEof();
-                name += c;
-                nc();
-            }
-            nc();
-            reader.pushTo(name);
-            c = reader.peek();
-            return simpleRE(start);
-        }
-        else {
-            var ret = ns();
-            start.to(ret).chars.add(gchar());
-            return ret;
-        }
-    }
-    function gchar() {
-        notEof();
-        if (c === '\\') {
-            nc();
-            var ret_1 = c.charCodeAt(0);
-            switch (c) {
-                case 't': ret_1 = '\t';
-                case 'n': ret_1 = '\n';
-                case 'r': ret_1 = '\r';
-                case 'x':
-                    nc();
-                    var code = '';
-                    while (c !== null && /[0-9a-fA-F]/.test(c)) {
-                        code += c;
-                        nc();
-                    }
-                    return parseInt(code, 16);
-                default: ret_1 = c;
-            }
-            nc();
-            return ret_1.charCodeAt(0);
-        }
-        else {
-            var ret = c.charCodeAt(0);
-            nc();
-            return ret;
-        }
-    }
-    function setItem(set, neg) {
-        var s = gchar();
-        var from = s, to = s;
-        if (c === '-') {
-            nc();
-            to = gchar();
-            if (to < from) {
-                throw new PatternException('left hand side must be larger than right hand side in wild card character (got "'
-                    + from.toString(16) + '" < "'
-                    + to.toString(16) + '")');
-            }
-        }
-        if (neg) {
-            set.remove(from, to);
-        }
-        else {
-            set.add(from, to);
-        }
-    }
-    var head = ns();
-    head.isStart = true;
-    var tail = rexp(head);
-    return {
-        result: head,
-        tail: tail
-    };
-}
-function compileRaw(input) {
-    var sptr = 0;
-    var c = input.charAt(sptr);
-    function ns() {
-        var s = new State();
-        return s;
-    }
-    function nc() {
-        c = input.charAt(++sptr) || null;
-    }
-    function eof() {
-        return c === null;
-    }
-    var head = ns();
-    head.isStart = true;
-    var tail = head;
-    while (!eof()) {
-        var s = ns();
-        tail.to(s).chars.add(c.charCodeAt(0));
-        tail = s;
-        nc();
-    }
-    return {
-        result: head,
-        tail: tail
-    };
-}
-
-function lexerBuilder(regs) {
-    if (regs === void 0) { regs = {}; }
-    var actions = [];
-    var pr = 0;
-    function ns() {
-        var ret = new State();
-        return ret;
-    }
-    var head = ns();
-    return {
-        lexRule: function (reg, id, data, raw) {
-            var action = new EndAction();
-            action.priority = pr++;
-            action.id = id;
-            action.data = data || null;
-            var cpd = (!!raw ? compileRaw(reg) : compile(reg, regs));
-            cpd.tail.endAction = action;
-            head.epsilonTo(cpd.result);
-            actions.push(action);
-        },
-        done: function () {
-            head.removeEpsilons();
-            var dhead = head.toDFA();
-            var ret = new DFA(dhead.states);
-            return ret;
-        }
-    };
-}
-function lexer(defs, regs) {
-    var getdef;
-    if (typeof defs !== 'function') {
-        getdef = function () {
-            return defs.shift() || null;
-        };
-    }
-    else {
-        getdef = defs;
-    }
-    var bd = lexerBuilder(regs);
-    var def = getdef();
-    while (def !== null) {
-        bd.lexRule(def.regexp, def.id, def.data, def.raw);
-        def = getdef();
-    }
-    return bd.done();
-}
-
-
-
-var pattern = Object.freeze({
-	lexer: lexer,
-	lexerBuilder: lexerBuilder
-});
-
-var TokenSet = (function (_super) {
-    __extends(TokenSet, _super);
-    function TokenSet(tcount) {
-        return _super.call(this, tcount) || this;
-    }
-    TokenSet.prototype.toString = function (g) {
-        var ret = '';
-        var first = true;
-        if (this.contains(0)) {
-            ret += '""';
-            first = false;
-        }
-        for (var i = 0; i < g.tokenCount; i++) {
-            if (this.contains(i + 1)) {
-                if (!first) {
-                    ret += ',';
-                }
-                ret += '"' + g.tokens[i].sym + '"';
-                first = false;
-            }
-        }
-        return ret;
-    };
-    return TokenSet;
-}(BitSet));
-
-var Action$1;
-(function (Action) {
-    Action[Action["NONE"] = 1] = "NONE";
-    Action[Action["SHIFT"] = 2] = "SHIFT";
-    Action[Action["REDUCE"] = 3] = "REDUCE";
-})(Action$1 || (Action$1 = {}));
-var Item = (function () {
-    function Item(rule, ik) {
-        this.marker = 0;
-        this.shift = null;
-        this.actionType = Action$1.NONE;
-        this.changed = true;
-        this.rule = rule;
-        this.isKernel = ik;
-        this.lah = new TokenSet(rule.g.tokenCount);
-    }
-    Item.prototype.canShift = function () {
-        return this.rule.rhs.length > this.marker;
-    };
-    Item.prototype.getShift = function () {
-        return this.rule.rhs[this.marker];
-    };
-    Item.prototype.toString = function (opt) {
-        if (opt === void 0) { opt = {}; }
-        var showlah = (opt && opt.showlah) || false;
-        var showTrailer = (opt && opt.showTrailer) || false;
-        var ret = '[ ' + this.rule.toString(this.marker) + (showlah ? ',{ ' + this.lah.toString(this.rule.g) + ' }' : '') + ' ]';
-        this.isKernel && (ret += '*');
-        if (showTrailer) {
-            switch (this.actionType) {
-                case Action$1.NONE:
-                    ret += '(-)';
-                    break;
-                case Action$1.SHIFT:
-                    ret += '(s' + this.shift.stateIndex + ')';
-                    break;
-                case Action$1.REDUCE:
-                    ret += '(r)';
-                    break;
-            }
-        }
-        return ret;
-    };
-    Item.prototype.hash = function () {
-        return this.rule.index + '-' + this.marker;
-    };
-    Item.prototype.hasRRConflictWith = function (i) {
-        return this.actionType === Action$1.REDUCE && i.actionType === Action$1.REDUCE && this.rule.index !== i.rule.index && this.lah.hasIntersection(i.lah);
-    };
-    Item.prototype.getFollowSet = function (set) {
-        var g = this.rule.g;
-        var i;
-        for (i = this.marker + 1; i < this.rule.rhs.length; i++) {
-            var mItem = this.rule.rhs[i];
-            if (g.isToken(mItem)) {
-                set.add(mItem + 1);
-                break;
-            }
-            else {
-                var set1 = g.nts[-mItem - 1].firstSet;
-                set.union(set1);
-                set.remove(0);
-                if (!set1.contains(0)) {
-                    break;
-                }
-            }
-        }
-        if (i === this.rule.rhs.length) {
-            set.union(this.lah);
-        }
-    };
-    Item.NULL = {};
-    return Item;
-}());
-var ItemSet = (function () {
-    function ItemSet(g) {
-        this.items = [];
-        this.itemTable = [];
-        this.complete = false;
-        this.index = -1;
-        this.stateIndex = 0;
-        this.prev = null;
-        this.next = null;
-        this.merges = [];
-        this.g = g;
-        this.data = this;
-    }
-    ItemSet.prototype.add = function (rule, marker, ik, lah, reset) {
-        var entry = this.itemTable[rule.index] = this.itemTable[rule.index] || [];
-        var it = entry[marker];
-        if (it === undefined) {
-            var n = new Item(rule, ik);
-            n.marker = marker;
-            if (lah) {
-                n.lah.union(lah);
-            }
-            entry[marker] = n;
-            this.items.push(n);
-            return true;
-        }
-        else if (lah) {
-            var ret = it.lah.union(lah);
-            if (reset && ret && it.canShift()) {
-                it.actionType = Action$1.NONE;
-            }
-            ret && (it.changed = true);
-            return ret;
-        }
-    };
-    ItemSet.prototype.contains = function () {
-    };
-    ItemSet.prototype.closure = function () {
-        var changed = true;
-        var tSet = new TokenSet(this.g.tokenCount);
-        var cela = this;
-        while (changed) {
-            changed = false;
-            for (var _i = 0, _a = this.items; _i < _a.length; _i++) {
-                var item = _a[_i];
-                if (item.changed && item.canShift()) {
-                    var ritem = item.getShift();
-                    if (ritem < 0) {
-                        tSet.removeAll();
-                        item.getFollowSet(tSet);
-                        this.g.forEachRuleOfNt(-ritem - 1, function (rule) {
-                            changed = cela.add(rule, 0, false, tSet, false) || changed;
-                            return false;
-                        });
-                    }
-                }
-                item.changed = false;
-            }
-        }
-    };
-    ItemSet.prototype.toString = function (opt) {
-        var showTrailer = (opt && opt.showTrailer) || false;
-        var opt2 = { showTrailer: showTrailer };
-        var ret = 's' + this.stateIndex + '';
-        if (this.index !== null) {
-            ret += '(i' + this.index;
-        }
-        else {
-            ret += '(i?';
-        }
-        if (this.merges.length > 0) {
-            ret += ',merged from ';
-            for (var i = 0; i < this.merges.length; i++) {
-                if (i > 0) {
-                    ret += ',';
-                }
-                ret += 'i' + this.merges[i];
-            }
-        }
-        ret += ')' + endl;
-        for (var _i = 0, _a = this.items; _i < _a.length; _i++) {
-            var item = _a[_i];
-            ret += item.toString(opt2) + endl;
-        }
-        return ret;
-    };
-    ItemSet.prototype.kernelHash = function () {
-        var ret = 0;
-        for (var _i = 0, _a = this.items; _i < _a.length; _i++) {
-            var item = _a[_i];
-            if (item.isKernel) {
-                ret += item.rule.index << 5 + item.rule.index + item.marker;
-            }
-        }
-        return String(ret);
-    };
-    ItemSet.prototype.forEach = function (cb) {
-        for (var _i = 0, _a = this.items; _i < _a.length; _i++) {
-            var item = _a[_i];
-            cb(item);
-        }
-    };
-    ItemSet.prototype.canMergeTo = function (s) {
-        for (var i = 0; i < this.g.rules.length; i++) {
-            var t1 = this.itemTable[i], t2 = s.itemTable[i];
-            if (t1 || t2) {
-                var rhs = this.g.rules[i].rhs;
-                for (var j = 0; j <= rhs.length; j++) {
-                    if (t1 && t1[j] && t1[j].isKernel && (!t2 || !t2[j] || !t2[j].isKernel)
-                        || t2 && t2[j] && t2[j].isKernel && (!t1 || !t1[j] || !t1[j].isKernel)) {
-                        return false;
-                    }
-                }
-                if (t1 && t2
-                    && t1[j] && t2[j]
-                    && !t1[j].lah.equals(t2[j].lah)
-                    && t1[j].lah.hasIntersection(t2[j].lah)) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    };
-    ItemSet.prototype.mergeTo = function (s) {
-        var ret = false;
-        for (var _i = 0, _a = s.items; _i < _a.length; _i++) {
-            var it = _a[_i];
-            ret = this.add(it.rule, it.marker, it.isKernel, it.lah, true) || ret;
-        }
-        this.merges.push(s.index);
-        return ret;
-    };
-    return ItemSet;
-}());
-
-var List = (function () {
-    function List() {
-        this.size = 0;
-        this.head = { prev: null, next: null, data: null };
-        this.tail = { prev: null, next: null, data: null };
-        this.head.next = this.tail;
-        this.tail.prev = this.head;
-    }
-    List.prototype.append = function (n) {
-        n.prev = this.tail.prev;
-        n.next = this.tail;
-        this.tail.prev.next = n;
-        this.tail.prev = n;
-        this.size++;
-    };
-    List.prototype.pull = function () {
-        var n = this.head.next;
-        this.head.next = n.next;
-        n.next.prev = this.head;
-        n.prev = n.next = null;
-        this.size--;
-        return n.data;
-    };
-    List.prototype.isEmpty = function () {
-        return this.size === 0;
-    };
-    List.prototype.forEach = function (cb) {
-        for (var a = this.head.next; a !== this.tail; a = a.next) {
-            cb(a.data);
-        }
-    };
-    List.prototype.remove = function (n) {
-        n.next.prev = n.prev;
-        n.prev.next = n.next;
-        this.size--;
-    };
-    List.prototype.iterator = function () {
-        var p = this.head;
-        var cela = this;
-        return function () {
-            return p !== cela.tail ? (p = p.next, p.data) : null;
-        };
-    };
-    return List;
-}());
-
-var Assoc;
-(function (Assoc) {
-    Assoc[Assoc["UNDEFINED"] = 0] = "UNDEFINED";
-    Assoc[Assoc["LEFT"] = 1] = "LEFT";
-    Assoc[Assoc["RIGHT"] = 2] = "RIGHT";
-    Assoc[Assoc["NON"] = 3] = "NON";
-})(Assoc || (Assoc = {}));
-
-function convertTokenToString(t) {
-    return t.alias === null ? "<" + t.sym + ">" : "\"" + t.alias + "\"";
-}
-
-function printParseTable(os, cela, doneList) {
-    var g = cela.g;
-    var tokenCount = g.tokenCount;
-    var ntCount = g.nts.length;
-    doneList.forEach(function (set) {
-        var i = set.stateIndex;
-        var shift = '';
-        var reduce = '';
-        var gotot = '';
-        os.writeln("state " + i);
-        set.forEach(function (item) {
-            os.writeln(YYTAB + item.toString({ showTrailer: false }));
-        });
-        if (cela.defred[i] !== -1) {
-            os.writeln(YYTAB + "default action: reduce with rule " + cela.defred[i]);
-        }
-        else {
-            os.writeln(YYTAB + 'no default action');
-        }
-        for (var j = 0; j < tokenCount; j++) {
-            var item = cela.lookupShift(i, j);
-            if (item !== null && item !== Item.NULL) {
-                if (item.actionType === Action$1.SHIFT) {
-                    shift += "" + YYTAB + convertTokenToString(g.tokens[j]) + " : shift, and go to state " + item.shift.stateIndex + endl;
-                }
-                else {
-                    reduce += "" + YYTAB + convertTokenToString(g.tokens[j]) + " : reduce with rule " + item.rule.index + endl;
-                }
-            }
-        }
-        for (var j = 0; j < ntCount; j++) {
-            var item = cela.lookupGoto(i, j);
-            if (item !== null) {
-                gotot += "" + YYTAB + g.nts[j].sym + " : go to state " + item.shift.stateIndex + endl;
-            }
-        }
-        os.writeln(shift + reduce + gotot);
-        os.writeln('');
-    });
-}
-var ParseTable = (function () {
-    function ParseTable(g, stateCount) {
-        this.defred = null;
-        this.g = g;
-        var tokenCount = g.tokenCount;
-        var ntCount = g.nts.length;
-        this.stateCount = stateCount;
-        this.shift = new Array(tokenCount * stateCount);
-        this.gotot = new Array(ntCount * stateCount);
-        for (var i = 0; i < this.shift.length; i++) {
-            this.shift[i] = null;
-        }
-        for (var i = 0; i < this.gotot.length; i++) {
-            this.gotot[i] = null;
-        }
-    }
-    ParseTable.prototype.forEachShift = function (cb) {
-        for (var state = 0; state < this.stateCount; state++) {
-            for (var tk = 0; tk < this.g.tokens.length; tk++) {
-                var item = this.lookupShift(state, tk);
-                item && cb(item, state, tk);
-            }
-        }
-    };
-    ParseTable.prototype.forEachGoto = function (cb) {
-        for (var state = 0; state < this.stateCount; state++) {
-            for (var nt = 0; nt < this.g.nts.length; nt++) {
-                var item = this.lookupGoto(state, nt);
-                item && cb(item, state, nt);
-            }
-        }
-    };
-    ParseTable.prototype.lookupShift = function (state, token) {
-        return this.shift[this.g.tokenCount * state + token];
-    };
-    ParseTable.prototype.lookupGoto = function (state, nt) {
-        return this.gotot[this.g.nts.length * state + nt];
-    };
-    ParseTable.prototype._getDefRed = function (state, apool) {
-        for (var i = 0; i < apool.length; i++) {
-            apool[i] = 0;
-        }
-        for (var tk = 0; tk < this.g.tokenCount; tk++) {
-            var item = this.lookupShift(state, tk);
-            item && item.actionType === Action$1.REDUCE && apool[item.rule.index]++;
-        }
-        var ret = 0;
-        for (var i = 0; i < apool.length; i++) {
-            apool[i] > apool[ret] && (ret = i);
-        }
-        return apool[ret] > 0 ? ret : -1;
-    };
-    ParseTable.prototype.findDefAct = function () {
-        this.defred = new Array(this.stateCount);
-        var apool = new Array(this.g.rules.length);
-        for (var i = 0; i < this.stateCount; i++) {
-            var def = this._getDefRed(i, apool);
-            this.defred[i] = def;
-            if (def !== -1) {
-                for (var tk = 0; tk < this.g.tokens.length; tk++) {
-                    var item = this.lookupShift(i, tk);
-                    item && item.actionType === Action$1.REDUCE && item.rule.index === def &&
-                        (this.shift[this.g.tokenCount * i + tk] = null);
-                }
-            }
-        }
-    };
-    return ParseTable;
-}());
-
-var ConflictType;
-(function (ConflictType) {
-    ConflictType[ConflictType["RR"] = 0] = "RR";
-    ConflictType[ConflictType["SR"] = 1] = "SR";
-})(ConflictType || (ConflictType = {}));
-
-var Conflict = (function () {
-    function Conflict() {
-    }
-    Conflict.prototype.toString = function () {
-        return "state " + this.set.stateIndex + ", " + Conflict.cNames[this.type] + " conflict:" + endl +
-            (YYTAB + "token: " + convertTokenToString(this.token) + endl) +
-            (YYTAB + "used rule: " + this.used.toString() + endl) +
-            (YYTAB + "discarded rule: " + this.discarded.toString());
-    };
-    Conflict.cNames = ['reduce/reduce', 'shift/reduce'];
-    return Conflict;
-}());
-function genInitialSet(g) {
-    var start = g.nts[0].rules[0];
-    var iset = new ItemSet(g);
-    iset.index = 0;
-    var set1 = new TokenSet(g.tokenCount);
-    set1.add(1);
-    iset.add(start, 0, true, set1, false);
-    return iset;
-}
-function genItemSets(g) {
-    var htable = {};
-    var iterations = 0;
-    function addToTable(iset) {
-        var h = iset.kernelHash();
-        if (htable[h] === undefined) {
-            htable[h] = [];
-        }
-        htable[h].push(iset);
-    }
-    function forEachInBucket(set, cb) {
-        var b = htable[set.kernelHash()];
-        if (b !== undefined) {
-            for (var i = 0; i < b.length; i++) {
-                if (cb(b[i]))
-                    break;
-            }
-        }
-    }
-    var index = 1;
-    var todoList = new List();
-    var incList = new List();
-    var doneList = new List();
-    todoList.append(genInitialSet(g));
-    while (!todoList.isEmpty() || !incList.isEmpty()) {
-        var comeFrom = null;
-        if (!incList.isEmpty()) {
-            var set = comeFrom = incList.pull();
-            set.forEach(function (item) {
-                if (item.actionType === Action$1.NONE) {
-                    console$1.assert(item.canShift());
-                    var shift = item.getShift();
-                    var newSet = new ItemSet(g);
-                    newSet.index = index++;
-                    todoList.append(newSet);
-                    set.forEach(function (item1) {
-                        if (item1.canShift()) {
-                            var rItem = item1.getShift();
-                            if (rItem === shift) {
-                                item1.actionType = Action$1.SHIFT;
-                                item1.shift = newSet;
-                                newSet.add(item1.rule, item1.marker + 1, true, item1.lah, false);
-                            }
-                        }
-                    });
-                }
-            });
-            set.complete = true;
-            doneList.append(set);
-        }
-        while (!todoList.isEmpty()) {
-            var set = todoList.pull();
-            set.closure();
-            set.forEach(function (item) {
-                if (!item.canShift()) {
-                    item.actionType = Action$1.REDUCE;
-                }
-            });
-            var merged = null;
-            forEachInBucket(set, function (gSet) {
-                if (gSet.canMergeTo(set)) {
-                    if (gSet.mergeTo(set)) {
-                        if (gSet.complete) {
-                            merged = gSet;
-                        }
-                    }
-                    if (comeFrom !== null) {
-                        comeFrom.forEach(function (sItem) {
-                            if (sItem.actionType === Action$1.SHIFT && sItem.shift === set) {
-                                sItem.shift = gSet;
-                            }
-                        });
-                    }
-                    set = null;
-                    return true;
-                }
-                return false;
-            });
-            if (merged !== null) {
-                doneList.remove(merged);
-                incList.append(merged);
-                merged.complete = false;
-            }
-            else if (set !== null) {
-                incList.append(set);
-                addToTable(set);
-            }
-        }
-        iterations++;
-    }
-    var i = 0;
-    doneList.forEach(function (set) {
-        set.stateIndex = i++;
-    });
-    return {
-        result: doneList,
-        iterations: iterations
-    };
-}
-function genParseTable(g, doneList) {
-    var conflicts = [];
-    function resolveSRConflict(set, shift, reduce) {
-        var token = g.tokens[shift.getShift()];
-        if (token.assoc !== Assoc.UNDEFINED) {
-            var ruleP = reduce.rule.pr;
-            if (ruleP !== -1) {
-                if (ruleP > token.pr) {
-                    return reduce;
-                }
-                else if (ruleP < token.pr) {
-                    return shift;
-                }
-                else {
-                    if (token.assoc === Assoc.LEFT) {
-                        return reduce;
-                    }
-                    else if (token.assoc === Assoc.RIGHT) {
-                        return shift;
-                    }
-                    else if (token.assoc === Assoc.NON) {
-                        return Item.NULL;
-                    }
-                    else {
-                        console$1.assert(false);
-                    }
-                }
-            }
-        }
-        var cf = new Conflict();
-        cf.type = ConflictType.SR;
-        cf.set = set;
-        cf.token = token;
-        cf.used = shift;
-        cf.discarded = reduce;
-        conflicts.push(cf);
-        return shift;
-    }
-    function resolveRRConflict(set, r1, r2, token) {
-        var tdef = g.tokens[token];
-        if (r1.rule.pr !== -1 && r2.rule.pr !== -1 && r1.rule.pr !== r2.rule.pr) {
-            return r1.rule.pr > r2.rule.pr ? r1 : r2;
-        }
-        else {
-            var used = r1.rule.index > r2.rule.index ? r2 : r1;
-            var discarded = r1.rule.index > r2.rule.index ? r1 : r2;
-            var cf = new Conflict();
-            cf.type = ConflictType.RR;
-            cf.set = set;
-            cf.token = tdef;
-            cf.used = used;
-            cf.discarded = discarded;
-            conflicts.push(cf);
-            return used;
-        }
-    }
-    var ptable = new ParseTable(g, doneList.size);
-    doneList.forEach(function (set) {
-        set.forEach(function (item) {
-            if (item.actionType === Action$1.SHIFT) {
-                var sItem = item.getShift();
-                if (g.isToken(sItem)) {
-                    var tindex = set.stateIndex * g.tokenCount + sItem;
-                    var cItem = ptable.shift[tindex];
-                    if (cItem !== null) {
-                        if (cItem.actionType === Action$1.REDUCE) {
-                            ptable.shift[tindex] = resolveSRConflict(set, item, cItem);
-                        }
-                        else {
-                            console$1.assert(cItem.shift === item.shift);
-                        }
-                    }
-                    else {
-                        ptable.shift[tindex] = item;
-                    }
-                }
-                else {
-                    var tindex = set.stateIndex * g.nts.length + (-sItem - 1);
-                    ptable.gotot[tindex] = item;
-                }
-            }
-            else if (item.actionType === Action$1.REDUCE) {
-                for (var i = 0; i < g.tokenCount; i++) {
-                    if (item.lah.contains(i + 1)) {
-                        var index = set.stateIndex * g.tokenCount + i;
-                        var cItem = ptable.shift[index];
-                        if (cItem !== null) {
-                            if (cItem.actionType === Action$1.REDUCE) {
-                                ptable.shift[index] = resolveRRConflict(set, cItem, item, i);
-                            }
-                            else if (cItem.actionType === Action$1.SHIFT) {
-                                ptable.shift[index] = resolveSRConflict(set, cItem, item);
-                            }
-                        }
-                        else {
-                            ptable.shift[index] = item;
-                        }
-                    }
-                }
-            }
-            else {
-                console$1.assert(false);
-            }
-        });
-    });
-    return {
-        result: ptable,
-        conflicts: conflicts
-    };
-}
-
-function testParse(g, pt, tokens, onErr) {
-    var tk = [];
-    for (var _i = 0, tokens_1 = tokens; _i < tokens_1.length; _i++) {
-        var tname = tokens_1[_i];
-        var tdef = void 0;
-        if (/<[^>]+>/.test(tname)) {
-            tdef = g.findTokenByName(tname.substr(1, tname.length - 2));
-            if (tdef === null) {
-                onErr("cannot recognize " + tname + " as a token");
-                return [];
-            }
-        }
-        else {
-            var defs = g.findTokensByAlias(tname);
-            if (defs.length === 0) {
-                onErr("cannot recognize \"" + tname + "\" as a token");
-                return [];
-            }
-            if (defs.length > 1) {
-                var msg = '';
-                for (var _a = 0, defs_1 = defs; _a < defs_1.length; _a++) {
-                    var def = defs_1[_a];
-                    msg += "<" + def.sym + "> ";
-                }
-                onErr("cannot recognize \"" + tname + "\" as a token, since it can be " + msg);
-                return [];
-            }
-            tdef = defs[0];
-        }
-        tk.push(tdef);
-    }
-    var state = [0];
-    var stack = [];
-    var ret = [];
-    function s() {
-        return state[state.length - 1];
-    }
-    function shift(ns) {
-        state.push(ns);
-        var tdef = tk.shift();
-        stack.push(convertTokenToString(tdef));
-    }
-    function reduce(rule) {
-        state.length -= rule.rhs.length;
-        stack.length -= rule.rhs.length;
-        stack.push(rule.lhs.sym);
-        var gotot = pt.lookupGoto(s(), rule.lhs.index).shift.stateIndex;
-        state.push(gotot);
-    }
-    function dump() {
-        var ret = '';
-        for (var _i = 0, stack_1 = stack; _i < stack_1.length; _i++) {
-            var s_1 = stack_1[_i];
-            ret += s_1 + ' ';
-        }
-        ret += '| ';
-        for (var _a = 0, tk_1 = tk; _a < tk_1.length; _a++) {
-            var tdef = tk_1[_a];
-            ret += convertTokenToString(tdef);
-            ret += ' ';
-        }
-        return ret;
-    }
-    ret.push(dump());
-    do {
-        var item = pt.lookupShift(s(), tk[0] ? tk[0].index : 0);
-        if (item !== null) {
-            if (item === Item.NULL) {
-                ret.push('syntax error!');
-                break;
-            }
-            else if (item.actionType === Action$1.SHIFT) {
-                if (tk.length === 0) {
-                    ret.push('accepted!');
-                    break;
-                }
-                shift(item.shift.stateIndex);
-            }
-            else if (item.actionType === Action$1.REDUCE) {
-                if (reduce(item.rule)) {
-                    break;
-                }
-            }
-            else {
-                console.assert(false);
-            }
-        }
-        else {
-            var ri = pt.defred[s()];
-            if (ri !== -1) {
-                reduce(g.rules[ri]);
-            }
-            else {
-                ret.push('syntax error!');
-                break;
-            }
-        }
-        ret.push(dump());
-    } while (true);
-    return ret;
-}
-
-function sorter(cmp) {
-    var a = [];
-    function insert(i, obj) {
-        a.push(null);
-        for (var j = a.length - 1; j > i; j--) {
-            a[j] = a[j - 1];
-        }
-        a[i] = obj;
-    }
-    return {
-        add: function (b) {
-            var i;
-            for (i = 0; i < a.length; i++) {
-                if ((i === 0 || cmp(b, a[i - 1]) >= 0) && cmp(b, a[i]) <= 0) {
-                    break;
-                }
-            }
-            insert(i, b);
-        },
-        done: function () {
-            return a;
-        }
-    };
-}
-var RowEntry = (function () {
-    function RowEntry(emptyCount, row) {
-        this.emptyCount = emptyCount;
-        this.row = row;
-        this.dp = 0;
-    }
-    return RowEntry;
-}());
-function compress(source) {
-    function empty(i, j) {
-        j = j - sorted[i].dp;
-        return j < 0 || j >= source.columns || source.isEmpty(sorted[i].row, j);
-    }
-    function fit(i, dp) {
-        for (var j = 0; j < source.columns; j++) {
-            if (!empty(i, j)) {
-                for (var k = 0; k < i; k++) {
-                    if (!empty(k, j + dp)) {
-                        return false;
-                    }
-                }
-            }
-        }
-        return true;
-    }
-    function getFitdp(i) {
-        var dp = 0;
-        while (-dp < source.columns && source.isEmpty(sorted[i].row, -dp)) {
-            dp--;
-        }
-        while (!fit(i, dp)) {
-            dp++;
-        }
-        return dp;
-    }
-    var tmpsorted = sorter(function (a, b) {
-        return a.emptyCount < b.emptyCount ? -1 :
-            a.emptyCount > b.emptyCount ? 1 : 0;
-    });
-    for (var i = 0; i < source.rows; i++) {
-        tmpsorted.add(new RowEntry(source.emptyCount(i), i));
-    }
-    var sorted = tmpsorted.done();
-    var maxdp = 0, mindp = 0;
-    var dps = new Array(source.rows);
-    var initDp = 0;
-    while (-initDp < source.columns && source.isEmpty(sorted[0].row, -initDp)) {
-        initDp--;
-    }
-    dps[sorted[0].row] = sorted[0].dp = initDp;
-    for (var i = 1; i < sorted.length; i++) {
-        var row = sorted[i].row;
-        var dp = getFitdp(i);
-        dps[row] = sorted[i].dp = dp;
-        dp > maxdp && (maxdp = dp);
-        dp < mindp && (mindp = dp);
-    }
-    return {
-        dps: dps,
-        len: maxdp + source.columns
-    };
-}
-
-function initArray(len, cb) {
-    var ret = new Array(len);
-    for (var i = 0; i < len; i++) {
-        ret[i] = cb(i);
-    }
-    return ret;
-}
-
-function action(pt) {
-    var emCount = [];
-    for (var state = 0; state < pt.stateCount; state++) {
-        emCount.push(0);
-        for (var tk = 0; tk < pt.g.tokens.length; tk++) {
-            pt.lookupShift(state, tk) === null && (emCount[state]++);
-        }
-    }
-    return {
-        rows: pt.stateCount,
-        columns: pt.g.tokens.length,
-        isEmpty: function (state, token) {
-            return pt.lookupShift(state, token) === null;
-        },
-        emptyCount: function (state) {
-            return emCount[state];
-        }
-    };
-}
-function gotot(pt) {
-    var emCount = [];
-    for (var state = 0; state < pt.stateCount; state++) {
-        emCount.push(0);
-        for (var nt = 0; nt < pt.g.nts.length; nt++) {
-            pt.lookupShift(state, nt) === null && (emCount[state]++);
-        }
-    }
-    return {
-        rows: pt.stateCount,
-        columns: pt.g.nts.length,
-        isEmpty: function (state, nt) {
-            return pt.lookupGoto(state, nt) === null;
-        },
-        emptyCount: function (nt) {
-            return emCount[nt];
-        }
-    };
-}
-var CompressedPTable = (function () {
-    function CompressedPTable(ptable) {
-        this.g = ptable.g;
-        this.defred = ptable.defred;
-        this.stateCount = ptable.stateCount;
-        var actionCResult = compress(action(ptable));
-        var gotoCResult = compress(gotot(ptable));
-        this.disact = actionCResult.dps;
-        this.disgoto = gotoCResult.dps;
-        this.pact = initArray(actionCResult.len, function () { return null; });
-        this.checkact = initArray(actionCResult.len, function () { return 0; });
-        var cela = this;
-        ptable.forEachShift(function (it, state, token) {
-            console$1.assert(cela.pact[cela.disact[state] + token] === null);
-            cela.pact[cela.disact[state] + token] = it;
-            cela.checkact[cela.disact[state] + token] = state;
-        });
-        this.pgoto = initArray(gotoCResult.len, function () { return null; });
-        this.checkgoto = initArray(gotoCResult.len, function () { return 0; });
-        ptable.forEachGoto(function (it, state, nt) {
-            console$1.assert(cela.pgoto[cela.disgoto[state] + nt] === null);
-            cela.pgoto[cela.disgoto[state] + nt] = it;
-            cela.checkgoto[cela.disgoto[state] + nt] = state;
-        });
-        this._trim();
-    }
-    CompressedPTable.prototype._trim = function () {
-        while (this.pact[this.pact.length - 1] === null) {
-            this.pact.pop();
-            this.checkact.pop();
-        }
-        while (this.pgoto[this.pgoto.length - 1] === null) {
-            this.pgoto.pop();
-            this.checkgoto.pop();
-        }
-    };
-    CompressedPTable.prototype.lookupShift = function (state, token) {
-        var index = this.disact[state] + token;
-        if (index >= 0 && index < this.pact.length && this.checkact[index] === state) {
-            return this.pact[this.disact[state] + token];
-        }
-        else {
-            return null;
-        }
-    };
-    CompressedPTable.prototype.lookupGoto = function (state, nt) {
-        var index = this.disgoto[state] + nt;
-        if (index >= 0 && index < this.pgoto.length && this.checkgoto[index] === state) {
-            return this.pgoto[this.disgoto[state] + nt];
-        }
-        else {
-            return null;
-        }
-    };
-    return CompressedPTable;
-}());
-
-var Rule = (function () {
-    function Rule(g, lhs, pos) {
-        this.g = g;
-        this.lhs = lhs;
-        this.pos = pos;
-        this.pr = -1;
-        this.rhs = [];
-        this.action = null;
-        this.index = 0;
-        this.vars = {};
-        this.usedVars = {};
-    }
-    Rule.prototype.calcPr = function () {
-        if (this.pr === -1) {
-            for (var i = this.rhs.length - 1; i >= 0; i--) {
-                var item = this.rhs[i];
-                if (item >= 0) {
-                    this.g.tokens[item].assoc !== Assoc.UNDEFINED &&
-                        (this.pr = this.g.tokens[item].pr);
-                }
-            }
-        }
-    };
-    Rule.prototype.getVarSp = function (v, ecb) {
-        if (this.lhs.parents.length !== 1) {
-            if (this.lhs.parents.length > 1) {
-                ecb("LHS of the rule is referenced by more than one rule");
-            }
-            else {
-                ecb("this rule is unreachable");
-            }
-            return null;
-        }
-        var ret = this.rhs.length;
-        var pos = this.lhs.parents[0].pos;
-        var rule = this.lhs.parents[0].rule;
-        while (true) {
-            var vdef = rule.vars[v];
-            if (vdef !== undefined && vdef.val < pos) {
-                ret += pos - vdef.val;
-                return ret;
-            }
-            if (rule.lhs.parents.length !== 1) {
-                if (rule.lhs.parents.length > 1) {
-                    ecb("\"" + rule.lhs.sym + "\" is referenced by more than one rule or unreachable");
-                }
-                else {
-                    ecb("variable is undefined");
-                }
-                return null;
-            }
-            ret += pos;
-            pos = rule.lhs.parents[0].pos;
-            rule = rule.lhs.parents[0].rule;
-        }
-    };
-    Rule.prototype.toString = function (marker) {
-        var ret = this.index + ': ' + this.lhs.sym + ' =>';
-        for (var i = 0; i < this.rhs.length; i++) {
-            var r = this.rhs[i];
-            if (marker === i) {
-                ret += ' .';
-            }
-            if (r >= 0) {
-                ret += ' ' + convertTokenToString(this.g.tokens[r]);
-            }
-            else {
-                ret += ' ' + this.g.nts[-r - 1].sym;
-            }
-        }
-        if (marker === this.rhs.length) {
-            ret += ' .';
-        }
-        return ret;
-    };
-    return Rule;
-}());
-var Grammar = (function () {
-    function Grammar() {
-        this.tokens = [];
-        this.tokenCount = 0;
-        this.nts = [];
-        this.rules = [];
-    }
-    Grammar.prototype.isToken = function (t) {
-        return t >= 0;
-    };
-    Grammar.prototype.forEachRule = function (cb) {
-        for (var i = 0; i < this.nts.length; i++) {
-            var rules = this.nts[i].rules;
-            for (var j = 0; j < rules.length; j++) {
-                cb(i, rules[j]);
-            }
-        }
-    };
-    Grammar.prototype.forEachRuleOfNt = function (lhs, cb) {
-        var rules = this.nts[lhs].rules;
-        for (var j = 0; j < rules.length; j++) {
-            if (cb(rules[j])) {
-                break;
-            }
-        }
-    };
-    Grammar.prototype.genFirstSets = function () {
-        var changed = true;
-        var mask = new TokenSet(this.tokens.length);
-        mask.addAll();
-        mask.remove(0);
-        while (changed) {
-            changed = false;
-            for (var nt = 0; nt < this.nts.length; nt++) {
-                var rules = this.nts[nt].rules;
-                var firstSet = this.nts[nt].firstSet;
-                for (var j = 0; j < rules.length; j++) {
-                    var rule = rules[j];
-                    for (var k = 0; k < rule.rhs.length; k++) {
-                        var ritem = rule.rhs[k];
-                        if (this.isToken(ritem)) {
-                            changed = firstSet.add(ritem + 1) || changed;
-                            break;
-                        }
-                        else {
-                            ritem = -ritem - 1;
-                            if (nt !== ritem) {
-                                changed = firstSet.union(this.nts[ritem].firstSet, mask) || changed;
-                            }
-                            if (!this.nts[ritem].firstSet.contains(0)) {
-                                break;
-                            }
-                        }
-                    }
-                    k === rule.rhs.length && (changed = firstSet.add(0) || changed);
-                }
-            }
-        }
-    };
-    Grammar.prototype.toString = function (opt) {
-        if (opt === void 0) { opt = {}; }
-        opt = opt || {};
-        var endl = opt.endl || endl;
-        var escape = opt.escape || false;
-        var ret = '';
-        this.forEachRule(function (lhs, rule) {
-            var s = rule.toString();
-            ret += s + endl;
-        });
-        if (opt.firstSets) {
-            for (var i = 0; i < this.nts.length; i++) {
-                var s = this.nts[i];
-                ret += "First(" + s.sym + ") = { " + s.firstSet.toString(this) + " }" + endl;
-            }
-        }
-        if (escape) {
-            ret = ret.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        }
-        return ret.replace(/\n/g, endl);
-    };
-    Grammar.prototype.findTokenByName = function (t) {
-        for (var _i = 0, _a = this.tokens; _i < _a.length; _i++) {
-            var tk = _a[_i];
-            if (tk.sym === t) {
-                return tk;
-            }
-        }
-        return null;
-    };
-    Grammar.prototype.findTokensByAlias = function (t) {
-        var ret = [];
-        for (var _i = 0, _a = this.tokens; _i < _a.length; _i++) {
-            var tk = _a[_i];
-            tk.alias === t && ret.push(tk);
-        }
-        return ret;
-    };
-    return Grammar;
-}());
-
-var File = (function () {
-    function File() {
-        this.grammar = null;
-        this.lexDFA = [];
-        this.dfaTables = [];
-        this.opt = {};
-        this.prefix = 'jj';
-        this.header = [];
-        this.output = null;
-        this.extraArgs = null;
-        this.initArg = null;
-        this.initBody = null;
-        this.epilogue = null;
-        this.sematicType = null;
-    }
-    return File;
 }());
 
 var CoroutineMgr = (function () {
@@ -2875,6 +2580,7 @@ function createFileBuilder(ctx) {
         getTokenByAlias: getTokenByAlias,
         getTokenByName: getTokenByName,
         defineTokenPrec: defineTokenPrec,
+        setLineTerminator: setLineTerminator,
         setOpt: setOpt,
         setOutput: setOutput,
         setHeader: setHeader,
@@ -2944,7 +2650,7 @@ function createFileBuilder(ctx) {
                 sym: name.val,
                 alias: alias,
                 pr: 0,
-                assoc: Assoc.UNDEFINED,
+                assoc: exports.Assoc.UNDEFINED,
                 used: false,
                 appears: [name]
             };
@@ -3008,6 +2714,9 @@ function createFileBuilder(ctx) {
                 pos: tid
             };
         }
+    }
+    function setLineTerminator(eol) {
+        file.eol = eol;
     }
     function setOpt(name, value) {
         file.opt[name.val] = { name: name, val: value };
@@ -3152,7 +2861,7 @@ function createFileBuilder(ctx) {
                 getTokenByAlias(token) :
                 getTokenByName(token);
             if (tk !== null) {
-                if (tk.assoc === Assoc.UNDEFINED) {
+                if (tk.assoc === exports.Assoc.UNDEFINED) {
                     singlePosErr("precedence of token \"" + token.val + "\" has not been defined", token);
                     return;
                 }
@@ -3307,7 +3016,8 @@ function unescape(s) {
     }
     return ret;
 }
-var jjeol = '\n'.charCodeAt(0);
+var jjlf = '\n'.charCodeAt(0);
+var jjcr = '\r'.charCodeAt(0);
 
 var jjlexpnext0 = [
     70, 70, 70, 70, 70, 70, 70, 70, 70, 70,
@@ -4869,6 +4579,15 @@ var Token = (function () {
     };
     return Token;
 }());
+var LineTerm;
+(function (LineTerm) {
+    LineTerm[LineTerm["NONE"] = 1] = "NONE";
+    LineTerm[LineTerm["AUTO"] = 2] = "AUTO";
+    LineTerm[LineTerm["CR"] = 3] = "CR";
+    LineTerm[LineTerm["LF"] = 4] = "LF";
+    LineTerm[LineTerm["CRLF"] = 5] = "CRLF";
+})(LineTerm || (LineTerm = {}));
+
 function createParser() {
     var jjlexState;
     var jjstate;
@@ -4885,6 +4604,8 @@ function createParser() {
     var jjsematicVal;
     var jjtokenQueue;
     var jjstop;
+    var jjlineTerm;
+    var jjlastCR;
     var jjhandlers = {};
     var gb;
     var assoc;
@@ -4894,6 +4615,8 @@ function createParser() {
     return {
         init: init,
         on: on,
+        setLineTerminator: setLineTerminator,
+        getLineTerminator: function () { return jjlineTerm; },
         accept: accept,
         end: end,
         halt: halt
@@ -4912,6 +4635,7 @@ function createParser() {
         jjsematicVal = null;
         jjtokenQueue = [];
         jjstop = false;
+        jjlineTerm = LineTerm.AUTO;
         gb = b;
         jjtryReduce();
     }
@@ -5262,7 +4986,55 @@ function createParser() {
         jjbackupCount = 0;
     }
     function jjconsume(c) {
-        c === jjeol ? (jjline++, jjcolumn = 0) : (jjcolumn += c > 0xff ? 2 : 1);
+        switch (jjlineTerm) {
+            case LineTerm.NONE:
+                jjcolumn += c > 0xff ? 2 : 1;
+                break;
+            case LineTerm.CR:
+                c === jjcr ? (jjline++, jjcolumn = 0) : (jjcolumn += c > 0xff ? 2 : 1);
+                break;
+            case LineTerm.LF:
+                c === jjlf ? (jjline++, jjcolumn = 0) : (jjcolumn += c > 0xff ? 2 : 1);
+                break;
+            case LineTerm.CRLF:
+                if (jjlastCR) {
+                    if (c === jjlf) {
+                        jjline++, jjcolumn = 0;
+                        jjlastCR = false;
+                    }
+                    else {
+                        jjcolumn += c > 0xff ? 2 : 1;
+                        jjlastCR = c === jjcr;
+                    }
+                }
+                else {
+                    jjcolumn += c > 0xff ? 2 : 1;
+                    jjlastCR = c === jjcr;
+                }
+                break;
+            case LineTerm.AUTO:
+                if (jjlastCR) {
+                    if (c === jjlf) {
+                        jjline++, jjcolumn = 0;
+                        jjlastCR = false;
+                        jjlineTerm = LineTerm.CRLF;
+                    }
+                    else {
+                        jjline++, jjcolumn = 0;
+                        jjlineTerm = LineTerm.CR;
+                        c === jjcr ? (jjline++, jjcolumn = 0) : (jjcolumn += c > 0xff ? 2 : 1);
+                    }
+                }
+                else if (c === jjlf) {
+                    jjline++, jjcolumn = 0;
+                    jjlineTerm = LineTerm.LF;
+                }
+                else {
+                    jjcolumn += c > 0xff ? 2 : 1;
+                    jjlastCR = c === jjcr;
+                }
+                break;
+        }
         jjmatched += String.fromCharCode(c);
         jjmarker.state !== -1 && (jjbackupCount++);
         return true;
@@ -5352,6 +5124,9 @@ function createParser() {
             }
         }
     }
+    function setLineTerminator(lt) {
+        jjlineTerm = lt;
+    }
     function accept(s) {
         for (var i = 0; i < s.length && !jjstop;) {
             jjacceptChar(s.charCodeAt(i)) && i++;
@@ -5434,17 +5209,17 @@ function createParser() {
                 break;
             case 19:
                 {
-                    assoc = Assoc.LEFT;
+                    assoc = exports.Assoc.LEFT;
                 }
                 break;
             case 20:
                 {
-                    assoc = Assoc.RIGHT;
+                    assoc = exports.Assoc.RIGHT;
                 }
                 break;
             case 21:
                 {
-                    assoc = Assoc.NON;
+                    assoc = exports.Assoc.NON;
                 }
                 break;
             case 24:
@@ -5983,6 +5758,12 @@ function parse(ctx, source) {
         return null;
     }
     else {
+        var eol = parser.getLineTerminator();
+        if (eol !== LineTerm.NONE && eol !== LineTerm.AUTO) {
+            gb.setLineTerminator(eol === LineTerm.CR ? '\r' :
+                eol === LineTerm.LF ? '\n' :
+                    eol === LineTerm.CRLF ? '\r\n' : null);
+        }
         return gb.build();
     }
 }
@@ -6048,7 +5829,10 @@ var tsRenderer = function (input, output) {
     echoLine("*/");
     echo("var ");
     echo(prefix);
-    echo("eol = '\\n'.charCodeAt(0);");
+    echoLine("lf = '\\n'.charCodeAt(0);");
+    echo("var ");
+    echo(prefix);
+    echo("cr = '\\r'.charCodeAt(0);");
     if (ists) {
         echoLine("");
         echoLine("interface DFATable{");
@@ -6195,10 +5979,10 @@ var tsRenderer = function (input, output) {
         else if (t === Item.NULL) {
             return String(pt.stateCount + 1);
         }
-        else if (t.actionType === Action$1.SHIFT) {
+        else if (t.actionType === Action.SHIFT) {
             return (t.shift.stateIndex + 1).toString();
         }
-        else if (t.actionType === Action$1.REDUCE) {
+        else if (t.actionType === Action.REDUCE) {
             return (-t.rule.index - 1).toString();
         }
     });
@@ -6419,6 +6203,8 @@ var tsRenderer = function (input, output) {
         echo(n(input.file.initArg));
         echoLine(");");
         echoLine("    accept(s: string);");
+        echoLine("    setLineTerminator(lt: LineTerm);");
+        echoLine("    getLineTerminator(): LineTerm;");
         echoLine("    end();");
         echoLine("    halt();");
         echoLine("    on(ent: string, cb: (a1?, a2?, a3?) => any);");
@@ -6456,6 +6242,27 @@ var tsRenderer = function (input, output) {
         echoLine("tokenAlias[this.id] + '\"') + \"(\" + this.val + \")\";");
         echo("}");
     }
+    if (ists) {
+        echoLine("");
+        echoLine("enum LineTerm{");
+        echoLine("    NONE = 1,");
+        echoLine("    AUTO,");
+        echoLine("    CR,");
+        echoLine("    LF,");
+        echoLine("    CRLF");
+        echo("};");
+    }
+    else {
+        echoLine("");
+        echoLine("var LineTerm = {");
+        echoLine("    NONE: 1,");
+        echoLine("    AUTO: 2,");
+        echoLine("    CR: 3,");
+        echoLine("    LF: 4,");
+        echoLine("    CRLF: 5");
+        echo("};");
+    }
+    echoLine("");
     var stype = n(input.file.sematicType, 'any');
     echoLine("");
     echo("function create");
@@ -6541,7 +6348,20 @@ var tsRenderer = function (input, output) {
     echoLine("");
     echo("    var ");
     echo(prefix);
-    echoLine("stop;");
+    echo("stop");
+    echo(ts(': boolean'));
+    echoLine(";");
+    echoLine("");
+    echo("    var ");
+    echo(prefix);
+    echo("lineTerm");
+    echo(ts(': LineTerm'));
+    echoLine(";");
+    echo("    var ");
+    echo(prefix);
+    echo("lastCR");
+    echo(ts(': boolean'));
+    echoLine("");
     echoLine("");
     echo("    var ");
     echo(prefix);
@@ -6558,6 +6378,10 @@ var tsRenderer = function (input, output) {
         echoLine("    return {");
         echoLine("        init,");
         echoLine("        on,");
+        echoLine("        setLineTerminator,");
+        echo("        getLineTerminator: () => ");
+        echo(prefix);
+        echoLine("lineTerm,");
         echoLine("        accept,");
         echoLine("        end,");
         echoLine("        halt");
@@ -6568,6 +6392,10 @@ var tsRenderer = function (input, output) {
         echoLine("    return {");
         echoLine("        init: init,");
         echoLine("        on: on,");
+        echoLine("        setLineTerminator: setLineTerminator,");
+        echo("        getLineTerminator: function() { return ");
+        echo(prefix);
+        echoLine("lineTerm; },");
         echoLine("        accept: accept,");
         echoLine("        end: end,");
         echoLine("        halt: halt");
@@ -6622,6 +6450,12 @@ var tsRenderer = function (input, output) {
     echo("        ");
     echo(prefix);
     echoLine("stop = false;");
+    echo("        ");
+    echo(prefix);
+    echoLine("lineTerm = LineTerm.AUTO;");
+    echo("        var ");
+    echo(prefix);
+    echoLine("lastCR = false;");
     echo("        ");
     echo(n(input.file.initBody));
     echoLine("");
@@ -6845,7 +6679,7 @@ var tsRenderer = function (input, output) {
     echo("consume(c");
     echo(ts(": number"));
     echoLine("){");
-    echo("        c === ");
+    echo("        // c === ");
     echo(prefix);
     echo("eol ? (");
     echo(prefix);
@@ -6854,6 +6688,137 @@ var tsRenderer = function (input, output) {
     echo("column = 0) : (");
     echo(prefix);
     echoLine("column += c > 0xff ? 2 : 1);");
+    echo("        switch(");
+    echo(prefix);
+    echoLine("lineTerm){");
+    echoLine("            case LineTerm.NONE:");
+    echo("                ");
+    echo(prefix);
+    echoLine("column += c > 0xff ? 2 : 1;");
+    echoLine("                break;");
+    echoLine("            case LineTerm.CR:");
+    echo("                c === ");
+    echo(prefix);
+    echo("cr ? (");
+    echo(prefix);
+    echo("line++, ");
+    echo(prefix);
+    echo("column = 0) : (");
+    echo(prefix);
+    echoLine("column += c > 0xff ? 2 : 1);");
+    echoLine("                break;");
+    echoLine("            case LineTerm.LF:");
+    echo("                c === ");
+    echo(prefix);
+    echo("lf ? (");
+    echo(prefix);
+    echo("line++, ");
+    echo(prefix);
+    echo("column = 0) : (");
+    echo(prefix);
+    echoLine("column += c > 0xff ? 2 : 1);");
+    echoLine("                break;");
+    echoLine("            case LineTerm.CRLF:");
+    echo("                if(");
+    echo(prefix);
+    echoLine("lastCR){");
+    echo("                    if(c === ");
+    echo(prefix);
+    echoLine("lf){");
+    echo("                        ");
+    echo(prefix);
+    echo("line++, ");
+    echo(prefix);
+    echoLine("column = 0;");
+    echo("                        ");
+    echo(prefix);
+    echoLine("lastCR = false;");
+    echoLine("                    }");
+    echoLine("                    else {");
+    echo("                        ");
+    echo(prefix);
+    echoLine("column += c > 0xff ? 2 : 1;");
+    echo("                        ");
+    echo(prefix);
+    echo("lastCR = c === ");
+    echo(prefix);
+    echoLine("cr;");
+    echoLine("                    }");
+    echoLine("                }");
+    echoLine("                else {");
+    echo("                    ");
+    echo(prefix);
+    echoLine("column += c > 0xff ? 2 : 1;");
+    echo("                    ");
+    echo(prefix);
+    echo("lastCR = c === ");
+    echo(prefix);
+    echoLine("cr;");
+    echoLine("                }");
+    echoLine("                break;");
+    echoLine("            case LineTerm.AUTO:");
+    echo("                if(");
+    echo(prefix);
+    echoLine("lastCR){");
+    echo("                    if(c === ");
+    echo(prefix);
+    echoLine("lf){");
+    echo("                        ");
+    echo(prefix);
+    echo("line++, ");
+    echo(prefix);
+    echoLine("column = 0;");
+    echo("                        ");
+    echo(prefix);
+    echoLine("lastCR = false;");
+    echo("                        ");
+    echo(prefix);
+    echoLine("lineTerm = LineTerm.CRLF;");
+    echoLine("                    }");
+    echoLine("                    else {");
+    echo("                        ");
+    echo(prefix);
+    echo("line++, ");
+    echo(prefix);
+    echoLine("column = 0;");
+    echo("                        ");
+    echo(prefix);
+    echoLine("lineTerm = LineTerm.CR;");
+    echo("                        c === ");
+    echo(prefix);
+    echo("cr ? (");
+    echo(prefix);
+    echo("line++, ");
+    echo(prefix);
+    echo("column = 0) : (");
+    echo(prefix);
+    echoLine("column += c > 0xff ? 2 : 1);");
+    echoLine("                    }");
+    echoLine("                }");
+    echo("                else if(c === ");
+    echo(prefix);
+    echoLine("lf){");
+    echo("                    ");
+    echo(prefix);
+    echo("line++, ");
+    echo(prefix);
+    echoLine("column = 0;");
+    echo("                    ");
+    echo(prefix);
+    echoLine("lineTerm = LineTerm.LF;");
+    echoLine("                }");
+    echoLine("                else {");
+    echo("                    ");
+    echo(prefix);
+    echoLine("column += c > 0xff ? 2 : 1;");
+    echo("                    ");
+    echo(prefix);
+    echo("lastCR = c === ");
+    echo(prefix);
+    echoLine("cr;");
+    echoLine("                }");
+    echoLine("                break;");
+    echoLine("        }");
     echo("        ");
     echo(prefix);
     echoLine("matched += String.fromCharCode(c);");
@@ -7081,6 +7046,11 @@ var tsRenderer = function (input, output) {
     echoLine("                return true;");
     echoLine("            }");
     echoLine("        }");
+    echoLine("    }");
+    echoLine("    function setLineTerminator(lt: LineTerm){");
+    echo("        ");
+    echo(prefix);
+    echoLine("lineTerm = lt;");
     echoLine("    }");
     echoLine("    /**");
     echoLine("     *  input a string");
@@ -7677,7 +7647,7 @@ function genResult(source, fname) {
         endTime: endTime
     };
     var f = parse(ret, source);
-    var lines = source.split('\n');
+    var lines = source.split(f.eol);
     for (var _i = 0, needLinecbs_1 = needLinecbs; _i < needLinecbs_1.length; _i++) {
         var cb = needLinecbs_1[_i];
         cb(ret, lines);
@@ -7798,7 +7768,7 @@ function genResult(source, fname) {
     }
     function getTemplateInput() {
         return {
-            endl: '\n',
+            endl: file.eol,
             output: f.output === null ? 'typescript' : f.output.val,
             pt: parseTable,
             file: file
@@ -7865,7 +7835,6 @@ function main(opt) {
     return result.hasError() ? -1 : 0;
 }
 
-exports.Pattern = pattern;
 exports.io = io;
 exports.genResult = genResult;
 exports.generateCode = generateCode;

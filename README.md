@@ -37,7 +37,7 @@ This project uses module bundler `rollup` to create a source file `tscc.js` that
 |writeFile|Yes|`(path: string, content: string) => any`|A callback to write files.|
 |testInput|No|`string`|Test input. If specified, the result will be printed. See below for explanation.|
 |printDetailedTime|Yes|`boolean`|Whether to print the detailed time cost list.|
-Where the types are type notations in Typescript.
+Where type notations in Typescript are used.
 
 Here's a simple example:
 ```js
@@ -57,7 +57,7 @@ tscc({
     printDetailedTime: true
 });
 ```
-These are other usages of the module. Checkout [wiki]() for a detailed specification.
+
 ### Test input
 You can give the tscc-compiler a test input string to test if the grammar works. Input string consists of the following two elements, seperated by spaces:
 - An identifier parenthesised by `<>` is a token, referenced by its name;

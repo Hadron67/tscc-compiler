@@ -8,7 +8,7 @@ import { ParseTable, IParseTable, printParseTable } from '../grammar/ptable';
 import { TokenDef } from '../grammar/token-entry';
 import { NtDef } from '../grammar/grammar';
 import { List } from '../util/list';
-import { OutputStream, InputStream, StringIS, endl } from '../util/io';
+import { OutputStream, StringIS, endl } from '../util/io';
 import { Context } from '../util/context';
 import { JsccError, JsccWarning, Option } from '../util/E';
 import { CompressedPTable } from '../grammar/ptable-compress';
@@ -69,7 +69,7 @@ export function genResult(source: string, fname: string): Result{
     };
 
     var f = parse(ret, source);
-    let lines = source.split('\n');
+    let lines = source.split(f.eol);
     for(let cb of needLinecbs){
         cb(ret, lines);
     }
@@ -192,7 +192,7 @@ export function genResult(source: string, fname: string): Result{
     }
     function getTemplateInput(): TemplateInput{
         return {
-            endl: '\n',
+            endl: file.eol,
             output: f.output === null ? 'typescript' : f.output.val,
             pt: parseTable,
             file: file

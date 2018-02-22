@@ -308,7 +308,7 @@ itemName:
     itn = <NAME> '=' { gb.addRuleSematicVar(itn); } 
 |   /* empty */
 ;
-ruleItem0: 
+ruleItem: 
     t = <NAME> { gb.addRuleItem(t, TokenRefType.NAME); }
 |   vn = <NAME> '=' { gb.addRuleSematicVar(vn); } 
     t = <NAME> { gb.addRuleItem(t, TokenRefType.NAME); }
@@ -397,6 +397,14 @@ export function parse(ctx: Context, source: string): File{
         return null;
     }
     else {
+        var eol = parser.getLineTerminator();
+        if(eol !== LineTerm.NONE && eol !== LineTerm.AUTO){
+            gb.setLineTerminator(
+                eol === LineTerm.CR ? '\r' : 
+                eol === LineTerm.LF ? '\n' :
+                eol === LineTerm.CRLF ? '\r\n' : null
+            );
+        }
         return gb.build();
     }
 }

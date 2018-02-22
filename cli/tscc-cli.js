@@ -1,7 +1,7 @@
 'use strict';
 
 var fs = require('fs');
-// var Promise = require('bluebird');
+var Promise = require('bluebird');
 var tscc = require('../lib/tscc.js').main;
 var parseArgs = require('./arg.js');
 var pkg = require('../package.json');
