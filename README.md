@@ -26,7 +26,7 @@ The output files actually depends on the target language. For js and ts, `test.t
 |-d, --detail-time|Print a detailed list of time costs of different generation phases.|No|
 |-h, --help|Print help message and quit|No|
 ### From module
-This project uses module bundler `rollup` to create a source file `tscc.js` that contains the entail source code for tscc-compiler. you may import it as a module by `var tscc = require('tscc-compiler');` or include `tscc.js` with a script tag in brownsers. Then call `tscc.main` with the argument being an object that contains various options. It returns `0` if no error ocurrs, otherwise it returns `-1`. Options are listed below:
+This project uses module bundler `rollup` to create a source file `tscc.js` that contains the entail source code for tscc-compiler. you may import it as a module by `var tscc = require('tscc-compiler');` or include `tscc.js` with a script tag in browsers. Then call `tscc.main` with the argument being an object that contains various options. It returns `0` if no error ocurrs, otherwise it returns `-1`. Options are listed below:
 
 |Option |Required|Type|Description|
 |:------|:-------|:---|:----------|
@@ -37,6 +37,7 @@ This project uses module bundler `rollup` to create a source file `tscc.js` that
 |writeFile|Yes|`(path: string, content: string) => any`|A callback to write files.|
 |testInput|No|`string`|Test input. If specified, the result will be printed. See below for explanation.|
 |printDetailedTime|Yes|`boolean`|Whether to print the detailed time cost list.|
+
 Where type notations in Typescript are used.
 
 Here's a simple example:
@@ -88,7 +89,7 @@ compilation done in 0.071s
 ```
 
 ## Grammar file
-The syntax of the grammar specifying file used by tscc is similiar to yacc. Checkout [wiki](https://github.com/Hadron67/tscc-compiler/wiki) for tscc-compiler for a specification of grammar file, and `examples/` for explicit usages.
+The syntax of the grammar specifying file used by tscc is similiar to yacc. Checkout [wiki](https://github.com/Hadron67/tscc-compiler/wiki) for tscc-compiler for a specification of grammar file, and [examples/](https://github.com/Hadron67/tscc-compiler/tree/master/examples) for explicit usages.
 
 ## License
 MIT.

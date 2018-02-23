@@ -1,1 +1,1 @@
-module.exports = require('./lib/jscc.js');
+module.exports = require('./lib/tscc.js');
