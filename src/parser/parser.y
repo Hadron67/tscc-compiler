@@ -80,6 +80,7 @@ function unescape(s: string): string{
     let lexact: LexAction;
     let ruleLhs: JNode;
     let least: boolean;
+    let always: boolean;
 }
 
 %init {ctx1: Context, b: GBuilder}{
@@ -124,6 +125,7 @@ function unescape(s: string): string{
     < OUTPUT_DIR: '%output' >
     < IMPORT_DIR: '%import' >
     < LEAST_DIR: '%least' >
+    < ALWAYS: '%always' >
     < GT: ">" >
     < LT: "<" >
     < BRA: "(" >
@@ -146,7 +148,7 @@ function unescape(s: string): string{
 
 %lex <IN_BLOCK> {
     < ANY_CODE: ( [^"{", "}", "\\"] | "\\" [^"{", "}"] )+ >: { $$ = newNode($token.val); }
-    < ESCAPED_CHAR_IN_BLOCK: "\\" ["{", "}"] >: { $$ = newNode($token.val.charAt(1)); }
+    < ANY_CODE: "\\" ["{", "}"] >: { $$ = newNode($token.val.charAt(1)); }
     < OPEN_BLOCK: "{" >: { $$ = nodeFromTrivalToken($token); }
     < CLOSE_BLOCK: "}" >: { $$ = nodeFromTrivalToken($token); }
 }
@@ -156,7 +158,7 @@ function unescape(s: string): string{
         ( [^"{", "}", "\\", "$"] | "\\" [^"{", "}", "$"] )+ 
     |   "$" ( [^"{", "}", "\\", "$"] | "\\" [^"{", "}", "$"] )*
     >: { $$ = nodeFromToken($token); }
-    < ESCAPED_CHAR_IN_BLOCK: "\\" ["{", "}", "$"] >: { $$ = nodeFromToken($token); $$.val = $$.val.charAt(1); }
+    < ANY_CODE: "\\" ["{", "}", "$"] >: { $$ = nodeFromToken($token); $$.val = $$.val.charAt(1); }
     < OPEN_BLOCK: "{" >: { $$ = nodeFromTrivalToken($token); }
     < CLOSE_BLOCK: "}" >: { $$ = nodeFromTrivalToken($token); }
 
@@ -335,19 +337,18 @@ block: open = "{" [+IN_BLOCK] bl = innerBlock close = "}" [-]
 innerBlock: innerBlock b = innerBlockItem { $$.val += b.val; } | { $$ = newNode(''); };
 innerBlockItem: 
     <ANY_CODE> 
-|   <ESCAPED_CHAR_IN_BLOCK>
 |   '{' [+IN_BLOCK] b = innerBlock '}' [-] 
     { $$ = newNode(''); $$.val = '{' + b.val + '}'; }
 ;
 
 actionBlock: 
-    open = "{" [+IN_ACTION_BLOCK] t = { lexact.beginBlock(open); }
+    always open = "{" [+IN_ACTION_BLOCK] t = { lexact.beginBlock(open, always); }
     innerActionBlock close = "}" [-] { lexact.endBlock(close); }
 ;
+always: '%always' { always = true; } | /* empty */ { always = false; };
 innerActionBlock: innerActionBlock innerActionBlockItem |;
 innerActionBlockItem:
     c = <ANY_CODE> { lexact.raw(c.val); }
-|   c = <ESCAPED_CHAR_IN_BLOCK> { lexact.raw(c.val); }
 |   <LHS_REF> { lexact.lhs(); }
 |   <TOKEN_REF> { lexact.tokenObj(); }
 |   <MATCHED> { lexact.matched(); }

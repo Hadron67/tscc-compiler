@@ -187,9 +187,7 @@ export class State<T>{
         this.print(ss, recursive);
         return ss.s;
     }
-    /**
-     * @param {State} state
-     */
+
     copyEndFrom(state: State<T>): void{
         if(state.endAction !== null){
             if(this.endAction !== null){

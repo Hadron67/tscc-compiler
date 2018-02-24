@@ -135,7 +135,7 @@ function compile(input, opt){
     }
     while(input.length > 0){
         emit(consume('<%'), T.TEXT);
-        if(input.charAt(0) === '-'){
+        if(input.charAt(0) === '='){
             input = input.substring(1, input.length);
             eat(/[ \n\t]/);
             var s = consume('%>');

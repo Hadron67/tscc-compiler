@@ -3,7 +3,7 @@ import { Position } from "../parser/node";
 
 export interface CodeGenerator{
     raw(s: string);
-    beginBlock(pos: Position);
+    beginBlock(pos: Position, always: boolean);
     endBlock(pos: Position);
 
     pushLexState(n: number);

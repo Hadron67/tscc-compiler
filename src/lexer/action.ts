@@ -47,8 +47,8 @@ export class LexAction{
     popState(){
         this.actions.push(c => c.popLexState());
     }
-    beginBlock(pos: Position){
-        this.actions.push(c => c.beginBlock(pos));
+    beginBlock(pos: Position, always: boolean){
+        this.actions.push(c => c.beginBlock(pos, always));
     }
     setImg(s: string){
         this.actions.push(c => c.setImg(s));

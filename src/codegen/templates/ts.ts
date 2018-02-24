@@ -300,7 +300,8 @@ function printTable<T>(tname: string, type: string, t: T[], align: number, lc: n
         raw(s: string){
             echo(s);
         },
-        beginBlock(pos: Position){
+        beginBlock(pos: Position, always: boolean){
+            !always && echo(`if(${prefix}enableBlock)`);
             echo('{');
         },
         endBlock(pos: Position){
@@ -445,6 +446,8 @@ function printTable<T>(tname: string, type: string, t: T[], align: number, lc: n
     echoLine("    end();");
     echoLine("    halt();");
     echoLine("    on(ent: string, cb: (a1?, a2?, a3?) => any);");
+    echoLine("    enableBlocks();");
+    echoLine("    disableBlocks();");
     echo("}");
     } else { 
     echoLine("");
@@ -586,6 +589,11 @@ function printTable<T>(tname: string, type: string, t: T[], align: number, lc: n
     echo("stop");
     echo(ts(': boolean') );
     echoLine(";");
+    echo("    var ");
+    echo(prefix );
+    echo("enableBlock");
+    echo(ts(': boolean') );
+    echoLine(";");
     echoLine("");
     echo("    var ");
     echo(prefix );
@@ -619,7 +627,9 @@ function printTable<T>(tname: string, type: string, t: T[], align: number, lc: n
     echoLine("lineTerm,");
     echoLine("        accept,");
     echoLine("        end,");
-    echoLine("        halt");
+    echoLine("        halt,");
+    echoLine("        enableBlocks,");
+    echoLine("        disableBlocks");
     echo("    };");
     } else { 
     echoLine("");
@@ -632,7 +642,9 @@ function printTable<T>(tname: string, type: string, t: T[], align: number, lc: n
     echoLine("lineTerm; },");
     echoLine("        accept: accept,");
     echoLine("        end: end,");
-    echoLine("        halt: halt");
+    echoLine("        halt: halt,");
+    echoLine("        enableBlocks: enableBlocks,");
+    echoLine("        disableBlocks: disableBlocks");
     echo("    };");
     } 
     echoLine("");
@@ -686,10 +698,14 @@ function printTable<T>(tname: string, type: string, t: T[], align: number, lc: n
     echoLine("stop = false;");
     echo("        ");
     echo(prefix );
+    echoLine("enableBlock = true;");
+    echo("        ");
+    echo(prefix );
     echoLine("lineTerm = LineTerm.AUTO;");
-    echo("        var ");
+    echo("        ");
     echo(prefix );
     echoLine("lastCR = false;");
+    echoLine("");
     echo("        ");
     echo(n(input.file.initBody) );
     echoLine("");
@@ -1286,6 +1302,16 @@ function printTable<T>(tname: string, type: string, t: T[], align: number, lc: n
     echo(prefix );
     echoLine("lineTerm = lt;");
     echoLine("    }");
+    echoLine("    function enableBlocks(){");
+    echo("        ");
+    echo(prefix );
+    echoLine("enableBlock = true;");
+    echoLine("    }");
+    echoLine("    function disableBlocks(){");
+    echo("        ");
+    echo(prefix );
+    echoLine("enableBlock = false;");
+    echoLine("    }");
     echoLine("    /**");
     echoLine("     *  input a string");
     echoLine("     *  @api public");
@@ -1325,7 +1351,8 @@ function printTable<T>(tname: string, type: string, t: T[], align: number, lc: n
         raw(s: string){
             echo(s);
         },
-        beginBlock(pos: Position){
+        beginBlock(pos: Position, always: boolean){
+            !always && echo(`if(${prefix}enableBlock)`);
             echo('{');
         },
         endBlock(pos: Position){
