@@ -1,6 +1,6 @@
 {
   "name": "tscc-compiler",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "An LALR(1) compiler compiler written in Typescript",
   "main": "index.js",
   "bin": "./bin/tscc",
