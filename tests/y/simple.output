@@ -1,0 +1,24 @@
+state 0
+    [ 0: (accept) => . start <EOF> ]*
+    [ 1: start => . <AAA> ]
+    no default action
+    <AAA> : shift, and go to state 2
+    start : go to state 1
+
+
+state 1
+    [ 0: (accept) => start . <EOF> ]*
+    no default action
+    <EOF> : shift, and go to state 3
+
+
+state 2
+    [ 1: start => <AAA> . ]*
+    default action: reduce with rule 1
+
+
+state 3
+    [ 0: (accept) => start <EOF> . ]*
+    default action: reduce with rule 0
+
+

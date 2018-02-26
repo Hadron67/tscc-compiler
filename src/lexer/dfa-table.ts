@@ -74,10 +74,10 @@ export class DFATable<T>{
             }
         });
         
-        var compressed = compress(arrayWrapper(this.states.length, r.classCount, rawTable));
-        this.disnext = compressed.dps;
-        this.pnext = initArray<Arc<T>>(compressed.len, i => null);
-        this.checknext = initArray<number>(compressed.len, i => -1);
+        var { len, dps } = compress(arrayWrapper(this.states.length, r.classCount, rawTable));
+        this.disnext = dps;
+        this.pnext = initArray<Arc<T>>(len, i => null);
+        this.checknext = initArray<number>(len, i => -1);
         for(let s = 0; s < this.states.length; s++){
             for(let c = 0; c < this.classCount; c++){
                 let arc = rawTable[s * this.classCount + c];

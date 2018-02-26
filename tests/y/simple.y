@@ -1,0 +1,6 @@
+%token <AAA>
+
+%%
+start: <AAA>;
+
+%%

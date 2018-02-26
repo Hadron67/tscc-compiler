@@ -43,7 +43,17 @@ var <%= prefix + tname + ts(': ' + type + '[]')%> = [
         count++ >= lc && (count = 1, echo(input.endl + tab));
     } %>
 ]; 
-<% } %>
+<% } 
+function lambda(arg: string, body: string): string{
+    if(ists){
+        return `${arg} => ${body}`;
+    }
+    else {
+        var a = arg.charAt(0) === '(' ? arg : `(${arg})`;
+        return `function${a}{ return ${body}; }`;
+    }
+}
+%>
 /*
     constants
 */
@@ -287,12 +297,17 @@ interface <%= className %>{
     init(<%= n(input.file.initArg) %>);
     accept(s: string);
     end();
+    load(input: ParserInput);
+    nextToken(): Token;
+
     setLineTerminator(lt: LineTerm);
     getLineTerminator(): LineTerm;
     halt();
     on(ent: string, cb: (a1?, a2?, a3?) => any);
     enableBlocks();
     disableBlocks();
+    loadParserState(state: ParserState);
+    getParserState(): ParserState;
 }
 <% } else { %>
 function Token(id, val, startLine, startColumn, endLine, endColumn){
@@ -325,6 +340,12 @@ interface ParserState {
     lexState: number[];
     lrState: number[];
     sematicS: <%= stype %>[];
+};
+interface ParserInput {
+    current(): number;
+    next();
+    isEof(): boolean;
+    backup(s: string);
 };
 enum LineTerm{
     NONE = 1,
@@ -360,10 +381,12 @@ function create<%= className %>()<%= ts(': ' + className) %> {
     var <%= prefix %>sematicS<%= ts(': ' + stype + '[]') %>;
     //#endregion
 
+    var <%= prefix %>input<%= ts(': ParserInput') %>;
     var <%= prefix %>sematicVal<%= ts(': ' + stype) %>;
     var <%= prefix %>tokenQueue<%= ts(": Token[]") %>;
     var <%= prefix %>token<%= ts(": Token") %>;
     var <%= prefix %>stop<%= ts(': boolean') %>;
+    var <%= prefix %>tokenEmitted<%= ts(': boolean') %>;
     var <%= prefix %>enableBlock<%= ts(': boolean') %>;
     var <%= prefix %>lineTerm<%= ts(': LineTerm') %>;
 
@@ -380,9 +403,13 @@ function create<%= className %>()<%= ts(': ' + className) %> {
         getLineTerminator: () => <%= prefix %>lineTerm,
         accept,
         end,
+        load,
+        nextToken,
         halt,
         enableBlocks,
-        disableBlocks
+        disableBlocks,
+        loadParserState,
+        getParserState
     };
 <% } else { %>
     return {
@@ -392,9 +419,13 @@ function create<%= className %>()<%= ts(': ' + className) %> {
         getLineTerminator: function() { return <%= prefix %>lineTerm; },
         accept: accept,
         end: end,
+        load: load,
+        nextToken: nextToken,
         halt: halt,
         enableBlocks: enableBlocks,
-        disableBlocks: disableBlocks
+        disableBlocks: disableBlocks,
+        loadParserState: loadParserState,
+        getParserState: getParserState
     };
 <% } %>
     function init(<%= n(input.file.initArg) %>){
@@ -412,7 +443,6 @@ function create<%= className %>()<%= ts(': ' + className) %> {
         <%= prefix %>sematicVal = null;
         <%= prefix %>tokenQueue = [];
 
-        <%= prefix %>stop = false;
         <%= prefix %>enableBlock = true;
         <%= prefix %>lineTerm = LineTerm.AUTO;
         <%= prefix %>lastCR = false;
@@ -421,7 +451,29 @@ function create<%= className %>()<%= ts(': ' + className) %> {
 
         <%= prefix %>tryReduce();
     }
-    function setLineTerminator(lt: LineTerm){
+    function load(i<%= ts(': ParserInput') %>){
+        <%= prefix %>input = i;
+    }
+    function nextToken(): Token{
+        <%= prefix %>tokenEmitted = false;
+        while(!<%= prefix %>stop && !<%= prefix %>tokenEmitted){
+            var c = <%= prefix %>input.current();
+            if(c !== null){
+                <%= prefix %>acceptChar(c);
+            }
+            // null means end of file or no input available at present
+            else if(<%= prefix %>input.isEof()){
+                if(<%= prefix %>acceptEOF()){
+                    break;
+                }
+            }
+            else {
+                return null;
+            }
+        }
+        return <%= prefix %>token;
+    }
+    function setLineTerminator(lt<%= ts(': LineTerm') %>){
         <%= prefix %>lineTerm = lt;
     }
     function enableBlocks(){
@@ -433,22 +485,39 @@ function create<%= className %>()<%= ts(': ' + className) %> {
     /**
      *  input a string
      *  @api public
+     *  @deprecated
      */
     function accept(s<%= ts(": string") %>){
-        for(var i = 0; i < s.length && !<%= prefix %>stop;){
-            <%= prefix %>acceptChar(s.charCodeAt(i)) && i++;
-        }
+        var i = 0;
+        load({
+            current: <%= lambda('()', 'i < s.length ? s.charCodeAt(i) : null') %>,
+            next: <%= lambda('()', 'i++') %>,
+            isEof: <%= lambda('()', 'i >= s.length') %>,
+            backup: <%= lambda('t', 'i -= t.length') %>
+        });
+        while(nextToken().id !== 0);
     }
     /**
      *  tell the compiler that end of file is reached
      *  @api public
      */
     function end(){
-        while(!<%= prefix %>stop && !<%= prefix %>acceptEOF());
-        <%= prefix %>stop = true;
+        
     }
     function halt(){
         <%= prefix %>stop = true;
+    }
+    function loadParserState(state<%= ts(': ParserState') %>){
+        <%= prefix %>lexState = state.lexState;
+        <%= prefix %>lrState = state.lrState;
+        <%= prefix %>sematicS = state.sematicS;
+    }
+    function getParserState()<%= ts(': ParserState') %> {
+        return {
+            lexState: <%= prefix %>lexState,
+            lrState: <%= prefix %>lrState,
+            sematicS: <%= prefix %>sematicS
+        };
     }
     /**
      *  set 
@@ -467,6 +536,7 @@ function create<%= className %>()<%= ts(': ' + className) %> {
         <%= prefix %>token.endColumn = <%= prefix %>column - 1;
 
         <%= prefix %>tokenQueue.push(<%= prefix %>token);
+        <%= prefix %>tokenEmitted = true;
 
         <%= prefix %>matched = '';
         <%= prefix %>tline = <%= prefix %>line;
@@ -503,15 +573,15 @@ function create<%= className %>()<%= ts(': ' + className) %> {
         }
         <%= prefix %>tokenQueue.length > 0 && <%= prefix %>acceptToken(null);
     }
-    function <%= prefix %>rollback()<%= ts(": string") %>{
+    function <%= prefix %>rollback(){
         var ret = <%= prefix %>matched.substr(<%= prefix %>matched.length - <%= prefix %>backupCount, <%= prefix %>backupCount);
+        <%= prefix %>input.backup(ret);
         <%= prefix %>matched = <%= prefix %>matched.substr(0, <%= prefix %>matched.length - <%= prefix %>backupCount);
         <%= prefix %>backupCount = 0;
         <%= prefix %>line = <%= prefix %>marker.line;
         <%= prefix %>column = <%= prefix %>marker.column;
         <%= prefix %>state = <%= prefix %>marker.state;
         <%= prefix %>marker.state = -1;
-        return ret;
     }
     function <%= prefix %>mark(){
         <%= prefix %>marker.state = <%= prefix %>state;
@@ -572,7 +642,7 @@ function create<%= className %>()<%= ts(': ' + className) %> {
         }
         <%= prefix %>matched += String.fromCharCode(c);
         <%= prefix %>marker.state !== -1 && (<%= prefix %>backupCount++);
-        return true;
+        <%= prefix %>input.next();
     }
     /**
      *  accept a character
@@ -606,7 +676,6 @@ function create<%= className %>()<%= ts(': ' + className) %> {
                     <%= prefix %>backupCount = 0;
                     <%= prefix %>state = 0;                    
                     // character not consumed
-                    return false;
                 }
                 else {
                     // now we can either go to that new state, or stay where we are
@@ -615,7 +684,7 @@ function create<%= className %>()<%= ts(': ' + className) %> {
                     // an error occurs later, we could just return to this state.
                     <%= prefix %>mark();
                     <%= prefix %>state = nstate;
-                    return <%= prefix %>consume(ccode);
+                    <%= prefix %>consume(ccode);
                 }
             }
             else {
@@ -626,7 +695,6 @@ function create<%= className %>()<%= ts(': ' + className) %> {
                 <%= prefix %>backupCount = 0;
                 <%= prefix %>state = 0;
                 // character not consumed
-                return false;
             }
         }
         else {
@@ -635,24 +703,23 @@ function create<%= className %>()<%= ts(': ' + className) %> {
                 // check marker to verify that
                 if(<%= prefix %>marker.state !== -1){
                     // we have a previously marked state, which is a terminate state.
-                    var s = <%= prefix %>rollback();
+                    <%= prefix %>rollback();
                     <%= prefix %>doLexAction(lexstate, <%= prefix %>state);
                     <%= prefix %>state = 0;
-                    accept(s);
+                    // accept(s);
                     // character not consumed
-                    return false;
                 }
                 else {
                     // error occurs
                     <%= prefix %>emit('lexicalerror', String.fromCharCode(ccode), <%= prefix %>line, <%= prefix %>column);
                     // force consume
-                    return true;
+                    <%= prefix %>consume(ccode);
                 }
             }
             else {
                 <%= prefix %>state = nstate;
                 // character consumed
-                return <%= prefix %>consume(ccode);
+                <%= prefix %>consume(ccode);
             }
         }
     }
@@ -674,10 +741,9 @@ function create<%= className %>()<%= ts(': ' + className) %> {
                 return false;
             }
             else if(<%= prefix %>marker.state !== -1){
-                var s = <%= prefix %>rollback();
+                <%= prefix %>rollback();
                 <%= prefix %>doLexAction(lexstate, <%= prefix %>state);
                 <%= prefix %>state = 0;
-                accept(s);
                 return false;
             }
             else {

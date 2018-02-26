@@ -1719,14 +1719,30 @@ class Token {
 interface Parser{
     init(ctx1: Context, b: GBuilder);
     accept(s: string);
+    end();
+    load(input: ParserInput);
+    nextToken(): Token;
+
     setLineTerminator(lt: LineTerm);
     getLineTerminator(): LineTerm;
-    end();
     halt();
     on(ent: string, cb: (a1?, a2?, a3?) => any);
     enableBlocks();
     disableBlocks();
+    loadParserState(state: ParserState);
+    getParserState(): ParserState;
 }
+interface ParserState {
+    lexState: number[];
+    lrState: number[];
+    sematicS: JNode[];
+};
+interface ParserInput {
+    current(): number;
+    next();
+    isEof(): boolean;
+    backup(s: string);
+};
 enum LineTerm{
     NONE = 1,
     AUTO,
@@ -1736,31 +1752,30 @@ enum LineTerm{
 };
 
 function createParser(): Parser {
-    // members for lexer
+    //#region parser state variables
     var jjlexState: number[];
     var jjstate: number;
+    var jjlastCR: boolean;
     var jjmatched: string;
-    var jjtoken: Token;
-    
     var jjmarker: { state: number, line: number, column: number } = { state: -1, line: 0, column: 0 };
     var jjbackupCount: number;
-
     var jjline: number;
     var jjcolumn: number;
     var jjtline: number;
     var jjtcolumn: number;
 
-    // members for parser
     var jjlrState: number[];
     var jjsematicS: JNode[];
+    //#endregion
+
+    var jjinput: ParserInput;
     var jjsematicVal: JNode;
     var jjtokenQueue: Token[];
-
+    var jjtoken: Token;
     var jjstop: boolean;
+    var jjtokenEmitted: boolean;
     var jjenableBlock: boolean;
-
     var jjlineTerm: LineTerm;
-    var jjlastCR: boolean;
 
     var jjhandlers: {[s: string]: ((a1?, a2?, a3?) => any)[]} = {};
 
@@ -1782,9 +1797,13 @@ function createParser(): Parser {
         getLineTerminator: () => jjlineTerm,
         accept,
         end,
+        load,
+        nextToken,
         halt,
         enableBlocks,
-        disableBlocks
+        disableBlocks,
+        loadParserState,
+        getParserState
     };
     function init(ctx1: Context, b: GBuilder){
         jjlexState = [ 0 ];// DEFAULT
@@ -1801,7 +1820,6 @@ function createParser(): Parser {
         jjsematicVal = null;
         jjtokenQueue = [];
 
-        jjstop = false;
         jjenableBlock = true;
         jjlineTerm = LineTerm.AUTO;
         jjlastCR = false;
@@ -1812,6 +1830,28 @@ function createParser(): Parser {
 
 
         jjtryReduce();
+    }
+    function load(i: ParserInput){
+        jjinput = i;
+    }
+    function nextToken(): Token{
+        jjtokenEmitted = false;
+        while(!jjstop && !jjtokenEmitted){
+            var c = jjinput.current();
+            if(c !== null){
+                jjacceptChar(c);
+            }
+            // null means end of file or no input available at present
+            else if(jjinput.isEof()){
+                if(jjacceptEOF()){
+                    break;
+                }
+            }
+            else {
+                return null;
+            }
+        }
+        return jjtoken;
     }
     function setLineTerminator(lt: LineTerm){
         jjlineTerm = lt;
@@ -1825,22 +1865,39 @@ function createParser(): Parser {
     /**
      *  input a string
      *  @api public
+     *  @deprecated
      */
     function accept(s: string){
-        for(var i = 0; i < s.length && !jjstop;){
-            jjacceptChar(s.charCodeAt(i)) && i++;
-        }
+        var i = 0;
+        load({
+            current: () => i < s.length ? s.charCodeAt(i) : null,
+            next: () => i++,
+            isEof: () => i >= s.length,
+            backup: t => i -= t.length
+        });
+        while(nextToken().id !== 0);
     }
     /**
      *  tell the compiler that end of file is reached
      *  @api public
      */
     function end(){
-        while(!jjstop && !jjacceptEOF());
-        jjstop = true;
+        
     }
     function halt(){
         jjstop = true;
+    }
+    function loadParserState(state: ParserState){
+        jjlexState = state.lexState;
+        jjlrState = state.lrState;
+        jjsematicS = state.sematicS;
+    }
+    function getParserState(): ParserState {
+        return {
+            lexState: jjlexState,
+            lrState: jjlrState,
+            sematicS: jjsematicS
+        };
     }
     /**
      *  set 
@@ -1859,6 +1916,7 @@ function createParser(): Parser {
         jjtoken.endColumn = jjcolumn - 1;
 
         jjtokenQueue.push(jjtoken);
+        jjtokenEmitted = true;
 
         jjmatched = '';
         jjtline = jjline;
@@ -2083,15 +2141,15 @@ function createParser(): Parser {
         }
         jjtokenQueue.length > 0 && jjacceptToken(null);
     }
-    function jjrollback(): string{
+    function jjrollback(){
         var ret = jjmatched.substr(jjmatched.length - jjbackupCount, jjbackupCount);
+        jjinput.backup(ret);
         jjmatched = jjmatched.substr(0, jjmatched.length - jjbackupCount);
         jjbackupCount = 0;
         jjline = jjmarker.line;
         jjcolumn = jjmarker.column;
         jjstate = jjmarker.state;
         jjmarker.state = -1;
-        return ret;
     }
     function jjmark(){
         jjmarker.state = jjstate;
@@ -2152,7 +2210,7 @@ function createParser(): Parser {
         }
         jjmatched += String.fromCharCode(c);
         jjmarker.state !== -1 && (jjbackupCount++);
-        return true;
+        jjinput.next();
     }
     /**
      *  accept a character
@@ -2186,7 +2244,6 @@ function createParser(): Parser {
                     jjbackupCount = 0;
                     jjstate = 0;                    
                     // character not consumed
-                    return false;
                 }
                 else {
                     // now we can either go to that new state, or stay where we are
@@ -2195,7 +2252,7 @@ function createParser(): Parser {
                     // an error occurs later, we could just return to this state.
                     jjmark();
                     jjstate = nstate;
-                    return jjconsume(ccode);
+                    jjconsume(ccode);
                 }
             }
             else {
@@ -2206,7 +2263,6 @@ function createParser(): Parser {
                 jjbackupCount = 0;
                 jjstate = 0;
                 // character not consumed
-                return false;
             }
         }
         else {
@@ -2215,24 +2271,23 @@ function createParser(): Parser {
                 // check marker to verify that
                 if(jjmarker.state !== -1){
                     // we have a previously marked state, which is a terminate state.
-                    var s = jjrollback();
+                    jjrollback();
                     jjdoLexAction(lexstate, jjstate);
                     jjstate = 0;
-                    accept(s);
+                    // accept(s);
                     // character not consumed
-                    return false;
                 }
                 else {
                     // error occurs
                     jjemit('lexicalerror', String.fromCharCode(ccode), jjline, jjcolumn);
                     // force consume
-                    return true;
+                    jjconsume(ccode);
                 }
             }
             else {
                 jjstate = nstate;
                 // character consumed
-                return jjconsume(ccode);
+                jjconsume(ccode);
             }
         }
     }
@@ -2254,10 +2309,9 @@ function createParser(): Parser {
                 return false;
             }
             else if(jjmarker.state !== -1){
-                var s = jjrollback();
+                jjrollback();
                 jjdoLexAction(lexstate, jjstate);
                 jjstate = 0;
-                accept(s);
                 return false;
             }
             else {

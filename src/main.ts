@@ -48,34 +48,34 @@ export interface TSCCOptions{
 export function main(opt: TSCCOptions): number{
     var stdout = opt.stdout;
     var echo = (s: string | number) => stdout.writeln(s);
-    var result = createContext();
+    var ctx = createContext();
     do {
         var startTime = new Date();
 
-        result.compile(opt.input, deleteSuffix(opt.inputFile));
-        if(result.hasWarning()){
-            result.printWarning(stdout);
+        ctx.compile(opt.input, deleteSuffix(opt.inputFile));
+        if(ctx.hasWarning()){
+            ctx.printWarning(stdout);
         }
-        if(result.hasError()){
-            result.printError(stdout);
-            result.isTerminated() && echo('compilation terminated');
+        if(ctx.hasError()){
+            ctx.printError(stdout);
+            ctx.isTerminated() && echo('compilation terminated');
             break;
         }
         if(opt.outputFile){
             var out = new io.StringOS();
             
-            result.beginTime('generate output file');
-            opt.printDFA && result.printDFA(out);
-            result.printTable(out);
-            result.endTime();
+            ctx.beginTime('generate output file');
+            opt.printDFA && ctx.printDFA(out);
+            ctx.printTable(out);
+            ctx.endTime();
     
             opt.writeFile(opt.outputFile, out.s);
         }
     
         var current = new io.StringOS();
 
-        result.beginTime('generate parser code');
-        result.genCode({
+        ctx.beginTime('generate parser code');
+        ctx.genCode({
             save: fname => { 
                 opt.writeFile(fname, current.s);
                 current = new io.StringOS();
@@ -83,19 +83,19 @@ export function main(opt: TSCCOptions): number{
             write: s => current.write(s),
             writeln: s => current.writeln(s)
         });
-        result.endTime();
+        ctx.endTime();
 
         if(opt.testInput){
             echo("preparing for test");
-            for(var line of result.testParse(opt.testInput.split(/[ ]+/g), msg => echo(msg))){
+            for(var line of ctx.testParse(opt.testInput.split(/[ ]+/g), msg => echo(msg))){
                 echo(line);
             }
         }
 
         echo(`compilation done in ${(new Date().valueOf() - startTime.valueOf()) / 1000}s`);
 
-        opt.printDetailedTime && result.printDetailedTime(stdout);
+        opt.printDetailedTime && ctx.printDetailedTime(stdout);
     }while(false);
-    echo(result.warningSummary());
-    return result.hasError() ? -1 : 0;
+    echo(ctx.warningSummary());
+    return ctx.hasError() ? -1 : 0;
 }

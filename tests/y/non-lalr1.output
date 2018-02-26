@@ -1,0 +1,95 @@
+state 0
+    [ 0: (accept) => . S <EOF> ]*
+    [ 1: S => . <a> A <d> ]
+    [ 2: S => . <a> B <e> ]
+    [ 3: S => . <b> A <e> ]
+    [ 4: S => . <b> B <d> ]
+    no default action
+    <a> : shift, and go to state 2
+    <b> : shift, and go to state 3
+    S : go to state 1
+
+
+state 1
+    [ 0: (accept) => S . <EOF> ]*
+    no default action
+    <EOF> : shift, and go to state 4
+
+
+state 2
+    [ 1: S => <a> . A <d> ]*
+    [ 2: S => <a> . B <e> ]*
+    [ 5: A => . <c> ]
+    [ 6: B => . <c> ]
+    no default action
+    <c> : shift, and go to state 7
+    A : go to state 5
+    B : go to state 6
+
+
+state 3
+    [ 3: S => <b> . A <e> ]*
+    [ 4: S => <b> . B <d> ]*
+    [ 5: A => . <c> ]
+    [ 6: B => . <c> ]
+    no default action
+    <c> : shift, and go to state 7
+    A : go to state 8
+    B : go to state 9
+
+
+state 4
+    [ 0: (accept) => S <EOF> . ]*
+    default action: reduce with rule 0
+
+
+state 5
+    [ 1: S => <a> A . <d> ]*
+    no default action
+    <d> : shift, and go to state 10
+
+
+state 6
+    [ 2: S => <a> B . <e> ]*
+    no default action
+    <e> : shift, and go to state 11
+
+
+state 7
+    [ 5: A => <c> . ]*
+    [ 6: B => <c> . ]*
+    default action: reduce with rule 5
+
+
+state 8
+    [ 3: S => <b> A . <e> ]*
+    no default action
+    <e> : shift, and go to state 12
+
+
+state 9
+    [ 4: S => <b> B . <d> ]*
+    no default action
+    <d> : shift, and go to state 13
+
+
+state 10
+    [ 1: S => <a> A <d> . ]*
+    default action: reduce with rule 1
+
+
+state 11
+    [ 2: S => <a> B <e> . ]*
+    default action: reduce with rule 2
+
+
+state 12
+    [ 3: S => <b> A <e> . ]*
+    default action: reduce with rule 3
+
+
+state 13
+    [ 4: S => <b> B <d> . ]*
+    default action: reduce with rule 4
+
+

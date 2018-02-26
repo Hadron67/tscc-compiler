@@ -125,11 +125,13 @@ export function createLexBuilder<T>(ctx: Context): LexBuilder<T>{
             pc: 0,
             cmds: a
         });
-        while(_ar.length > 0){
-            let top = _ar[_ar.length - 1];
-            top.cmds.opcodes[top.pc++]();
-            top = _ar[_ar.length - 1];
-            top.pc >= top.cmds.opcodes.length && _ar.pop();
+        if(a.opcodes.length > 0){
+            while(_ar.length > 0){
+                let top = _ar[_ar.length - 1];
+                top.cmds.opcodes[top.pc++]();
+                top = _ar[_ar.length - 1];
+                top.pc >= top.cmds.opcodes.length && _ar.pop();
+            }
         }
         _head.removeEpsilons();
         var dhead = _head.toDFA();
