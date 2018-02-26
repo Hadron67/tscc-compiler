@@ -1,7 +1,7 @@
 import { BitSet } from '../util/bitset';
 import { Grammar } from './grammar';
-import { console,YYTAB } from '../util/common';
-import { OutputStream,endl } from '../util/io';
+import { console } from '../util/common';
+import { OutputStream } from '../util/io';
 import { Item,Action,ItemSet } from './item-set';
 import { List } from '../util/list';
 import { ParseTable } from './ptable';
@@ -19,10 +19,10 @@ export class Conflict{
     discarded: Item;
     static cNames: string[] = ['reduce/reduce','shift/reduce'];
     toString(): string{
-        return `state ${this.set.stateIndex}, ${Conflict.cNames[this.type]} conflict:${endl}` +
-        `${YYTAB}token: ${convertTokenToString(this.token)}${endl}` +
-        `${YYTAB}used rule: ${this.used.toString()}${endl}` +
-        `${YYTAB}discarded rule: ${this.discarded.toString()}`;
+        return `state ${this.set.stateIndex}, ${Conflict.cNames[this.type]} conflict:\n` +
+        `    token: ${convertTokenToString(this.token)}\n` +
+        `    used rule: ${this.used.toString()}\n` +
+        `    discarded rule: ${this.discarded.toString()}`;
     }
 }
 

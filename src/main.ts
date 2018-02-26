@@ -1,12 +1,13 @@
 import * as io from './util/io';
 import { Console } from './util/common';
-import { genResult, Result } from './top/result';
+import { TSCCContext, createContext } from './top/result';
 import { generateCode } from './codegen/template';
 
 export { Assoc } from './grammar/token-entry';
-export { setDebugger, setTab } from './util/common';
+export { setDebugger } from './util/common';
 export { defineTemplate } from './codegen/template';
-export { io, genResult, generateCode };
+export { io, createContext, generateCode };
+export var version = '1.0.2';
 
 // debug
 import * as debug from './debug';
@@ -22,36 +23,36 @@ function deleteSuffix(s: string): string{
 }
 
 export interface TSCCOptions{
-    /**
-     * file name (path) of the grammar file
-     */
+    /** name (path) of the input grammar file. */
     inputFile: string;
-    /**
-     * content of the input grammar file
-     */
+    /** content of grammar file */
     input: string;
-    /**
-     * name (path) of the output file, if not present, the output file won't be generated
-     */
+    /** name (path) of the output file, if not specified, the output file won't be generated. */
     outputFile?: string;
 
     // interface
+    /** an interface object to print all the messages */
     stdout: io.OutputStream;
+    /** a callback used to write file. */
     writeFile(path: string, content: string): any;
 
     // options
+    /** test input. If specified, it will be parsed, and the process will be printed. */
     testInput?: string;
-    printDetailedTime: boolean;
+    /** whether to print a detailed list of time costs */
+    printDetailedTime?: boolean;
+    /** whether to print lexical DFA tables to the output file. */
+    printDFA?: boolean;
 };
 
-export function main(opt: TSCCOptions){
+export function main(opt: TSCCOptions): number{
     var stdout = opt.stdout;
     var echo = (s: string | number) => stdout.writeln(s);
-    var result: Result = null;
+    var result = createContext();
     do {
         var startTime = new Date();
 
-        result = genResult(opt.input, deleteSuffix(opt.inputFile));
+        result.compile(opt.input, deleteSuffix(opt.inputFile));
         if(result.hasWarning()){
             result.printWarning(stdout);
         }
@@ -64,19 +65,21 @@ export function main(opt: TSCCOptions){
             var out = new io.StringOS();
             
             result.beginTime('generate output file');
-            result.printDFA(out);
+            opt.printDFA && result.printDFA(out);
             result.printTable(out);
             result.endTime();
     
             opt.writeFile(opt.outputFile, out.s);
         }
     
-        var templateIn = result.getTemplateInput();
         var current = new io.StringOS();
 
         result.beginTime('generate parser code');
-        generateCode(templateIn.output, templateIn, {
-            save: fname => opt.writeFile(fname, current.s),
+        result.genCode({
+            save: fname => { 
+                opt.writeFile(fname, current.s);
+                current = new io.StringOS();
+            },
             write: s => current.write(s),
             writeln: s => current.writeln(s)
         });

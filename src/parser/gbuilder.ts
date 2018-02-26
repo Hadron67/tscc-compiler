@@ -10,7 +10,6 @@ import { LexAction, pushStateAction, switchToStateAction } from '../lexer/action
 import { Coroutine, CoroutineMgr } from '../util/coroutine';
 import { Located } from '../util/located';
 import { JNode, newNode, markPosition, Position, posToString } from './node';
-import { endl } from '../util/io';
 
 interface NtPlaceHolder{
     nt: number;
@@ -162,7 +161,7 @@ export function createFileBuilder(ctx: Context): GBuilder{
     }
     function redefineWarn(what: string, prev: Position, current: Position){
         ctx.requireLines((ctx, lines) => {
-            let msg = what + ' ' + markPosition(current, lines) + endl;
+            let msg = what + ' ' + markPosition(current, lines) + '\n';
             msg += 'previous defination was at ' + markPosition(prev, lines);
             ctx.warn(new JsccWarning(msg));
         });
@@ -457,7 +456,7 @@ export function createFileBuilder(ctx: Context): GBuilder{
         grammar.tokens[0].used = true;// end of file
         grammar.nts[0].used = true;// (accept)
 
-        ctx.beginTime('building grammar');
+        ctx.beginTime('build grammar');
         for(let nt of grammar.nts){
             nt.firstSet = new TokenSet(grammar.tokenCount);
             for(let rule of nt.rules){
@@ -473,7 +472,7 @@ export function createFileBuilder(ctx: Context): GBuilder{
 
         ctx.endTime();
 
-        ctx.beginTime('building lexical DFAs');
+        ctx.beginTime('build lexical DFAs');
         file.lexDFA = lexBuilder.build();
         ctx.endTime();
 
@@ -484,6 +483,4 @@ export function createFileBuilder(ctx: Context): GBuilder{
         _requiringNt.fail();
         return file;
     }
-
-    
 }

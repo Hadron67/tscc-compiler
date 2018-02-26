@@ -1,11 +1,10 @@
 
-export var endl = '\n';
-
 export abstract class OutputStream {
+    endl: string = '\n';
     abstract write(s?: string | number): any;
     writeln(s?: string | number): any{
         s && this.write(s);
-        this.write(endl);
+        this.write(this.endl);
     }
 }
 export class StringOS extends OutputStream {

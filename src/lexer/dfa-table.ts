@@ -4,6 +4,7 @@ import { createClassFinder } from '../util/class-detect';
 import { Arc, State } from './state';
 import { compress, Table } from '../util/compress';
 import { OutputStream } from '../util/io';
+import { EscapeDef } from '../util/span';
 
 function arrayWrapper<T>(stateCount: number, classCount: number, rawTable: Arc<T>[]): Table{
     let emCount: number[] = [];
@@ -97,7 +98,8 @@ export class DFATable<T>{
             return null;
         }
     }
-    print(os: OutputStream){
+    print(os: OutputStream, escapes: EscapeDef[]){
+        var tab = '    ';
         function char(c: number){
             if(c >= 0x20 && c <= 0x7e){
                 return "'" + String.fromCharCode(c) + "'";
@@ -106,28 +108,39 @@ export class DFATable<T>{
                 return `\\x${c.toString(16)}`;
             }
         }
+        function echo(s: string){
+            for(var e of escapes){
+                s = s.replace(e.from, e.to);
+            }
+            os.writeln(s);
+        }
         let tl = 0;
+        var line = 'class table:\n' + tab;
         for(let c = 0; c < this.classTable.length; c++){
             if(this.classTable[c] !== -1) {
-                os.write(`${char(c)} -> c${this.classTable[c]}, `);
-                tl++ > 9 && (os.writeln(), tl = 0);
+                line += `${char(c)} -> c${this.classTable[c]}, `;
+                tl++ > 9 && (line += `\n${tab}`, tl = 0);
             }
         }
-        os.writeln();
+        echo(line + '\n');
+
+        line = 'unicode class table:\n' + tab;
         tl = 0;
         for(let c = 0, _a = this.unicodeClassTable; c < _a.length; c += 3){
-            os.write(`\\x${_a[c + 1]}-\\x${_a[c + 2]} -> c${_a[c]}, `);
-            tl++ > 4 && (os.writeln(), tl = 0);
+            line += `\\x${_a[c + 1]}-\\x${_a[c + 2]} -> c${_a[c]}, `;
+            tl++ > 4 && (line += `\n${tab}`, tl = 0);
         }
-        os.writeln();
+        echo(line + '\n');
+
         for(let s = 0; s < this.states.length; s++){
-            os.writeln(`state ${s}:`);
+            line = `state ${s}:\n`;
             let state = this.states[s];
-            state.endAction !== null && os.writeln(`    end = ${state.endAction.id}`);
+            state.endAction !== null && (line += `${tab}end = ${state.endAction.id}\n`);
             for(let c = 0; c < this.classCount; c++){
                 let arc = this.lookup(s, c);
-                arc !== null && os.writeln(`    c${c}: state ${arc.to.index}`);
+                arc !== null && (line += `${tab}c${c}: state ${arc.to.index}\n`);
             }
+            echo(line);
         }
     }
 }

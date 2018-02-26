@@ -1,9 +1,9 @@
 {
   "name": "tscc-compiler",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "An LALR(1) compiler compiler written in Typescript",
-  "main": "index.js",
-  "bin": "./bin/tscc",
+  "main": "lib/tscc.js",
+  "bin": "bin/tscc",
   "directories": {
     "test": "tests",
     "bin": "bin",
@@ -14,8 +14,11 @@
     "build": "rollup -c"
   },
   "keywords": [
+    "tscc",
     "LALR(1)",
     "compiler compiler",
+    "parser",
+    "compiler",
     "Hanolee algorithm"
   ],
   "author": "hadroncfy",

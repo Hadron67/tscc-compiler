@@ -19,7 +19,8 @@ module.exports = function (args){
         output: null,
         test: null,
         help: false,
-        detailedTime: false
+        detailedTime: false,
+        dfa: false
     };
     out:
     while(args.length > 0){
@@ -43,6 +44,10 @@ module.exports = function (args){
             case '--detail-time':
                 args.shift();
                 ret.detailedTime = true;
+                break;
+            case '--dfa':
+                args.shift();
+                ret.dfa = true;
                 break;
             default:
                 if(ret.input){

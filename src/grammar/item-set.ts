@@ -1,12 +1,16 @@
 import { TokenSet } from './token-set';
 import { Rule, Grammar } from './grammar';
 import { ListNode } from '../util/list';
-import { endl } from '../util/io';
 
 export enum Action {
     NONE = 1,
     SHIFT,
     REDUCE
+}
+
+export interface ItemSetPrintOpt {
+    showlah?: boolean; 
+    showTrailer?: boolean;
 }
 
 export class Item{
@@ -29,7 +33,7 @@ export class Item{
     getShift(): number{
         return this.rule.rhs[this.marker];
     }
-    toString(opt: { showlah?: boolean, showTrailer?: boolean } = {}): string{
+    toString(opt?: ItemSetPrintOpt): string {
         var showlah = (opt && opt.showlah) || false;
         var showTrailer = (opt && opt.showTrailer) || false;
         var r = this.rule;
@@ -144,10 +148,9 @@ export class ItemSet implements ListNode<ItemSet>{
             }
         }
     }
-    toString(opt: { showlah?: boolean, showTrailer?: boolean }): string{
+    toString(opt?: ItemSetPrintOpt): string{
         var showlah = (opt && opt.showlah) || false;
         var showTrailer = (opt && opt.showTrailer) || false;
-        var opt2 = { showTrailer: showTrailer };
         var ret = 's' + this.stateIndex + '';
         if(this.index !== null){
             ret += '(i' + this.index;
@@ -156,17 +159,17 @@ export class ItemSet implements ListNode<ItemSet>{
             ret += '(i?';
         }
         if(this.merges.length > 0){
-            ret += ',merged from ';
+            ret += ', merged from ';
             for(var i = 0;i < this.merges.length;i++){
                 if(i > 0){
-                    ret += ',';
+                    ret += ', ';
                 }
                 ret += 'i' + this.merges[i];
             }
         }
-        ret += ')' + endl;
+        ret += ')\n';
         for(var item of this.items){
-            ret += item.toString(opt2) + endl;
+            ret += item.toString(opt) + '\n';
         }
         return ret;
     }
@@ -185,24 +188,6 @@ export class ItemSet implements ListNode<ItemSet>{
         }
     }
     canMergeTo(s: ItemSet): boolean{
-        // for(var h1 in this.it){
-        //     var it1 = this.it[h1];
-        //     var found = false,hasConflict = false,hasIdentical = false;
-        //     for(var h2 in s.it){
-        //         var it2 = s.it[h2];
-        //         if(it1.rule.index === it2.rule.index && it1.marker === it2.marker){
-        //             hasIdentical = it1.lah.equals(it2.lah);
-        //             found = it1.isKernel && it2.isKernel;
-        //         }
-        //         hasConflict = hasConflict || it1.hasRRConflictWith(it2);
-        //         if(it2.isKernel && this.it[h2] === undefined){
-        //             return false;
-        //         }
-        //     }
-        //     if(it1.isKernel && !found || hasConflict && !hasIdentical){
-        //         return false;
-        //     }
-        // }
         for(var i = 0; i < this.g.rules.length; i++){
             var t1 = this.itemTable[i], t2 = s.itemTable[i];
             if(t1 || t2){

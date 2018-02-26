@@ -1,9 +1,9 @@
 import { Grammar } from './grammar';
-import { YYTAB } from '../util/common';
-import { endl, OutputStream } from '../util/io';
+import { OutputStream } from '../util/io';
 import { Action, Item, ItemSet } from './item-set';
 import { List } from '../util/list';
 import { convertTokenToString } from './token-entry';
+import { EscapeDef } from '../util/span';
 
 export interface IParseTable{
     readonly g: Grammar;
@@ -13,55 +13,11 @@ export interface IParseTable{
     lookupGoto(state: number, nt: number): Item;
 };
 
-export function printParseTable(os: OutputStream, cela: IParseTable, doneList: List<ItemSet>){
+export function printParseTable(os: OutputStream, cela: IParseTable, doneList: List<ItemSet>, escapes: EscapeDef[]){
     var g = cela.g;
     var tokenCount = g.tokenCount;
     var ntCount = g.nts.length;
-    // function printSet(set: ItemSet, lines: string[]){
-    //     var i = set.stateIndex;
-
-    //     lines.push(`state ${i}`);        
-    //     set.forEach(function(item){
-    //         lines.push(YYTAB + item.toString({ showTrailer: false }));
-    //     });
-    //     if(cela.defred[i] !== -1){
-    //         lines.push(`${YYTAB}default action: reduce with rule ${cela.defred[i]}`);
-    //     }
-    //     else {
-    //         lines.push(YYTAB + 'no default action');
-    //     }
-    //     for(var j = 0;j < tokenCount;j++){
-    //         var item = cela.lookupShift(i,j);
-    //         if(item !== null && item !== Item.NULL){
-    //             if(item.actionType === Action.SHIFT){
-    //                 lines.push(`${YYTAB}${convertTokenToString(g.tokens[j])} : shift, and goto state ${item.shift.stateIndex}`);
-    //             }
-    //             else {
-    //                 lines.push(`${YYTAB}${convertTokenToString(g.tokens[j])} : reduce with rule ${item.rule.index}`);
-    //             }
-    //         }
-    //     }
-    //     for(var j = 0;j < ntCount;j++){
-    //         var item = cela.lookupGoto(i,j);
-    //         if(item !== null){
-    //             lines.push(`${YYTAB}${g.nts[j].sym} : goto state ${item.shift.stateIndex}`);
-    //         }
-    //     }
-    //     lines.push('');
-    // }
-    // let it = doneList.iterator();
-    // let lines: string[] = [];
-    // function writeOne(){
-    //     let set = it();
-    //     if(set !== null){
-    //         lines.length = 0;
-    //         printSet(set, lines);
-    //         os.write(lines.join(endl), writeOne);
-    //     }
-    //     else {
-    //         done && done
-    //     }
-    // }
+    var tab = '    ';
     doneList.forEach(function(set){
         var i = set.stateIndex;
         var shift = '';
@@ -70,33 +26,37 @@ export function printParseTable(os: OutputStream, cela: IParseTable, doneList: L
         var defred = '';
         os.writeln(`state ${i}`);        
         set.forEach(function(item){
-            os.writeln(YYTAB + item.toString({ showTrailer: false }));
+            os.writeln(tab + item.toString({ showTrailer: false }));
         });
         if(cela.defred[i] !== -1){
-            os.writeln(`${YYTAB}default action: reduce with rule ${cela.defred[i]}`);
+            os.writeln(`${tab}default action: reduce with rule ${cela.defred[i]}`);
         }
         else {
-            os.writeln(YYTAB + 'no default action');
+            os.writeln(tab + 'no default action');
         }
         for(var j = 0;j < tokenCount;j++){
             var item = cela.lookupShift(i,j);
             if(item !== null && item !== Item.NULL){
                 if(item.actionType === Action.SHIFT){
-                    shift += `${YYTAB}${convertTokenToString(g.tokens[j])} : shift, and go to state ${item.shift.stateIndex}${endl}`;
+                    shift += `${tab}${convertTokenToString(g.tokens[j])} : shift, and go to state ${item.shift.stateIndex}\n`;
                 }
                 else {
-                    reduce += `${YYTAB}${convertTokenToString(g.tokens[j])} : reduce with rule ${item.rule.index}${endl}`;
+                    reduce += `${tab}${convertTokenToString(g.tokens[j])} : reduce with rule ${item.rule.index}\n`;
                 }
             }
         }
         for(var j = 0;j < ntCount;j++){
             var item = cela.lookupGoto(i,j);
             if(item !== null){
-                gotot += `${YYTAB}${g.nts[j].sym} : go to state ${item.shift.stateIndex}${endl}`;
+                gotot += `${tab}${g.nts[j].sym} : go to state ${item.shift.stateIndex}\n`;
             }
         }
-        os.writeln(shift + reduce + gotot);
-        os.writeln('');
+        var line = shift + reduce + gotot;
+        for(var es of escapes){
+            line = line.replace(es.from, es.to);
+        }
+        os.writeln(line);
+        os.writeln();
     });
 }
 

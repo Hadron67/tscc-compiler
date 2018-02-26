@@ -3,7 +3,7 @@ import { OutputStream } from '../util/io';
 
 import tsRenderer from './templates/ts';
 
-interface FileCreator extends TemplateOutput{
+export interface FileCreator extends TemplateOutput{
     save(fname: string);
     write(s: string);
     writeln(s: string);

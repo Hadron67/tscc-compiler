@@ -1,10 +1,10 @@
 import { BitSet } from '../util/bitset';
-import { YYTAB } from '../util/common';
 import { CharSet } from './char-set';
 import { console } from '../util/common';
 import { DFA } from './dfa.js';
 // import { DataSet } from '../util/interval-set';
-import { OutputStream, StringOS, endl } from '../util/io';
+import { OutputStream, StringOS } from '../util/io';
+import { EscapeDef } from '../util/span';
 
 export enum Action{
     START = 0,
@@ -139,7 +139,15 @@ export class State<T>{
             state.index = i++;
         });
     }
-    print(os: OutputStream, recursive: boolean = true){
+    print(os: OutputStream, escapes: EscapeDef[], recursive: boolean = true){
+        var endl = '\n';
+        var tab = '    ';
+        function echo(s: string){
+            for(var es of escapes){
+                s = s.replace(es.from, es.to);
+            }
+            os.writeln(s);
+        }
         function single(cela: State<T>): string{
             let ret = '';
             ret += `state ${cela.index}`;
@@ -153,38 +161,33 @@ export class State<T>{
             ret += endl;
             for(var i = 0;i < cela.arcs.length;i++){
                 var arc = cela.arcs[i];
-                ret += (`${YYTAB}${arc.chars.toString()} -> state ${arc.to.index}${endl}`);
-                // ret += YYTAB + arc.chars.toString() + ' -> state ' + arc.to.index + '\n';
+                ret += (`${tab}${arc.chars.toString()} -> state ${arc.to.index}${endl}`);
             }
             if(cela.epsilons.length > 0){
-                // ret += YYTAB + 'epsilon: ';
-                ret += `${YYTAB}epsilon: `;
+                ret += `${tab}epsilon: `;
                 for(var i = 0;i < cela.epsilons.length;i++){
                     if(i > 0){
-                        // ret += ',';
                         ret += ',';
                     }
-                    // ret += cela.epsilons[i].index;
                     ret += cela.epsilons[i].index.toString();
                 }
-                // ret += '\n';
                 ret += endl;
             }
             return ret;
         }
         if(!recursive){
-            os.write(single(this));
+            echo(single(this));
         }
         else {
             var ret = '';
             this.forEach(state => {
-                os.write(single(state));
+                echo(single(state));
             });
         }
     }
-    toString(recursive: boolean = true): string{
+    toString(escapes: EscapeDef[], recursive: boolean = true): string{
         let ss = new StringOS();
-        this.print(ss, recursive);
+        this.print(ss, escapes, recursive);
         return ss.s;
     }
 

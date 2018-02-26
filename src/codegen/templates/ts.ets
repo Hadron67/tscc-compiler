@@ -286,9 +286,9 @@ class Token {
 interface <%= className %>{
     init(<%= n(input.file.initArg) %>);
     accept(s: string);
+    end();
     setLineTerminator(lt: LineTerm);
     getLineTerminator(): LineTerm;
-    end();
     halt();
     on(ent: string, cb: (a1?, a2?, a3?) => any);
     enableBlocks();
@@ -319,7 +319,13 @@ Token.prototype.toString = function(){
         '"' + <%= prefix %>tokenAlias[this.id] + '"') + "(" + this.val + ")";
 }
 <% } %>
+<% let stype = n(input.file.sematicType, 'any'); %>
 <% if(ists){ %>
+interface ParserState {
+    lexState: number[];
+    lrState: number[];
+    sematicS: <%= stype %>[];
+};
 enum LineTerm{
     NONE = 1,
     AUTO,
@@ -337,33 +343,29 @@ var LineTerm = {
 };
 <% } %>
 
-<% let stype = n(input.file.sematicType, 'any'); %>
 function create<%= className %>()<%= ts(': ' + className) %> {
-    // members for lexer
+    //#region parser state variables
     var <%= prefix %>lexState<%= ts(": number[]") %>;
     var <%= prefix %>state<%= ts(": number") %>;
+    var <%= prefix %>lastCR<%= ts(': boolean') %>;
     var <%= prefix %>matched<%= ts(": string") %>;
-    var <%= prefix %>token<%= ts(": Token") %>;
-    
     var <%= prefix %>marker<%= ts(": { state: number, line: number, column: number }") %> = { state: -1, line: 0, column: 0 };
     var <%= prefix %>backupCount<%= ts(": number") %>;
-
     var <%= prefix %>line<%= ts(": number") %>;
     var <%= prefix %>column<%= ts(": number") %>;
     var <%= prefix %>tline<%= ts(": number") %>;
     var <%= prefix %>tcolumn<%= ts(": number") %>;
 
-    // members for parser
     var <%= prefix %>lrState<%= ts(": number[]") %>;
     var <%= prefix %>sematicS<%= ts(': ' + stype + '[]') %>;
+    //#endregion
+
     var <%= prefix %>sematicVal<%= ts(': ' + stype) %>;
     var <%= prefix %>tokenQueue<%= ts(": Token[]") %>;
-
+    var <%= prefix %>token<%= ts(": Token") %>;
     var <%= prefix %>stop<%= ts(': boolean') %>;
     var <%= prefix %>enableBlock<%= ts(': boolean') %>;
-
     var <%= prefix %>lineTerm<%= ts(': LineTerm') %>;
-    var <%= prefix %>lastCR<%= ts(': boolean') %>
 
     var <%= prefix %>handlers<%= ts(": {[s: string]: ((a1?, a2?, a3?) => any)[]}") %> = {};
 
@@ -418,6 +420,35 @@ function create<%= className %>()<%= ts(': ' + className) %> {
         <%= n(input.file.initBody) %>
 
         <%= prefix %>tryReduce();
+    }
+    function setLineTerminator(lt: LineTerm){
+        <%= prefix %>lineTerm = lt;
+    }
+    function enableBlocks(){
+        <%= prefix %>enableBlock = true;
+    }
+    function disableBlocks(){
+        <%= prefix %>enableBlock = false;
+    }
+    /**
+     *  input a string
+     *  @api public
+     */
+    function accept(s<%= ts(": string") %>){
+        for(var i = 0; i < s.length && !<%= prefix %>stop;){
+            <%= prefix %>acceptChar(s.charCodeAt(i)) && i++;
+        }
+    }
+    /**
+     *  tell the compiler that end of file is reached
+     *  @api public
+     */
+    function end(){
+        while(!<%= prefix %>stop && !<%= prefix %>acceptEOF());
+        <%= prefix %>stop = true;
+    }
+    function halt(){
+        <%= prefix %>stop = true;
     }
     /**
      *  set 
@@ -654,35 +685,6 @@ function create<%= className %>()<%= ts(': ' + className) %> {
                 return true;
             }
         }
-    }
-    function setLineTerminator(lt: LineTerm){
-        <%= prefix %>lineTerm = lt;
-    }
-    function enableBlocks(){
-        <%= prefix %>enableBlock = true;
-    }
-    function disableBlocks(){
-        <%= prefix %>enableBlock = false;
-    }
-    /**
-     *  input a string
-     *  @api public
-     */
-    function accept(s<%= ts(": string") %>){
-        for(var i = 0; i < s.length && !<%= prefix %>stop;){
-            <%= prefix %>acceptChar(s.charCodeAt(i)) && i++;
-        }
-    }
-    /**
-     *  tell the compiler that end of file is reached
-     *  @api public
-     */
-    function end(){
-        while(!<%= prefix %>stop && !<%= prefix %>acceptEOF());
-        <%= prefix %>stop = true;
-    }
-    function halt(){
-        <%= prefix %>stop = true;
     }
 <% function printReduceActions(){
     let codegen = {

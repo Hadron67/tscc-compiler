@@ -91,5 +91,8 @@ compilation done in 0.071s
 ## Grammar file
 The syntax of the grammar specifying file used by tscc is similiar to yacc. Checkout [wiki](https://github.com/Hadron67/tscc-compiler/wiki) for tscc-compiler for a specification of grammar file, and [examples/](https://github.com/Hadron67/tscc-compiler/tree/master/examples) for explicit usages.
 
+## Syntax highlight
+A syntax highlight mode of grammar file for CodeMirror can be found at `web-demo/src/tscc-highlight-codemirror.js`. Feel free to check it out and use it.
+
 ## License
 MIT.

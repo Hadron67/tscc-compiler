@@ -1,5 +1,6 @@
 import { InputStream,biss, OutputStream } from '../util/io.js';
 import { State, EndAction, Arc } from './state';
+import { EscapeDef } from '../util/span.js';
 
 export class DFA<T>{
     start: State<T>;
@@ -13,18 +14,11 @@ export class DFA<T>{
             }
         }
     }
-    print(os: OutputStream){
+    print(os: OutputStream, escapes: EscapeDef[]){
         for(let s of this.states){
-            s.print(os, false);
+            s.print(os, escapes, false);
             os.writeln();
         }
-    }
-    toString(): string{
-        var ret = '';
-        for(var i = 0;i < this.states.length;i++){
-            ret += this.states[i].toString() + '\n';
-        }
-        return ret;
     }
     
     matcher(stream: InputStream){

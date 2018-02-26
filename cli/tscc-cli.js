@@ -1,7 +1,7 @@
 'use strict';
 
 var fs = require('fs');
-var Promise = require('bluebird');
+//var Promise = require('bluebird');
 var tscc = require('../lib/tscc.js').main;
 var parseArgs = require('./arg.js');
 var pkg = require('../package.json');
@@ -54,7 +54,8 @@ function main(arg){
                 files.push(writeFile(path, content));
             },
             testInput: arg.test,
-            printDetailedTime: arg.detailedTime
+            printDetailedTime: arg.detailedTime,
+            printDFA: arg.dfa
         });
         return Promise.all(files)
         .then(function(){

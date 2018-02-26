@@ -7,7 +7,6 @@
 import { GBuilder, createFileBuilder, TokenRefType } from './gbuilder';
 import { Assoc } from '../grammar/token-entry';
 import { CompilationError as E, JsccError } from '../util/E';
-import { InputStream, endl } from '../util/io';
 import { Context } from '../util/context';
 import { LexAction } from '../lexer/action';
 import { Position, JNode, newNode, markPosition, nodeBetween } from './node';
@@ -335,7 +334,7 @@ block: open = "{" [+IN_BLOCK] bl = innerBlock close = "}" [-]
     { $$ = nodeBetween(open, close, bl.val); }
 ;
 innerBlock: innerBlock b = innerBlockItem { $$.val += b.val; } | { $$ = newNode(''); };
-innerBlockItem: 
+innerBlockItem:
     <ANY_CODE> 
 |   '{' [+IN_BLOCK] b = innerBlock '}' [-] 
     { $$ = newNode(''); $$.val = '{' + b.val + '}'; }
@@ -380,7 +379,7 @@ export function parse(ctx: Context, source: string): File{
     parser.on('syntaxerror', (msg, token) => {
         // ctx.err(new CompilationError(msg, token.startLine));
         ctx.requireLines((ctx, lines) => {
-            let msg2 = markPosition(token, lines) + endl + msg;
+            let msg2 = markPosition(token, lines) + '\n' + msg;
             ctx.err(new JsccError(msg2, 'Syntax error'));
         });
         parser.halt();
@@ -394,18 +393,21 @@ export function parse(ctx: Context, source: string): File{
     parser.end();
     ctx.endTime();
 
+    var eol = parser.getLineTerminator();
+    var el = '\n';
+    if(eol !== LineTerm.NONE && eol !== LineTerm.AUTO){
+        el = eol === LineTerm.CR ? '\r' : 
+            eol === LineTerm.LF ? '\n' :
+            eol === LineTerm.CRLF ? '\r\n' : null;
+        gb.setLineTerminator(el);
+    }
+    
     if(err){
-        return null;
+        var ret = new File();
+        ret.eol = el;
+        return ret;
     }
     else {
-        var eol = parser.getLineTerminator();
-        if(eol !== LineTerm.NONE && eol !== LineTerm.AUTO){
-            gb.setLineTerminator(
-                eol === LineTerm.CR ? '\r' : 
-                eol === LineTerm.LF ? '\n' :
-                eol === LineTerm.CRLF ? '\r\n' : null
-            );
-        }
         return gb.build();
     }
 }

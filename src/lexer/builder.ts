@@ -5,7 +5,6 @@ import { DFA } from './dfa';
 import { Coroutine, CoroutineMgr } from '../util/coroutine';
 import { LexAction } from './action';
 import { markPosition, Position, JNode, newNode } from '../parser/node';
-import { endl } from '../util/io';
 
 // internal 
 // these two are copied from the scanner source code of typescript2.6
@@ -145,7 +144,7 @@ export function createLexBuilder<T>(ctx: Context): LexBuilder<T>{
     }
     function redefineErr(what: string, prev: Position, current: Position){
         ctx.requireLines((ctx, lines) => {
-            let msg = what + ' ' + markPosition(current, lines) + endl;
+            let msg = what + ' ' + markPosition(current, lines) + '\n';
             msg += 'previous defination was at ' + markPosition(prev, lines);
             ctx.err(new JsccError(msg));
         });

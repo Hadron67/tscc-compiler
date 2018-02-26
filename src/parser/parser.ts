@@ -6,7 +6,6 @@
 import { GBuilder, createFileBuilder, TokenRefType } from './gbuilder';
 import { Assoc } from '../grammar/token-entry';
 import { CompilationError as E, JsccError } from '../util/E';
-import { InputStream, endl } from '../util/io';
 import { Context } from '../util/context';
 import { LexAction } from '../lexer/action';
 import { Position, JNode, newNode, markPosition, nodeBetween } from './node';
@@ -1761,7 +1760,7 @@ function createParser(): Parser {
     var jjenableBlock: boolean;
 
     var jjlineTerm: LineTerm;
-    var jjlastCR: boolean
+    var jjlastCR: boolean;
 
     var jjhandlers: {[s: string]: ((a1?, a2?, a3?) => any)[]} = {};
 
@@ -1813,6 +1812,35 @@ function createParser(): Parser {
 
 
         jjtryReduce();
+    }
+    function setLineTerminator(lt: LineTerm){
+        jjlineTerm = lt;
+    }
+    function enableBlocks(){
+        jjenableBlock = true;
+    }
+    function disableBlocks(){
+        jjenableBlock = false;
+    }
+    /**
+     *  input a string
+     *  @api public
+     */
+    function accept(s: string){
+        for(var i = 0; i < s.length && !jjstop;){
+            jjacceptChar(s.charCodeAt(i)) && i++;
+        }
+    }
+    /**
+     *  tell the compiler that end of file is reached
+     *  @api public
+     */
+    function end(){
+        while(!jjstop && !jjacceptEOF());
+        jjstop = true;
+    }
+    function halt(){
+        jjstop = true;
     }
     /**
      *  set 
@@ -2237,35 +2265,6 @@ function createParser(): Parser {
                 return true;
             }
         }
-    }
-    function setLineTerminator(lt: LineTerm){
-        jjlineTerm = lt;
-    }
-    function enableBlocks(){
-        jjenableBlock = true;
-    }
-    function disableBlocks(){
-        jjenableBlock = false;
-    }
-    /**
-     *  input a string
-     *  @api public
-     */
-    function accept(s: string){
-        for(var i = 0; i < s.length && !jjstop;){
-            jjacceptChar(s.charCodeAt(i)) && i++;
-        }
-    }
-    /**
-     *  tell the compiler that end of file is reached
-     *  @api public
-     */
-    function end(){
-        while(!jjstop && !jjacceptEOF());
-        jjstop = true;
-    }
-    function halt(){
-        jjstop = true;
     }
     function jjdoReduction(jjrulenum: number){
         var jjnt = jjlhs[jjrulenum];
@@ -2809,7 +2808,7 @@ export function parse(ctx: Context, source: string): File{
     parser.on('syntaxerror', (msg, token) => {
         // ctx.err(new CompilationError(msg, token.startLine));
         ctx.requireLines((ctx, lines) => {
-            let msg2 = markPosition(token, lines) + endl + msg;
+            let msg2 = markPosition(token, lines) + '\n' + msg;
             ctx.err(new JsccError(msg2, 'Syntax error'));
         });
         parser.halt();
@@ -2823,18 +2822,21 @@ export function parse(ctx: Context, source: string): File{
     parser.end();
     ctx.endTime();
 
+    var eol = parser.getLineTerminator();
+    var el = '\n';
+    if(eol !== LineTerm.NONE && eol !== LineTerm.AUTO){
+        el = eol === LineTerm.CR ? '\r' : 
+            eol === LineTerm.LF ? '\n' :
+            eol === LineTerm.CRLF ? '\r\n' : null;
+        gb.setLineTerminator(el);
+    }
+    
     if(err){
-        return null;
+        var ret = new File();
+        ret.eol = el;
+        return ret;
     }
     else {
-        var eol = parser.getLineTerminator();
-        if(eol !== LineTerm.NONE && eol !== LineTerm.AUTO){
-            gb.setLineTerminator(
-                eol === LineTerm.CR ? '\r' : 
-                eol === LineTerm.LF ? '\n' :
-                eol === LineTerm.CRLF ? '\r\n' : null
-            );
-        }
         return gb.build();
     }
 }

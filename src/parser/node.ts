@@ -1,4 +1,3 @@
-import { endl } from "../util/io";
 
 export interface Position{
     startLine: number;
@@ -52,9 +51,9 @@ export function markPosition(pos: Position, lines: string[], marker: string = '^
         return ret;
     }
     if(pos.startLine !== -1){
-        let ret = `(line ${pos.startLine + 1}, column ${pos.startColumn + 1}):` + endl;
+        let ret = `(line ${pos.startLine + 1}, column ${pos.startColumn + 1}):\n`;
         let line = pos.startLine, col = pos.startColumn;
-        ret += lines[line] + endl;
+        ret += lines[line] + '\n';
         ret += repeat(' ', col);
         let length = width(lines[line]);
         while(line <= pos.endLine && col <= pos.endColumn){
@@ -62,7 +61,7 @@ export function markPosition(pos: Position, lines: string[], marker: string = '^
             if(col++ >= length){
                 col = 0;
                 line++;
-                ret += endl + lines[line] + endl;
+                ret += '\n' + lines[line] + '\n';
                 length = width(lines[line]);
             }
         }

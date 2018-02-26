@@ -1,5 +1,4 @@
 
-export var YYTAB: string = '    ';
 export var DEBUG: boolean = true;
 
 export interface Console{
@@ -18,9 +17,6 @@ export var console: Console = {
 
 export function setDebugger(d: Console){
     return console.log = d.log;
-}
-export function setTab(t: string): string{
-    return YYTAB = t;
 }
 
 
