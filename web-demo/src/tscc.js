@@ -204,9 +204,10 @@ var TokenSet = (function (_super) {
         for (var i = 0; i < g.tokenCount; i++) {
             if (this.contains(i + 1)) {
                 if (!first) {
-                    ret += ',';
+                    ret += ', ';
                 }
-                ret += '"' + g.tokens[i].sym + '"';
+                var tdef = g.tokens[i];
+                ret += tdef.alias === null ? "<" + tdef.sym + ">" : "\"" + tdef.alias + "\"";
                 first = false;
             }
         }
@@ -240,7 +241,7 @@ var Item = (function () {
     Item.prototype.toString = function (opt) {
         var showlah = (opt && opt.showlah) || false;
         var showTrailer = (opt && opt.showTrailer) || false;
-        var ret = '[ ' + this.rule.toString(this.marker) + (showlah ? ',{ ' + this.lah.toString(this.rule.g) + ' }' : '') + ' ]';
+        var ret = '[ ' + this.rule.toString(this.marker) + (showlah ? ', { ' + this.lah.toString(this.rule.g) + ' }' : '') + ' ]';
         this.isKernel && (ret += '*');
         if (showTrailer) {
             switch (this.actionType) {
@@ -292,6 +293,7 @@ var ItemSet = (function () {
     function ItemSet(g) {
         this.items = [];
         this.itemTable = [];
+        this.reduces = [];
         this.complete = false;
         this.index = -1;
         this.stateIndex = 0;
@@ -312,6 +314,7 @@ var ItemSet = (function () {
             }
             entry[marker] = n;
             this.items.push(n);
+            marker === rule.rhs.length && this.reduces.push(n);
             return true;
         }
         else if (lah) {
@@ -389,8 +392,10 @@ var ItemSet = (function () {
         }
     };
     ItemSet.prototype.canMergeTo = function (s) {
+        var dup = true;
         for (var i = 0; i < this.g.rules.length; i++) {
             var t1 = this.itemTable[i], t2 = s.itemTable[i];
+            dup = dup && !!(t1 && t2 || !t1 && !t2);
             if (t1 || t2) {
                 var rhs = this.g.rules[i].rhs;
                 for (var j = 0; j <= rhs.length; j++) {
@@ -398,12 +403,20 @@ var ItemSet = (function () {
                         || t2 && t2[j] && t2[j].isKernel && (!t1 || !t1[j] || !t1[j].isKernel)) {
                         return false;
                     }
+                    else {
+                        dup = dup && (!t1 && !t1 && !t1[j] && !t2[j] || t1 && t2 && t1[j] && t2[j] && t1[j].lah.equals(t2[j].lah));
+                    }
                 }
-                if (t1 && t2
-                    && t1[j] && t2[j]
-                    && !t1[j].lah.equals(t2[j].lah)
-                    && t1[j].lah.hasIntersection(t2[j].lah)) {
-                    return false;
+            }
+        }
+        if (!dup) {
+            for (var _i = 0, _a = this.reduces; _i < _a.length; _i++) {
+                var rit = _a[_i];
+                for (var _b = 0, _c = s.reduces; _b < _c.length; _b++) {
+                    var rit2 = _c[_b];
+                    if (rit.rule !== rit2.rule && rit.lah.hasIntersection(rit2.lah)) {
+                        return false;
+                    }
                 }
             }
         }
@@ -478,7 +491,7 @@ function convertTokenToString(t) {
     return t.alias === null ? "<" + t.sym + ">" : "\"" + t.alias + "\"";
 }
 
-function printParseTable(os, cela, doneList, escapes) {
+function printParseTable(os, cela, doneList, showlah, showFullItemsets, escapes) {
     var g = cela.g;
     var tokenCount = g.tokenCount;
     var ntCount = g.nts.length;
@@ -490,7 +503,7 @@ function printParseTable(os, cela, doneList, escapes) {
         var gotot = '';
         os.writeln("state " + i);
         set.forEach(function (item) {
-            os.writeln(tab + item.toString({ showTrailer: false }));
+            (showFullItemsets || item.isKernel) && os.writeln(tab + item.toString({ showlah: showlah }));
         });
         if (cela.defred[i] !== -1) {
             os.writeln(tab + "default action: reduce with rule " + cela.defred[i]);
@@ -6633,7 +6646,9 @@ var tsRenderer = function (input, output) {
     echo(prefix);
     echoLine("input = i;");
     echoLine("    }");
-    echoLine("    function nextToken(): Token{");
+    echo("    function nextToken()");
+    echo(ts(': Token'));
+    echoLine("{");
     echo("        ");
     echo(prefix);
     echoLine("tokenEmitted = false;");
@@ -8025,8 +8040,8 @@ function createContext() {
             os.writeln(escape(s.toString({ showTrailer: true })));
         });
     }
-    function printTable(os) {
-        printParseTable(os, parseTable, itemSets, escapes);
+    function printTable(os, showlah, showFullItemsets) {
+        printParseTable(os, parseTable, itemSets, showlah, showFullItemsets, escapes);
     }
     function printDetailedTime(os) {
         for (var _i = 0, timers_1 = timers; _i < timers_1.length; _i++) {
@@ -8112,7 +8127,7 @@ function main(opt) {
             var out = new StringOS();
             ctx.beginTime('generate output file');
             opt.printDFA && ctx.printDFA(out);
-            ctx.printTable(out);
+            ctx.printTable(out, opt.showlah, opt.showFullItemsets);
             ctx.endTime();
             opt.writeFile(opt.outputFile, out.s);
         }

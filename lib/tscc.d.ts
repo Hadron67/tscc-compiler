@@ -52,18 +52,38 @@ interface TSCCOptions{
     writeFile(path: string, content: string): any;
 
     // options
-    /** Test input. If specified, it will be parsed, and the process will be printed. */
+    /** 
+     * test input. If specified, it will be parsed, and the process will be printed.
+     * @default null
+     */
     testInput?: string;
-    /** Whether to print a detailed list of time costs */
+    /**
+     * whether to print a detailed list of time costs.
+     * @default false
+     */
     printDetailedTime?: boolean;
-    /** Whether to print lexical DFA tables to the output file. */
+    /**
+     * whether to print lexical DFA tables to the output file.
+     * @default false
+     */
     printDFA?: boolean;
+    /**
+     * whether to show look-ahead tokens of items when printing parse table.
+     * @default false
+     */
+    showlah?: boolean;
+    /**
+     * whether to show full item sets when printing parse table. Only kernel 
+     * items will be printed when set to `false`
+     * @default false
+     */
+    showFullItemsets?: boolean;
 }
 /**
  * Run a pre-defined main function with specified options. This function consists of
  * parsing grammar file, generating tables, writing output file and generating code. It 
  * provides a simple way to use tscc-compile via module.
- * @param opt Options
+ * @param opt Options.
  * @returns `0` if no error occur during compilation, otherwise returns `-1`.
  */
 export declare function main(opt: TSCCOptions): number;
@@ -109,30 +129,33 @@ interface TSCCContext {
     printItemSets(stream: OutputStream);
     /**
      * Print the generated LALR(1) parse table.
-     * @param os stream to print
+     * @param os stream to print.
+     * @param showlah whether to show look-ahead tokens of the item sets.
+     * @param showFullItemSets whether to show full item sets. If set to `false`, only
+     * kernel items will be shown.
      */
-    printTable(os: OutputStream);
+    printTable (os: OutputStream, showlah: boolean, showFullItemsets: boolean);
     /**
      * Print the grnerated lexical DFA tables.
-     * @param os stream to print
+     * @param os stream to print.
      */
     printDFA(os: OutputStream);
     /**
      * Print the errors during compilation.
-     * @param os stream to print
-     * @param opt options
+     * @param os stream to print.
+     * @param opt options.
      */
     printError(os: OutputStream, opt?: ErrPrintOption);
     /**
      * Print the warnings during compilation.
-     * @param os stream to print
-     * @param opt options
+     * @param os stream to print.
+     * @param opt options.
      */
     printWarning(os: OutputStream, opt?: ErrPrintOption);
     /**
      * Print a list of detailed time cost of different compilation phases, i.e.,
      * the elapsed time of the processes timed by `beginTime()` and `endTime()`.
-     * @param os stream to print
+     * @param os stream to print.
      */
     printDetailedTime(os: OutputStream);
     /**
@@ -160,7 +183,7 @@ interface TSCCContext {
      * Parse the given input using the generated parse table. 
      * @param tokens An array of tokens to be parsed. An element of the form `<...>` will be treated
      * as name of a token, otherwise alias of a token.
-     * @param onErr Callback to handle errors
+     * @param onErr Callback to handle errors.
      * @returns Parsing steps. Each step is a string with a `|` to indicate the top of the stack, while 
      * other elements could be a string (alias of a token), an identifier parenthesised by `<>` (name of 
      * a token), or an identifier (a non terminal).

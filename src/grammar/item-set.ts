@@ -37,7 +37,7 @@ export class Item{
         var showlah = (opt && opt.showlah) || false;
         var showTrailer = (opt && opt.showTrailer) || false;
         var r = this.rule;
-        var ret = '[ ' + this.rule.toString(this.marker) + (showlah ? ',{ ' + this.lah.toString(this.rule.g) + ' }' : '') + ' ]';
+        var ret = '[ ' + this.rule.toString(this.marker) + (showlah ? ', { ' + this.lah.toString(this.rule.g) + ' }' : '') + ' ]';
     
         this.isKernel && (ret += '*');
         if(showTrailer){
@@ -86,6 +86,7 @@ export class ItemSet implements ListNode<ItemSet>{
     items: Item[] = [];
     // item table, indexed by rule number
     itemTable: Item[][] = [];
+    reduces: Item[] = [];
     complete: boolean = false;
 
     index: number = -1;
@@ -112,6 +113,7 @@ export class ItemSet implements ListNode<ItemSet>{
             }
             entry[marker] = n;
             this.items.push(n);
+            marker === rule.rhs.length && this.reduces.push(n);
             return true;
         }
         else if(lah){
@@ -188,8 +190,10 @@ export class ItemSet implements ListNode<ItemSet>{
         }
     }
     canMergeTo(s: ItemSet): boolean{
+        var dup: boolean = true;
         for(var i = 0; i < this.g.rules.length; i++){
             var t1 = this.itemTable[i], t2 = s.itemTable[i];
+            dup = dup && !!(t1 && t2 || !t1 && !t2);
             if(t1 || t2){
                 var rhs = this.g.rules[i].rhs;
                 // check for identical LR0 kernel items
@@ -200,15 +204,18 @@ export class ItemSet implements ListNode<ItemSet>{
                     ){
                         return false;
                     }
+                    else {
+                        dup = dup && (!t1 && !t1 && !t1[j] && !t2[j] || t1 && t2 && t1[j] && t2[j] && t1[j].lah.equals(t2[j].lah) );
+                    }
                 }
-                // check for RR conflict
-                if(
-                    t1 && t2
-                &&  t1[j] && t2[j]  
-                &&  !t1[j].lah.equals(t2[j].lah) 
-                &&  t1[j].lah.hasIntersection(t2[j].lah)
-                ){
-                    return false;
+            }
+        }
+        if(!dup){
+            for(var rit of this.reduces){
+                for(var rit2 of s.reduces){
+                    if(rit.rule !== rit2.rule && rit.lah.hasIntersection(rit2.lah)){
+                        return false;
+                    }
                 }
             }
         }

@@ -1,8 +1,5 @@
 state 0
     [ 0: (accept) => . start <EOF> ]*
-    [ 2: start => . options "%%" body "%%" @0 epilogue ]
-    [ 3: options => . options option ]
-    [ 4: options => . ]
     default action: reduce with rule 4
     start : go to state 1
     options : go to state 2
@@ -17,18 +14,6 @@ state 1
 state 2
     [ 2: start => options . "%%" body "%%" @0 epilogue ]*
     [ 3: options => options . option ]*
-    [ 6: option => . "%lex" @1 states_ "{" lexBody "}" ]
-    [ 7: option => . associativeDir assocTokens ]
-    [ 8: option => . "%option" "{" optionBody "}" ]
-    [ 9: option => . "%header" block ]
-    [ 10: option => . "%extra_arg" block ]
-    [ 11: option => . "%type" block ]
-    [ 12: option => . "%init" block block ]
-    [ 13: option => . "%output" <STRING> ]
-    [ 14: option => . "%token" tokenDefs ]
-    [ 19: associativeDir => . "%left" ]
-    [ 20: associativeDir => . "%right" ]
-    [ 21: associativeDir => . "%nonassoc" ]
     no default action
     "%option" : shift, and go to state 8
     "%lex" : shift, and go to state 6
@@ -53,10 +38,6 @@ state 3
 
 state 4
     [ 2: start => options "%%" . body "%%" @0 epilogue ]*
-    [ 79: body => . body bodyItem ]
-    [ 80: body => . bodyItem ]
-    [ 81: bodyItem => . compoundRule ]
-    [ 83: compoundRule => . <NAME> @7 arrow rules ";" ]
     no default action
     <NAME> : shift, and go to state 21
     body : go to state 18
@@ -71,19 +52,12 @@ state 5
 
 state 6
     [ 6: option => "%lex" . @1 states_ "{" lexBody "}" ]*
-    [ 5: @1 => . ]
     default action: reduce with rule 5
     @1 : go to state 22
 
 
 state 7
     [ 7: option => associativeDir . assocTokens ]*
-    [ 22: assocTokens => . assocTokens assocToken ]
-    [ 23: assocTokens => . assocToken ]
-    [ 24: assocToken => . tokenRef ]
-    [ 25: assocToken => . <NAME> ]
-    [ 105: tokenRef => . "<" <NAME> ">" ]
-    [ 106: tokenRef => . <STRING> ]
     no default action
     <NAME> : shift, and go to state 26
     <STRING> : shift, and go to state 111
@@ -101,7 +75,6 @@ state 8
 
 state 9
     [ 9: option => "%header" . block ]*
-    [ 114: block => . "{" @10 innerBlock "}" @11 ]
     no default action
     "{" : shift, and go to state 29
     block : go to state 28
@@ -109,7 +82,6 @@ state 9
 
 state 10
     [ 10: option => "%extra_arg" . block ]*
-    [ 114: block => . "{" @10 innerBlock "}" @11 ]
     no default action
     "{" : shift, and go to state 29
     block : go to state 30
@@ -117,7 +89,6 @@ state 10
 
 state 11
     [ 11: option => "%type" . block ]*
-    [ 114: block => . "{" @10 innerBlock "}" @11 ]
     no default action
     "{" : shift, and go to state 29
     block : go to state 31
@@ -125,7 +96,6 @@ state 11
 
 state 12
     [ 12: option => "%init" . block block ]*
-    [ 114: block => . "{" @10 innerBlock "}" @11 ]
     no default action
     "{" : shift, and go to state 29
     block : go to state 32
@@ -139,8 +109,6 @@ state 13
 
 state 14
     [ 14: option => "%token" . tokenDefs ]*
-    [ 15: tokenDefs => . tokenDefs "<" <NAME> ">" ]
-    [ 16: tokenDefs => . "<" <NAME> ">" ]
     no default action
     "<" : shift, and go to state 35
     tokenDefs : go to state 34
@@ -164,8 +132,6 @@ state 17
 state 18
     [ 2: start => options "%%" body . "%%" @0 epilogue ]*
     [ 79: body => body . bodyItem ]*
-    [ 81: bodyItem => . compoundRule ]
-    [ 83: compoundRule => . <NAME> @7 arrow rules ";" ]
     no default action
     <NAME> : shift, and go to state 21
     "%%" : shift, and go to state 36
@@ -185,15 +151,12 @@ state 20
 
 state 21
     [ 83: compoundRule => <NAME> . @7 arrow rules ";" ]*
-    [ 82: @7 => . ]
     default action: reduce with rule 82
     @7 : go to state 38
 
 
 state 22
     [ 6: option => "%lex" @1 . states_ "{" lexBody "}" ]*
-    [ 28: states_ => . "<" states ">" ]
-    [ 29: states_ => . ]
     default action: reduce with rule 29
     "<" : shift, and go to state 40
     states_ : go to state 39
@@ -202,10 +165,6 @@ state 22
 state 23
     [ 7: option => associativeDir assocTokens . ]*
     [ 22: assocTokens => assocTokens . assocToken ]*
-    [ 24: assocToken => . tokenRef ]
-    [ 25: assocToken => . <NAME> ]
-    [ 105: tokenRef => . "<" <NAME> ">" ]
-    [ 106: tokenRef => . <STRING> ]
     default action: reduce with rule 7
     <NAME> : shift, and go to state 26
     <STRING> : shift, and go to state 111
@@ -231,8 +190,6 @@ state 26
 
 state 27
     [ 8: option => "%option" "{" . optionBody "}" ]*
-    [ 26: optionBody => . optionBody <NAME> "=" <STRING> ]
-    [ 27: optionBody => . ]
     default action: reduce with rule 27
     optionBody : go to state 42
 
@@ -244,7 +201,6 @@ state 28
 
 state 29
     [ 114: block => "{" . @10 innerBlock "}" @11 ]*
-    [ 112: @10 => . ]
     default action: reduce with rule 112
     @10 : go to state 43
 
@@ -261,7 +217,6 @@ state 31
 
 state 32
     [ 12: option => "%init" block . block ]*
-    [ 114: block => . "{" @10 innerBlock "}" @11 ]
     no default action
     "{" : shift, and go to state 29
     block : go to state 44
@@ -287,7 +242,6 @@ state 35
 
 state 36
     [ 2: start => options "%%" body "%%" . @0 epilogue ]*
-    [ 1: @0 => . ]
     default action: reduce with rule 1
     @0 : go to state 47
 
@@ -299,8 +253,6 @@ state 37
 
 state 38
     [ 83: compoundRule => <NAME> @7 . arrow rules ";" ]*
-    [ 84: arrow => . ":" ]
-    [ 85: arrow => . "=>" ]
     no default action
     ":" : shift, and go to state 49
     "=>" : shift, and go to state 50
@@ -315,8 +267,6 @@ state 39
 
 state 40
     [ 28: states_ => "<" . states ">" ]*
-    [ 30: states => . <NAME> ]
-    [ 31: states => . states "," <NAME> ]
     no default action
     <NAME> : shift, and go to state 53
     states : go to state 52
@@ -337,8 +287,6 @@ state 42
 
 state 43
     [ 114: block => "{" @10 . innerBlock "}" @11 ]*
-    [ 115: innerBlock => . innerBlock innerBlockItem ]
-    [ 116: innerBlock => . ]
     default action: reduce with rule 116
     innerBlock : go to state 56
 
@@ -362,8 +310,6 @@ state 46
 
 state 47
     [ 2: start => options "%%" body "%%" @0 . epilogue ]*
-    [ 17: epilogue => . ]
-    [ 18: epilogue => . <ANY_CODE> ]
     default action: reduce with rule 17
     <ANY_CODE> : shift, and go to state 60
     epilogue : go to state 59
@@ -371,10 +317,6 @@ state 47
 
 state 48
     [ 83: compoundRule => <NAME> @7 arrow . rules ";" ]*
-    [ 86: rules => . rules "|" rule ]
-    [ 87: rules => . rule ]
-    [ 89: rule => . @8 ruleHead ruleBody ruleTrailer ]
-    [ 88: @8 => . ]
     default action: reduce with rule 88
     rules : go to state 61
     rule : go to state 62
@@ -393,8 +335,6 @@ state 50
 
 state 51
     [ 6: option => "%lex" @1 states_ "{" . lexBody "}" ]*
-    [ 32: lexBody => . lexBody lexBodyItem ]
-    [ 33: lexBody => . ]
     default action: reduce with rule 33
     lexBody : go to state 64
 
@@ -426,8 +366,6 @@ state 55
 state 56
     [ 114: block => "{" @10 innerBlock . "}" @11 ]*
     [ 115: innerBlock => innerBlock . innerBlockItem ]*
-    [ 117: innerBlockItem => . <ANY_CODE> ]
-    [ 120: innerBlockItem => . "{" @12 innerBlock "}" @13 ]
     no default action
     "{" : shift, and go to state 71
     "}" : shift, and go to state 68
@@ -471,8 +409,6 @@ state 62
 
 state 63
     [ 89: rule => @8 . ruleHead ruleBody ruleTrailer ]*
-    [ 90: ruleHead => . "%use" "(" varUseList ")" ]
-    [ 91: ruleHead => . ]
     default action: reduce with rule 91
     "%use" : shift, and go to state 76
     ruleHead : go to state 75
@@ -481,10 +417,6 @@ state 63
 state 64
     [ 6: option => "%lex" @1 states_ "{" lexBody . "}" ]*
     [ 32: lexBody => lexBody . lexBodyItem ]*
-    [ 35: lexBodyItem => . <NAME> @2 "=" "<" regexp ">" ]
-    [ 36: lexBodyItem => . newState "<" regexp ">" lexAction_ ]
-    [ 37: lexBodyItem => . newState "<" <NAME> ":" regexp ">" lexAction_ ]
-    [ 38: newState => . ]
     default action: reduce with rule 38
     <NAME> : shift, and go to state 79
     "}" : shift, and go to state 77
@@ -511,7 +443,6 @@ state 67
 
 state 68
     [ 114: block => "{" @10 innerBlock "}" . @11 ]*
-    [ 113: @11 => . ]
     default action: reduce with rule 113
     @11 : go to state 83
 
@@ -528,7 +459,6 @@ state 70
 
 state 71
     [ 120: innerBlockItem => "{" . @12 innerBlock "}" @13 ]*
-    [ 118: @12 => . ]
     default action: reduce with rule 118
     @12 : go to state 84
 
@@ -545,8 +475,6 @@ state 73
 
 state 74
     [ 86: rules => rules "|" . rule ]*
-    [ 89: rule => . @8 ruleHead ruleBody ruleTrailer ]
-    [ 88: @8 => . ]
     default action: reduce with rule 88
     rule : go to state 85
     @8 : go to state 63
@@ -554,10 +482,6 @@ state 74
 
 state 75
     [ 89: rule => @8 ruleHead . ruleBody ruleTrailer ]*
-    [ 94: ruleBody => . ruleItems ]
-    [ 95: ruleBody => . "%empty" ]
-    [ 96: ruleItems => . ruleItems ruleItem ]
-    [ 97: ruleItems => . ]
     default action: reduce with rule 97
     "%empty" : shift, and go to state 88
     ruleBody : go to state 86
@@ -582,7 +506,6 @@ state 78
 
 state 79
     [ 35: lexBodyItem => <NAME> . @2 "=" "<" regexp ">" ]*
-    [ 34: @2 => . ]
     default action: reduce with rule 34
     @2 : go to state 90
 
@@ -611,8 +534,6 @@ state 83
 
 state 84
     [ 120: innerBlockItem => "{" @12 . innerBlock "}" @13 ]*
-    [ 115: innerBlock => . innerBlock innerBlockItem ]
-    [ 116: innerBlock => . ]
     default action: reduce with rule 116
     innerBlock : go to state 92
 
@@ -624,11 +545,6 @@ state 85
 
 state 86
     [ 89: rule => @8 ruleHead ruleBody . ruleTrailer ]*
-    [ 107: ruleTrailer => . ]
-    [ 108: ruleTrailer => . rulePrec ]
-    [ 109: ruleTrailer => . rulePrec lexAction ]
-    [ 110: rulePrec => . "%prec" <NAME> ]
-    [ 111: rulePrec => . "%prec" tokenRef ]
     default action: reduce with rule 107
     "%prec" : shift, and go to state 95
     ruleTrailer : go to state 93
@@ -638,12 +554,6 @@ state 86
 state 87
     [ 94: ruleBody => ruleItems . ]*
     [ 96: ruleItems => ruleItems . ruleItem ]*
-    [ 100: ruleItem => . <NAME> ]
-    [ 102: ruleItem => . <NAME> "=" @9 <NAME> ]
-    [ 103: ruleItem => . itemName tokenRef ]
-    [ 104: ruleItem => . itemName lexAction ]
-    [ 98: itemName => . <NAME> "=" ]
-    [ 99: itemName => . ]
     default action: reduce with rule 99
     <NAME> : shift, and go to state 97
     "%prec" : reduce with rule 94
@@ -660,8 +570,6 @@ state 88
 
 state 89
     [ 90: ruleHead => "%use" "(" . varUseList ")" ]*
-    [ 92: varUseList => . varUseList "," <NAME> ]
-    [ 93: varUseList => . <NAME> ]
     no default action
     <NAME> : shift, and go to state 100
     varUseList : go to state 99
@@ -676,10 +584,6 @@ state 90
 state 91
     [ 36: lexBodyItem => newState "<" . regexp ">" lexAction_ ]*
     [ 37: lexBodyItem => newState "<" . <NAME> ":" regexp ">" lexAction_ ]*
-    [ 52: regexp => . innerRegexp ]
-    [ 53: regexp => . "%least" innerRegexp ]
-    [ 55: innerRegexp => . @5 union ]
-    [ 54: @5 => . ]
     default action: reduce with rule 54
     <NAME> : shift, and go to state 103
     "%least" : shift, and go to state 105
@@ -691,8 +595,6 @@ state 91
 state 92
     [ 120: innerBlockItem => "{" @12 innerBlock . "}" @13 ]*
     [ 115: innerBlock => innerBlock . innerBlockItem ]*
-    [ 117: innerBlockItem => . <ANY_CODE> ]
-    [ 120: innerBlockItem => . "{" @12 innerBlock "}" @13 ]
     no default action
     "{" : shift, and go to state 71
     "}" : shift, and go to state 106
@@ -708,10 +610,6 @@ state 93
 state 94
     [ 108: ruleTrailer => rulePrec . ]*
     [ 109: ruleTrailer => rulePrec . lexAction ]*
-    [ 42: lexAction => . @3 "[" lexActions "]" ]
-    [ 44: lexAction => . @4 actionBlock ]
-    [ 41: @3 => . ]
-    [ 43: @4 => . ]
     default action: reduce with rule 43
     "[" : reduce with rule 41
     ";" : reduce with rule 108
@@ -724,8 +622,6 @@ state 94
 state 95
     [ 110: rulePrec => "%prec" . <NAME> ]*
     [ 111: rulePrec => "%prec" . tokenRef ]*
-    [ 105: tokenRef => . "<" <NAME> ">" ]
-    [ 106: tokenRef => . <STRING> ]
     no default action
     <NAME> : shift, and go to state 108
     <STRING> : shift, and go to state 111
@@ -749,12 +645,6 @@ state 97
 state 98
     [ 103: ruleItem => itemName . tokenRef ]*
     [ 104: ruleItem => itemName . lexAction ]*
-    [ 105: tokenRef => . "<" <NAME> ">" ]
-    [ 106: tokenRef => . <STRING> ]
-    [ 42: lexAction => . @3 "[" lexActions "]" ]
-    [ 44: lexAction => . @4 actionBlock ]
-    [ 41: @3 => . ]
-    [ 43: @4 => . ]
     default action: reduce with rule 43
     <STRING> : shift, and go to state 111
     "<" : shift, and go to state 110
@@ -803,8 +693,6 @@ state 104
 
 state 105
     [ 53: regexp => "%least" . innerRegexp ]*
-    [ 55: innerRegexp => . @5 union ]
-    [ 54: @5 => . ]
     default action: reduce with rule 54
     innerRegexp : go to state 120
     @5 : go to state 143
@@ -812,7 +700,6 @@ state 105
 
 state 106
     [ 120: innerBlockItem => "{" @12 innerBlock "}" . @13 ]*
-    [ 119: @13 => . ]
     default action: reduce with rule 119
     @13 : go to state 121
 
@@ -846,7 +733,6 @@ state 111
 state 112
     [ 102: ruleItem => <NAME> "=" . @9 <NAME> ]*
     [ 98: itemName => <NAME> "=" . ]*
-    [ 101: @9 => . ]
     default action: reduce with rule 98
     <NAME> : reduce with rule 101
     @9 : go to state 124
@@ -875,10 +761,6 @@ state 116
 
 state 117
     [ 35: lexBodyItem => <NAME> @2 "=" "<" . regexp ">" ]*
-    [ 52: regexp => . innerRegexp ]
-    [ 53: regexp => . "%least" innerRegexp ]
-    [ 55: innerRegexp => . @5 union ]
-    [ 54: @5 => . ]
     default action: reduce with rule 54
     "%least" : shift, and go to state 105
     regexp : go to state 126
@@ -888,8 +770,6 @@ state 117
 
 state 118
     [ 36: lexBodyItem => newState "<" regexp ">" . lexAction_ ]*
-    [ 39: lexAction_ => . ":" lexAction ]
-    [ 40: lexAction_ => . ]
     default action: reduce with rule 40
     ":" : shift, and go to state 128
     lexAction_ : go to state 127
@@ -897,10 +777,6 @@ state 118
 
 state 119
     [ 37: lexBodyItem => newState "<" <NAME> ":" . regexp ">" lexAction_ ]*
-    [ 52: regexp => . innerRegexp ]
-    [ 53: regexp => . "%least" innerRegexp ]
-    [ 55: innerRegexp => . @5 union ]
-    [ 54: @5 => . ]
     default action: reduce with rule 54
     "%least" : shift, and go to state 105
     regexp : go to state 129
@@ -953,10 +829,6 @@ state 127
 
 state 128
     [ 39: lexAction_ => ":" . lexAction ]*
-    [ 42: lexAction => . @3 "[" lexActions "]" ]
-    [ 44: lexAction => . @4 actionBlock ]
-    [ 41: @3 => . ]
-    [ 43: @4 => . ]
     default action: reduce with rule 43
     "[" : reduce with rule 41
     lexAction : go to state 139
@@ -1031,9 +903,6 @@ state 140
 
 state 141
     [ 44: lexAction => @4 . actionBlock ]*
-    [ 124: actionBlock => . always "{" @14 @15 innerActionBlock "}" @16 ]
-    [ 125: always => . "%always" ]
-    [ 126: always => . ]
     default action: reduce with rule 126
     "%always" : shift, and go to state 122
     actionBlock : go to state 150
@@ -1042,8 +911,6 @@ state 141
 
 state 142
     [ 37: lexBodyItem => newState "<" <NAME> ":" regexp ">" . lexAction_ ]*
-    [ 39: lexAction_ => . ":" lexAction ]
-    [ 40: lexAction_ => . ]
     default action: reduce with rule 40
     ":" : shift, and go to state 128
     lexAction_ : go to state 152
@@ -1051,12 +918,6 @@ state 142
 
 state 143
     [ 55: innerRegexp => @5 . union ]*
-    [ 56: union => . union "|" simpleRE ]
-    [ 57: union => . simpleRE ]
-    [ 58: simpleRE => . simpleRE basicRE ]
-    [ 59: simpleRE => . basicRE ]
-    [ 61: basicRE => . @6 primitiveRE rePostfix ]
-    [ 60: @6 => . ]
     default action: reduce with rule 60
     union : go to state 153
     simpleRE : go to state 154
@@ -1071,14 +932,6 @@ state 144
 
 state 145
     [ 45: lexActions => lexActions "," . lexActionItem ]*
-    [ 47: lexActionItem => . "+" <NAME> ]
-    [ 48: lexActionItem => . "-" ]
-    [ 49: lexActionItem => . "=>" <NAME> ]
-    [ 50: lexActionItem => . "=" <STRING> ]
-    [ 51: lexActionItem => . actionBlock ]
-    [ 124: actionBlock => . always "{" @14 @15 innerActionBlock "}" @16 ]
-    [ 125: always => . "%always" ]
-    [ 126: always => . ]
     default action: reduce with rule 126
     "%always" : shift, and go to state 122
     "=" : shift, and go to state 134
@@ -1107,16 +960,6 @@ state 148
 
 state 149
     [ 42: lexAction => @3 "[" . lexActions "]" ]*
-    [ 45: lexActions => . lexActions "," lexActionItem ]
-    [ 46: lexActions => . lexActionItem ]
-    [ 47: lexActionItem => . "+" <NAME> ]
-    [ 48: lexActionItem => . "-" ]
-    [ 49: lexActionItem => . "=>" <NAME> ]
-    [ 50: lexActionItem => . "=" <STRING> ]
-    [ 51: lexActionItem => . actionBlock ]
-    [ 124: actionBlock => . always "{" @14 @15 innerActionBlock "}" @16 ]
-    [ 125: always => . "%always" ]
-    [ 126: always => . ]
     default action: reduce with rule 126
     "%always" : shift, and go to state 122
     "=" : shift, and go to state 134
@@ -1155,8 +998,6 @@ state 153
 state 154
     [ 57: union => simpleRE . ]*
     [ 58: simpleRE => simpleRE . basicRE ]*
-    [ 61: basicRE => . @6 primitiveRE rePostfix ]
-    [ 60: @6 => . ]
     default action: reduce with rule 60
     ">" : reduce with rule 57
     ")" : reduce with rule 57
@@ -1172,11 +1013,6 @@ state 155
 
 state 156
     [ 61: basicRE => @6 . primitiveRE rePostfix ]*
-    [ 66: primitiveRE => . "(" innerRegexp ")" ]
-    [ 67: primitiveRE => . "[" inverse_ setRE_ "]" ]
-    [ 68: primitiveRE => . "<" <NAME> ">" ]
-    [ 69: primitiveRE => . "%import" "(" <STRING> ")" ]
-    [ 70: primitiveRE => . <STRING> ]
     no default action
     <STRING> : shift, and go to state 170
     "%import" : shift, and go to state 169
@@ -1220,17 +1056,12 @@ state 161
 
 state 162
     [ 124: actionBlock => always "{" . @14 @15 innerActionBlock "}" @16 ]*
-    [ 121: @14 => . ]
     default action: reduce with rule 121
     @14 : go to state 174
 
 
 state 163
     [ 56: union => union "|" . simpleRE ]*
-    [ 58: simpleRE => . simpleRE basicRE ]
-    [ 59: simpleRE => . basicRE ]
-    [ 61: basicRE => . @6 primitiveRE rePostfix ]
-    [ 60: @6 => . ]
     default action: reduce with rule 60
     simpleRE : go to state 175
     basicRE : go to state 155
@@ -1244,10 +1075,6 @@ state 164
 
 state 165
     [ 61: basicRE => @6 primitiveRE . rePostfix ]*
-    [ 62: rePostfix => . "+" ]
-    [ 63: rePostfix => . "?" ]
-    [ 64: rePostfix => . "*" ]
-    [ 65: rePostfix => . ]
     default action: reduce with rule 65
     "?" : shift, and go to state 178
     "*" : shift, and go to state 179
@@ -1257,8 +1084,6 @@ state 165
 
 state 166
     [ 66: primitiveRE => "(" . innerRegexp ")" ]*
-    [ 55: innerRegexp => . @5 union ]
-    [ 54: @5 => . ]
     default action: reduce with rule 54
     innerRegexp : go to state 180
     @5 : go to state 143
@@ -1266,8 +1091,6 @@ state 166
 
 state 167
     [ 67: primitiveRE => "[" . inverse_ setRE_ "]" ]*
-    [ 71: inverse_ => . "^" ]
-    [ 72: inverse_ => . ]
     default action: reduce with rule 72
     "^" : shift, and go to state 144
     inverse_ : go to state 181
@@ -1292,8 +1115,6 @@ state 170
 
 state 171
     [ 75: setRE => setRE "," . setREItem ]*
-    [ 77: setREItem => . <STRING> ]
-    [ 78: setREItem => . <STRING> "-" <STRING> ]
     no default action
     <STRING> : shift, and go to state 159
     setREItem : go to state 184
@@ -1312,7 +1133,6 @@ state 173
 
 state 174
     [ 124: actionBlock => always "{" @14 . @15 innerActionBlock "}" @16 ]*
-    [ 122: @15 => . ]
     default action: reduce with rule 122
     @15 : go to state 193
 
@@ -1320,8 +1140,6 @@ state 174
 state 175
     [ 56: union => union "|" simpleRE . ]*
     [ 58: simpleRE => simpleRE . basicRE ]*
-    [ 61: basicRE => . @6 primitiveRE rePostfix ]
-    [ 60: @6 => . ]
     default action: reduce with rule 60
     ">" : reduce with rule 56
     ")" : reduce with rule 56
@@ -1358,12 +1176,6 @@ state 180
 
 state 181
     [ 67: primitiveRE => "[" inverse_ . setRE_ "]" ]*
-    [ 73: setRE_ => . setRE ]
-    [ 74: setRE_ => . ]
-    [ 75: setRE => . setRE "," setREItem ]
-    [ 76: setRE => . setREItem ]
-    [ 77: setREItem => . <STRING> ]
-    [ 78: setREItem => . <STRING> "-" <STRING> ]
     default action: reduce with rule 74
     <STRING> : shift, and go to state 159
     setRE_ : go to state 195
@@ -1425,15 +1237,12 @@ state 191
 
 state 192
     [ 137: innerActionBlockItem => "{" . @17 @18 innerActionBlock "}" @19 ]*
-    [ 134: @17 => . ]
     default action: reduce with rule 134
     @17 : go to state 198
 
 
 state 193
     [ 124: actionBlock => always "{" @14 @15 . innerActionBlock "}" @16 ]*
-    [ 127: innerActionBlock => . innerActionBlock innerActionBlockItem ]
-    [ 128: innerActionBlock => . ]
     default action: reduce with rule 128
     innerActionBlock : go to state 199
 
@@ -1462,7 +1271,6 @@ state 197
 
 state 198
     [ 137: innerActionBlockItem => "{" @17 . @18 innerActionBlock "}" @19 ]*
-    [ 135: @18 => . ]
     default action: reduce with rule 135
     @18 : go to state 202
 
@@ -1470,12 +1278,6 @@ state 198
 state 199
     [ 124: actionBlock => always "{" @14 @15 innerActionBlock . "}" @16 ]*
     [ 127: innerActionBlock => innerActionBlock . innerActionBlockItem ]*
-    [ 129: innerActionBlockItem => . <ANY_CODE> ]
-    [ 130: innerActionBlockItem => . "$$" ]
-    [ 131: innerActionBlockItem => . "$token" ]
-    [ 132: innerActionBlockItem => . "$matched" ]
-    [ 133: innerActionBlockItem => . <EMIT_TOKEN> ]
-    [ 137: innerActionBlockItem => . "{" @17 @18 innerActionBlock "}" @19 ]
     no default action
     "{" : shift, and go to state 192
     "}" : shift, and go to state 203
@@ -1499,15 +1301,12 @@ state 201
 
 state 202
     [ 137: innerActionBlockItem => "{" @17 @18 . innerActionBlock "}" @19 ]*
-    [ 127: innerActionBlock => . innerActionBlock innerActionBlockItem ]
-    [ 128: innerActionBlock => . ]
     default action: reduce with rule 128
     innerActionBlock : go to state 204
 
 
 state 203
     [ 124: actionBlock => always "{" @14 @15 innerActionBlock "}" . @16 ]*
-    [ 123: @16 => . ]
     default action: reduce with rule 123
     @16 : go to state 205
 
@@ -1515,12 +1314,6 @@ state 203
 state 204
     [ 137: innerActionBlockItem => "{" @17 @18 innerActionBlock . "}" @19 ]*
     [ 127: innerActionBlock => innerActionBlock . innerActionBlockItem ]*
-    [ 129: innerActionBlockItem => . <ANY_CODE> ]
-    [ 130: innerActionBlockItem => . "$$" ]
-    [ 131: innerActionBlockItem => . "$token" ]
-    [ 132: innerActionBlockItem => . "$matched" ]
-    [ 133: innerActionBlockItem => . <EMIT_TOKEN> ]
-    [ 137: innerActionBlockItem => . "{" @17 @18 innerActionBlock "}" @19 ]
     no default action
     "{" : shift, and go to state 192
     "}" : shift, and go to state 206
@@ -1539,7 +1332,6 @@ state 205
 
 state 206
     [ 137: innerActionBlockItem => "{" @17 @18 innerActionBlock "}" . @19 ]*
-    [ 136: @19 => . ]
     default action: reduce with rule 136
     @19 : go to state 207
 

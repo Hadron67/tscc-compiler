@@ -1,6 +1,7 @@
 import { BitSet } from '../util/bitset';
 import { TokenEntry } from './token-entry';
 
+
 export class TokenSet extends BitSet{
     constructor(tcount: number){
         super(tcount);
@@ -15,9 +16,10 @@ export class TokenSet extends BitSet{
         for(var i = 0;i < g.tokenCount;i++){
             if(this.contains(i + 1)){
                 if(!first){
-                    ret += ',';
+                    ret += ', ';
                 }
-                ret += '"' + g.tokens[i].sym + '"';
+                var tdef = g.tokens[i];
+                ret += tdef.alias === null ? `<${tdef.sym}>` : `"${tdef.alias}"`;
                 first = false;
             }
         }

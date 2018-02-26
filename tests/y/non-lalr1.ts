@@ -103,9 +103,9 @@ var jjlexTokens0: number[] = [
         -1,
 ]; 
 
-var jjstateCount = 14;
+var jjstateCount = 15;
 var jjtokenCount = 6;
-var jjactERR = 15;
+var jjactERR = 16;
 /*
     compressed action table: action = jjpact[jjdisact[STATE-NUM] + TOKEN]
     when action > 0, shift the token and goto state (action - 1);
@@ -113,21 +113,23 @@ var jjactERR = 15;
     when action = 0, do default action.
 */
 var jjpact: number[] = [ 
-         3,     4,    14,    13,    12,    11,     8,     8,     5,
+         3,     4,    -7,    15,    14,    -7,    13,    12,    11,     8,
+         5,
 ]; 
 /*
     displacement of action table.
 */
 var jjdisact: number[] = [ 
-        -1,     8,     4,     3,    -6,     1,    -1,    -6,    -2,    -2,
-        -6,    -6,    -6,    -6,
+        -1,    10,     6,     5,    -6,     3,     1,     0,    -1,    -1,
+        -2,    -6,    -6,    -6,    -6,
 ]; 
 /*
     used to check if a position in jjpact is out of bouds.
     if jjcheckact[jjdisact[STATE-NUM] + TOKEN] = STATE-NUM, this position is not out of bounds.
 */
 var jjcheckact: number[] = [ 
-         0,     0,     9,     8,     6,     5,     3,     2,     1,
+         0,     0,    10,     9,     8,     7,     6,     5,     3,     2,
+         1,
 ]; 
 /*
     default action table. action = jjdefred[STATE-NUM],
@@ -135,7 +137,7 @@ var jjcheckact: number[] = [
 */
 var jjdefred: number[] = [ 
         -1,    -1,    -1,    -1,     0,    -1,    -1,     5,    -1,    -1,
-         1,     2,     3,     4,
+         5,     1,     2,     3,     4,
 ]; 
 /*
     compressed goto table: goto = jjpgoto[jjdisgoto[STATE-NUM] + NON_TERMINAL]
@@ -148,7 +150,7 @@ var jjpgoto: number[] = [
 */
 var jjdisgoto: number[] = [ 
         -1,    -4,     1,    -1,    -4,    -4,    -4,    -4,    -4,    -4,
-        -4,    -4,    -4,    -4,
+        -4,    -4,    -4,    -4,    -4,
 ]; 
 /*
     length of each rule: rule length = jjruleLen[RULE-NUM]

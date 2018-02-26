@@ -761,7 +761,9 @@ function lambda(arg: string, body: string): string{
     echo(prefix );
     echoLine("input = i;");
     echoLine("    }");
-    echoLine("    function nextToken(): Token{");
+    echo("    function nextToken()");
+    echo(ts(': Token') );
+    echoLine("{");
     echo("        ");
     echo(prefix );
     echoLine("tokenEmitted = false;");

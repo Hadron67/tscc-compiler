@@ -27,7 +27,7 @@ export interface TSCCContext {
     beginTime(s: string);
     endTime();
     printItemSets(stream: OutputStream);
-    printTable (os: OutputStream);
+    printTable (os: OutputStream, showlah: boolean, showFullItemsets: boolean);
     printDFA(os: OutputStream);
     printError(os: OutputStream, opt?: ErrPrintOption);
     printWarning(os: OutputStream, opt?: ErrPrintOption);
@@ -193,8 +193,8 @@ export function createContext(): TSCCContext{
             os.writeln(escape(s.toString({ showTrailer: true })));
         });
     }
-    function printTable (os: OutputStream){
-        printParseTable(os, parseTable, itemSets, escapes);
+    function printTable (os: OutputStream, showlah: boolean, showFullItemsets: boolean){
+        printParseTable(os, parseTable, itemSets, showlah, showFullItemsets, escapes);
     }
     function printDetailedTime(os: OutputStream){
         for(var t of timers){

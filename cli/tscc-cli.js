@@ -55,7 +55,9 @@ function main(arg){
             },
             testInput: arg.test,
             printDetailedTime: arg.detailedTime,
-            printDFA: arg.dfa
+            printDFA: arg.dfa,
+            showlah: arg.showlah,
+            showFullItemsets: arg.showFullItemsets
         });
         return Promise.all(files)
         .then(function(){

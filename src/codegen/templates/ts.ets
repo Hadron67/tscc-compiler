@@ -454,7 +454,7 @@ function create<%= className %>()<%= ts(': ' + className) %> {
     function load(i<%= ts(': ParserInput') %>){
         <%= prefix %>input = i;
     }
-    function nextToken(): Token{
+    function nextToken()<%= ts(': Token') %>{
         <%= prefix %>tokenEmitted = false;
         while(!<%= prefix %>stop && !<%= prefix %>tokenEmitted){
             var c = <%= prefix %>input.current();

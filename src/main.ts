@@ -25,24 +25,47 @@ function deleteSuffix(s: string): string{
 export interface TSCCOptions{
     /** name (path) of the input grammar file. */
     inputFile: string;
-    /** content of grammar file */
+    /** content of grammar file, */
     input: string;
-    /** name (path) of the output file, if not specified, the output file won't be generated. */
+    /**
+     * name (path) of the output file, if set to `null` or `undefined`, the output file won't be generated.
+     * @default undefined
+     */
     outputFile?: string;
 
     // interface
-    /** an interface object to print all the messages */
+    /** an interface object to print all the messages, */
     stdout: io.OutputStream;
     /** a callback used to write file. */
     writeFile(path: string, content: string): any;
 
     // options
-    /** test input. If specified, it will be parsed, and the process will be printed. */
+    /** 
+     * test input. If specified, it will be parsed, and the process will be printed.
+     * @default null
+     */
     testInput?: string;
-    /** whether to print a detailed list of time costs */
+    /**
+     * whether to print a detailed list of time costs.
+     * @default false
+     */
     printDetailedTime?: boolean;
-    /** whether to print lexical DFA tables to the output file. */
+    /**
+     * whether to print lexical DFA tables to the output file.
+     * @default false
+     */
     printDFA?: boolean;
+    /**
+     * whether to show look-ahead tokens of items when printing parse table.
+     * @default false
+     */
+    showlah?: boolean;
+    /**
+     * whether to show full item sets when printing parse table. Only kernel 
+     * items will be printed when set to `false`
+     * @default false
+     */
+    showFullItemsets?: boolean;
 };
 
 export function main(opt: TSCCOptions): number{
@@ -66,7 +89,7 @@ export function main(opt: TSCCOptions): number{
             
             ctx.beginTime('generate output file');
             opt.printDFA && ctx.printDFA(out);
-            ctx.printTable(out);
+            ctx.printTable(out, opt.showlah, opt.showFullItemsets);
             ctx.endTime();
     
             opt.writeFile(opt.outputFile, out.s);

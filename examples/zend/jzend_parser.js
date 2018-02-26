@@ -256,7 +256,8 @@ var AST_LOCAL = cc++;
 /*
     constants
 */
-var jjeol = '\n'.charCodeAt(0);
+var jjlf = '\n'.charCodeAt(0);
+var jjcr = '\r'.charCodeAt(0);
 /*
     dfa table definations
 */
@@ -3843,28 +3844,39 @@ Token.prototype.toString = function(){
         '<' + jjtokenNames[this.id] + '>' :
         '"' + jjtokenAlias[this.id] + '"') + "(" + this.val + ")";
 }
+var LineTerm = {
+    NONE: 1,
+    AUTO: 2,
+    CR: 3,
+    LF: 4,
+    CRLF: 5
+};
+
 function createParser() {
-    // members for lexer
+    //#region parser state variables
     var jjlexState;
     var jjstate;
+    var jjlastCR;
     var jjmatched;
-    var jjtoken;
-    
     var jjmarker = { state: -1, line: 0, column: 0 };
     var jjbackupCount;
-
     var jjline;
     var jjcolumn;
     var jjtline;
     var jjtcolumn;
 
-    // members for parser
     var jjlrState;
     var jjsematicS;
+    //#endregion
+
+    var jjinput;
     var jjsematicVal;
     var jjtokenQueue;
-
+    var jjtoken;
     var jjstop;
+    var jjtokenEmitted;
+    var jjenableBlock;
+    var jjlineTerm;
 
     var jjhandlers = {};
 
@@ -3878,9 +3890,17 @@ function createParser() {
     return {
         init: init,
         on: on,
+        setLineTerminator: setLineTerminator,
+        getLineTerminator: function() { return jjlineTerm; },
         accept: accept,
         end: end,
-        halt: halt
+        load: load,
+        nextToken: nextToken,
+        halt: halt,
+        enableBlocks: enableBlocks,
+        disableBlocks: disableBlocks,
+        loadParserState: loadParserState,
+        getParserState: getParserState
     };
     function init(outputs1){
         jjlexState = [ 0 ];// DEFAULT
@@ -3897,13 +3917,84 @@ function createParser() {
         jjsematicVal = null;
         jjtokenQueue = [];
 
-        jjstop = false;
+        jjenableBlock = true;
+        jjlineTerm = LineTerm.AUTO;
+        jjlastCR = false;
+
         
     outputs = outputs1;
     heredocStart = [];
 
 
         jjtryReduce();
+    }
+    function load(i){
+        jjinput = i;
+    }
+    function nextToken(){
+        jjtokenEmitted = false;
+        while(!jjstop && !jjtokenEmitted){
+            var c = jjinput.current();
+            if(c !== null){
+                jjacceptChar(c);
+            }
+            // null means end of file or no input available at present
+            else if(jjinput.isEof()){
+                if(jjacceptEOF()){
+                    break;
+                }
+            }
+            else {
+                return null;
+            }
+        }
+        return jjtoken;
+    }
+    function setLineTerminator(lt){
+        jjlineTerm = lt;
+    }
+    function enableBlocks(){
+        jjenableBlock = true;
+    }
+    function disableBlocks(){
+        jjenableBlock = false;
+    }
+    /**
+     *  input a string
+     *  @api public
+     *  @deprecated
+     */
+    function accept(s){
+        var i = 0;
+        load({
+            current: function(){ return i < s.length ? s.charCodeAt(i) : null; },
+            next: function(){ return i++; },
+            isEof: function(){ return i >= s.length; },
+            backup: function(t){ return i -= t.length; }
+        });
+        while(nextToken().id !== 0);
+    }
+    /**
+     *  tell the compiler that end of file is reached
+     *  @api public
+     */
+    function end(){
+        
+    }
+    function halt(){
+        jjstop = true;
+    }
+    function loadParserState(state){
+        jjlexState = state.lexState;
+        jjlrState = state.lrState;
+        jjsematicS = state.sematicS;
+    }
+    function getParserState() {
+        return {
+            lexState: jjlexState,
+            lrState: jjlrState,
+            sematicS: jjsematicS
+        };
     }
     /**
      *  set 
@@ -3922,6 +4013,7 @@ function createParser() {
         jjtoken.endColumn = jjcolumn - 1;
 
         jjtokenQueue.push(jjtoken);
+        jjtokenEmitted = true;
 
         jjmatched = '';
         jjtline = jjline;
@@ -3944,28 +4036,28 @@ function createParser() {
         jjtk !== -1 && jjprepareToken(jjtk);
         switch(jjstaten){
             case 1:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 2:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 3:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 4:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 5:
                 jjlexState.push(1); jjsetImg(""); 
                 break;
             case 6:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 7:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 8:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 9:
                 jjlexState.push(1); jjsetImg(""); 
@@ -3996,61 +4088,61 @@ function createParser() {
                 jjsetImg(""); 
                 break;
             case 15:
-                { jjsematicVal = nodeFromTrivalToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromTrivalToken(jjtoken); }
                 break;
             case 19:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = Number(jjsematicVal.val); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = Number(jjsematicVal.val); }
                 break;
             case 26:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 27:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 28:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 29:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 33:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 35:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 36:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 37:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 38:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 39:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 40:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 41:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 42:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 43:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 44:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 45:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 46:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 51:
                 jjsetImg(""); 
@@ -4059,229 +4151,229 @@ function createParser() {
                 jjsetImg(""); 
                 break;
             case 54:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(1, jjsematicVal.val.length - 1); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(1, jjsematicVal.val.length - 1); }
                 break;
             case 59:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = unescape(jjsematicVal.val.substr(1, jjsematicVal.val.length - 2)); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = unescape(jjsematicVal.val.substr(1, jjsematicVal.val.length - 2)); }
                 break;
             case 68:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = Number(jjsematicVal.val); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = Number(jjsematicVal.val); }
                 break;
             case 70:
                 jjsetImg(""); 
                 break;
             case 72:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = Number(jjsematicVal.val); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = Number(jjsematicVal.val); }
                 break;
             case 80:
                 jjsetImg(""); jjlexState.pop(); 
                 break;
             case 81:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 82:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 84:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 86:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 87:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 89:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 90:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 92:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 93:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 94:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 95:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 97:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 98:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 99:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 100:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 101:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 105:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(1, jjsematicVal.val.length - 1); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(1, jjsematicVal.val.length - 1); }
                 break;
             case 112:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = Number(jjsematicVal.val); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = Number(jjsematicVal.val); }
                 break;
             case 114:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = Number(jjsematicVal.val); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = Number(jjsematicVal.val); }
                 break;
             case 121:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 122:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 123:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 124:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 125:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 126:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 128:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 129:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 130:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 131:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 133:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 137:
                 jjsetImg(""); 
                 break;
             case 140:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 141:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 142:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 143:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 144:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 147:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 148:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 150:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 151:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 152:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 157:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 159:
-                { jjsematicVal = nodeFromTrivalToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromTrivalToken(jjtoken); }
                 break;
             case 161:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 162:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 163:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 165:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 169:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = extractHeredocStart(jjsematicVal.val); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = extractHeredocStart(jjsematicVal.val); }
                 break;
             case 170:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = extractHeredocStart(jjsematicVal.val); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = extractHeredocStart(jjsematicVal.val); }
                 break;
             case 172:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 173:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 174:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 175:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 181:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = extractHeredocStart(jjsematicVal.val); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = extractHeredocStart(jjsematicVal.val); }
                 break;
             case 182:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 183:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 185:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 186:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = extractHeredocStart(jjsematicVal.val); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = extractHeredocStart(jjsematicVal.val); }
                 break;
             case 187:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = extractHeredocStart(jjsematicVal.val); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = extractHeredocStart(jjsematicVal.val); }
                 break;
             case 188:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 189:
-                { jjsematicVal = nodeFromTrivalToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromTrivalToken(jjtoken); }
                 break;
             case 190:
-                { jjsematicVal = nodeFromTrivalToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromTrivalToken(jjtoken); }
                 break;
             case 191:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = extractHeredocStart(jjsematicVal.val); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = extractHeredocStart(jjsematicVal.val); }
                 break;
             case 192:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 193:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 194:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 195:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 196:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 197:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             default:;
         }
@@ -4300,19 +4392,19 @@ function createParser() {
                 jjsetImg(""); 
                 break;
             case 5:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 7:
                 jjsetImg(""); 
                 break;
             case 8:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(1, jjsematicVal.val.length - 1); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(1, jjsematicVal.val.length - 1); }
                 break;
             case 9:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 10:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(1, jjsematicVal.val.length - 1); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(1, jjsematicVal.val.length - 1); }
                 break;
             default:;
         }
@@ -4322,34 +4414,34 @@ function createParser() {
         jjtk !== -1 && jjprepareToken(jjtk);
         switch(jjstaten){
             case 1:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 2:
-                { jjsematicVal = nodeFromTrivalToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromTrivalToken(jjtoken); }
                 break;
             case 5:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(1, jjsematicVal.val.length - 1); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(1, jjsematicVal.val.length - 1); }
                 break;
             case 7:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = unescape(jjsematicVal.val); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = unescape(jjsematicVal.val); }
                 break;
             case 8:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = '$'; }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = '$'; }
                 break;
             case 11:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(1, jjsematicVal.val.length - 1); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(1, jjsematicVal.val.length - 1); }
                 break;
             case 12:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(1, jjsematicVal.val.length - 2); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(1, jjsematicVal.val.length - 2); }
                 break;
             case 14:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = unescape(jjsematicVal.val); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = unescape(jjsematicVal.val); }
                 break;
             case 17:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(2, jjsematicVal.val.length - 3); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(2, jjsematicVal.val.length - 3); }
                 break;
             case 18:
-                {
+                if(jjenableBlock){
         jjsematicVal = nodeFromToken(jjtoken);
         var parts = jjsematicVal.val.substr(1, jjsematicVal.val.length - 1).split('->');
         jjsematicVal.val = parts[0];
@@ -4357,7 +4449,7 @@ function createParser() {
     }
                 break;
             case 19:
-                {
+                if(jjenableBlock){
         jjsematicVal = nodeFromToken(jjtoken);
         var parts = jjsematicVal.val.substr(1, jjsematicVal.val.length - 1).split('->');
         jjsematicVal.val = parts[0];
@@ -4372,34 +4464,34 @@ function createParser() {
         jjtk !== -1 && jjprepareToken(jjtk);
         switch(jjstaten){
             case 1:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 4:
-                { jjsematicVal = nodeFromTrivalToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromTrivalToken(jjtoken); }
                 break;
             case 5:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(1, jjsematicVal.val.length - 1); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(1, jjsematicVal.val.length - 1); }
                 break;
             case 7:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = unescape(jjsematicVal.val); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = unescape(jjsematicVal.val); }
                 break;
             case 8:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = '$'; }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = '$'; }
                 break;
             case 11:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(1, jjsematicVal.val.length - 1); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(1, jjsematicVal.val.length - 1); }
                 break;
             case 12:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(1, jjsematicVal.val.length - 2); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(1, jjsematicVal.val.length - 2); }
                 break;
             case 14:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = unescape(jjsematicVal.val); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = unescape(jjsematicVal.val); }
                 break;
             case 17:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(2, jjsematicVal.val.length - 3); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(2, jjsematicVal.val.length - 3); }
                 break;
             case 18:
-                {
+                if(jjenableBlock){
         jjsematicVal = nodeFromToken(jjtoken);
         var parts = jjsematicVal.val.substr(1, jjsematicVal.val.length - 1).split('->');
         jjsematicVal.val = parts[0];
@@ -4407,7 +4499,7 @@ function createParser() {
     }
                 break;
             case 19:
-                {
+                if(jjenableBlock){
         jjsematicVal = nodeFromToken(jjtoken);
         var parts = jjsematicVal.val.substr(1, jjsematicVal.val.length - 1).split('->');
         jjsematicVal.val = parts[0];
@@ -4422,46 +4514,46 @@ function createParser() {
         jjtk !== -1 && jjprepareToken(jjtk);
         switch(jjstaten){
             case 1:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 2:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 3:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 6:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 7:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 8:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(1, jjsematicVal.val.length - 1); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(1, jjsematicVal.val.length - 1); }
                 break;
             case 10:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = unescape(jjsematicVal.val); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = unescape(jjsematicVal.val); }
                 break;
             case 11:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = '$'; }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = '$'; }
                 break;
             case 13:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 15:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(1, jjsematicVal.val.length - 1); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(1, jjsematicVal.val.length - 1); }
                 break;
             case 16:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(1, jjsematicVal.val.length - 2); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(1, jjsematicVal.val.length - 2); }
                 break;
             case 18:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = unescape(jjsematicVal.val); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = unescape(jjsematicVal.val); }
                 break;
             case 21:
-                { jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(2, jjsematicVal.val.length - 3); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); jjsematicVal.val = jjsematicVal.val.substr(2, jjsematicVal.val.length - 3); }
                 break;
             case 22:
-                {
+                if(jjenableBlock){
         jjsematicVal = nodeFromToken(jjtoken);
         var parts = jjsematicVal.val.substr(1, jjsematicVal.val.length - 1).split('->');
         jjsematicVal.val = parts[0];
@@ -4469,7 +4561,7 @@ function createParser() {
     }
                 break;
             case 23:
-                {
+                if(jjenableBlock){
         jjsematicVal = nodeFromToken(jjtoken);
         var parts = jjsematicVal.val.substr(1, jjsematicVal.val.length - 1).split('->');
         jjsematicVal.val = parts[0];
@@ -4484,22 +4576,22 @@ function createParser() {
         jjtk !== -1 && jjprepareToken(jjtk);
         switch(jjstaten){
             case 1:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 2:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 3:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 4:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 5:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             case 6:
-                { jjsematicVal = nodeFromToken(jjtoken); }
+                if(jjenableBlock){ jjsematicVal = nodeFromToken(jjtoken); }
                 break;
             default:;
         }
@@ -4538,13 +4630,13 @@ function createParser() {
     }
     function jjrollback(){
         var ret = jjmatched.substr(jjmatched.length - jjbackupCount, jjbackupCount);
+        jjinput.backup(ret);
         jjmatched = jjmatched.substr(0, jjmatched.length - jjbackupCount);
         jjbackupCount = 0;
         jjline = jjmarker.line;
         jjcolumn = jjmarker.column;
         jjstate = jjmarker.state;
         jjmarker.state = -1;
-        return ret;
     }
     function jjmark(){
         jjmarker.state = jjstate;
@@ -4553,10 +4645,59 @@ function createParser() {
         jjbackupCount = 0;
     }
     function jjconsume(c){
-        c === jjeol ? (jjline++, jjcolumn = 0) : (jjcolumn += c > 0xff ? 2 : 1);
+        // c === jjeol ? (jjline++, jjcolumn = 0) : (jjcolumn += c > 0xff ? 2 : 1);
+        switch(jjlineTerm){
+            case LineTerm.NONE:
+                jjcolumn += c > 0xff ? 2 : 1;
+                break;
+            case LineTerm.CR:
+                c === jjcr ? (jjline++, jjcolumn = 0) : (jjcolumn += c > 0xff ? 2 : 1);
+                break;
+            case LineTerm.LF:
+                c === jjlf ? (jjline++, jjcolumn = 0) : (jjcolumn += c > 0xff ? 2 : 1);
+                break;
+            case LineTerm.CRLF:
+                if(jjlastCR){
+                    if(c === jjlf){
+                        jjline++, jjcolumn = 0;
+                        jjlastCR = false;
+                    }
+                    else {
+                        jjcolumn += c > 0xff ? 2 : 1;
+                        jjlastCR = c === jjcr;
+                    }
+                }
+                else {
+                    jjcolumn += c > 0xff ? 2 : 1;
+                    jjlastCR = c === jjcr;
+                }
+                break;
+            case LineTerm.AUTO:
+                if(jjlastCR){
+                    if(c === jjlf){
+                        jjline++, jjcolumn = 0;
+                        jjlastCR = false;
+                        jjlineTerm = LineTerm.CRLF;
+                    }
+                    else {
+                        jjline++, jjcolumn = 0;
+                        jjlineTerm = LineTerm.CR;
+                        c === jjcr ? (jjline++, jjcolumn = 0) : (jjcolumn += c > 0xff ? 2 : 1);
+                    }
+                }
+                else if(c === jjlf){
+                    jjline++, jjcolumn = 0;
+                    jjlineTerm = LineTerm.LF;
+                }
+                else {
+                    jjcolumn += c > 0xff ? 2 : 1;
+                    jjlastCR = c === jjcr;
+                }
+                break;
+        }
         jjmatched += String.fromCharCode(c);
         jjmarker.state !== -1 && (jjbackupCount++);
-        return true;
+        jjinput.next();
     }
     /**
      *  accept a character
@@ -4590,7 +4731,6 @@ function createParser() {
                     jjbackupCount = 0;
                     jjstate = 0;                    
                     // character not consumed
-                    return false;
                 }
                 else {
                     // now we can either go to that new state, or stay where we are
@@ -4599,7 +4739,7 @@ function createParser() {
                     // an error occurs later, we could just return to this state.
                     jjmark();
                     jjstate = nstate;
-                    return jjconsume(ccode);
+                    jjconsume(ccode);
                 }
             }
             else {
@@ -4610,7 +4750,6 @@ function createParser() {
                 jjbackupCount = 0;
                 jjstate = 0;
                 // character not consumed
-                return false;
             }
         }
         else {
@@ -4619,24 +4758,23 @@ function createParser() {
                 // check marker to verify that
                 if(jjmarker.state !== -1){
                     // we have a previously marked state, which is a terminate state.
-                    var s = jjrollback();
+                    jjrollback();
                     jjdoLexAction(lexstate, jjstate);
                     jjstate = 0;
-                    accept(s);
+                    // accept(s);
                     // character not consumed
-                    return false;
                 }
                 else {
                     // error occurs
                     jjemit('lexicalerror', String.fromCharCode(ccode), jjline, jjcolumn);
                     // force consume
-                    return true;
+                    jjconsume(ccode);
                 }
             }
             else {
                 jjstate = nstate;
                 // character consumed
-                return jjconsume(ccode);
+                jjconsume(ccode);
             }
         }
     }
@@ -4658,10 +4796,9 @@ function createParser() {
                 return false;
             }
             else if(jjmarker.state !== -1){
-                var s = jjrollback();
+                jjrollback();
                 jjdoLexAction(lexstate, jjstate);
                 jjstate = 0;
-                accept(s);
                 return false;
             }
             else {
@@ -4669,26 +4806,6 @@ function createParser() {
                 return true;
             }
         }
-    }
-    /**
-     *  input a string
-     *  @api public
-     */
-    function accept(s){
-        for(var i = 0; i < s.length && !jjstop;){
-            jjacceptChar(s.charCodeAt(i)) && i++;
-        }
-    }
-    /**
-     *  tell the compiler that end of file is reached
-     *  @api public
-     */
-    function end(){
-        while(!jjstop && !jjacceptEOF());
-        jjstop = true;
-    }
-    function halt(){
-        jjstop = true;
     }
     function jjdoReduction(jjrulenum){
         var jjnt = jjlhs[jjrulenum];
@@ -4698,87 +4815,87 @@ function createParser() {
             case 1:
                 /* 1: start => top_statement_list */
                 var l = jjsematicS[jjsp - 1];
-                { outputs.astRoot = l; } 
+                if(jjenableBlock){ outputs.astRoot = l; } 
                 break;
             case 2:
                 /* 2: top_statement_list => top_statement_list top_statement */
                 var st = jjsematicS[jjsp - 1];
-                { st !== null && jjtop.add(st); } 
+                if(jjenableBlock){ st !== null && jjtop.add(st); } 
                 break;
             case 3:
                 /* 3: top_statement_list => */
-                { jjtop = new ZNode(AST_TOPLIST); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_TOPLIST); } 
                 break;
             case 7:
                 /* 7: top_statement => "__halt_compiler" "(" ")" ";" */
-                { halt(); } 
+                if(jjenableBlock){ halt(); } 
                 break;
             case 8:
                 /* 8: const_list => const_list "," const_decl */
                 var c = jjsematicS[jjsp - 1];
-                { jjtop.add(c); } 
+                if(jjenableBlock){ jjtop.add(c); } 
                 break;
             case 9:
                 /* 9: const_list => const_decl */
                 var c = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_CONST, c); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_CONST, c); } 
                 break;
             case 10:
                 /* 10: const_decl => <NAME> "=" expr */
                 var cn = jjsematicS[jjsp - 3];
                 var e = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_ASSIGN, [cn, e]); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_ASSIGN, [cn, e]); } 
                 break;
             case 11:
                 /* 11: statement_list => statement_list statement */
                 var st = jjsematicS[jjsp - 1];
-                { st !== null && jjtop.add(st); } 
+                if(jjenableBlock){ st !== null && jjtop.add(st); } 
                 break;
             case 12:
                 /* 12: statement_list => */
-                { jjtop = new ZNode(AST_STATEMENTLIST); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_STATEMENTLIST); } 
                 break;
             case 13:
                 /* 13: statement => "{" statement_list "}" */
                 var l = jjsematicS[jjsp - 2];
-                { jjtop = l; } 
+                if(jjenableBlock){ jjtop = l; } 
                 break;
             case 14:
                 /* 14: statement => ";" */
-                { jjtop = null; } 
+                if(jjenableBlock){ jjtop = null; } 
                 break;
             case 15:
                 /* 15: statement => expr ";" */
                 var e = jjsematicS[jjsp - 2];
-                { jjtop = new ZNode(AST_EXPR_LIST, e); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_EXPR_LIST, e); } 
                 break;
             case 16:
                 /* 16: statement => inline_html_list */
                 var l = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_ECHO, l); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_ECHO, l); } 
                 break;
             case 17:
                 /* 17: statement => "<?=" expr inline_html_list */
                 var e = jjsematicS[jjsp - 2];
                 var l = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_ECHO_EXPR, [e, l]); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_ECHO_EXPR, [e, l]); } 
                 break;
             case 18:
                 /* 18: statement => "echo" echo_expr_list ";" */
                 var e = jjsematicS[jjsp - 2];
-                { jjtop = e; } 
+                if(jjenableBlock){ jjtop = e; } 
                 break;
             case 20:
                 /* 20: statement => "while" "(" expr ")" statement */
                 var cond = jjsematicS[jjsp - 3];
                 var s = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_WHILE, [cond, s]); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_WHILE, [cond, s]); } 
                 break;
             case 21:
                 /* 21: statement => "do" statement "while" "(" expr ")" ";" */
                 var s = jjsematicS[jjsp - 6];
                 var cond = jjsematicS[jjsp - 3];
-                { jjtop = new ZNode(AST_DO_WHILE, [cond, s]); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_DO_WHILE, [cond, s]); } 
                 break;
             case 22:
                 /* 22: statement => "for" "(" for_exprs ";" for_exprs ";" for_exprs ")" statement */
@@ -4786,153 +4903,153 @@ function createParser() {
                 var e2 = jjsematicS[jjsp - 5];
                 var e3 = jjsematicS[jjsp - 3];
                 var s = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_FOR, [e1, e2, e3, s]); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_FOR, [e1, e2, e3, s]); } 
                 break;
             case 23:
                 /* 23: statement => "foreach" "(" expr "as" foreach_as ")" statement */
                 var e = jjsematicS[jjsp - 5];
                 var a = jjsematicS[jjsp - 3];
                 var s = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_FOREACH, [e, a, s]); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_FOREACH, [e, a, s]); } 
                 break;
             case 24:
                 /* 24: statement => "return" optional_expr ";" */
                 var e = jjsematicS[jjsp - 2];
-                { jjtop = new ZNode(AST_RETURN, e); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_RETURN, e); } 
                 break;
             case 25:
                 /* 25: statement => "break" optional_num ";" */
                 var n = jjsematicS[jjsp - 2];
-                { jjtop.type = AST_BREAK; jjtop.add(n); } 
+                if(jjenableBlock){ jjtop.type = AST_BREAK; jjtop.add(n); } 
                 break;
             case 26:
                 /* 26: statement => "continue" optional_num ";" */
                 var n = jjsematicS[jjsp - 2];
-                { jjtop.type = AST_CONTINUE; jjtop.add(n); } 
+                if(jjenableBlock){ jjtop.type = AST_CONTINUE; jjtop.add(n); } 
                 break;
             case 28:
                 /* 28: foreach_as => foreach_variable "=>" foreach_variable */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_DOUBLE_ARROW, [a, b]); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_DOUBLE_ARROW, [a, b]); } 
                 break;
             case 30:
                 /* 30: foreach_variable => "list" "(" array_pair_list ")" */
                 var l = jjsematicS[jjsp - 2];
-                { jjtop = l; } 
+                if(jjenableBlock){ jjtop = l; } 
                 break;
             case 31:
                 /* 31: foreach_variable => "[" array_pair_list "]" */
                 var l = jjsematicS[jjsp - 2];
-                { jjtop = l; } 
+                if(jjenableBlock){ jjtop = l; } 
                 break;
             case 32:
                 /* 32: inline_html_list => inline_html_list <INLINE_HTML> */
                 var h = jjsematicS[jjsp - 1];
-                { jjtop = nodeBetween(jjtop, h, jjtop.val + h.val); jjtop.type = AST_STRING; } 
+                if(jjenableBlock){ jjtop = nodeBetween(jjtop, h, jjtop.val + h.val); jjtop.type = AST_STRING; } 
                 break;
             case 33:
                 /* 33: inline_html_list => <INLINE_HTML> */
-                { jjtop.type = AST_STRING; } 
+                if(jjenableBlock){ jjtop.type = AST_STRING; } 
                 break;
             case 34:
                 /* 34: echo_expr_list => echo_expr_list "," expr */
                 var e = jjsematicS[jjsp - 1];
-                { jjtop.add(e); } 
+                if(jjenableBlock){ jjtop.add(e); } 
                 break;
             case 35:
                 /* 35: echo_expr_list => expr */
                 var e = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_ECHO, e); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_ECHO, e); } 
                 break;
             case 37:
                 /* 37: optional_num => */
-                { jjtop = ZNode.NONE; } 
+                if(jjenableBlock){ jjtop = ZNode.NONE; } 
                 break;
             case 38:
                 /* 38: if_statement => "if" "(" expr ")" statement */
                 var c = jjsematicS[jjsp - 3];
                 var s = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_IF, [c, s, ZNode.NONE]); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_IF, [c, s, ZNode.NONE]); } 
                 break;
             case 39:
                 /* 39: if_statement => "if" "(" expr ")" statement "else" statement */
                 var c = jjsematicS[jjsp - 5];
                 var s = jjsematicS[jjsp - 3];
                 var el = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_IF, [c, s, el]); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_IF, [c, s, el]); } 
                 break;
             case 40:
                 /* 40: for_exprs => */
-                { jjtop = new ZNode(AST_EXPR_LIST); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_EXPR_LIST); } 
                 break;
             case 42:
                 /* 42: non_empty_for_exprs => non_empty_for_exprs "," expr */
                 var e = jjsematicS[jjsp - 1];
-                { jjtop.add(e); } 
+                if(jjenableBlock){ jjtop.add(e); } 
                 break;
             case 43:
                 /* 43: non_empty_for_exprs => expr */
                 var e = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_EXPR_LIST, e); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_EXPR_LIST, e); } 
                 break;
             case 47:
                 /* 47: callable_expr => "(" expr ")" */
                 var e = jjsematicS[jjsp - 2];
-                { jjtop = e; } 
+                if(jjenableBlock){ jjtop = e; } 
                 break;
             case 49:
                 /* 49: dereferencable => "(" expr ")" */
                 var e = jjsematicS[jjsp - 2];
-                { jjtop = e; } 
+                if(jjenableBlock){ jjtop = e; } 
                 break;
             case 51:
                 /* 51: dereferencable_primitive => "[" array_pair_list "]" */
                 var a = jjsematicS[jjsp - 2];
-                { jjtop = a; } 
+                if(jjenableBlock){ jjtop = a; } 
                 break;
             case 52:
                 /* 52: dereferencable_primitive => "array" "(" array_pair_list ")" */
                 var a = jjsematicS[jjsp - 2];
-                { jjtop = a; } 
+                if(jjenableBlock){ jjtop = a; } 
                 break;
             case 53:
                 /* 53: dereferencable_primitive => <STRING> */
-                { jjtop.type = AST_STRING; } 
+                if(jjenableBlock){ jjtop.type = AST_STRING; } 
                 break;
             case 55:
                 /* 55: var => dereferencable arrow_and_property */
                 var v = jjsematicS[jjsp - 2];
                 var pn = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_PROPERTY, [v, pn]); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_PROPERTY, [v, pn]); } 
                 break;
             case 57:
                 /* 57: callable_variable => dereferencable "[" optional_expr "]" */
                 var v = jjsematicS[jjsp - 4];
                 var e = jjsematicS[jjsp - 2];
-                { jjtop = new ZNode(AST_OFFSET, [v, e]); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_OFFSET, [v, e]); } 
                 break;
             case 58:
                 /* 58: callable_variable => dereferencable arrow_and_property "(" argument_list ")" */
                 var v = jjsematicS[jjsp - 5];
                 var pn = jjsematicS[jjsp - 4];
                 var l = jjsematicS[jjsp - 2];
-                { jjtop = new ZNode(AST_METHODCALL, [v, pn, l]); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_METHODCALL, [v, pn, l]); } 
                 break;
             case 59:
                 /* 59: simple_var => <VARIABLE> */
                 var v = jjsematicS[jjsp - 1];
-                { v.type = AST_STRING; jjtop = new ZNode(AST_VARIABLE, v); } 
+                if(jjenableBlock){ v.type = AST_STRING; jjtop = new ZNode(AST_VARIABLE, v); } 
                 break;
             case 60:
                 /* 60: simple_var => "$" "{" expr "}" */
                 var e = jjsematicS[jjsp - 2];
-                { jjtop = new ZNode(AST_VARIABLE, e); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_VARIABLE, e); } 
                 break;
             case 61:
                 /* 61: simple_var => "$" simple_var */
                 var v = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_VARIABLE, v); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_VARIABLE, v); } 
                 break;
             case 62:
                 /* 62: @0 => */
@@ -4946,344 +5063,344 @@ function createParser() {
             case 64:
                 /* 64: arrow_and_property => "->" @0 property_name @1 */
                 var pn = jjsematicS[jjsp - 2];
-                { jjtop = pn; } 
+                if(jjenableBlock){ jjtop = pn; } 
                 break;
             case 65:
                 /* 65: property_name => <NAME> */
                 var n = jjsematicS[jjsp - 1];
-                { jjtop.type = AST_STRING; } 
+                if(jjenableBlock){ jjtop.type = AST_STRING; } 
                 break;
             case 66:
                 /* 66: property_name => "{" expr "}" */
                 var e = jjsematicS[jjsp - 2];
-                { jjtop = e; } 
+                if(jjenableBlock){ jjtop = e; } 
                 break;
             case 68:
                 /* 68: optional_expr => */
-                { jjtop = ZNode.NONE; } 
+                if(jjenableBlock){ jjtop = ZNode.NONE; } 
                 break;
             case 70:
                 /* 70: function_call => <NAME> "(" argument_list ")" */
                 var fn = jjsematicS[jjsp - 4];
                 var l = jjsematicS[jjsp - 2];
-                { fn.type = AST_STRING; jjtop = new ZNode(AST_FUNCTIONCALL, [fn, l]); } 
+                if(jjenableBlock){ fn.type = AST_STRING; jjtop = new ZNode(AST_FUNCTIONCALL, [fn, l]); } 
                 break;
             case 71:
                 /* 71: function_call => callable_expr "(" argument_list ")" */
                 var f = jjsematicS[jjsp - 4];
                 var l = jjsematicS[jjsp - 2];
-                { jjtop = new ZNode(AST_FUNCTIONCALL, [f, l]); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_FUNCTIONCALL, [f, l]); } 
                 break;
             case 72:
                 /* 72: argument_list => */
-                { jjtop = new ZNode(AST_ARGLIST); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_ARGLIST); } 
                 break;
             case 74:
                 /* 74: non_empty_argument_list => non_empty_argument_list "," expr */
                 var e = jjsematicS[jjsp - 1];
-                { jjtop.add(e); } 
+                if(jjenableBlock){ jjtop.add(e); } 
                 break;
             case 75:
                 /* 75: non_empty_argument_list => expr */
                 var e = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_ARGLIST, e); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_ARGLIST, e); } 
                 break;
             case 76:
                 /* 76: expr_without_var => "list" "(" array_pair_list ")" "=" expr */
                 var l = jjsematicS[jjsp - 4];
                 var e = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_ASSIGN, [l, e]); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_ASSIGN, [l, e]); } 
                 break;
             case 77:
                 /* 77: expr_without_var => "[" array_pair_list "]" "=" expr */
                 var l = jjsematicS[jjsp - 4];
                 var e = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_ASSIGN, [l, e]); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_ASSIGN, [l, e]); } 
                 break;
             case 78:
                 /* 78: expr_without_var => var "=" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_ASSIGN, [a, b]); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_ASSIGN, [a, b]); } 
                 break;
             case 79:
                 /* 79: expr_without_var => var "+=" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_ASSIGN, [a, b], OP_PLUS); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_ASSIGN, [a, b], OP_PLUS); } 
                 break;
             case 80:
                 /* 80: expr_without_var => var "-=" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_ASSIGN, [a, b], OP_MINUS); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_ASSIGN, [a, b], OP_MINUS); } 
                 break;
             case 81:
                 /* 81: expr_without_var => var "**=" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_ASSIGN, [a, b], OP_POW); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_ASSIGN, [a, b], OP_POW); } 
                 break;
             case 82:
                 /* 82: expr_without_var => var "*=" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_ASSIGN, [a, b], OP_TIMES); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_ASSIGN, [a, b], OP_TIMES); } 
                 break;
             case 83:
                 /* 83: expr_without_var => var "/=" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_ASSIGN, [a, b], OP_DIVIDE); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_ASSIGN, [a, b], OP_DIVIDE); } 
                 break;
             case 84:
                 /* 84: expr_without_var => var "&=" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_ASSIGN, [a, b], OP_BITAND); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_ASSIGN, [a, b], OP_BITAND); } 
                 break;
             case 85:
                 /* 85: expr_without_var => var "|=" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_ASSIGN, [a, b], OP_BITOR); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_ASSIGN, [a, b], OP_BITOR); } 
                 break;
             case 86:
                 /* 86: expr_without_var => var "^=" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_ASSIGN, [a, b], OP_BITXOR); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_ASSIGN, [a, b], OP_BITXOR); } 
                 break;
             case 87:
                 /* 87: expr_without_var => var ">>=" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_ASSIGN, [a, b], OP_RIGHTSHIFT); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_ASSIGN, [a, b], OP_RIGHTSHIFT); } 
                 break;
             case 88:
                 /* 88: expr_without_var => var "<<=" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_ASSIGN, [a, b], OP_LEFTSHIFT); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_ASSIGN, [a, b], OP_LEFTSHIFT); } 
                 break;
             case 89:
                 /* 89: expr_without_var => var "%=" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_ASSIGN, [a, b], OP_MOD); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_ASSIGN, [a, b], OP_MOD); } 
                 break;
             case 90:
                 /* 90: expr_without_var => expr "?" expr ":" expr */
                 var a = jjsematicS[jjsp - 5];
                 var b = jjsematicS[jjsp - 3];
                 var c = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_CONDITIONALEXPR, [a, b, c]); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_CONDITIONALEXPR, [a, b, c]); } 
                 break;
             case 91:
                 /* 91: expr_without_var => expr "?" ":" expr */
                 var a = jjsematicS[jjsp - 4];
                 var c = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_CONDITIONALEXPR, [a, ZNode.NONE, c]); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_CONDITIONALEXPR, [a, ZNode.NONE, c]); } 
                 break;
             case 92:
                 /* 92: expr_without_var => expr ">" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_BINARYOP, [a, b], OP_GREATERTHAN);        } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_BINARYOP, [a, b], OP_GREATERTHAN);        } 
                 break;
             case 93:
                 /* 93: expr_without_var => expr "<" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_BINARYOP, [a, b], OP_LESSTHAN);           } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_BINARYOP, [a, b], OP_LESSTHAN);           } 
                 break;
             case 94:
                 /* 94: expr_without_var => expr ">=" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_BINARYOP, [a, b], OP_GREATERTHANOREQUAL); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_BINARYOP, [a, b], OP_GREATERTHANOREQUAL); } 
                 break;
             case 95:
                 /* 95: expr_without_var => expr "<=" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_BINARYOP, [a, b], OP_LESSTHANOREQUAL);    } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_BINARYOP, [a, b], OP_LESSTHANOREQUAL);    } 
                 break;
             case 96:
                 /* 96: expr_without_var => expr "==" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_BINARYOP, [a, b], OP_EQUAL);              } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_BINARYOP, [a, b], OP_EQUAL);              } 
                 break;
             case 97:
                 /* 97: expr_without_var => expr "===" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_BINARYOP, [a, b], OP_IDENTICAL);          } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_BINARYOP, [a, b], OP_IDENTICAL);          } 
                 break;
             case 98:
                 /* 98: expr_without_var => expr "!=" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_BINARYOP, [a, b], OP_NOTEQUAL);           } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_BINARYOP, [a, b], OP_NOTEQUAL);           } 
                 break;
             case 99:
                 /* 99: expr_without_var => expr "!==" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_BINARYOP, [a, b], OP_NOTIDENTICAL);       } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_BINARYOP, [a, b], OP_NOTIDENTICAL);       } 
                 break;
             case 100:
                 /* 100: expr_without_var => expr "^" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_BINARYOP, [a, b], OP_BITXOR);      } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_BINARYOP, [a, b], OP_BITXOR);      } 
                 break;
             case 101:
                 /* 101: expr_without_var => expr "|" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_BINARYOP, [a, b], OP_BITOR);       } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_BINARYOP, [a, b], OP_BITOR);       } 
                 break;
             case 102:
                 /* 102: expr_without_var => expr "&" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_BINARYOP, [a, b], OP_BITAND);      } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_BINARYOP, [a, b], OP_BITAND);      } 
                 break;
             case 103:
                 /* 103: expr_without_var => expr ">>" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_BINARYOP, [a, b], OP_RIGHTSHIFT); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_BINARYOP, [a, b], OP_RIGHTSHIFT); } 
                 break;
             case 104:
                 /* 104: expr_without_var => expr "<<" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_BINARYOP, [a, b], OP_LEFTSHIFT);  } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_BINARYOP, [a, b], OP_LEFTSHIFT);  } 
                 break;
             case 105:
                 /* 105: expr_without_var => expr "&&" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_BINARYOP, [a, b], OP_AND); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_BINARYOP, [a, b], OP_AND); } 
                 break;
             case 106:
                 /* 106: expr_without_var => expr "||" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_BINARYOP, [a, b], OP_OR);  } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_BINARYOP, [a, b], OP_OR);  } 
                 break;
             case 107:
                 /* 107: expr_without_var => expr "OR" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_LOGICALOR, [a, b]);         } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_LOGICALOR, [a, b]);         } 
                 break;
             case 108:
                 /* 108: expr_without_var => expr "XOR" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_BINARYOP, [a, b], OP_XOR); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_BINARYOP, [a, b], OP_XOR); } 
                 break;
             case 109:
                 /* 109: expr_without_var => expr "AND" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_LOGICALAND, [a, b]);       } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_LOGICALAND, [a, b]);       } 
                 break;
             case 110:
                 /* 110: expr_without_var => expr "+" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_BINARYOP, [a, b], OP_PLUS);   } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_BINARYOP, [a, b], OP_PLUS);   } 
                 break;
             case 111:
                 /* 111: expr_without_var => expr "-" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_BINARYOP, [a, b], OP_MINUS);  } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_BINARYOP, [a, b], OP_MINUS);  } 
                 break;
             case 112:
                 /* 112: expr_without_var => expr "*" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_BINARYOP, [a, b], OP_TIMES);  } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_BINARYOP, [a, b], OP_TIMES);  } 
                 break;
             case 113:
                 /* 113: expr_without_var => expr "/" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_BINARYOP, [a, b], OP_DIVIDE); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_BINARYOP, [a, b], OP_DIVIDE); } 
                 break;
             case 114:
                 /* 114: expr_without_var => expr "%" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_BINARYOP, [a, b], OP_MOD);    } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_BINARYOP, [a, b], OP_MOD);    } 
                 break;
             case 115:
                 /* 115: expr_without_var => expr "**" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_BINARYOP, [a, b], OP_POW);   } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_BINARYOP, [a, b], OP_POW);   } 
                 break;
             case 116:
                 /* 116: expr_without_var => expr "." expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_BINARYOP, [a, b], OP_CONCAT); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_BINARYOP, [a, b], OP_CONCAT); } 
                 break;
             case 117:
                 /* 117: expr_without_var => "(" expr ")" */
                 var a = jjsematicS[jjsp - 2];
-                { jjtop = a; } 
+                if(jjenableBlock){ jjtop = a; } 
                 break;
             case 118:
                 /* 118: expr_without_var => "+" expr */
                 var a = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_UNARYOP, a, OP_POSITIVE); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_UNARYOP, a, OP_POSITIVE); } 
                 break;
             case 119:
                 /* 119: expr_without_var => "-" expr */
                 var a = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_UNARYOP, a, OP_NEGATIVE); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_UNARYOP, a, OP_NEGATIVE); } 
                 break;
             case 120:
                 /* 120: expr_without_var => "!" expr */
                 var a = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_UNARYOP, a, OP_NOT);    } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_UNARYOP, a, OP_NOT);    } 
                 break;
             case 121:
                 /* 121: expr_without_var => "~" expr */
                 var a = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_UNARYOP, a, OP_BITNOT); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_UNARYOP, a, OP_BITNOT); } 
                 break;
             case 122:
                 /* 122: expr_without_var => "print" expr */
                 var a = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_PRINT, a); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_PRINT, a); } 
                 break;
             case 123:
                 /* 123: expr_without_var => "++" var */
                 var a = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_POSTINC, a);   } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_POSTINC, a);   } 
                 break;
             case 124:
                 /* 124: expr_without_var => "--" var */
                 var a = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_POSTDEC, a);  } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_POSTDEC, a);  } 
                 break;
             case 125:
                 /* 125: expr_without_var => var "++" */
                 var a = jjsematicS[jjsp - 2];
-                { jjtop = new ZNode(AST_SUFFIXINC, a); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_SUFFIXINC, a); } 
                 break;
             case 126:
                 /* 126: expr_without_var => var "--" */
                 var a = jjsematicS[jjsp - 2];
-                { jjtop = new ZNode(AST_SUFFIXDEC, a); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_SUFFIXDEC, a); } 
                 break;
             case 127:
                 /* 127: @2 => */
@@ -5297,73 +5414,73 @@ function createParser() {
             case 129:
                 /* 129: expr_without_var => "`" @2 quote_list "`" @3 */
                 var l = jjsematicS[jjsp - 3];
-                { jjtop = l; } 
+                if(jjenableBlock){ jjtop = l; } 
                 break;
             case 131:
                 /* 131: expr_without_var => "function" "(" parameter_list ")" lexical_vars "{" statement_list "}" */
                 var l = jjsematicS[jjsp - 6];
                 var ll = jjsematicS[jjsp - 4];
                 var b = jjsematicS[jjsp - 2];
-                { jjtop = new ZNode(AST_ANONYFUNCTION, [l, ll, b]); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_ANONYFUNCTION, [l, ll, b]); } 
                 break;
             case 133:
                 /* 133: function_declaration_statement => "function" <NAME> "(" parameter_list ")" "{" statement_list "}" */
                 var n = jjsematicS[jjsp - 7];
                 var l = jjsematicS[jjsp - 5];
                 var b = jjsematicS[jjsp - 2];
-                { n.type = AST_STRING; jjtop = new ZNode(AST_FUNCTION, [n, l, b]); } 
+                if(jjenableBlock){ n.type = AST_STRING; jjtop = new ZNode(AST_FUNCTION, [n, l, b]); } 
                 break;
             case 134:
                 /* 134: parameter_list => */
-                { jjtop = new ZNode(AST_PARAMLIST); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_PARAMLIST); } 
                 break;
             case 136:
                 /* 136: non_empty_parameter_list => non_empty_parameter_list "," parameter */
                 var p = jjsematicS[jjsp - 1];
-                { jjtop.add(p); } 
+                if(jjenableBlock){ jjtop.add(p); } 
                 break;
             case 137:
                 /* 137: non_empty_parameter_list => parameter */
                 var p = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_PARAMLIST, p); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_PARAMLIST, p); } 
                 break;
             case 138:
                 /* 138: parameter => <VARIABLE> */
-                { jjtop.type = AST_STRING; } 
+                if(jjenableBlock){ jjtop.type = AST_STRING; } 
                 break;
             case 139:
                 /* 139: lexical_vars => */
-                { jjtop = new ZNode(AST_LEXICALVARLIST); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_LEXICALVARLIST); } 
                 break;
             case 140:
                 /* 140: lexical_vars => "use" "(" lexical_var_list ")" */
                 var l = jjsematicS[jjsp - 2];
-                { jjtop = l; } 
+                if(jjenableBlock){ jjtop = l; } 
                 break;
             case 141:
                 /* 141: lexical_var_list => lexical_var_list "," <VARIABLE> */
                 var v = jjsematicS[jjsp - 1];
-                { v.type = AST_STRING; jjtop.add(v); } 
+                if(jjenableBlock){ v.type = AST_STRING; jjtop.add(v); } 
                 break;
             case 142:
                 /* 142: lexical_var_list => <VARIABLE> */
                 var v = jjsematicS[jjsp - 1];
-                { v.type = AST_STRING; jjtop = new ZNode(AST_LEXICALVARLIST, v); } 
+                if(jjenableBlock){ v.type = AST_STRING; jjtop = new ZNode(AST_LEXICALVARLIST, v); } 
                 break;
             case 143:
                 /* 143: primitive => <INT> */
                 var s = jjsematicS[jjsp - 1];
-                { s.type = AST_INTEGER; jjtop = s; } 
+                if(jjenableBlock){ s.type = AST_INTEGER; jjtop = s; } 
                 break;
             case 144:
                 /* 144: primitive => <DECIMAL> */
                 var s = jjsematicS[jjsp - 1];
-                { s.type = AST_FLOAT; jjtop = s; } 
+                if(jjenableBlock){ s.type = AST_FLOAT; jjtop = s; } 
                 break;
             case 145:
                 /* 145: primitive => <NAME> */
                 var s = jjsematicS[jjsp - 1];
-                { s.type = AST_CONST; jjtop = s; } 
+                if(jjenableBlock){ s.type = AST_CONST; jjtop = s; } 
                 break;
             case 146:
                 /* 146: @4 => */
@@ -5377,7 +5494,7 @@ function createParser() {
             case 148:
                 /* 148: primitive => """ @4 quote_list """ @5 */
                 var l = jjsematicS[jjsp - 3];
-                { jjtop = l; } 
+                if(jjenableBlock){ jjtop = l; } 
                 break;
             case 149:
                 /* 149: @6 => */
@@ -5387,7 +5504,7 @@ function createParser() {
             case 150:
                 /* 150: @7 => */
                 var h = jjsematicS[jjsp - 2];
-                { heredocStart.push(h.val); } 
+                if(jjenableBlock){ heredocStart.push(h.val); } 
                 break;
             case 151:
                 /* 151: @8 => */
@@ -5399,7 +5516,7 @@ function createParser() {
                 /* 152: primitive => <HEREDOC_HEADER> @6 @7 heredoc_list <END_OF_HEREDOC> @8 */
                 var h = jjsematicS[jjsp - 6];
                 var l = jjsematicS[jjsp - 3];
-                { jjtop = l; } 
+                if(jjenableBlock){ jjtop = l; } 
                 break;
             case 153:
                 /* 153: @9 => */
@@ -5409,7 +5526,7 @@ function createParser() {
             case 154:
                 /* 154: @10 => */
                 var h = jjsematicS[jjsp - 2];
-                { heredocStart.push(h.val); } 
+                if(jjenableBlock){ heredocStart.push(h.val); } 
                 break;
             case 155:
                 /* 155: @11 => */
@@ -5421,21 +5538,21 @@ function createParser() {
                 /* 156: primitive => <NOWDOC_HEADER> @9 @10 heredoc_list <END_OF_HEREDOC> @11 */
                 var h = jjsematicS[jjsp - 6];
                 var l = jjsematicS[jjsp - 3];
-                { jjtop = l; } 
+                if(jjenableBlock){ jjtop = l; } 
                 break;
             case 158:
                 /* 158: heredoc_list => heredoc_list heredoc_item */
                 var i = jjsematicS[jjsp - 1];
-                { i !== null && jjtop.add(i); } 
+                if(jjenableBlock){ i !== null && jjtop.add(i); } 
                 break;
             case 159:
                 /* 159: heredoc_list => */
-                { jjtop = new ZNode(AST_STRING_LIST); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_STRING_LIST); } 
                 break;
             case 160:
                 /* 160: heredoc_item => <HEREDOC_END_LABEL> */
                 var n = jjsematicS[jjsp - 1];
-                { 
+                if(jjenableBlock){ 
         if(n.val.trim() === heredocStart[heredocStart.length - 1]){ 
             jjtokenQueue.push(new Token(90, null, -1, 0, 0, 0)); 
             heredocStart.pop(); 
@@ -5449,25 +5566,25 @@ function createParser() {
             case 162:
                 /* 162: quote_list => quote_list encaps */
                 var e = jjsematicS[jjsp - 1];
-                { jjtop.add(e); } 
+                if(jjenableBlock){ jjtop.add(e); } 
                 break;
             case 163:
                 /* 163: quote_list => */
-                { jjtop = new ZNode(AST_STRING_LIST); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_STRING_LIST); } 
                 break;
             case 164:
                 /* 164: encaps => <ANY_CONTENT> */
-                { jjtop.type = AST_STRING; } 
+                if(jjenableBlock){ jjtop.type = AST_STRING; } 
                 break;
             case 165:
                 /* 165: encaps => <VARIABLE_IN_STRING> */
                 var v = jjsematicS[jjsp - 1];
-                { v.type = AST_STRING; jjtop = new ZNode(AST_VARIABLE, v); } 
+                if(jjenableBlock){ v.type = AST_STRING; jjtop = new ZNode(AST_VARIABLE, v); } 
                 break;
             case 166:
                 /* 166: encaps => <PROPERTY_IN_STRING> */
                 var pn = jjsematicS[jjsp - 1];
-                { 
+                if(jjenableBlock){ 
         pn.type = AST_STRING; 
         jjtop = new ZNode(AST_PROPERTY, [new ZNode(AST_VARIABLE, pn), new ZNode(AST_STRING, null, propertyName, pn)]); 
     } 
@@ -5487,7 +5604,7 @@ function createParser() {
                 /* 169: encaps => <OFFSET_IN_STRING> @12 expr "]" @13 */
                 var v = jjsematicS[jjsp - 5];
                 var e = jjsematicS[jjsp - 3];
-                {
+                if(jjenableBlock){
         v.type = AST_STRING;
         jjtop = new ZNode(AST_OFFSET, [new ZNode(AST_VARIABLE, v), e]); 
     } 
@@ -5504,32 +5621,32 @@ function createParser() {
             case 172:
                 /* 172: encaps => "${" @14 expr "}" @15 */
                 var e = jjsematicS[jjsp - 3];
-                { jjtop = e; } 
+                if(jjenableBlock){ jjtop = e; } 
                 break;
             case 174:
                 /* 174: non_empty_array_pair_list => non_empty_array_pair_list "," array_pair */
                 var a = jjsematicS[jjsp - 1];
-                { jjtop.add(a); } 
+                if(jjenableBlock){ jjtop.add(a); } 
                 break;
             case 175:
                 /* 175: non_empty_array_pair_list => non_empty_array_pair_list "," */
                 var a = jjsematicS[jjsp - 1];
-                { a.type = AST_NONE; jjtop.add(a); } 
+                if(jjenableBlock){ a.type = AST_NONE; jjtop.add(a); } 
                 break;
             case 176:
                 /* 176: non_empty_array_pair_list => possible_array_pair */
                 var a = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_ARRAY, a); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_ARRAY, a); } 
                 break;
             case 178:
                 /* 178: possible_array_pair => */
-                { jjtop = ZNode.NONE; } 
+                if(jjenableBlock){ jjtop = ZNode.NONE; } 
                 break;
             case 180:
                 /* 180: array_pair => expr "=>" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = new ZNode(AST_ARRAYPAIR, [a, b]); } 
+                if(jjenableBlock){ jjtop = new ZNode(AST_ARRAYPAIR, [a, b]); } 
                 break;
         }
         jjlrState.length -= jjruleLen[jjrulenum];

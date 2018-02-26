@@ -20,7 +20,9 @@ module.exports = function (args){
         test: null,
         help: false,
         detailedTime: false,
-        dfa: false
+        dfa: false,
+        showlah: false,
+        showFullItemsets: false
     };
     out:
     while(args.length > 0){
@@ -48,6 +50,14 @@ module.exports = function (args){
             case '--dfa':
                 args.shift();
                 ret.dfa = true;
+                break;
+            case '--show-lah':
+                args.shift();
+                ret.showlah = true;
+                break;
+            case '--show-full-itemsets':
+                args.shift();
+                ret.showFullItemsets = true;
                 break;
             default:
                 if(ret.input){

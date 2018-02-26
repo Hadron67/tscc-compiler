@@ -13,7 +13,14 @@ export interface IParseTable{
     lookupGoto(state: number, nt: number): Item;
 };
 
-export function printParseTable(os: OutputStream, cela: IParseTable, doneList: List<ItemSet>, escapes: EscapeDef[]){
+export function printParseTable(
+    os: OutputStream, 
+    cela: IParseTable, 
+    doneList: List<ItemSet>, 
+    showlah: boolean, 
+    showFullItemsets: boolean,
+    escapes: EscapeDef[]
+){
     var g = cela.g;
     var tokenCount = g.tokenCount;
     var ntCount = g.nts.length;
@@ -26,7 +33,7 @@ export function printParseTable(os: OutputStream, cela: IParseTable, doneList: L
         var defred = '';
         os.writeln(`state ${i}`);        
         set.forEach(function(item){
-            os.writeln(tab + item.toString({ showTrailer: false }));
+            (showFullItemsets || item.isKernel) && os.writeln(tab + item.toString({ showlah }));
         });
         if(cela.defred[i] !== -1){
             os.writeln(`${tab}default action: reduce with rule ${cela.defred[i]}`);
