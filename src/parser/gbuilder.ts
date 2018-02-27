@@ -44,6 +44,7 @@ export interface GBuilder{
     setOpt(name: JNode, value: JNode);
     setOutput(n: JNode);
     setHeader(h: JNode);
+    setTokenHook(arg: JNode, body: JNode);
     setExtraArg(a: JNode);
     setType(t: JNode);
     setInit(arg: JNode, body: JNode);
@@ -102,6 +103,7 @@ export function createFileBuilder(ctx: Context): GBuilder{
         setOutput,
         setHeader,
         setExtraArg,
+        setTokenHook,
         setType,
         setInit,
         setEpilogue,
@@ -276,6 +278,13 @@ export function createFileBuilder(ctx: Context): GBuilder{
         }
         file.initArg = arg;
         file.initBody = body;
+    }
+    function setTokenHook(arg: JNode, body: JNode){
+        if(file.tokenHookArg !== null){
+            redefineWarn('redefine of token hook block', file.tokenHookArg, arg);
+        }
+        file.tokenHookArg = arg;
+        file.tokenHookBody = body;
     }
     function incPr(){
         _pr++;

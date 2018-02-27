@@ -98,8 +98,8 @@ function unescape(s: string): string{
     UNICODE = < ['x', 'u', 'X', 'U'] <HEX>+ >
     
     < ["\n", "\t", " ", "\r"]+ >: [='']
-    < "/*" ([^"*", "/"]|[^"*"]"/"|"*"[^"/"])* "*/" >: [='']
-    < ("//"|'#') [^"\n"]* >: [='']
+    < "/*" ([^"*", "/"]|[^"*"]"/"|"*"[^"/"])* "*/" >:[='']
+    < ("//"|'#') [^"\n"]* >:[='']
 
     < NAME: <ID> >: { $$ = nodeFromToken($token); }
     < STRING: 
@@ -123,8 +123,9 @@ function unescape(s: string): string{
     < INIT_DIR: '%init' >
     < OUTPUT_DIR: '%output' >
     < IMPORT_DIR: '%import' >
+    < TOKEN_HOOK_DIR: '%token_hook' >
     < LEAST_DIR: '%least' >
-    < ALWAYS: '%always' >
+    < ALWAYS_DIR: '%always' >
     < GT: ">" >
     < LT: "<" >
     < BRA: "(" >
@@ -188,6 +189,7 @@ option:
 |   '%init' args = block b = block { gb.setInit(args, b); }
 |   '%output' op = <STRING> { gb.setOutput(op); }
 |   '%token' tokenDefs
+|   '%token_hook' '(' arg = <NAME> ')' b = block { gb.setTokenHook(arg, b); }
 ;
 tokenDefs: 
     tokenDefs '<' t = <NAME> '>' { gb.defToken(t, null); }

@@ -14,6 +14,8 @@ export class File{
     
     prefix: string = 'jj';
     header: JNode[] = [];
+    tokenHookArg: JNode = null;
+    tokenHookBody: JNode = null;
     output: JNode = null;
     extraArgs: JNode = null;
     initArg: JNode = null;

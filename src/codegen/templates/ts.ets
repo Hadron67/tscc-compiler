@@ -267,6 +267,15 @@ function tokenToString(tk){
     return <%= prefix %>tokenAlias[tk] === null ? "<" + <%= prefix %>tokenNames[tk] + ">" : '"' + <%= prefix %>tokenAlias[tk] + '"';
 }
 <% } %>
+// Token kinds
+<%= ts('enum TokenKind {', 'var TokenKind = {') %>
+<% var i = 0; 
+echoLine('');
+for(var tdef of input.file.grammar.tokens){
+    echoLine('    ' + ts(`${tdef.sym} = ${i}`, `${tdef.sym} : ${i}`) + ',');
+    i++;
+} %>
+};
 <% if(ists){ %>
 class Token {
     constructor(
@@ -495,7 +504,7 @@ function create<%= className %>()<%= ts(': ' + className) %> {
             isEof: <%= lambda('()', 'i >= s.length') %>,
             backup: <%= lambda('t', 'i -= t.length') %>
         });
-        while(nextToken().id !== 0);
+        while(!<%= prefix %>stop && nextToken().id !== 0);
     }
     /**
      *  tell the compiler that end of file is reached
@@ -519,6 +528,11 @@ function create<%= className %>()<%= ts(': ' + className) %> {
             sematicS: <%= prefix %>sematicS
         };
     }
+<% if(input.file.tokenHookArg){ %>
+    function <%= prefix %>tokenHook(<%= input.file.tokenHookArg.val + ts(': Token')%>)<%= ts(': boolean') %>{
+        <%= input.file.tokenHookBody.val %>
+    }
+<% } %>
     /**
      *  set 
      */
@@ -535,8 +549,15 @@ function create<%= className %>()<%= ts(': ' + className) %> {
         <%= prefix %>token.endLine = <%= prefix %>line;
         <%= prefix %>token.endColumn = <%= prefix %>column - 1;
 
+<% if(input.file.tokenHookArg){ %>
+        if(!<%= prefix %>tokenHook(<%= prefix %>token)){
+            <%= prefix %>tokenQueue.push(<%= prefix %>token);
+            <%= prefix %>tokenEmitted = true;
+        }
+<% } else { %>
         <%= prefix %>tokenQueue.push(<%= prefix %>token);
         <%= prefix %>tokenEmitted = true;
+<% } %>
 
         <%= prefix %>matched = '';
         <%= prefix %>tline = <%= prefix %>line;

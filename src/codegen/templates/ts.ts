@@ -411,6 +411,17 @@ function lambda(arg: string, body: string): string{
     echoLine("tokenAlias[tk] + '\"';");
     echo("}");
     } 
+    echoLine("");
+    echoLine("// Token kinds");
+    echo(ts('enum TokenKind {', 'var TokenKind = {') );
+    var i = 0; 
+echoLine('');
+for(var tdef of input.file.grammar.tokens){
+    echoLine('    ' + ts(`${tdef.sym} = ${i}`, `${tdef.sym} : ${i}`) + ',');
+    i++;
+} 
+    echoLine("");
+    echo("};");
     if(ists){ 
     echoLine("");
     echoLine("class Token {");
@@ -838,7 +849,9 @@ function lambda(arg: string, body: string): string{
     echo(lambda('t', 'i -= t.length') );
     echoLine("");
     echoLine("        });");
-    echoLine("        while(nextToken().id !== 0);");
+    echo("        while(!");
+    echo(prefix );
+    echoLine("stop && nextToken().id !== 0);");
     echoLine("    }");
     echoLine("    /**");
     echoLine("     *  tell the compiler that end of file is reached");
@@ -879,7 +892,22 @@ function lambda(arg: string, body: string): string{
     echo(prefix );
     echoLine("sematicS");
     echoLine("        };");
-    echoLine("    }");
+    echo("    }");
+    if(input.file.tokenHookArg){ 
+    echoLine("");
+    echo("    function ");
+    echo(prefix );
+    echo("tokenHook(");
+    echo(input.file.tokenHookArg.val + ts(': Token'));
+    echo(")");
+    echo(ts(': boolean') );
+    echoLine("{");
+    echo("        ");
+    echo(input.file.tokenHookBody.val );
+    echoLine("");
+    echo("    }");
+    } 
+    echoLine("");
     echoLine("    /**");
     echoLine("     *  set ");
     echoLine("     */");
@@ -935,6 +963,23 @@ function lambda(arg: string, body: string): string{
     echo("token.endColumn = ");
     echo(prefix );
     echoLine("column - 1;");
+    if(input.file.tokenHookArg){ 
+    echoLine("");
+    echo("        if(!");
+    echo(prefix );
+    echo("tokenHook(");
+    echo(prefix );
+    echoLine("token)){");
+    echo("            ");
+    echo(prefix );
+    echo("tokenQueue.push(");
+    echo(prefix );
+    echoLine("token);");
+    echo("            ");
+    echo(prefix );
+    echoLine("tokenEmitted = true;");
+    echo("        }");
+    } else { 
     echoLine("");
     echo("        ");
     echo(prefix );
@@ -943,7 +988,9 @@ function lambda(arg: string, body: string): string{
     echoLine("token);");
     echo("        ");
     echo(prefix );
-    echoLine("tokenEmitted = true;");
+    echo("tokenEmitted = true;");
+    } 
+    echoLine("");
     echoLine("");
     echo("        ");
     echo(prefix );

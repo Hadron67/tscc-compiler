@@ -56,7 +56,7 @@ export function markPosition(pos: Position, lines: string[], marker: string = '^
         ret += lines[line] + '\n';
         ret += repeat(' ', col);
         let length = width(lines[line]);
-        while(line <= pos.endLine && col <= pos.endColumn){
+        while(line < pos.endLine || col <= pos.endColumn){
             ret += marker;
             if(col++ >= length){
                 col = 0;
