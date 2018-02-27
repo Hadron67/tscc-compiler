@@ -735,6 +735,10 @@ function create<%= className %>()<%= ts(': ' + className) %> {
                     <%= prefix %>emit('lexicalerror', String.fromCharCode(ccode), <%= prefix %>line, <%= prefix %>column);
                     // force consume
                     <%= prefix %>consume(ccode);
+                    // emit an error token
+                    <%= prefix %>prepareToken(1);
+                    <%= prefix %>tokenQueue.length > 0 && <%= prefix %>acceptToken(null);
+                    <%= prefix %>state = 0;
                 }
             }
             else {
@@ -769,6 +773,9 @@ function create<%= className %>()<%= ts(': ' + className) %> {
             }
             else {
                 <%= prefix %>emit('lexicalerror', '', <%= prefix %>line, <%= prefix %>column);
+                <%= prefix %>prepareToken(1);
+                <%= prefix %>tokenQueue.length > 0 && <%= prefix %>acceptToken(null);
+                <%= prefix %>state = 0;
                 return true;
             }
         }

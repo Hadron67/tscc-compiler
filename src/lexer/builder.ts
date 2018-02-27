@@ -323,7 +323,7 @@ export function createLexBuilder<T>(ctx: Context): LexBuilder<T>{
         }
         if(from.val.charCodeAt(0) > to.val.charCodeAt(0)){
             singlePosErr(
-                `left hand side must be larger than right hand side in wild card character (got '${from.val}' > '${to.val}')`
+                `character code of right hand side must be larger than left hand side in wild card character (got '${from.val}' > '${to.val}')`
             , to);
             return;
         }

@@ -39,6 +39,7 @@ export interface GBuilder{
     getTokenID(t: JNode);
     getTokenByAlias(a: JNode): TokenDef;
     getTokenByName(t: JNode): TokenDef;
+    touchToken(t: JNode, type: TokenRefType);
     defineTokenPrec(tid: JNode, assoc: Assoc, type: TokenRefType);
     setLineTerminator(eol: string);
     setOpt(name: JNode, value: JNode);
@@ -91,6 +92,7 @@ export function createFileBuilder(ctx: Context): GBuilder{
     _requiringNt = new CoroutineMgr<NtDef>(s => _ntTable[s]);
     _requiringToken = new CoroutineMgr<TokenDef>(s => _tokenNameTable[s]);
     defToken(newNode('EOF'), null);
+    defToken(newNode('ERROR'), null);
 
     return {
         defToken,
@@ -98,6 +100,7 @@ export function createFileBuilder(ctx: Context): GBuilder{
         getTokenByAlias,
         getTokenByName,
         defineTokenPrec,
+        touchToken,
         setLineTerminator,
         setOpt,
         setOutput,
@@ -243,6 +246,20 @@ export function createFileBuilder(ctx: Context): GBuilder{
                 pr: _pr,
                 pos: tid
             };
+        }
+    }
+    function touchToken(t: JNode, type: TokenRefType){
+        if(type === TokenRefType.TOKEN){
+            let tk = getTokenByName(t);
+            if(tk !== null){
+                tk.used = true;
+            }
+        }
+        else if(type === TokenRefType.STRING){
+            let tk = getTokenByAlias(t);
+            if(tk !== null){
+                tk.used = true;
+            }
         }
     }
     function setLineTerminator(eol: string){
@@ -463,6 +480,7 @@ export function createFileBuilder(ctx: Context): GBuilder{
     function build(){
         grammar.tokenCount = grammar.tokens.length;
         grammar.tokens[0].used = true;// end of file
+        grammar.tokens[1].used = true;// error token
         grammar.nts[0].used = true;// (accept)
 
         ctx.beginTime('build grammar');

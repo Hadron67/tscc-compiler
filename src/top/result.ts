@@ -12,7 +12,7 @@ import { Context } from '../util/context';
 import { JsccError, JsccWarning, ErrPrintOption } from '../util/E';
 import { CompressedPTable } from '../grammar/ptable-compress';
 import { TemplateInput } from '../codegen/def';
-import { parse } from '../parser/parser';
+import { yyparse } from '../parser/parser';
 import { templateExists, listTemplates, FileCreator, generateCode } from '../codegen/template';
 import { markPosition } from '../parser/node';
 import { DFATable } from '../lexer/dfa-table';
@@ -106,7 +106,7 @@ export function createContext(): TSCCContext{
     }
     function compile(source: string, fname: string){
         reset();
-        var f = parse(ctx, source);
+        var f = yyparse(ctx, source);
         let lines = source.split(f.eol);
         for(let cb of needLinecbs){
             cb(ctx, lines);

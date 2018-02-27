@@ -12,6 +12,10 @@ import { LexAction } from '../lexer/action';
 import { Position, JNode, newNode, markPosition, nodeBetween } from './node';
 import { File } from './file';
 
+interface ParserConfig {
+    skipComment: boolean;
+};
+
 function nodeFromToken(t: Token): JNode{
     return {
         val: t.val,
@@ -80,11 +84,17 @@ function unescape(s: string): string{
     let ruleLhs: JNode;
     let least: boolean;
     let always: boolean;
+    let config: ParserConfig;
 }
 
-%init {ctx1: Context, b: GBuilder}{
+%init {ctx1: Context, b: GBuilder, config1: ParserConfig}{
     gb = b;
     ctx = ctx1;
+    config = config1;
+}
+
+%token_hook (token){
+    return config.skipComment && token.id === TokenKind.COMMENT;
 }
 
 %lex {
@@ -98,8 +108,8 @@ function unescape(s: string): string{
     UNICODE = < ['x', 'u', 'X', 'U'] <HEX>+ >
     
     < ["\n", "\t", " ", "\r"]+ >: [='']
-    < "/*" ([^"*", "/"]|[^"*"]"/"|"*"[^"/"])* "*/" >:[='']
-    < ("//"|'#') [^"\n"]* >:[='']
+    < COMMENT: "/*" ([^"*", "/"]|[^"*"]"/"|"*"[^"/"])* "*/" >
+    < COMMENT: ("//"|'#') [^"\n"]* >
 
     < NAME: <ID> >: { $$ = nodeFromToken($token); }
     < STRING: 
@@ -126,6 +136,7 @@ function unescape(s: string): string{
     < TOKEN_HOOK_DIR: '%token_hook' >
     < LEAST_DIR: '%least' >
     < ALWAYS_DIR: '%always' >
+    < TOUCH_DIR: '%touch' >
     < GT: ">" >
     < LT: "<" >
     < BRA: "(" >
@@ -145,6 +156,8 @@ function unescape(s: string): string{
     < WEDGE: "^" >
     < COMMA: "," >
 }
+
+%touch <COMMENT>
 
 %lex <IN_BLOCK> {
     < ANY_CODE: ( [^"{", "}", "\\"] | "\\" [^"{", "}"] )+ >: { $$ = newNode($token.val); }
@@ -190,10 +203,15 @@ option:
 |   '%output' op = <STRING> { gb.setOutput(op); }
 |   '%token' tokenDefs
 |   '%token_hook' '(' arg = <NAME> ')' b = block { gb.setTokenHook(arg, b); }
+|   '%touch' touchTokenList
 ;
 tokenDefs: 
     tokenDefs '<' t = <NAME> '>' { gb.defToken(t, null); }
 |   '<' t = <NAME> '>' { gb.defToken(t, null); }
+;
+touchTokenList:
+    touchTokenList t = tokenRef { gb.touchToken(t, t.ext); }
+|   t = tokenRef { gb.touchToken(t, t.ext); }
 ;
 epilogue:
     /* empty */
@@ -342,7 +360,7 @@ innerBlockItem:
     { $$ = newNode(''); $$.val = '{' + b.val + '}'; }
 ;
 
-actionBlock: 
+actionBlock:
     always open = "{" [+IN_ACTION_BLOCK] t = { lexact.beginBlock(open, always); }
     innerActionBlock close = "}" [-] { lexact.endBlock(close); }
 ;
@@ -365,30 +383,27 @@ function charPosition(c: string, line: number, column: number): Position{
         endColumn: c.charCodeAt(0) > 0xff ? column + 1 : column
     }
 }
-export function parse(ctx: Context, source: string): File{
+export function yyparse(ctx: Context, source: string): File{
     let parser = createParser();
     let err = false;
-    parser.on('lexicalerror', (c, line, column) => {
-        ctx.requireLines((ctx, lines) => {
-            let msg2 = `unexpected character ${c}`;
-            msg2 += ' ' + markPosition(charPosition(c, line, column), lines);
-            ctx.err(new JsccError(msg2, 'Lexical error'));
-        });
-        // ctx.err(new CompilationError(msg, line));
-        parser.halt();
-        err = true;
-    });
     parser.on('syntaxerror', (msg, token) => {
-        // ctx.err(new CompilationError(msg, token.startLine));
-        ctx.requireLines((ctx, lines) => {
-            let msg2 = markPosition(token, lines) + '\n' + msg;
-            ctx.err(new JsccError(msg2, 'Syntax error'));
-        });
+        if(token.id === TokenKind.ERROR){
+            ctx.requireLines((ctx, lines) => {
+                let msg2 = 'unexpected illegal token ' + markPosition(token, lines) + '\n';
+                ctx.err(new JsccError(msg2, 'Lexical error'));
+            });
+        }
+        else {
+            ctx.requireLines((ctx, lines) => {
+                let msg2 = markPosition(token, lines) + '\n' + msg;
+                ctx.err(new JsccError(msg2, 'Syntax error'));
+            });
+        }
         parser.halt();
         err = true;
     });
     let gb = createFileBuilder(ctx);
-    parser.init(ctx, gb);
+    parser.init(ctx, gb, { skipComment: true });
 
     ctx.beginTime('parse grammar file');
     parser.accept(source);
