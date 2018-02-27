@@ -996,9 +996,6 @@ for(var tdef of input.file.grammar.tokens){
     echo("tokenQueue.push(");
     echo(prefix );
     echoLine("token);");
-    echo("            ");
-    echo(prefix );
-    echoLine("tokenEmitted = true;");
     echo("        }");
     } else { 
     echoLine("");
@@ -1006,13 +1003,13 @@ for(var tdef of input.file.grammar.tokens){
     echo(prefix );
     echo("tokenQueue.push(");
     echo(prefix );
-    echoLine("token);");
-    echo("        ");
-    echo(prefix );
-    echo("tokenEmitted = true;");
+    echo("token);");
     } 
     echoLine("");
     echoLine("");
+    echo("        ");
+    echo(prefix );
+    echoLine("tokenEmitted = true;");
     echo("        ");
     echo(prefix );
     echoLine("matched = '';");

@@ -1,4 +1,3 @@
-/// <reference path="./src/jscc.js" />
 var $ = function(){
     'use strict';
     //region funcs
@@ -82,7 +81,7 @@ var $ = function(){
 
     var editor = CodeMirror.fromTextArea($input.el,{
         lineNumbers: true,
-        mode: 'jscc'
+        mode: 'tscc'
     });
 
     function echo(s){

@@ -1,9 +1,11 @@
 var tscc = require('../../lib/tscc.js');
 var TokenType = tscc.highlight.TokenType;
 var s = tscc.highlight.highlightString(`
+/* hkm */
+//soor
 %token <a>
 %%
-S : <a>;
+S : <a> { $$ = 4; };
 %%
 `, function(cl){
     switch(cl){

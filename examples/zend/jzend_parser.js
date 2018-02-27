@@ -1980,56 +1980,56 @@ function jjfindUnicodeClass(uc, c){
     tokens that a lexical dfa state can return
 */
 var jjlexTokens0 = [ 
-        -1,     1,     1,     1,     1,     2,     1,     1,     1,    -1,
+        -1,     2,     2,     2,     2,     3,     2,     2,     2,    -1,
         -1,    -1,
 ]; 
 var jjlexTokens1 = [ 
-        -1,    -1,    -1,    -1,    65,     7,    -1,     9,    19,    40,
-        -1,    52,    53,    14,    12,    56,    13,    83,    15,     5,
-        18,    59,    21,    28,    20,    17,     3,     3,     3,     3,
-        54,    55,    42,     3,     8,     3,     3,     3,     3,     3,
-         3,     3,     3,     3,     3,     3,     3,    57,    41,    58,
-        43,    -1,    26,    -1,    10,    39,    60,    34,    -1,     6,
-        -1,    16,    31,    44,    29,    45,    30,    51,     4,    -1,
-        -1,    33,     4,    -1,    46,    23,    24,    50,    22,    47,
-        -1,     3,     3,    62,     3,    36,     3,     3,    75,     3,
-         3,    72,     3,     3,     3,     3,    67,     3,     3,     3,
-         3,     3,    35,    61,    27,    10,    -1,    -1,    32,    -1,
-        -1,    -1,     4,    -1,     4,    -1,    38,    25,    37,    63,
-        64,     3,     3,     3,     3,     3,     3,    73,     3,     3,
-         3,     3,    79,     3,    -1,    -1,    -1,    -1,    -1,    -1,
-         3,     3,     3,     3,     3,    69,    68,     3,     3,    77,
-         3,     3,     3,    -1,    -1,    -1,    -1,     3,    78,    80,
-        66,     3,     3,     3,    70,     3,    71,    -1,    -1,    48,
-        48,    -1,     3,     3,     3,     3,    82,    -1,    -1,    -1,
-        -1,    48,     3,     3,    74,     3,    49,    49,     3,    81,
-        76,    49,     3,     3,     3,     3,     3,     3,    11,
+        -1,    -1,    -1,    -1,    66,     8,    -1,    10,    20,    41,
+        -1,    53,    54,    15,    13,    57,    14,    84,    16,     6,
+        19,    60,    22,    29,    21,    18,     4,     4,     4,     4,
+        55,    56,    43,     4,     9,     4,     4,     4,     4,     4,
+         4,     4,     4,     4,     4,     4,     4,    58,    42,    59,
+        44,    -1,    27,    -1,    11,    40,    61,    35,    -1,     7,
+        -1,    17,    32,    45,    30,    46,    31,    52,     5,    -1,
+        -1,    34,     5,    -1,    47,    24,    25,    51,    23,    48,
+        -1,     4,     4,    63,     4,    37,     4,     4,    76,     4,
+         4,    73,     4,     4,     4,     4,    68,     4,     4,     4,
+         4,     4,    36,    62,    28,    11,    -1,    -1,    33,    -1,
+        -1,    -1,     5,    -1,     5,    -1,    39,    26,    38,    64,
+        65,     4,     4,     4,     4,     4,     4,    74,     4,     4,
+         4,     4,    80,     4,    -1,    -1,    -1,    -1,    -1,    -1,
+         4,     4,     4,     4,     4,    70,    69,     4,     4,    78,
+         4,     4,     4,    -1,    -1,    -1,    -1,     4,    79,    81,
+        67,     4,     4,     4,    71,     4,    72,    -1,    -1,    49,
+        49,    -1,     4,     4,     4,     4,    83,    -1,    -1,    -1,
+        -1,    49,     4,     4,    75,     4,    50,    50,     4,    82,
+        77,    50,     4,     4,     4,     4,     4,     4,    12,
 ]; 
 var jjlexTokens2 = [ 
-        -1,    -1,    -1,    -1,     9,     3,    57,    -1,    10,     3,
-        10,
+        -1,    -1,    -1,    -1,    10,     4,    58,    -1,    11,     4,
+        11,
 ]; 
 var jjlexTokens3 = [ 
-        -1,    84,     7,    -1,    -1,    86,    89,    84,    84,    -1,
-        -1,    86,    88,    -1,    84,    -1,    -1,    86,    87,    87,
+        -1,    85,     8,    -1,    -1,    87,    90,    85,    85,    -1,
+        -1,    87,    89,    -1,    85,    -1,    -1,    87,    88,    88,
     
 ]; 
 var jjlexTokens4 = [ 
-        -1,    84,    -1,    -1,     8,    86,    89,    84,    84,    -1,
-        -1,    86,    88,    -1,    84,    -1,    -1,    86,    87,    87,
+        -1,    85,    -1,    -1,     9,    87,    90,    85,    85,    -1,
+        -1,    87,    89,    -1,    85,    -1,    -1,    87,    88,    88,
     
 ]; 
 var jjlexTokens5 = [ 
-        -1,    84,    84,    84,    -1,    -1,    85,    84,    86,    89,
-        84,    84,    -1,    85,    -1,    86,    88,    -1,    84,    -1,
-        -1,    86,    87,    87,
+        -1,    85,    85,    85,    -1,    -1,    86,    85,    87,    90,
+        85,    85,    -1,    86,    -1,    87,    89,    -1,    85,    -1,
+        -1,    87,    88,    88,
 ]; 
 var jjlexTokens6 = [ 
-        -1,    84,    84,    84,    85,    84,    85,
+        -1,    85,    85,    85,    86,    85,    86,
 ]; 
 
 var jjstateCount = 343;
-var jjtokenCount = 91;
+var jjtokenCount = 92;
 var jjactERR = 344;
 /*
     compressed action table: action = jjpact[jjdisact[STATE-NUM] + TOKEN]
@@ -2728,41 +2728,41 @@ var jjpact = [
     displacement of action table.
 */
 var jjdisact = [ 
-       -91,   378,    -1,   -91,   -91,   -91,   -91,   374,   322,    71,
-       170,   -91,   345,   316,  1986,   -91,   315,   310,   -91,   -91,
-      1509,  6571,   -91,  6557,   -91,   356,  6481,   299,   -91,  6467,
-      6391,  6377,  6301,  6287,  2220,  2170,   -91,   -91,   -91,   -91,
-       165,   -91,   -91,   300,   -91,   -91,   -91,   299,   -91,    86,
-       297,   -91,  6211,   296,   335,   288,   -91,   -91,  1933,  6197,
-      6121,  1456,   283,   268,  1880,   233,   -91,   268,   159,   261,
-      6107,  6031,   -91,  1827,   -91,   -91,   -91,  6725,   177,  2956,
-       129,   -91,   123,   -91,  6017,   -91,   -91,   -91,  5941,  5927,
-       -91,  5851,  1774,  2889,  5837,  5761,  5747,  5671,  5657,  5581,
-      5567,  5491,  5477,  5401,  5387,  5311,  5297,  5221,  5207,  5131,
-      5117,  5041,  5027,  4951,  4937,  4861,  4847,  4771,  4757,   299,
-       252,   291,   -91,  1721,   -91,   -91,   -91,  4681,  4667,  4591,
-      4577,  4501,  4487,  4411,  4397,  4321,  4307,  4231,  4217,  4141,
-       -91,   -91,   248,  4127,   -91,  4051,   243,  1403,   339,   243,
-        98,   -91,   -91,   242,  1350,   239,   241,    93,   233,  4037,
-      1297,  3961,  2079,  1092,   753,   669,   587,   505,   423,   341,
-        14,  6763,    95,   349,   267,  6687,  6638,  2039,  2092,  2844,
-       327,   292,   260,   259,   258,   257,     6,   206,   199,   190,
-       -91,   -91,   -91,  1244,   237,  3947,  3871,   -91,   179,   737,
-       175,   173,  3857,   213,   209,   -91,   157,  1668,   -91,   -91,
-       -91,   -91,   -91,   -91,   -91,   -91,  2794,  2744,  2694,  2644,
-      2594,  2544,  2494,  2444,  2394,  2344,  2294,  2244,  3781,   150,
-       103,   142,   166,    -2,   -91,   -91,   -91,    14,   -71,   -91,
-       -91,   -91,  1116,  3767,   133,  3691,  3666,   102,   -91,   169,
-       245,   -91,   -91,  1191,    78,  3599,    85,  3523,  3509,    90,
-        86,    77,  3433,  3419,  3343,    79,   -91,   -91,   -91,  3329,
-       -91,    99,  3253,   -91,   -91,   -91,   -91,    36,  1615,   -91,
-        25,    77,  3228,    10,   163,     6,   -91,   -91,    62,   -91,
-      1138,     5,    -4,  1073,   -91,   -91,   -91,  1020,   967,   914,
-       -91,   -91,   861,  3161,  2194,   -91,   -91,  3147,   -91,   -91,
-       -91,   -91,    36,   655,  3071,  3057,  1069,   573,   -91,   -91,
-       -91,  2144,  1562,    81,   -91,   -91,   808,   -14,   -21,   -37,
-       -91,   -91,   -91,   -35,  2981,   491,   409,   -91,   -30,   -91,
-       -91,   327,   -91,
+       -92,   378,    -2,   -92,   -92,   -92,   -92,   373,   321,    70,
+       169,   -92,   344,   315,  1985,   -92,   314,   309,   -92,   -92,
+      1508,  6570,   -92,  6556,   -92,   355,  6480,   298,   -92,  6466,
+      6390,  6376,  6300,  6286,  2219,  2169,   -92,   -92,   -92,   -92,
+       164,   -92,   -92,   299,   -92,   -92,   -92,   298,   -92,    85,
+       296,   -92,  6210,   295,   334,   287,   -92,   -92,  1932,  6196,
+      6120,  1455,   282,   267,  1879,   232,   -92,   267,   158,   260,
+      6106,  6030,   -92,  1826,   -92,   -92,   -92,  6724,   176,  2955,
+       128,   -92,   122,   -92,  6016,   -92,   -92,   -92,  5940,  5926,
+       -92,  5850,  1773,  2888,  5836,  5760,  5746,  5670,  5656,  5580,
+      5566,  5490,  5476,  5400,  5386,  5310,  5296,  5220,  5206,  5130,
+      5116,  5040,  5026,  4950,  4936,  4860,  4846,  4770,  4756,   298,
+       251,   290,   -92,  1720,   -92,   -92,   -92,  4680,  4666,  4590,
+      4576,  4500,  4486,  4410,  4396,  4320,  4306,  4230,  4216,  4140,
+       -92,   -92,   247,  4126,   -92,  4050,   242,  1402,   338,   242,
+        97,   -92,   -92,   241,  1349,   238,   240,    92,   232,  4036,
+      1296,  3960,  2078,  1091,   752,   668,   586,   504,   422,   340,
+        13,  6762,    94,   348,   266,  6686,  6637,  2038,  2091,  2843,
+       326,   291,   259,   258,   257,   256,     5,   205,   198,   189,
+       -92,   -92,   -92,  1243,   236,  3946,  3870,   -92,   178,   736,
+       174,   172,  3856,   212,   208,   -92,   156,  1667,   -92,   -92,
+       -92,   -92,   -92,   -92,   -92,   -92,  2793,  2743,  2693,  2643,
+      2593,  2543,  2493,  2443,  2393,  2343,  2293,  2243,  3780,   149,
+       102,   141,   165,    -3,   -92,   -92,   -92,    13,   -72,   -92,
+       -92,   -92,  1115,  3766,   132,  3690,  3665,   101,   -92,   168,
+       244,   -92,   -92,  1190,    77,  3598,    84,  3522,  3508,    89,
+        85,    76,  3432,  3418,  3342,    78,   -92,   -92,   -92,  3328,
+       -92,    98,  3252,   -92,   -92,   -92,   -92,    35,  1614,   -92,
+        24,    76,  3227,     9,   162,     5,   -92,   -92,    61,   -92,
+      1137,     4,    -5,  1072,   -92,   -92,   -92,  1019,   966,   913,
+       -92,   -92,   860,  3160,  2193,   -92,   -92,  3146,   -92,   -92,
+       -92,   -92,    35,   654,  3070,  3056,  1068,   572,   -92,   -92,
+       -92,  2143,  1561,    80,   -92,   -92,   807,   -15,   -22,   -38,
+       -92,   -92,   -92,   -36,  2980,   490,   408,   -92,   -31,   -92,
+       -92,   326,   -92,
 ]; 
 /*
     used to check if a position in jjpact is out of bouds.
@@ -3748,79 +3748,175 @@ var jjlhs = [
     token names
 */
 var jjtokenNames = [ 
-                   "EOF",       "INLINE_HTML",          "ECHO_TAG",
-                  "NAME",           "DECIMAL",               "INT",
-                "STRING",      "DOUBLE_QUOTE",        "BACK_QUOTE",
-                "DOLLAR",          "VARIABLE",     "HALT_COMPILER",
-                  "PLUS",             "MINUS",             "TIMES",
-                "DIVIDE",               "POW",          "QUESTION",
-                 "COLON",           "PERCENT",                "GT",
-                    "LT",              "GTOE",              "LTOE",
-                   "EQU",         "IDENTICAL",               "NEQ",
-            "NIDENTICAL",            "ASSIGN",       "PLUS_ASSIGN",
-          "MINUS_ASSIGN",      "TIMES_ASSIGN",        "POW_ASSIGN",
-         "DIVIDE_ASSIGN",    "BIT_AND_ASSIGN",     "BIT_OR_ASSIGN",
-        "BIT_XOR_ASSIGN","RIGHT_SHIFT_ASSIGN", "LEFT_SHIFT_ASSIGN",
-            "MOD_ASSIGN",           "BIT_AND",            "BIT_OR",
-               "BIT_XOR",           "BIT_NOT",               "INC",
-                   "DEC",        "LEFT_SHIFT",       "RIGHT_SHIFT",
-        "HEREDOC_HEADER",     "NOWDOC_HEADER",             "ARROW",
-        "PROPERTY_ARROW",               "BRA",               "KET",
-                  "CBRA",              "CKET",             "COMMA",
-                  "BBRA",              "BKET",               "EOL",
-                   "AND",                "OR",        "LOGICAL_OR",
-           "LOGICAL_AND",       "LOGICAL_XOR",               "NOT",
-                 "CONST",                "IF",              "ELSE",
-                  "ECHO",             "PRINT",             "WHILE",
-                    "DO",               "FOR",           "FOREACH",
-                    "AS",          "FUNCTION",              "LIST",
-                 "ARRAY",               "USE",             "BREAK",
-              "CONTINUE",            "RETURN",               "DOT",
-           "ANY_CONTENT", "HEREDOC_END_LABEL","VARIABLE_IN_STRING",
-    "PROPERTY_IN_STRING",  "OFFSET_IN_STRING",  "OPEN_CURLY_BRACE",
-        "END_OF_HEREDOC",
+                   "EOF",             "ERROR",       "INLINE_HTML",
+              "ECHO_TAG",              "NAME",           "DECIMAL",
+                   "INT",            "STRING",      "DOUBLE_QUOTE",
+            "BACK_QUOTE",            "DOLLAR",          "VARIABLE",
+         "HALT_COMPILER",              "PLUS",             "MINUS",
+                 "TIMES",            "DIVIDE",               "POW",
+              "QUESTION",             "COLON",           "PERCENT",
+                    "GT",                "LT",              "GTOE",
+                  "LTOE",               "EQU",         "IDENTICAL",
+                   "NEQ",        "NIDENTICAL",            "ASSIGN",
+           "PLUS_ASSIGN",      "MINUS_ASSIGN",      "TIMES_ASSIGN",
+            "POW_ASSIGN",     "DIVIDE_ASSIGN",    "BIT_AND_ASSIGN",
+         "BIT_OR_ASSIGN",    "BIT_XOR_ASSIGN","RIGHT_SHIFT_ASSIGN",
+     "LEFT_SHIFT_ASSIGN",        "MOD_ASSIGN",           "BIT_AND",
+                "BIT_OR",           "BIT_XOR",           "BIT_NOT",
+                   "INC",               "DEC",        "LEFT_SHIFT",
+           "RIGHT_SHIFT",    "HEREDOC_HEADER",     "NOWDOC_HEADER",
+                 "ARROW",    "PROPERTY_ARROW",               "BRA",
+                   "KET",              "CBRA",              "CKET",
+                 "COMMA",              "BBRA",              "BKET",
+                   "EOL",               "AND",                "OR",
+            "LOGICAL_OR",       "LOGICAL_AND",       "LOGICAL_XOR",
+                   "NOT",             "CONST",                "IF",
+                  "ELSE",              "ECHO",             "PRINT",
+                 "WHILE",                "DO",               "FOR",
+               "FOREACH",                "AS",          "FUNCTION",
+                  "LIST",             "ARRAY",               "USE",
+                 "BREAK",          "CONTINUE",            "RETURN",
+                   "DOT",       "ANY_CONTENT", "HEREDOC_END_LABEL",
+    "VARIABLE_IN_STRING","PROPERTY_IN_STRING",  "OFFSET_IN_STRING",
+      "OPEN_CURLY_BRACE",    "END_OF_HEREDOC",
 ]; 
 /*
     token alias
 */
 var jjtokenAlias = [ 
-                    null,                null,               "<?=",
                     null,                null,                null,
-                    null,                "\"",                 "`",
-                     "$",                null,   "__halt_compiler",
-                     "+",                 "-",                 "*",
-                     "/",                "**",                 "?",
-                     ":",                 "%",                 ">",
-                     "<",                ">=",                "<=",
-                    "==",               "===",                "!=",
-                   "!==",                 "=",                "+=",
-                    "-=",                "*=",               "**=",
-                    "/=",                "&=",                "|=",
-                    "^=",               ">>=",               "<<=",
-                    "%=",                 "&",                 "|",
-                     "^",                 "~",                "++",
-                    "--",                "<<",                ">>",
-                    null,                null,                "=>",
-                    "->",                 "(",                 ")",
-                     "[",                 "]",                 ",",
-                     "{",                 "}",                 ";",
-                    "&&",                "||",                "OR",
-                   "AND",               "XOR",                 "!",
-                 "const",                "if",              "else",
-                  "echo",             "print",             "while",
-                    "do",               "for",           "foreach",
-                    "as",          "function",              "list",
-                 "array",               "use",             "break",
-              "continue",            "return",                 ".",
+                   "<?=",                null,                null,
+                    null,                null,                "\"",
+                     "`",                 "$",                null,
+       "__halt_compiler",                 "+",                 "-",
+                     "*",                 "/",                "**",
+                     "?",                 ":",                 "%",
+                     ">",                 "<",                ">=",
+                    "<=",                "==",               "===",
+                    "!=",               "!==",                 "=",
+                    "+=",                "-=",                "*=",
+                   "**=",                "/=",                "&=",
+                    "|=",                "^=",               ">>=",
+                   "<<=",                "%=",                 "&",
+                     "|",                 "^",                 "~",
+                    "++",                "--",                "<<",
+                    ">>",                null,                null,
+                    "=>",                "->",                 "(",
+                     ")",                 "[",                 "]",
+                     ",",                 "{",                 "}",
+                     ";",                "&&",                "||",
+                    "OR",               "AND",               "XOR",
+                     "!",             "const",                "if",
+                  "else",              "echo",             "print",
+                 "while",                "do",               "for",
+               "foreach",                "as",          "function",
+                  "list",             "array",               "use",
+                 "break",          "continue",            "return",
+                     ".",                null,                null,
                     null,                null,                null,
-                    null,                null,                "${",
-                    null,
+                    "${",                null,
 ]; 
 
 
 function tokenToString(tk){
     return jjtokenAlias[tk] === null ? "<" + jjtokenNames[tk] + ">" : '"' + jjtokenAlias[tk] + '"';
 }
+// Token kinds
+var TokenKind = {
+    EOF : 0,
+    ERROR : 1,
+    INLINE_HTML : 2,
+    ECHO_TAG : 3,
+    NAME : 4,
+    DECIMAL : 5,
+    INT : 6,
+    STRING : 7,
+    DOUBLE_QUOTE : 8,
+    BACK_QUOTE : 9,
+    DOLLAR : 10,
+    VARIABLE : 11,
+    HALT_COMPILER : 12,
+    PLUS : 13,
+    MINUS : 14,
+    TIMES : 15,
+    DIVIDE : 16,
+    POW : 17,
+    QUESTION : 18,
+    COLON : 19,
+    PERCENT : 20,
+    GT : 21,
+    LT : 22,
+    GTOE : 23,
+    LTOE : 24,
+    EQU : 25,
+    IDENTICAL : 26,
+    NEQ : 27,
+    NIDENTICAL : 28,
+    ASSIGN : 29,
+    PLUS_ASSIGN : 30,
+    MINUS_ASSIGN : 31,
+    TIMES_ASSIGN : 32,
+    POW_ASSIGN : 33,
+    DIVIDE_ASSIGN : 34,
+    BIT_AND_ASSIGN : 35,
+    BIT_OR_ASSIGN : 36,
+    BIT_XOR_ASSIGN : 37,
+    RIGHT_SHIFT_ASSIGN : 38,
+    LEFT_SHIFT_ASSIGN : 39,
+    MOD_ASSIGN : 40,
+    BIT_AND : 41,
+    BIT_OR : 42,
+    BIT_XOR : 43,
+    BIT_NOT : 44,
+    INC : 45,
+    DEC : 46,
+    LEFT_SHIFT : 47,
+    RIGHT_SHIFT : 48,
+    HEREDOC_HEADER : 49,
+    NOWDOC_HEADER : 50,
+    ARROW : 51,
+    PROPERTY_ARROW : 52,
+    BRA : 53,
+    KET : 54,
+    CBRA : 55,
+    CKET : 56,
+    COMMA : 57,
+    BBRA : 58,
+    BKET : 59,
+    EOL : 60,
+    AND : 61,
+    OR : 62,
+    LOGICAL_OR : 63,
+    LOGICAL_AND : 64,
+    LOGICAL_XOR : 65,
+    NOT : 66,
+    CONST : 67,
+    IF : 68,
+    ELSE : 69,
+    ECHO : 70,
+    PRINT : 71,
+    WHILE : 72,
+    DO : 73,
+    FOR : 74,
+    FOREACH : 75,
+    AS : 76,
+    FUNCTION : 77,
+    LIST : 78,
+    ARRAY : 79,
+    USE : 80,
+    BREAK : 81,
+    CONTINUE : 82,
+    RETURN : 83,
+    DOT : 84,
+    ANY_CONTENT : 85,
+    HEREDOC_END_LABEL : 86,
+    VARIABLE_IN_STRING : 87,
+    PROPERTY_IN_STRING : 88,
+    OFFSET_IN_STRING : 89,
+    OPEN_CURLY_BRACE : 90,
+    END_OF_HEREDOC : 91,
+
+};
 function Token(id, val, startLine, startColumn, endLine, endColumn){
     this.id = id;
     this.val = val;
@@ -3875,7 +3971,7 @@ function createParser() {
     var jjtoken;
     var jjstop;
     var jjtokenEmitted;
-    var jjenableBlock;
+    var jjenableBlock = true;
     var jjlineTerm;
 
     var jjhandlers = {};
@@ -3917,7 +4013,6 @@ function createParser() {
         jjsematicVal = null;
         jjtokenQueue = [];
 
-        jjenableBlock = true;
         jjlineTerm = LineTerm.AUTO;
         jjlastCR = false;
 
@@ -3928,8 +4023,19 @@ function createParser() {
 
         jjtryReduce();
     }
-    function load(i){
-        jjinput = i;
+    function load(input){
+        if(typeof input === 'string'){
+            var i = 0;
+            jjinput = {
+                current: function(){ return i < input.length ? input.charCodeAt(i) : null; },
+                next: function(){ return i++; },
+                isEof: function(){ return i >= input.length; },
+                backup: function(t){ return i -= input.length; }
+            }
+        }
+        else {
+            jjinput = input;
+        }
     }
     function nextToken(){
         jjtokenEmitted = false;
@@ -3972,7 +4078,7 @@ function createParser() {
             isEof: function(){ return i >= s.length; },
             backup: function(t){ return i -= t.length; }
         });
-        while(nextToken().id !== 0);
+        while(!jjstop && nextToken().id !== 0);
     }
     /**
      *  tell the compiler that end of file is reached
@@ -4013,8 +4119,8 @@ function createParser() {
         jjtoken.endColumn = jjcolumn - 1;
 
         jjtokenQueue.push(jjtoken);
-        jjtokenEmitted = true;
 
+        jjtokenEmitted = true;
         jjmatched = '';
         jjtline = jjline;
         jjtcolumn = jjcolumn;
@@ -4769,6 +4875,10 @@ function createParser() {
                     jjemit('lexicalerror', String.fromCharCode(ccode), jjline, jjcolumn);
                     // force consume
                     jjconsume(ccode);
+                    // emit an error token
+                    jjprepareToken(1);
+                    jjtokenQueue.length > 0 && jjacceptToken(null);
+                    jjstate = 0;
                 }
             }
             else {
@@ -4803,6 +4913,9 @@ function createParser() {
             }
             else {
                 jjemit('lexicalerror', '', jjline, jjcolumn);
+                jjprepareToken(1);
+                jjtokenQueue.length > 0 && jjacceptToken(null);
+                jjstate = 0;
                 return true;
             }
         }
@@ -5554,7 +5667,7 @@ function createParser() {
                 var n = jjsematicS[jjsp - 1];
                 if(jjenableBlock){ 
         if(n.val.trim() === heredocStart[heredocStart.length - 1]){ 
-            jjtokenQueue.push(new Token(90, null, -1, 0, 0, 0)); 
+            jjtokenQueue.push(new Token(91, null, -1, 0, 0, 0)); 
             heredocStart.pop(); 
             jjtop = null; 
         }

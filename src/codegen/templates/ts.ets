@@ -565,13 +565,12 @@ function create<%= className %>()<%= ts(': ' + className) %> {
 <% if(input.file.tokenHookArg){ %>
         if(!<%= prefix %>tokenHook(<%= prefix %>token)){
             <%= prefix %>tokenQueue.push(<%= prefix %>token);
-            <%= prefix %>tokenEmitted = true;
         }
 <% } else { %>
         <%= prefix %>tokenQueue.push(<%= prefix %>token);
-        <%= prefix %>tokenEmitted = true;
 <% } %>
 
+        <%= prefix %>tokenEmitted = true;
         <%= prefix %>matched = '';
         <%= prefix %>tline = <%= prefix %>line;
         <%= prefix %>tcolumn = <%= prefix %>column;

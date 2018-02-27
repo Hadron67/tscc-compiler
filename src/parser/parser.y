@@ -12,10 +12,6 @@ import { LexAction } from '../lexer/action';
 import { Position, JNode, newNode, markPosition, nodeBetween } from './node';
 import { File } from './file';
 
-interface ParserConfig {
-    skipComment: boolean;
-};
-
 function nodeFromToken(t: Token): JNode{
     return {
         val: t.val,
@@ -84,17 +80,15 @@ function unescape(s: string): string{
     let ruleLhs: JNode;
     let least: boolean;
     let always: boolean;
-    let config: ParserConfig;
 }
 
-%init {ctx1: Context, b: GBuilder, config1: ParserConfig}{
+%init {ctx1: Context, b: GBuilder}{
     gb = b;
     ctx = ctx1;
-    config = config1;
 }
 
 %token_hook (token){
-    return config.skipComment && token.id === TokenKind.COMMENT;
+    return (token.id === TokenKind.COMMENT || token.id === TokenKind.WHITESPACE);
 }
 
 %lex {
@@ -107,8 +101,8 @@ function unescape(s: string): string{
     ESCAPE_CHAR = < "\\" (['n', 't', 'b', 'r', 'f', '"', "'", "\\"] | <UNICODE>) >
     UNICODE = < ['x', 'u', 'X', 'U'] <HEX>+ >
     
-    < ["\n", "\t", " ", "\r"]+ >: [='']
-    < COMMENT: "/*" ([^"*", "/"]|[^"*"]"/"|"*"[^"/"])* "*/" >
+    < WHITESPACE: ["\n", "\t", " ", "\r"]+ >
+    < COMMENT: "/*" >: [+IN_COMMENT]
     < COMMENT: ("//"|'#') [^"\n"]* >
 
     < NAME: <ID> >: { $$ = nodeFromToken($token); }
@@ -157,7 +151,12 @@ function unescape(s: string): string{
     < COMMA: "," >
 }
 
-%touch <COMMENT>
+%touch <COMMENT> <WHITESPACE>
+
+%lex <IN_COMMENT> {
+    < COMMENT: ( [^'*']|'*'[^'/'] )* >
+    < COMMENT: '*/' >: [-]
+}
 
 %lex <IN_BLOCK> {
     < ANY_CODE: ( [^"{", "}", "\\"] | "\\" [^"{", "}"] )+ >: { $$ = newNode($token.val); }
@@ -215,7 +214,11 @@ touchTokenList:
 ;
 epilogue:
     /* empty */
-|   ep = <ANY_CODE> { gb.setEpilogue(ep); }
+|   ep = nonEmptyEpilogue { gb.setEpilogue(ep); }
+;
+nonEmptyEpilogue:
+    nonEmptyEpilogue c = <ANY_CODE> { $$ = nodeBetween($$, c, $$.val + c.val); }
+|   <ANY_CODE>
 ;
 associativeDir:
     '%left' { assoc = Assoc.LEFT; }
@@ -435,11 +438,12 @@ export namespace highlight {
             case TokenKind.OR:
             case TokenKind.WEDGE:
             case TokenKind.COMMA: return TokenType.PUNCTUATION;
-            case TokenKind.ANY_CODE:
             case TokenKind.LHS_REF:
             case TokenKind.TOKEN_REF:
             case TokenKind.MATCHED:
             case TokenKind.EMIT_TOKEN: return TokenType.TOKEN_IN_CODE;
+            case TokenKind.WHITESPACE:
+            case TokenKind.ANY_CODE:
             default: return TokenType.NONE;
         }
     }
@@ -454,7 +458,7 @@ export namespace highlight {
         var err = false;
         parser.disableBlocks();
         parser.on('syntaxerror', () => err = true);
-        parser.init(null, null, { skipComment: false });
+        parser.init(null, null);
         return {
             load: input => parser.load(input),
             nextToken,
@@ -464,7 +468,7 @@ export namespace highlight {
         function nextToken(): TokenType{
             err = false;
             var t = parser.nextToken();
-            if(err){
+            if(t.id !== TokenKind.EOF && err){
                 return TokenType.ERROR;
             }
             else {
@@ -473,14 +477,21 @@ export namespace highlight {
         }
     }
     export function highlightString(s: string, getClass: (t: TokenType) => string): string{
+        var escapes = {
+            '>': '&gt;',
+            '<': '&lt;',
+            ' ': '&nbsp;',
+            '&': '&amp;',
+            '\n': '<br />',
+            '\t': '&nbsp;&nbsp;&nbsp;&nbsp;'
+        };
         function escapeHTML(s: string): string{
-            return s
-                .replace(/\n/g, '<br />')
-                .replace(/ /g, '&nbsp;')
-                .replace(/>/g, '&gt;')
-                .replace(/</g, '&lt;')
-                .replace(/&/g, '&amp;')
-                .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+            var ret = '';
+            for(var i = 0; i < s.length; i++){
+                var c = s.charAt(i);
+                ret += escapes[c] || c;
+            }
+            return ret;
         }
         var ret = '';
         var tokenBase: number = 0;
@@ -490,7 +501,7 @@ export namespace highlight {
             current: () => i < s.length ? s.charCodeAt(i) : null,
             next: () => i++,
             isEof: () => i >= s.length,
-            backup: s => i-= s.length
+            backup: s => i -= s.length
         });
         var tt: TokenType;
         while((tt = hc.nextToken()) !== TokenType.EOF){
@@ -501,6 +512,7 @@ export namespace highlight {
             else {
                 ret += escapeHTML(s.substr(tokenBase, i - tokenBase));
             }
+            tokenBase = i;
         }
         return ret;
     }
@@ -533,7 +545,7 @@ export function yyparse(ctx: Context, source: string): File{
         err = true;
     });
     let gb = createFileBuilder(ctx);
-    parser.init(ctx, gb, { skipComment: true });
+    parser.init(ctx, gb);
 
     ctx.beginTime('parse grammar file');
     parser.accept(source);
