@@ -5,22 +5,16 @@ void function(tscc, CodeMirror){
     var start = hc.getState();
     var eol = '\n'.charCodeAt(0);
     var stream = null;
-    var eof = false;
-    var err = false;
-    function current(){
-        var ret = stream.next();
-        if(ret === undefined){
-            return null;
-        }
-        else {
-            stream.backUp(1);
-            return ret.charCodeAt(0);
-        }
+    function eof(){
+        return stream.peek() === undefined && stream.lookAhead(1) === undefined;
     }
     hc.load({
-        current: current,
+        current: function(){ 
+            var c = stream.peek();
+            return c !== undefined ? c.charCodeAt(0) : null;
+        },
         next: function(){ stream.next(); },
-        isEof: function(){ return current() === null; },
+        isEof: function(){ return stream.peek() === undefined; },
         backup: function(s){ stream.backUp(s.length); }
     });
 
@@ -55,7 +49,6 @@ void function(tscc, CodeMirror){
     }
     function scan(stream1, state){
         stream = stream1;
-        eof = false;
         hc.loadState(state);
         return getTokenClass(hc.nextToken());
     }

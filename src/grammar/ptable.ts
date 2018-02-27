@@ -3,7 +3,7 @@ import { OutputStream } from '../util/io';
 import { Action, Item, ItemSet } from './item-set';
 import { List } from '../util/list';
 import { convertTokenToString } from './token-entry';
-import { EscapeDef } from '../util/span';
+import { EscapeDef, escapeString } from '../util/span';
 
 export interface IParseTable{
     readonly g: Grammar;
@@ -19,7 +19,7 @@ export function printParseTable(
     doneList: List<ItemSet>, 
     showlah: boolean, 
     showFullItemsets: boolean,
-    escapes: EscapeDef[]
+    escapes?: EscapeDef
 ){
     var g = cela.g;
     var tokenCount = g.tokenCount;
@@ -36,7 +36,8 @@ export function printParseTable(
             (showFullItemsets || item.isKernel) && os.writeln(tab + item.toString({ showlah }));
         });
         if(cela.defred[i] !== -1){
-            os.writeln(`${tab}default action: reduce with rule ${cela.defred[i]}`);
+            var def = cela.defred[i];
+            os.writeln(`${tab}default action: reduce with rule ${def} (${g.rules[def].lhs.sym})`);
         }
         else {
             os.writeln(tab + 'no default action');
@@ -48,7 +49,7 @@ export function printParseTable(
                     shift += `${tab}${convertTokenToString(g.tokens[j])} : shift, and go to state ${item.shift.stateIndex}\n`;
                 }
                 else {
-                    reduce += `${tab}${convertTokenToString(g.tokens[j])} : reduce with rule ${item.rule.index}\n`;
+                    reduce += `${tab}${convertTokenToString(g.tokens[j])} : reduce with rule ${item.rule.index} (${item.rule.lhs.sym})\n`;
                 }
             }
         }
@@ -59,8 +60,8 @@ export function printParseTable(
             }
         }
         var line = shift + reduce + gotot;
-        for(var es of escapes){
-            line = line.replace(es.from, es.to);
+        if(escapes){
+            line = escapeString(line, escapes);
         }
         os.writeln(line);
         os.writeln();

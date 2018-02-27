@@ -751,7 +751,7 @@ var jjlexunicodeClassTable1: number[] = [
          0,   256,Infinity,
 ]; 
 var jjlexisEnd1: number[] = [ 
-    1,1,0,0,1,1,
+    0,1,0,0,1,1,
 ]; 
 var jjlexhasArc1: number[] = [ 
     1,1,1,1,1,0,
@@ -1441,7 +1441,7 @@ var jjlexTokens0: number[] = [
         -1,    -1,    -1,    -1,    13,    -1,    16,    -1,    23,
 ]; 
 var jjlexTokens1: number[] = [ 
-         3,     3,    -1,    -1,     3,     3,
+        -1,     3,    -1,    -1,     3,     3,
 ]; 
 var jjlexTokens2: number[] = [ 
         -1,    45,    -1,     6,     7,    -1,    45,    45,
@@ -1697,6 +1697,23 @@ var jjtokenAlias: string[] = [
 function tokenToString(tk: number){
     return jjtokenAlias[tk] === null ? `<${jjtokenNames[tk]}>` : `"${jjtokenAlias[tk]}"`;
 }
+function getExpectedTokens(state: number): number[]{
+        var dis = jjdisact[state];
+        var ret: number[] = [];
+        function expect(tk: number){
+            var ind = dis + tk;
+            if(ind < 0 || ind >= jjpact.length || state !== jjcheckact[ind]){
+                return jjdefred[state] !== -1;
+            }
+            else {
+                return true;
+            }
+        }
+        for(var tk = 0; tk < jjtokenCount; tk++){
+            expect(tk) && ret.push(tk);
+        }
+        return ret;
+}
 // Token kinds
 enum TokenKind {
     EOF = 0,
@@ -1787,7 +1804,7 @@ interface Parser{
     getLineTerminator(): LineTerm;
     halt();
     on(ent: 'lexicalerror', cb: (c: string, line: number, col: number) => any);
-    on(ent: 'syntaxerror', cb: (msg: string, t: Token) => any);
+    on(ent: 'syntaxerror', cb: (t: Token, state: number) => any);
     on(ent: 'accept', cb: () => any);
 
     enableBlocks();
@@ -2924,26 +2941,7 @@ function createParser(): Parser {
         }
     }
     function jjsyntaxError(t: Token){
-        var msg = "unexpected token " + t.toString() + ", expecting one of the following token(s):\n"
-        msg += jjexpected(jjlrState[jjlrState.length - 1]);
-        jjemit("syntaxerror", msg, t);
-    }
-    function jjexpected(state: number){
-        var dis = jjdisact[state];
-        var ret = '';
-        function expect(tk: number){
-            var ind = dis + tk;
-            if(ind < 0 || ind >= jjpact.length || state !== jjcheckact[ind]){
-                return jjdefred[state] !== -1;
-            }
-            else {
-                return true;
-            }
-        }
-        for(var tk = 0; tk < jjtokenCount; tk++){
-            expect(tk) && (ret += "    " + tokenToString(tk) + " ..." + '\n');
-        }
-        return ret;
+        jjemit("syntaxerror", t, jjlrState[jjlrState.length - 1]);
     }
 }
 
@@ -2986,6 +2984,7 @@ export namespace highlight {
             case TokenKind.TOKEN_HOOK_DIR:
             case TokenKind.LEAST_DIR:
             case TokenKind.ALWAYS_DIR:
+            case TokenKind.SEPERATOR:
             case TokenKind.TOUCH_DIR: return TokenType.DIRECTIVE;
             case TokenKind.OPEN_BLOCK:
             case TokenKind.CLOSE_BLOCK:
@@ -3003,7 +3002,6 @@ export namespace highlight {
             case TokenKind.COLON:
             case TokenKind.ARROW:
             case TokenKind.EOL:
-            case TokenKind.SEPERATOR:
             case TokenKind.OR:
             case TokenKind.WEDGE:
             case TokenKind.COMMA: return TokenType.PUNCTUATION;
@@ -3037,7 +3035,10 @@ export namespace highlight {
         function nextToken(): TokenType{
             err = false;
             var t = parser.nextToken();
-            if(t.id !== TokenKind.EOF && err){
+            if(t === null){
+                return null;
+            }
+            else if(t.id !== TokenKind.EOF && err){
                 return TokenType.ERROR;
             }
             else {
@@ -3097,7 +3098,7 @@ function charPosition(c: string, line: number, column: number): Position{
 export function yyparse(ctx: Context, source: string): File{
     let parser = createParser();
     let err = false;
-    parser.on('syntaxerror', (msg, token) => {
+    parser.on('syntaxerror', (token, state) => {
         if(token.id === TokenKind.ERROR){
             ctx.requireLines((ctx, lines) => {
                 let msg2 = 'unexpected illegal token ' + markPosition(token, lines) + '\n';
@@ -3105,6 +3106,10 @@ export function yyparse(ctx: Context, source: string): File{
             });
         }
         else {
+            var msg = `unexpected token ${token.toString()}, expecting one of the following tokens:\n`;
+            for(var tk of getExpectedTokens(state)){
+                msg += `    ${tokenToString(tk)} ...\n`;
+            }
             ctx.requireLines((ctx, lines) => {
                 let msg2 = markPosition(token, lines) + '\n' + msg;
                 ctx.err(new JsccError(msg2, 'Syntax error'));

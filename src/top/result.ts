@@ -18,7 +18,7 @@ import { markPosition } from '../parser/node';
 import { DFATable } from '../lexer/dfa-table';
 import { LexAction } from '../lexer/action';
 import { io } from '../main';
-import { EscapeDef } from '../util/span';
+import { EscapeDef, escapeString } from '../util/span';
 
 export interface TSCCContext {
     compile(source: string, fname: string);
@@ -51,7 +51,7 @@ export function createContext(): TSCCContext{
     let terminated = false;
     let timers: {name: string, start: Date, end: Date}[] = [];
 
-    let escapes: EscapeDef[] = [];
+    let escapes: EscapeDef = null;
 
     let ctx: Context = {
         warn,
@@ -80,13 +80,7 @@ export function createContext(): TSCCContext{
         genCode,
         isTerminated: () => terminated,
     };
-    function escape(s: string): string{
-        var s = '';
-        for(var e of escapes){
-            s = s.replace(e.from, e.to);
-        }
-        return s;
-    }
+
     function reset(){
         file = null;
         itemSets = null;
@@ -100,9 +94,13 @@ export function createContext(): TSCCContext{
         timers.length = 0;
     }
     function setEscape(e: {[s: string]: string}){
+        escapes = escapes || {};
         for(var from in e){
-            escapes.push({ from, to: e[from] });
+            escapes[from] = e[from];
         }
+    }
+    function escape(s: string): string{
+        return escapes ? escapeString(s, escapes) : s;
     }
     function compile(source: string, fname: string){
         reset();

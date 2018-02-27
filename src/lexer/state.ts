@@ -4,7 +4,7 @@ import { console } from '../util/common';
 import { DFA } from './dfa.js';
 // import { DataSet } from '../util/interval-set';
 import { OutputStream, StringOS } from '../util/io';
-import { EscapeDef } from '../util/span';
+import { EscapeDef, escapeString } from '../util/span';
 
 export enum Action{
     START = 0,
@@ -139,12 +139,12 @@ export class State<T>{
             state.index = i++;
         });
     }
-    print(os: OutputStream, escapes: EscapeDef[], recursive: boolean = true){
+    print(os: OutputStream, escapes?: EscapeDef, recursive: boolean = true){
         var endl = '\n';
         var tab = '    ';
         function echo(s: string){
-            for(var es of escapes){
-                s = s.replace(es.from, es.to);
+            if(escapes){
+                s = escapeString(s, escapes);
             }
             os.writeln(s);
         }
@@ -185,7 +185,7 @@ export class State<T>{
             });
         }
     }
-    toString(escapes: EscapeDef[], recursive: boolean = true): string{
+    toString(escapes?: EscapeDef, recursive: boolean = true): string{
         let ss = new StringOS();
         this.print(ss, escapes, recursive);
         return ss.s;

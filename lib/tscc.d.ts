@@ -6,30 +6,38 @@ interface FileCreator {
      */
     save(fname: string);
     /**
-     * write a specified content to current file
+     * Write a specified content to current file
      * @param s Content to be written
      */
     write(s: string);
     /**
-     * write a specified content and a line terminator to current file
+     * Write a specified content and a line terminator to current file
      * @param s Content to be written
      */
     writeln(s: string);
 }
 interface ErrPrintOption{
+    /**
+     * Font class of the type of error message. If specified, the message
+     * will be HTML format and takes the form 
+     * `<span class="${typeClass}">${err.type}</span>${err.body}`
+     */
     typeClass?: string;
+    /**
+     * Whether to escape HTML characters in the error message's body.
+     */
     escape?: boolean;
 }
 declare abstract class OutputStream {
     /** line terminator */
     endl: string;
     /**
-     * write a specified content
+     * Write a specified content
      * @param s Content to be written
      */
     abstract write(s: string | number);
     /**
-     * write a specified content and a line terminator
+     * Write a specified content and a line terminator
      * @param s Content to be written
      */
     writeln(s: string | number);
@@ -53,27 +61,27 @@ interface TSCCOptions{
 
     // options
     /** 
-     * test input. If specified, it will be parsed, and the process will be printed.
+     * Test input. If specified, it will be parsed, and the process will be printed.
      * @default null
      */
     testInput?: string;
     /**
-     * whether to print a detailed list of time costs.
+     * Whether to print a detailed list of time costs.
      * @default false
      */
     printDetailedTime?: boolean;
     /**
-     * whether to print lexical DFA tables to the output file.
+     * Whether to print lexical DFA tables to the output file.
      * @default false
      */
     printDFA?: boolean;
     /**
-     * whether to show look-ahead tokens of items when printing parse table.
+     * Whether to show look-ahead tokens of items when printing parse table.
      * @default false
      */
     showlah?: boolean;
     /**
-     * whether to show full item sets when printing parse table. Only kernel 
+     * Whether to show full item sets when printing parse table. Only kernel 
      * items will be printed when set to `false`
      * @default false
      */
@@ -197,11 +205,12 @@ interface TSCCContext {
 }
 /**
  * Create a context object. This object allows you to call all the functions of tscc-compiler.
- * It is a more advanced way to use tscc-compiler as a module.
+ * It is a more flexible way to use tscc-compiler as a module.
  * @returns context object.
  */
 export declare function createContext(): TSCCContext;
 
+/** syntax highlight utilities for grammar defination file. */
 export namespace highlight {
     interface Position{
         startLine: number;
@@ -214,9 +223,22 @@ export namespace highlight {
         ext?: any;
     }
     interface ParserInput {
+        /**
+         * Get the character code of the current character in the stream.
+         * @returns character code.
+         */
         current(): number;
+        /** Advance one character. */
         next();
+        /**
+         * Whether end of file is reached.
+         * @returns `true` if end of file is reached, otherwise `false`.
+         */
         isEof(): boolean;
+        /**
+         * Push a string back to the stream.
+         * @param s string to be backed up.
+         */
         backup(s: string);
     }
     interface ParserState {
@@ -237,11 +259,47 @@ export namespace highlight {
         TOKEN_IN_CODE
     }
     interface HighlightContext {
+        /**
+         * Set input.
+         * @param input the input string or stream
+         */
         load(input: ParserInput | string);
+        /**
+         * Read next token from the input.
+         * @returns type of the next token. Will return `null` if no input is available 
+         * but end of file haven't been reached before a token is emitted.
+         */
         nextToken(): TokenType;
+        /**
+         * Set parser state. The state consists of the lexical state stack, parse state
+         * stack and sematic stack. Note that the lexer state is not included.
+         * 
+         * This function together with `getState()` could be used in syntax highlight mode
+         * implementations of some editors that cache the state when every line is read for
+         * performance reasons, such as CodeMirror.
+         * 
+         * @param state State to be set.
+         */
         loadState(state: ParserState);
+        /**
+         * Get current parser state.
+         * @returns current parser state.
+         */
         getState(): ParserState;
     }
+    /**
+     * Create a syntax highlight context
+     * @returns the context.
+     */
     export function createHighlightContext(): HighlightContext;
+    /**
+     * Highlight a grammar defination file using HTML. Every token will be converted
+     * to the form `<span class="xxx">token</span>`, where the class is obtained through
+     * the call back `getClass`.
+     * 
+     * @param s content of the grammar defination file.
+     * @param getClass callback used to get class of a token. If return `null`, the token 
+     * will not be put into an HTML tag.
+     */
     export function highlightString(s: string, getClass: (t: TokenType) => string): string;
 }

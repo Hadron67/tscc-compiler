@@ -90,7 +90,7 @@ function unescape(s: string): string{
 %token_hook (token){
     return (token.id === TokenKind.COMMENT || token.id === TokenKind.WHITESPACE);
 }
-
+// avoid multi-line tokens and empty tokens in order to support CodeMirror
 %lex {
 
     LETTER = < ['a'-'z', 'A'-'Z', '$', '_'] | %import('es5UnicodeIDStart') >
@@ -154,7 +154,7 @@ function unescape(s: string): string{
 %touch <COMMENT> <WHITESPACE>
 
 %lex <IN_COMMENT> {
-    < COMMENT: ( [^'*']|'*'[^'/'] )* >
+    < COMMENT: ( [^'*']|'*'[^'/'] )+ >
     < COMMENT: '*/' >: [-]
 }
 
@@ -417,6 +417,7 @@ export namespace highlight {
             case TokenKind.TOKEN_HOOK_DIR:
             case TokenKind.LEAST_DIR:
             case TokenKind.ALWAYS_DIR:
+            case TokenKind.SEPERATOR:
             case TokenKind.TOUCH_DIR: return TokenType.DIRECTIVE;
             case TokenKind.OPEN_BLOCK:
             case TokenKind.CLOSE_BLOCK:
@@ -434,7 +435,6 @@ export namespace highlight {
             case TokenKind.COLON:
             case TokenKind.ARROW:
             case TokenKind.EOL:
-            case TokenKind.SEPERATOR:
             case TokenKind.OR:
             case TokenKind.WEDGE:
             case TokenKind.COMMA: return TokenType.PUNCTUATION;
@@ -468,7 +468,10 @@ export namespace highlight {
         function nextToken(): TokenType{
             err = false;
             var t = parser.nextToken();
-            if(t.id !== TokenKind.EOF && err){
+            if(t === null){
+                return null;
+            }
+            else if(t.id !== TokenKind.EOF && err){
                 return TokenType.ERROR;
             }
             else {
@@ -528,7 +531,7 @@ function charPosition(c: string, line: number, column: number): Position{
 export function yyparse(ctx: Context, source: string): File{
     let parser = createParser();
     let err = false;
-    parser.on('syntaxerror', (msg, token) => {
+    parser.on('syntaxerror', (token, state) => {
         if(token.id === TokenKind.ERROR){
             ctx.requireLines((ctx, lines) => {
                 let msg2 = 'unexpected illegal token ' + markPosition(token, lines) + '\n';
@@ -536,6 +539,10 @@ export function yyparse(ctx: Context, source: string): File{
             });
         }
         else {
+            var msg = `unexpected token ${token.toString()}, expecting one of the following tokens:\n`;
+            for(var tk of getExpectedTokens(state)){
+                msg += `    ${tokenToString(tk)} ...\n`;
+            }
             ctx.requireLines((ctx, lines) => {
                 let msg2 = markPosition(token, lines) + '\n' + msg;
                 ctx.err(new JsccError(msg2, 'Syntax error'));

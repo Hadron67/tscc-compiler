@@ -267,6 +267,23 @@ function tokenToString(tk){
     return <%= prefix %>tokenAlias[tk] === null ? "<" + <%= prefix %>tokenNames[tk] + ">" : '"' + <%= prefix %>tokenAlias[tk] + '"';
 }
 <% } %>
+function getExpectedTokens(state<%= ts(': number') %>)<%= ts(': number[]') %>{
+        var dis = <%= prefix %>disact[state];
+        var ret<%= ts(': number[]') %> = [];
+        function expect(tk<%= ts(": number") %>){
+            var ind = dis + tk;
+            if(ind < 0 || ind >= <%= prefix %>pact.length || state !== <%= prefix %>checkact[ind]){
+                return <%= prefix %>defred[state] !== -1;
+            }
+            else {
+                return true;
+            }
+        }
+        for(var tk = 0; tk < <%= prefix %>tokenCount; tk++){
+            expect(tk) && ret.push(tk);
+        }
+        return ret;
+}
 // Token kinds
 <%= ts('enum TokenKind {', 'var TokenKind = {') %>
 <% var i = 0; 
@@ -313,7 +330,7 @@ interface <%= className %>{
     getLineTerminator(): LineTerm;
     halt();
     on(ent: 'lexicalerror', cb: (c: string, line: number, col: number) => any);
-    on(ent: 'syntaxerror', cb: (msg: string, t: Token) => any);
+    on(ent: 'syntaxerror', cb: (t: Token, state: number) => any);
     on(ent: 'accept', cb: () => any);
 
     enableBlocks();
@@ -918,26 +935,7 @@ function create<%= className %>()<%= ts(': ' + className) %> {
         }
     }
     function <%= prefix %>syntaxError(t<%= ts(": Token") %>){
-        var msg = "unexpected token " + t.toString() + ", expecting one of the following token(s):\n"
-        msg += <%= prefix %>expected(<%= prefix %>lrState[<%= prefix %>lrState.length - 1]);
-        <%= prefix %>emit("syntaxerror", msg, t);
-    }
-    function <%= prefix %>expected(state<%= ts(": number") %>){
-        var dis = <%= prefix %>disact[state];
-        var ret = '';
-        function expect(tk<%= ts(": number") %>){
-            var ind = dis + tk;
-            if(ind < 0 || ind >= <%= prefix %>pact.length || state !== <%= prefix %>checkact[ind]){
-                return <%= prefix %>defred[state] !== -1;
-            }
-            else {
-                return true;
-            }
-        }
-        for(var tk = 0; tk < <%= prefix %>tokenCount; tk++){
-            expect(tk) && (ret += "    " + tokenToString(tk) + " ..." + '\n');
-        }
-        return ret;
+        <%= prefix %>emit("syntaxerror", t, <%= prefix %>lrState[<%= prefix %>lrState.length - 1]);
     }
 }
 <%= n(input.file.epilogue) %>

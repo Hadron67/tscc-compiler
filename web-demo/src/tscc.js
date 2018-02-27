@@ -491,6 +491,43 @@ function convertTokenToString(t) {
     return t.alias === null ? "<" + t.sym + ">" : "\"" + t.alias + "\"";
 }
 
+function escapeString(s, escapes) {
+    var ret = '';
+    for (var i = 0; i < s.length; i++) {
+        var c = s.charAt(i);
+        ret += escapes[c] || c;
+    }
+    return ret;
+}
+var Span = (function () {
+    function Span() {
+        this._s = [];
+    }
+    Span.prototype.append = function (content, escape) {
+        if (escape === void 0) { escape = true; }
+        if (this._s.length > 0 && this._s[this._s.length - 1].escape === escape) {
+            this._s[this._s.length - 1].content += content;
+        }
+        else {
+            this._s.push({ content: content, escape: escape });
+        }
+        return this;
+    };
+    Span.prototype.toString = function (escapes) {
+        var ret = '';
+        for (var _i = 0, _a = this._s; _i < _a.length; _i++) {
+            var it = _a[_i];
+            var s = it.content;
+            if (escapes && it.escape) {
+                s = escapeString(s, escapes);
+            }
+            ret += s;
+        }
+        return ret;
+    };
+    return Span;
+}());
+
 function printParseTable(os, cela, doneList, showlah, showFullItemsets, escapes) {
     var g = cela.g;
     var tokenCount = g.tokenCount;
@@ -506,7 +543,8 @@ function printParseTable(os, cela, doneList, showlah, showFullItemsets, escapes)
             (showFullItemsets || item.isKernel) && os.writeln(tab + item.toString({ showlah: showlah }));
         });
         if (cela.defred[i] !== -1) {
-            os.writeln(tab + "default action: reduce with rule " + cela.defred[i]);
+            var def = cela.defred[i];
+            os.writeln(tab + "default action: reduce with rule " + def + " (" + g.rules[def].lhs.sym + ")");
         }
         else {
             os.writeln(tab + 'no default action');
@@ -518,7 +556,7 @@ function printParseTable(os, cela, doneList, showlah, showFullItemsets, escapes)
                     shift += "" + tab + convertTokenToString(g.tokens[j]) + " : shift, and go to state " + item.shift.stateIndex + "\n";
                 }
                 else {
-                    reduce += "" + tab + convertTokenToString(g.tokens[j]) + " : reduce with rule " + item.rule.index + "\n";
+                    reduce += "" + tab + convertTokenToString(g.tokens[j]) + " : reduce with rule " + item.rule.index + " (" + item.rule.lhs.sym + ")\n";
                 }
             }
         }
@@ -529,9 +567,8 @@ function printParseTable(os, cela, doneList, showlah, showFullItemsets, escapes)
             }
         }
         var line = shift + reduce + gotot;
-        for (var _i = 0, escapes_1 = escapes; _i < escapes_1.length; _i++) {
-            var es = escapes_1[_i];
-            line = line.replace(es.from, es.to);
+        if (escapes) {
+            line = escapeString(line, escapes);
         }
         os.writeln(line);
         os.writeln();
@@ -945,38 +982,6 @@ function testParse(g, pt, tokens, onErr) {
     } while (true);
     return ret;
 }
-
-var Span = (function () {
-    function Span() {
-        this._s = [];
-    }
-    Span.prototype.append = function (content, escape) {
-        if (escape === void 0) { escape = true; }
-        if (this._s.length > 0 && this._s[this._s.length - 1].escape === escape) {
-            this._s[this._s.length - 1].content += content;
-        }
-        else {
-            this._s.push({ content: content, escape: escape });
-        }
-        return this;
-    };
-    Span.prototype.toString = function (escapes) {
-        var ret = '';
-        for (var _i = 0, _a = this._s; _i < _a.length; _i++) {
-            var it = _a[_i];
-            var s = it.content;
-            if (escapes && it.escape) {
-                for (var _b = 0, escapes_1 = escapes; _b < escapes_1.length; _b++) {
-                    var escape = escapes_1[_b];
-                    s = s.replace(escape.from, escape.to);
-                }
-            }
-            ret += s;
-        }
-        return ret;
-    };
-    return Span;
-}());
 
 var InternalError = (function () {
     function InternalError(msg) {
@@ -1826,9 +1831,8 @@ var State = (function () {
         var endl = '\n';
         var tab = '    ';
         function echo(s) {
-            for (var _i = 0, escapes_1 = escapes; _i < escapes_1.length; _i++) {
-                var es = escapes_1[_i];
-                s = s.replace(es.from, es.to);
+            if (escapes) {
+                s = escapeString(s, escapes);
             }
             os.writeln(s);
         }
@@ -3756,7 +3760,7 @@ var jjlexunicodeClassTable1 = [
     0, 256, Infinity,
 ];
 var jjlexisEnd1 = [
-    1, 1, 0, 0, 1, 1,
+    0, 1, 0, 0, 1, 1,
 ];
 var jjlexhasArc1 = [
     1, 1, 1, 1, 1, 0,
@@ -4437,7 +4441,7 @@ var jjlexTokens0 = [
     -1, -1, -1, -1, 13, -1, 16, -1, 23,
 ];
 var jjlexTokens1 = [
-    3, 3, -1, -1, 3, 3,
+    -1, 3, -1, -1, 3, 3,
 ];
 var jjlexTokens2 = [
     -1, 45, -1, 6, 7, -1, 45, 45,
@@ -4653,6 +4657,23 @@ var jjtokenAlias = [
 ];
 function tokenToString(tk) {
     return jjtokenAlias[tk] === null ? "<" + jjtokenNames[tk] + ">" : "\"" + jjtokenAlias[tk] + "\"";
+}
+function getExpectedTokens(state) {
+    var dis = jjdisact[state];
+    var ret = [];
+    function expect(tk) {
+        var ind = dis + tk;
+        if (ind < 0 || ind >= jjpact.length || state !== jjcheckact[ind]) {
+            return jjdefred[state] !== -1;
+        }
+        else {
+            return true;
+        }
+    }
+    for (var tk = 0; tk < jjtokenCount; tk++) {
+        expect(tk) && ret.push(tk);
+    }
+    return ret;
 }
 var TokenKind;
 (function (TokenKind) {
@@ -5943,26 +5964,7 @@ function createParser() {
         }
     }
     function jjsyntaxError(t) {
-        var msg = "unexpected token " + t.toString() + ", expecting one of the following token(s):\n";
-        msg += jjexpected(jjlrState[jjlrState.length - 1]);
-        jjemit("syntaxerror", msg, t);
-    }
-    function jjexpected(state) {
-        var dis = jjdisact[state];
-        var ret = '';
-        function expect(tk) {
-            var ind = dis + tk;
-            if (ind < 0 || ind >= jjpact.length || state !== jjcheckact[ind]) {
-                return jjdefred[state] !== -1;
-            }
-            else {
-                return true;
-            }
-        }
-        for (var tk = 0; tk < jjtokenCount; tk++) {
-            expect(tk) && (ret += "    " + tokenToString(tk) + " ..." + '\n');
-        }
-        return ret;
+        jjemit("syntaxerror", t, jjlrState[jjlrState.length - 1]);
     }
 }
 
@@ -6006,6 +6008,7 @@ function createParser() {
             case TokenKind.TOKEN_HOOK_DIR:
             case TokenKind.LEAST_DIR:
             case TokenKind.ALWAYS_DIR:
+            case TokenKind.SEPERATOR:
             case TokenKind.TOUCH_DIR: return TokenType.DIRECTIVE;
             case TokenKind.OPEN_BLOCK:
             case TokenKind.CLOSE_BLOCK:
@@ -6023,7 +6026,6 @@ function createParser() {
             case TokenKind.COLON:
             case TokenKind.ARROW:
             case TokenKind.EOL:
-            case TokenKind.SEPERATOR:
             case TokenKind.OR:
             case TokenKind.WEDGE:
             case TokenKind.COMMA: return TokenType.PUNCTUATION;
@@ -6052,7 +6054,10 @@ function createParser() {
         function nextToken() {
             err = false;
             var t = parser.nextToken();
-            if (t.id !== TokenKind.EOF && err) {
+            if (t === null) {
+                return null;
+            }
+            else if (t.id !== TokenKind.EOF && err) {
                 return TokenType.ERROR;
             }
             else {
@@ -6107,7 +6112,7 @@ function createParser() {
 function yyparse(ctx, source) {
     var parser = createParser();
     var err = false;
-    parser.on('syntaxerror', function (msg, token) {
+    parser.on('syntaxerror', function (token, state) {
         if (token.id === TokenKind.ERROR) {
             ctx.requireLines(function (ctx, lines) {
                 var msg2 = 'unexpected illegal token ' + markPosition(token, lines) + '\n';
@@ -6115,6 +6120,11 @@ function yyparse(ctx, source) {
             });
         }
         else {
+            var msg = "unexpected token " + token.toString() + ", expecting one of the following tokens:\n";
+            for (var _i = 0, _a = getExpectedTokens(state); _i < _a.length; _i++) {
+                var tk = _a[_i];
+                msg += "    " + tokenToString(tk) + " ...\n";
+            }
             ctx.requireLines(function (ctx, lines) {
                 var msg2 = markPosition(token, lines) + '\n' + msg;
                 ctx.err(new JsccError(msg2, 'Syntax error'));
@@ -6553,6 +6563,41 @@ var tsRenderer = function (input, output) {
         echo("}");
     }
     echoLine("");
+    echo("function getExpectedTokens(state");
+    echo(ts(': number'));
+    echo(")");
+    echo(ts(': number[]'));
+    echoLine("{");
+    echo("        var dis = ");
+    echo(prefix);
+    echoLine("disact[state];");
+    echo("        var ret");
+    echo(ts(': number[]'));
+    echoLine(" = [];");
+    echo("        function expect(tk");
+    echo(ts(": number"));
+    echoLine("){");
+    echoLine("            var ind = dis + tk;");
+    echo("            if(ind < 0 || ind >= ");
+    echo(prefix);
+    echo("pact.length || state !== ");
+    echo(prefix);
+    echoLine("checkact[ind]){");
+    echo("                return ");
+    echo(prefix);
+    echoLine("defred[state] !== -1;");
+    echoLine("            }");
+    echoLine("            else {");
+    echoLine("                return true;");
+    echoLine("            }");
+    echoLine("        }");
+    echo("        for(var tk = 0; tk < ");
+    echo(prefix);
+    echoLine("tokenCount; tk++){");
+    echoLine("            expect(tk) && ret.push(tk);");
+    echoLine("        }");
+    echoLine("        return ret;");
+    echoLine("}");
     echoLine("// Token kinds");
     echo(ts('enum TokenKind {', 'var TokenKind = {'));
     var i = 0;
@@ -6612,7 +6657,7 @@ var tsRenderer = function (input, output) {
         echoLine("    getLineTerminator(): LineTerm;");
         echoLine("    halt();");
         echoLine("    on(ent: 'lexicalerror', cb: (c: string, line: number, col: number) => any);");
-        echoLine("    on(ent: 'syntaxerror', cb: (msg: string, t: Token) => any);");
+        echoLine("    on(ent: 'syntaxerror', cb: (t: Token, state: number) => any);");
         echoLine("    on(ent: 'accept', cb: () => any);");
         echoLine("");
         echoLine("    enableBlocks();");
@@ -7993,50 +8038,13 @@ var tsRenderer = function (input, output) {
     echo("syntaxError(t");
     echo(ts(": Token"));
     echoLine("){");
-    echoLine("        var msg = \"unexpected token \" + t.toString() + \", expecting one of the following token(s):\\n\"");
-    echo("        msg += ");
+    echo("        ");
     echo(prefix);
-    echo("expected(");
+    echo("emit(\"syntaxerror\", t, ");
     echo(prefix);
     echo("lrState[");
     echo(prefix);
     echoLine("lrState.length - 1]);");
-    echo("        ");
-    echo(prefix);
-    echoLine("emit(\"syntaxerror\", msg, t);");
-    echoLine("    }");
-    echo("    function ");
-    echo(prefix);
-    echo("expected(state");
-    echo(ts(": number"));
-    echoLine("){");
-    echo("        var dis = ");
-    echo(prefix);
-    echoLine("disact[state];");
-    echoLine("        var ret = '';");
-    echo("        function expect(tk");
-    echo(ts(": number"));
-    echoLine("){");
-    echoLine("            var ind = dis + tk;");
-    echo("            if(ind < 0 || ind >= ");
-    echo(prefix);
-    echo("pact.length || state !== ");
-    echo(prefix);
-    echoLine("checkact[ind]){");
-    echo("                return ");
-    echo(prefix);
-    echoLine("defred[state] !== -1;");
-    echoLine("            }");
-    echoLine("            else {");
-    echoLine("                return true;");
-    echoLine("            }");
-    echoLine("        }");
-    echo("        for(var tk = 0; tk < ");
-    echo(prefix);
-    echoLine("tokenCount; tk++){");
-    echoLine("            expect(tk) && (ret += \"    \" + tokenToString(tk) + \" ...\" + '\\n');");
-    echoLine("        }");
-    echoLine("        return ret;");
     echoLine("    }");
     echoLine("}");
     echo(n(input.file.epilogue));
@@ -8207,9 +8215,8 @@ var DFATable = (function () {
             }
         }
         function echo(s) {
-            for (var _i = 0, escapes_1 = escapes; _i < escapes_1.length; _i++) {
-                var e = escapes_1[_i];
-                s = s.replace(e.from, e.to);
+            if (escapes) {
+                s = escapeString(s, escapes);
             }
             os.writeln(s);
         }
@@ -8253,7 +8260,7 @@ function createContext() {
     var needLinecbs = [];
     var terminated = false;
     var timers = [];
-    var escapes = [];
+    var escapes = null;
     var ctx = {
         warn: warn,
         err: err,
@@ -8280,14 +8287,6 @@ function createContext() {
         genCode: genCode,
         isTerminated: function () { return terminated; }
     };
-    function escape(s) {
-        var s = '';
-        for (var _i = 0, escapes_1 = escapes; _i < escapes_1.length; _i++) {
-            var e = escapes_1[_i];
-            s = s.replace(e.from, e.to);
-        }
-        return s;
-    }
     function reset() {
         file = null;
         itemSets = null;
@@ -8300,9 +8299,13 @@ function createContext() {
         timers.length = 0;
     }
     function setEscape(e) {
+        escapes = escapes || {};
         for (var from in e) {
-            escapes.push({ from: from, to: e[from] });
+            escapes[from] = e[from];
         }
+    }
+    function escape(s) {
+        return escapes ? escapeString(s, escapes) : s;
     }
     function compile(source, fname) {
         reset();

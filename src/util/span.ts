@@ -1,7 +1,14 @@
 export interface EscapeDef {
-    from: string;
-    to: string;
+    [from: string]: string;
 };
+export function escapeString(s: string, escapes: EscapeDef): string{
+    var ret = '';
+    for(var i = 0; i < s.length; i++){
+        var c = s.charAt(i);
+        ret += escapes[c] || c;
+    }
+    return ret;
+}
 export class Span {
     private _s: { content: string, escape: boolean }[] = [];
     append(content: string, escape: boolean = true): Span {
@@ -13,14 +20,12 @@ export class Span {
         }
         return this;
     }
-    toString(escapes?: EscapeDef[]): string {
+    toString(escapes?: EscapeDef): string {
         var ret = '';
         for(var it of this._s){
             var s = it.content;
             if(escapes && it.escape){
-                for(var escape of escapes){
-                    s = s.replace(escape.from, escape.to);
-                }
+                s = escapeString(s, escapes);
             }
             ret += s;
         }

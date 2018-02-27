@@ -4,7 +4,7 @@ import { createClassFinder } from '../util/class-detect';
 import { Arc, State } from './state';
 import { compress, Table } from '../util/compress';
 import { OutputStream } from '../util/io';
-import { EscapeDef } from '../util/span';
+import { EscapeDef, escapeString } from '../util/span';
 
 function arrayWrapper<T>(stateCount: number, classCount: number, rawTable: Arc<T>[]): Table{
     let emCount: number[] = [];
@@ -98,7 +98,7 @@ export class DFATable<T>{
             return null;
         }
     }
-    print(os: OutputStream, escapes: EscapeDef[]){
+    print(os: OutputStream, escapes?: EscapeDef){
         var tab = '    ';
         function char(c: number){
             if(c >= 0x20 && c <= 0x7e){
@@ -109,8 +109,8 @@ export class DFATable<T>{
             }
         }
         function echo(s: string){
-            for(var e of escapes){
-                s = s.replace(e.from, e.to);
+            if(escapes){
+                s = escapeString(s, escapes);
             }
             os.writeln(s);
         }

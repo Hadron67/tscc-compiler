@@ -4,6 +4,7 @@
 .code-editor-titlebar{
     margin-bottom: 0px;
     margin-top: 0px;
+    padding-top: 10px;
     border-top: 1px solid #eec1c1;
     border-left: 1px solid #eec1c1;
     border-right: 1px solid #eec1c1;

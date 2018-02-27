@@ -26,7 +26,7 @@ The output files actually depends on the target language. For js and ts, `test.t
 |-d, --detail-time|Print a detailed list of time costs of different generation phases.|No|
 |-h, --help|Print help message and quit|No|
 ### From module
-This project uses module bundler `rollup` to create a source file `tscc.js` that contains the entail source code for tscc-compiler. you may import it as a module by `var tscc = require('tscc-compiler');` or include `tscc.js` with a script tag in browsers. Then call `tscc.main` with the argument being an object that contains various options. It returns `0` if no error ocurrs, otherwise it returns `-1`. Options are listed below:
+This project uses module bundler `rollup` to create a source file `tscc.js` that contains the entail source code for tscc-compiler. You may import it as a module by `var tscc = require('tscc-compiler');` or include `tscc.js` with a script tag in browsers. A simple way to invoke tscc-compiler is calling `tscc.main` with the argument being an object that contains various options. It returns `0` if no error ocurrs, otherwise it returns `-1`. Options are listed below:
 
 |Option |Required|Type|Description|
 |:------|:-------|:---|:----------|
@@ -37,6 +37,9 @@ This project uses module bundler `rollup` to create a source file `tscc.js` that
 |writeFile|Yes|`(path: string, content: string) => any`|A callback to write files.|
 |testInput|No|`string`|Test input. If specified, the result will be printed. See below for explanation.|
 |printDetailedTime|Yes|`boolean`|Whether to print the detailed time cost list.|
+|printDFA|No|`boolean`|Whether to print lexical DFA tables in the output file.|
+|showlah|No|`boolean`|Whether to show look-ahead tokens of items when printing parse table.|
+|showFullItemsets|No|`boolean`|Whether to show full item sets when printing parse table. If not specified or set to `false`, only kernel items will be printed.|
 
 Where type notations in Typescript are used.
 
@@ -58,6 +61,7 @@ tscc({
     printDetailedTime: true
 });
 ```
+The module also provides a more flexible way to use it. 
 
 ### Test input
 You can give the tscc-compiler a test input string to test if the grammar works. Input string consists of the following two elements, seperated by spaces:

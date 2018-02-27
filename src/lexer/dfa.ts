@@ -14,7 +14,7 @@ export class DFA<T>{
             }
         }
     }
-    print(os: OutputStream, escapes: EscapeDef[]){
+    print(os: OutputStream, escapes?: EscapeDef){
         for(let s of this.states){
             s.print(os, escapes, false);
             os.writeln();

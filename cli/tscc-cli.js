@@ -11,10 +11,14 @@ var help =
    or  ${pkg.name} --help|-h
 
 options:
-    -o, --output       Specify output file;
-    -t, --test         Run test on the given input string;
-    -d, --detail-time  Print the time costs of different phases;
-    -h, --help         Print this help message and exit.
+    -o, --output            Specify output file.
+    -t, --test              Run test on the given input string.
+    -d, --detail-time       Print the time costs of different phases.
+    --dfa                   Print lexical DFA tables in the output file.
+    --show-lah              Show look-ahead tokens of the items when printing parse table.
+    --show-full-itemsets    Show all the items of each item set when printing parse table. 
+                            By default, only kernel items will be printed.
+    -h, --help              Print this help message and exit.
 `;
 
 function readFile(fname){
