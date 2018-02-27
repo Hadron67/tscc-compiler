@@ -4764,7 +4764,7 @@ function createParser() {
     var jjtoken;
     var jjstop;
     var jjtokenEmitted;
-    var jjenableBlock;
+    var jjenableBlock = true;
     var jjlineTerm;
     var jjhandlers = {};
     var gb;
@@ -4802,15 +4802,25 @@ function createParser() {
         jjsematicS = [];
         jjsematicVal = null;
         jjtokenQueue = [];
-        jjenableBlock = true;
         jjlineTerm = LineTerm.AUTO;
         jjlastCR = false;
         gb = b;
         config = config1;
         jjtryReduce();
     }
-    function load(i) {
-        jjinput = i;
+    function load(input) {
+        if (typeof input === 'string') {
+            var i = 0;
+            jjinput = {
+                current: function () { return i < input.length ? input.charCodeAt(i) : null; },
+                next: function () { return i++; },
+                isEof: function () { return i >= input.length; },
+                backup: function (t) { return i -= input.length; }
+            };
+        }
+        else {
+            jjinput = input;
+        }
     }
     function nextToken() {
         jjtokenEmitted = false;
@@ -5950,6 +5960,144 @@ function createParser() {
         return ret;
     }
 }
+
+(function (highlight) {
+    var TokenType;
+    (function (TokenType) {
+        TokenType[TokenType["EOF"] = 1] = "EOF";
+        TokenType[TokenType["NONE"] = 2] = "NONE";
+        TokenType[TokenType["ERROR"] = 3] = "ERROR";
+        TokenType[TokenType["STRING"] = 4] = "STRING";
+        TokenType[TokenType["NAME"] = 5] = "NAME";
+        TokenType[TokenType["COMMENT"] = 6] = "COMMENT";
+        TokenType[TokenType["DIRECTIVE"] = 7] = "DIRECTIVE";
+        TokenType[TokenType["PUNCTUATION"] = 8] = "PUNCTUATION";
+        TokenType[TokenType["CODE"] = 9] = "CODE";
+        TokenType[TokenType["TOKEN_IN_CODE"] = 10] = "TOKEN_IN_CODE";
+    })(TokenType = highlight.TokenType || (highlight.TokenType = {}));
+    
+    function getTokenType(tid) {
+        switch (tid) {
+            case TokenKind.EOF: return TokenType.EOF;
+            case TokenKind.ERROR: return TokenType.ERROR;
+            case TokenKind.COMMENT: return TokenType.COMMENT;
+            case TokenKind.NAME: return TokenType.NAME;
+            case TokenKind.STRING: return TokenType.STRING;
+            case TokenKind.OPT_DIR:
+            case TokenKind.LEX_DIR:
+            case TokenKind.TOKEN_DIR:
+            case TokenKind.LEFT_DIR:
+            case TokenKind.RIGHT_DIR:
+            case TokenKind.NONASSOC_DIR:
+            case TokenKind.USE_DIR:
+            case TokenKind.HEADER_DIR:
+            case TokenKind.EXTRA_ARG_DIR:
+            case TokenKind.EMPTY:
+            case TokenKind.TYPE_DIR:
+            case TokenKind.PREC_DIR:
+            case TokenKind.INIT_DIR:
+            case TokenKind.OUTPUT_DIR:
+            case TokenKind.IMPORT_DIR:
+            case TokenKind.TOKEN_HOOK_DIR:
+            case TokenKind.LEAST_DIR:
+            case TokenKind.ALWAYS_DIR:
+            case TokenKind.TOUCH_DIR: return TokenType.DIRECTIVE;
+            case TokenKind.OPEN_BLOCK:
+            case TokenKind.CLOSE_BLOCK:
+            case TokenKind.GT:
+            case TokenKind.LT:
+            case TokenKind.BRA:
+            case TokenKind.KET:
+            case TokenKind.EQU:
+            case TokenKind.CBRA:
+            case TokenKind.CKET:
+            case TokenKind.QUESTION:
+            case TokenKind.STAR:
+            case TokenKind.PLUS:
+            case TokenKind.DASH:
+            case TokenKind.COLON:
+            case TokenKind.ARROW:
+            case TokenKind.EOL:
+            case TokenKind.SEPERATOR:
+            case TokenKind.OR:
+            case TokenKind.WEDGE:
+            case TokenKind.COMMA: return TokenType.PUNCTUATION;
+            case TokenKind.ANY_CODE:
+            case TokenKind.LHS_REF:
+            case TokenKind.TOKEN_REF:
+            case TokenKind.MATCHED:
+            case TokenKind.EMIT_TOKEN: return TokenType.TOKEN_IN_CODE;
+            default: return TokenType.NONE;
+        }
+    }
+    
+    function createHighlightContext() {
+        var parser = createParser();
+        var err = false;
+        parser.disableBlocks();
+        parser.on('syntaxerror', function () { return err = true; });
+        parser.init(null, null, { skipComment: false });
+        return {
+            load: function (input) { return parser.load(input); },
+            nextToken: nextToken,
+            loadState: function (s) { return parser.loadParserState(s); },
+            getState: function () { return parser.getParserState(); }
+        };
+        function nextToken() {
+            err = false;
+            var t = parser.nextToken();
+            if (err) {
+                return TokenType.ERROR;
+            }
+            else {
+                return getTokenType(t.id);
+            }
+        }
+    }
+    highlight.createHighlightContext = createHighlightContext;
+    function highlightString(s, getClass) {
+        var escapes = {
+            '>': '&gt;',
+            '<': '&lt;',
+            '&': '&amp;',
+            ' ': '&nbsp;',
+            '\n': '<br />',
+            '\t': '&nbsp;&nbsp;&nbsp;&nbsp;'
+        };
+        function escapeHTML(s) {
+            var ret = '';
+            for (var i = 0; i < s.length; i++) {
+                var c = s.charAt(i);
+                ret += escapes[c] || c;
+            }
+            return ret;
+        }
+        var ret = '';
+        var tokenBase = 0;
+        var hc = createHighlightContext();
+        var i = 0;
+        hc.load({
+            current: function () { return i < s.length ? s.charCodeAt(i) : null; },
+            next: function () { return i++; },
+            isEof: function () { return i >= s.length; },
+            backup: function (s) { return i -= s.length; }
+        });
+        var tt;
+        while ((tt = hc.nextToken()) !== TokenType.EOF) {
+            var cl = getClass(tt);
+            if (cl !== null) {
+                ret += "<span class=\"" + cl + "\">" + escapeHTML(s.substr(tokenBase, i - tokenBase)) + "</span>";
+            }
+            else {
+                ret += escapeHTML(s.substr(tokenBase, i - tokenBase));
+            }
+            tokenBase = i;
+        }
+        return ret;
+    }
+    highlight.highlightString = highlightString;
+})(exports.highlight || (exports.highlight = {}));
+
 function yyparse(ctx, source) {
     var parser = createParser();
     var err = false;
@@ -6451,13 +6599,16 @@ var tsRenderer = function (input, output) {
         echoLine(");");
         echoLine("    accept(s: string);");
         echoLine("    end();");
-        echoLine("    load(input: ParserInput);");
+        echoLine("    load(input: ParserInput | string);");
         echoLine("    nextToken(): Token;");
         echoLine("");
         echoLine("    setLineTerminator(lt: LineTerm);");
         echoLine("    getLineTerminator(): LineTerm;");
         echoLine("    halt();");
-        echoLine("    on(ent: string, cb: (a1?, a2?, a3?) => any);");
+        echoLine("    on(ent: 'lexicalerror', cb: (c: string, line: number, col: number) => any);");
+        echoLine("    on(ent: 'syntaxerror', cb: (msg: string, t: Token) => any);");
+        echoLine("    on(ent: 'accept', cb: () => any);");
+        echoLine("");
         echoLine("    enableBlocks();");
         echoLine("    disableBlocks();");
         echoLine("    loadParserState(state: ParserState);");
@@ -6635,7 +6786,7 @@ var tsRenderer = function (input, output) {
     echo(prefix);
     echo("enableBlock");
     echo(ts(': boolean'));
-    echoLine(";");
+    echoLine(" = true;");
     echo("    var ");
     echo(prefix);
     echo("lineTerm");
@@ -6740,9 +6891,6 @@ var tsRenderer = function (input, output) {
     echoLine("");
     echo("        ");
     echo(prefix);
-    echoLine("enableBlock = true;");
-    echo("        ");
-    echo(prefix);
     echoLine("lineTerm = LineTerm.AUTO;");
     echo("        ");
     echo(prefix);
@@ -6756,12 +6904,33 @@ var tsRenderer = function (input, output) {
     echo(prefix);
     echoLine("tryReduce();");
     echoLine("    }");
-    echo("    function load(i");
-    echo(ts(': ParserInput'));
+    echo("    function load(input");
+    echo(ts(': ParserInput | string'));
     echoLine("){");
-    echo("        ");
+    echoLine("        if(typeof input === 'string'){");
+    echoLine("            var i = 0;");
+    echo("            ");
     echo(prefix);
-    echoLine("input = i;");
+    echoLine("input = {");
+    echo("                current: ");
+    echo(lambda('()', 'i < input.length ? input.charCodeAt(i) : null'));
+    echoLine(",");
+    echo("                next: ");
+    echo(lambda('()', 'i++'));
+    echoLine(",");
+    echo("                isEof: ");
+    echo(lambda('()', 'i >= input.length'));
+    echoLine(",");
+    echo("                backup: ");
+    echo(lambda('t', 'i -= input.length'));
+    echoLine("");
+    echoLine("            }");
+    echoLine("        }");
+    echoLine("        else {");
+    echo("            ");
+    echo(prefix);
+    echoLine("input = input;");
+    echoLine("        }");
     echoLine("    }");
     echo("    function nextToken()");
     echo(ts(': Token'));

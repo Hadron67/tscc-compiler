@@ -3,6 +3,7 @@ import { Console } from './util/common';
 import { TSCCContext, createContext } from './top/result';
 import { generateCode } from './codegen/template';
 
+export { highlight } from './parser/parser';
 export { Assoc } from './grammar/token-entry';
 export { setDebugger } from './util/common';
 export { defineTemplate } from './codegen/template';

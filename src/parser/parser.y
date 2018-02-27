@@ -375,6 +375,136 @@ innerActionBlockItem:
 |   '{' [+IN_ACTION_BLOCK] { lexact.raw('\{'); } innerActionBlock '}' [-] { lexact.raw('\}'); }
 ;
 %%
+
+export namespace highlight {
+    export enum TokenType {
+        EOF = 1,
+        NONE,
+        ERROR,
+        STRING,
+        NAME,
+        COMMENT,
+        DIRECTIVE,
+        PUNCTUATION,
+        CODE,
+        TOKEN_IN_CODE
+    };
+    function getTokenType(tid: TokenKind): TokenType{
+        switch(tid){
+            case TokenKind.EOF: return TokenType.EOF;
+            case TokenKind.ERROR: return TokenType.ERROR;
+            case TokenKind.COMMENT: return TokenType.COMMENT;
+            case TokenKind.NAME: return TokenType.NAME;
+            case TokenKind.STRING: return TokenType.STRING;
+            case TokenKind.OPT_DIR:
+            case TokenKind.LEX_DIR:
+            case TokenKind.TOKEN_DIR:
+            case TokenKind.LEFT_DIR:
+            case TokenKind.RIGHT_DIR:
+            case TokenKind.NONASSOC_DIR:
+            case TokenKind.USE_DIR:
+            case TokenKind.HEADER_DIR:
+            case TokenKind.EXTRA_ARG_DIR:
+            case TokenKind.EMPTY:
+            case TokenKind.TYPE_DIR:
+            case TokenKind.PREC_DIR:
+            case TokenKind.INIT_DIR:
+            case TokenKind.OUTPUT_DIR:
+            case TokenKind.IMPORT_DIR:
+            case TokenKind.TOKEN_HOOK_DIR:
+            case TokenKind.LEAST_DIR:
+            case TokenKind.ALWAYS_DIR:
+            case TokenKind.TOUCH_DIR: return TokenType.DIRECTIVE;
+            case TokenKind.OPEN_BLOCK:
+            case TokenKind.CLOSE_BLOCK:
+            case TokenKind.GT:
+            case TokenKind.LT:
+            case TokenKind.BRA:
+            case TokenKind.KET:
+            case TokenKind.EQU:
+            case TokenKind.CBRA:
+            case TokenKind.CKET:
+            case TokenKind.QUESTION:
+            case TokenKind.STAR:
+            case TokenKind.PLUS:
+            case TokenKind.DASH:
+            case TokenKind.COLON:
+            case TokenKind.ARROW:
+            case TokenKind.EOL:
+            case TokenKind.SEPERATOR:
+            case TokenKind.OR:
+            case TokenKind.WEDGE:
+            case TokenKind.COMMA: return TokenType.PUNCTUATION;
+            case TokenKind.ANY_CODE:
+            case TokenKind.LHS_REF:
+            case TokenKind.TOKEN_REF:
+            case TokenKind.MATCHED:
+            case TokenKind.EMIT_TOKEN: return TokenType.TOKEN_IN_CODE;
+            default: return TokenType.NONE;
+        }
+    }
+    export interface HighlightContext {
+        load(input: ParserInput | string);
+        nextToken(): TokenType;
+        loadState(state: ParserState);
+        getState(): ParserState;
+    };
+    export function createHighlightContext(){
+        var parser: Parser = createParser();
+        var err = false;
+        parser.disableBlocks();
+        parser.on('syntaxerror', () => err = true);
+        parser.init(null, null, { skipComment: false });
+        return {
+            load: input => parser.load(input),
+            nextToken,
+            loadState: s => parser.loadParserState(s),
+            getState: () => parser.getParserState()
+        };
+        function nextToken(): TokenType{
+            err = false;
+            var t = parser.nextToken();
+            if(err){
+                return TokenType.ERROR;
+            }
+            else {
+                return getTokenType(t.id);
+            }
+        }
+    }
+    export function highlightString(s: string, getClass: (t: TokenType) => string): string{
+        function escapeHTML(s: string): string{
+            return s
+                .replace(/\n/g, '<br />')
+                .replace(/ /g, '&nbsp;')
+                .replace(/>/g, '&gt;')
+                .replace(/</g, '&lt;')
+                .replace(/&/g, '&amp;')
+                .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+        }
+        var ret = '';
+        var tokenBase: number = 0;
+        var hc = createHighlightContext();
+        var i = 0;
+        hc.load({
+            current: () => i < s.length ? s.charCodeAt(i) : null,
+            next: () => i++,
+            isEof: () => i >= s.length,
+            backup: s => i-= s.length
+        });
+        var tt: TokenType;
+        while((tt = hc.nextToken()) !== TokenType.EOF){
+            var cl = getClass(tt);
+            if(cl !== null){
+                ret += `<span class="${cl}">${escapeHTML(s.substr(tokenBase, i - tokenBase))}</span>`;
+            }
+            else {
+                ret += escapeHTML(s.substr(tokenBase, i - tokenBase));
+            }
+        }
+        return ret;
+    }
+};
 function charPosition(c: string, line: number, column: number): Position{
     return {
         startLine: line,

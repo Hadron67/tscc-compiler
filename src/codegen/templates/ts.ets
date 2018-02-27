@@ -306,13 +306,16 @@ interface <%= className %>{
     init(<%= n(input.file.initArg) %>);
     accept(s: string);
     end();
-    load(input: ParserInput);
+    load(input: ParserInput | string);
     nextToken(): Token;
 
     setLineTerminator(lt: LineTerm);
     getLineTerminator(): LineTerm;
     halt();
-    on(ent: string, cb: (a1?, a2?, a3?) => any);
+    on(ent: 'lexicalerror', cb: (c: string, line: number, col: number) => any);
+    on(ent: 'syntaxerror', cb: (msg: string, t: Token) => any);
+    on(ent: 'accept', cb: () => any);
+
     enableBlocks();
     disableBlocks();
     loadParserState(state: ParserState);
@@ -396,7 +399,7 @@ function create<%= className %>()<%= ts(': ' + className) %> {
     var <%= prefix %>token<%= ts(": Token") %>;
     var <%= prefix %>stop<%= ts(': boolean') %>;
     var <%= prefix %>tokenEmitted<%= ts(': boolean') %>;
-    var <%= prefix %>enableBlock<%= ts(': boolean') %>;
+    var <%= prefix %>enableBlock<%= ts(': boolean') %> = true;
     var <%= prefix %>lineTerm<%= ts(': LineTerm') %>;
 
     var <%= prefix %>handlers<%= ts(": {[s: string]: ((a1?, a2?, a3?) => any)[]}") %> = {};
@@ -452,7 +455,6 @@ function create<%= className %>()<%= ts(': ' + className) %> {
         <%= prefix %>sematicVal = null;
         <%= prefix %>tokenQueue = [];
 
-        <%= prefix %>enableBlock = true;
         <%= prefix %>lineTerm = LineTerm.AUTO;
         <%= prefix %>lastCR = false;
 
@@ -460,8 +462,19 @@ function create<%= className %>()<%= ts(': ' + className) %> {
 
         <%= prefix %>tryReduce();
     }
-    function load(i<%= ts(': ParserInput') %>){
-        <%= prefix %>input = i;
+    function load(input<%= ts(': ParserInput | string') %>){
+        if(typeof input === 'string'){
+            var i = 0;
+            <%= prefix %>input = {
+                current: <%= lambda('()', 'i < input.length ? input.charCodeAt(i) : null') %>,
+                next: <%= lambda('()', 'i++') %>,
+                isEof: <%= lambda('()', 'i >= input.length') %>,
+                backup: <%= lambda('t', 'i -= input.length') %>
+            }
+        }
+        else {
+            <%= prefix %>input = input;
+        }
     }
     function nextToken()<%= ts(': Token') %>{
         <%= prefix %>tokenEmitted = false;

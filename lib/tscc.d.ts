@@ -201,3 +201,19 @@ interface TSCCContext {
  * @returns context object.
  */
 export declare function createContext(): TSCCContext;
+
+export namespace highlight {
+    export enum TokenType {
+        EOF = 1,
+        NONE,
+        ERROR,
+        STRING,
+        NAME,
+        COMMENT,
+        DIRECTIVE,
+        PUNCTUATION,
+        CODE,
+        TOKEN_IN_CODE
+    }
+    export function highlightString(s: string, getClass: (t: TokenType) => string): string;
+}
