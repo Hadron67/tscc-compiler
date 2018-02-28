@@ -520,6 +520,7 @@ state 79
     [ 123: innerBlockItem => codeList . ]*
     [ 144: codeList => codeList . <ANY_CODE> ]*
     default action: reduce with rule 123 (innerBlockItem)
+    <ANY_CODE> : shift, and go to state 210
 
 
 state 80
@@ -1290,6 +1291,7 @@ state 198
     [ 135: innerActionBlockItem => codeList . ]*
     [ 144: codeList => codeList . <ANY_CODE> ]*
     default action: reduce with rule 135 (innerActionBlockItem)
+    <ANY_CODE> : shift, and go to state 210
 
 
 state 199

@@ -187,7 +187,7 @@ function unescape(s: string): string{
 }
 
 %touch <COMMENT> <WHITESPACE>
-%left <ANY_CODE>
+%right <ANY_CODE>
 
 %type {JNode}
 
