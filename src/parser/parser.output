@@ -418,8 +418,9 @@ state 63
     no default action
     "{" : shift, and go to state 80
     "}" : shift, and go to state 77
-    <ANY_CODE> : shift, and go to state 79
+    <ANY_CODE> : shift, and go to state 204
     innerBlockItem : go to state 78
+    codeList : go to state 79
 
 
 state 64
@@ -516,7 +517,8 @@ state 78
 
 
 state 79
-    [ 123: innerBlockItem => <ANY_CODE> . ]*
+    [ 123: innerBlockItem => codeList . ]*
+    [ 144: codeList => codeList . <ANY_CODE> ]*
     default action: reduce with rule 123 (innerBlockItem)
 
 
@@ -671,8 +673,9 @@ state 103
     no default action
     "{" : shift, and go to state 80
     "}" : shift, and go to state 117
-    <ANY_CODE> : shift, and go to state 79
+    <ANY_CODE> : shift, and go to state 204
     innerBlockItem : go to state 78
+    codeList : go to state 79
 
 
 state 104
@@ -1207,7 +1210,7 @@ state 184
 state 185
     [ 130: actionBlock => always "{" @14 . @15 innerActionBlock "}" @16 ]*
     default action: reduce with rule 128 (@15)
-    @15 : go to state 204
+    @15 : go to state 205
 
 
 state 186
@@ -1244,14 +1247,14 @@ state 190
 state 191
     [ 72: primitiveRE => "(" innerRegexp . ")" ]*
     no default action
-    ")" : shift, and go to state 205
+    ")" : shift, and go to state 206
 
 
 state 192
     [ 73: primitiveRE => "[" inverse_ . setRE_ "]" ]*
     default action: reduce with rule 80 (setRE_)
     <STRING> : shift, and go to state 170
-    setRE_ : go to state 206
+    setRE_ : go to state 207
     setRE : go to state 168
     setREItem : go to state 169
 
@@ -1259,13 +1262,13 @@ state 192
 state 193
     [ 74: primitiveRE => "<" <NAME> . ">" ]*
     no default action
-    ">" : shift, and go to state 207
+    ">" : shift, and go to state 208
 
 
 state 194
     [ 75: primitiveRE => "%import" "(" . <STRING> ")" ]*
     no default action
-    <STRING> : shift, and go to state 208
+    <STRING> : shift, and go to state 209
 
 
 state 195
@@ -1284,7 +1287,8 @@ state 197
 
 
 state 198
-    [ 135: innerActionBlockItem => <ANY_CODE> . ]*
+    [ 135: innerActionBlockItem => codeList . ]*
+    [ 144: codeList => codeList . <ANY_CODE> ]*
     default action: reduce with rule 135 (innerActionBlockItem)
 
 
@@ -1311,105 +1315,117 @@ state 202
 state 203
     [ 143: innerActionBlockItem => "{" . @17 @18 innerActionBlock "}" @19 ]*
     default action: reduce with rule 140 (@17)
-    @17 : go to state 209
+    @17 : go to state 211
 
 
 state 204
-    [ 130: actionBlock => always "{" @14 @15 . innerActionBlock "}" @16 ]*
-    default action: reduce with rule 134 (innerActionBlock)
-    innerActionBlock : go to state 210
+    [ 145: codeList => <ANY_CODE> . ]*
+    default action: reduce with rule 145 (codeList)
 
 
 state 205
+    [ 130: actionBlock => always "{" @14 @15 . innerActionBlock "}" @16 ]*
+    default action: reduce with rule 134 (innerActionBlock)
+    innerActionBlock : go to state 212
+
+
+state 206
     [ 72: primitiveRE => "(" innerRegexp ")" . ]*
     default action: reduce with rule 72 (primitiveRE)
 
 
-state 206
+state 207
     [ 73: primitiveRE => "[" inverse_ setRE_ . "]" ]*
     no default action
-    "]" : shift, and go to state 211
+    "]" : shift, and go to state 213
 
 
-state 207
+state 208
     [ 74: primitiveRE => "<" <NAME> ">" . ]*
     default action: reduce with rule 74 (primitiveRE)
 
 
-state 208
+state 209
     [ 75: primitiveRE => "%import" "(" <STRING> . ")" ]*
     no default action
-    ")" : shift, and go to state 212
-
-
-state 209
-    [ 143: innerActionBlockItem => "{" @17 . @18 innerActionBlock "}" @19 ]*
-    default action: reduce with rule 141 (@18)
-    @18 : go to state 213
+    ")" : shift, and go to state 214
 
 
 state 210
+    [ 144: codeList => codeList <ANY_CODE> . ]*
+    default action: reduce with rule 144 (codeList)
+
+
+state 211
+    [ 143: innerActionBlockItem => "{" @17 . @18 innerActionBlock "}" @19 ]*
+    default action: reduce with rule 141 (@18)
+    @18 : go to state 215
+
+
+state 212
     [ 130: actionBlock => always "{" @14 @15 innerActionBlock . "}" @16 ]*
     [ 133: innerActionBlock => innerActionBlock . innerActionBlockItem ]*
     no default action
     "{" : shift, and go to state 203
-    "}" : shift, and go to state 214
-    <ANY_CODE> : shift, and go to state 198
+    "}" : shift, and go to state 216
+    <ANY_CODE> : shift, and go to state 204
     "$$" : shift, and go to state 199
     "$token" : shift, and go to state 200
     "$matched" : shift, and go to state 201
     <EMIT_TOKEN> : shift, and go to state 202
     innerActionBlockItem : go to state 197
+    codeList : go to state 198
 
 
-state 211
+state 213
     [ 73: primitiveRE => "[" inverse_ setRE_ "]" . ]*
     default action: reduce with rule 73 (primitiveRE)
 
 
-state 212
+state 214
     [ 75: primitiveRE => "%import" "(" <STRING> ")" . ]*
     default action: reduce with rule 75 (primitiveRE)
 
 
-state 213
+state 215
     [ 143: innerActionBlockItem => "{" @17 @18 . innerActionBlock "}" @19 ]*
     default action: reduce with rule 134 (innerActionBlock)
-    innerActionBlock : go to state 215
+    innerActionBlock : go to state 217
 
 
-state 214
+state 216
     [ 130: actionBlock => always "{" @14 @15 innerActionBlock "}" . @16 ]*
     default action: reduce with rule 129 (@16)
-    @16 : go to state 216
+    @16 : go to state 218
 
 
-state 215
+state 217
     [ 143: innerActionBlockItem => "{" @17 @18 innerActionBlock . "}" @19 ]*
     [ 133: innerActionBlock => innerActionBlock . innerActionBlockItem ]*
     no default action
     "{" : shift, and go to state 203
-    "}" : shift, and go to state 217
-    <ANY_CODE> : shift, and go to state 198
+    "}" : shift, and go to state 219
+    <ANY_CODE> : shift, and go to state 204
     "$$" : shift, and go to state 199
     "$token" : shift, and go to state 200
     "$matched" : shift, and go to state 201
     <EMIT_TOKEN> : shift, and go to state 202
     innerActionBlockItem : go to state 197
+    codeList : go to state 198
 
 
-state 216
+state 218
     [ 130: actionBlock => always "{" @14 @15 innerActionBlock "}" @16 . ]*
     default action: reduce with rule 130 (actionBlock)
 
 
-state 217
+state 219
     [ 143: innerActionBlockItem => "{" @17 @18 innerActionBlock "}" . @19 ]*
     default action: reduce with rule 142 (@19)
-    @19 : go to state 218
+    @19 : go to state 220
 
 
-state 218
+state 220
     [ 143: innerActionBlockItem => "{" @17 @18 innerActionBlock "}" @19 . ]*
     default action: reduce with rule 143 (innerActionBlockItem)
 

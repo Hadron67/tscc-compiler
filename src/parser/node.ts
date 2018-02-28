@@ -18,7 +18,7 @@ export function newNode(val: string): JNode{
         endColumn: 0
     };
 }
-export function nodeBetween(from: Position, to: Position, val: string){
+export function nodeBetween(from: JNode, to: JNode, val: string): JNode{
     return {
         val: val,
         startLine: from.startLine,
@@ -26,6 +26,11 @@ export function nodeBetween(from: Position, to: Position, val: string){
         endLine: to.endLine,
         endColumn: to.endColumn
     };
+}
+export function nodeExtend(n: JNode, to: JNode, val: string){
+    n.endLine = to.endLine;
+    n.endColumn = to.endColumn;
+    n.val = val;
 }
 export function posToString(pos: Position){
     if(pos.startLine !== -1){

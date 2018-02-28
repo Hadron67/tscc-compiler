@@ -323,6 +323,7 @@ interface <%= className %>{
     init(<%= n(input.file.initArg) %>);
     accept(s: string);
     end();
+    parse(input: ParserInput | string): boolean;
     load(input: ParserInput | string);
     nextToken(): Token;
 
@@ -433,6 +434,7 @@ function create<%= className %>()<%= ts(': ' + className) %> {
         accept,
         end,
         load,
+        parse,
         nextToken,
         halt,
         enableBlocks,
@@ -454,7 +456,8 @@ function create<%= className %>()<%= ts(': ' + className) %> {
         enableBlocks: enableBlocks,
         disableBlocks: disableBlocks,
         loadParserState: loadParserState,
-        getParserState: getParserState
+        getParserState: getParserState,
+        parse: parse
     };
 <% } %>
     function init(<%= n(input.file.initArg) %>){
@@ -482,11 +485,12 @@ function create<%= className %>()<%= ts(': ' + className) %> {
     function load(input<%= ts(': ParserInput | string') %>){
         if(typeof input === 'string'){
             var i = 0;
+            var s<%= ts(': string') %> = input;
             <%= prefix %>input = {
-                current: <%= lambda('()', 'i < input.length ? input.charCodeAt(i) : null') %>,
+                current: <%= lambda('()', 'i < s.length ? s.charCodeAt(i) : null') %>,
                 next: <%= lambda('()', 'i++') %>,
-                isEof: <%= lambda('()', 'i >= input.length') %>,
-                backup: <%= lambda('t', 'i -= input.length') %>
+                isEof: <%= lambda('()', 'i >= s.length') %>,
+                backup: <%= lambda('t', 'i -= t.length') %>
             }
         }
         else {
@@ -542,6 +546,20 @@ function create<%= className %>()<%= ts(': ' + className) %> {
      */
     function end(){
         
+    }
+    function parse(input: ParserInput | string): boolean {
+        load(input);
+        var t;
+        while(!<%= prefix %>stop){
+            t = nextToken();
+            if(t === null){
+                return false;
+            }
+            else if(t.id === 0){
+                return true;
+            }
+        }
+        return true;
     }
     function halt(){
         <%= prefix %>stop = true;
@@ -735,6 +753,8 @@ function create<%= className %>()<%= ts(': ' + className) %> {
                     <%= prefix %>mark();
                     <%= prefix %>state = nstate;
                     <%= prefix %>consume(ccode);
+                    // check for terminate state
+                    <%= prefix %>tryLexEnd();
                 }
             }
             else {
@@ -774,6 +794,8 @@ function create<%= className %>()<%= ts(': ' + className) %> {
                 <%= prefix %>state = nstate;
                 // character consumed
                 <%= prefix %>consume(ccode);
+                // check for terminate state
+                <%= prefix %>tryLexEnd();
             }
         }
     }
@@ -807,6 +829,18 @@ function create<%= className %>()<%= ts(': ' + className) %> {
                 <%= prefix %>state = 0;
                 return true;
             }
+        }
+    }
+    function <%= prefix %>tryLexEnd(){
+        var lexstate = <%= prefix %>lexState[<%= prefix %>lexState.length - 1];
+        var ltable = <%= prefix %>dfaTables[lexstate];
+        var isEnd = ltable.isEnd[<%= prefix %>state] === 1;
+        var hasArc = ltable.hasArc[<%= prefix %>state] === 1;
+        if(isEnd && !hasArc){
+            <%= prefix %>doLexAction(lexstate, <%= prefix %>state);
+            <%= prefix %>marker.state = -1;
+            <%= prefix %>backupCount = 0;
+            <%= prefix %>state = 0;
         }
     }
 <% function printReduceActions(){

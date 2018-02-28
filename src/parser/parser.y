@@ -9,7 +9,7 @@ import { Assoc } from '../grammar/token-entry';
 import { CompilationError as E, JsccError } from '../util/E';
 import { Context } from '../util/context';
 import { LexAction } from '../lexer/action';
-import { Position, JNode, newNode, markPosition, nodeBetween } from './node';
+import { Position, JNode, newNode, markPosition, nodeBetween, nodeExtend } from './node';
 import { File } from './file';
 
 function nodeFromToken(t: Token): JNode{
@@ -100,8 +100,10 @@ function unescape(s: string): string{
     HEX = < ['0'-'9', 'a'-'f', 'A'-'F'] >
     ESCAPE_CHAR = < "\\" (['n', 't', 'b', 'r', 'f', '"', "'", "\\"] | <UNICODE>) >
     UNICODE = < ['x', 'u', 'X', 'U'] <HEX>+ >
+    NEWLINE = < ['\r', '\n'] | '\r\n' >
     
-    < WHITESPACE: ["\n", "\t", " ", "\r"]+ >
+    // tokens filtered by %token_hook, but are necessary for syntax highlighting.
+    < WHITESPACE: ["\t", " "]+ | <NEWLINE> >
     < COMMENT: "/*" >: [+IN_COMMENT]
     < COMMENT: ("//"|'#') [^"\n"]* >
 
@@ -151,15 +153,13 @@ function unescape(s: string): string{
     < COMMA: "," >
 }
 
-%touch <COMMENT> <WHITESPACE>
-
 %lex <IN_COMMENT> {
-    < COMMENT: ( [^'*']|'*'[^'/'] )+ >
+    < COMMENT: ( [^'*', '\r', '\n'] | '*'[^'/', '\r', '\n'] )+ | <NEWLINE> >
     < COMMENT: '*/' >: [-]
 }
 
 %lex <IN_BLOCK> {
-    < ANY_CODE: ( [^"{", "}", "\\"] | "\\" [^"{", "}"] )+ >: { $$ = newNode($token.val); }
+    < ANY_CODE: ( [^"{", "}", "\\", '\r', '\n'] | "\\" [^"{", "}"] )+ | <NEWLINE> >: { $$ = newNode($token.val); }
     < ANY_CODE: "\\" ["{", "}"] >: { $$ = newNode($token.val.charAt(1)); }
     < OPEN_BLOCK: "{" >: { $$ = nodeFromTrivalToken($token); }
     < CLOSE_BLOCK: "}" >: { $$ = nodeFromTrivalToken($token); }
@@ -167,8 +167,9 @@ function unescape(s: string): string{
 
 %lex <IN_ACTION_BLOCK> {
     < ANY_CODE: 
-        ( [^"{", "}", "\\", "$"] | "\\" [^"{", "}", "$"] )+ 
-    |   "$" ( [^"{", "}", "\\", "$"] | "\\" [^"{", "}", "$"] )*
+        ( [^"{", "}", "\\", "$", '\r', '\n'] | "\\" [^"{", "}", "$"] )+ 
+    |   "$" ( [^"{", "}", "\\", "$", '\r', '\n'] | "\\" [^"{", "}", "$"] )*
+    |   <NEWLINE>
     >: { $$ = nodeFromToken($token); }
     < ANY_CODE: "\\" ["{", "}", "$"] >: { $$ = nodeFromToken($token); $$.val = $$.val.charAt(1); }
     < OPEN_BLOCK: "{" >: { $$ = nodeFromTrivalToken($token); }
@@ -182,8 +183,11 @@ function unescape(s: string): string{
 }
 
 %lex <IN_EPILOGUE> {
-    < ANY_CODE: [^]+ >: { $$ = nodeFromToken($token); }
+    < ANY_CODE: [^'\r', '\n']+ | <NEWLINE> >: { $$ = nodeFromToken($token); }
 }
+
+%touch <COMMENT> <WHITESPACE>
+%left <ANY_CODE>
 
 %type {JNode}
 
@@ -217,7 +221,7 @@ epilogue:
 |   ep = nonEmptyEpilogue { gb.setEpilogue(ep); }
 ;
 nonEmptyEpilogue:
-    nonEmptyEpilogue c = <ANY_CODE> { $$ = nodeBetween($$, c, $$.val + c.val); }
+    nonEmptyEpilogue c = <ANY_CODE> { nodeExtend($$, c, $$.val + c.val); }
 |   <ANY_CODE>
 ;
 associativeDir:
@@ -292,7 +296,7 @@ rePostfix:
     '+' { $$ = newNode('+'); }
 |   '?' { $$ = newNode('?'); }
 |   '*' { $$ = newNode('*'); }
-|   { $$ = newNode(''); }
+|   /* empty */ { $$ = newNode(''); }
 ;
 primitiveRE: 
     '(' innerRegexp ')'
@@ -321,7 +325,7 @@ rule:
     { gb.prepareRule(ruleLhs); } 
     ruleHead ruleBody ruleTrailer { gb.commitRule(); } 
 ;
-ruleHead: '%use' '(' varUseList ')' | ;
+ruleHead: '%use' '(' varUseList ')' | /* empty */ ;
 varUseList: 
     varUseList ',' vn = <NAME> { gb.addRuleUseVar(vn); }
 |   vn = <NAME> { gb.addRuleUseVar(vn); }
@@ -358,7 +362,7 @@ block: open = "{" [+IN_BLOCK] bl = innerBlock close = "}" [-]
 ;
 innerBlock: innerBlock b = innerBlockItem { $$.val += b.val; } | { $$ = newNode(''); };
 innerBlockItem:
-    <ANY_CODE> 
+    codeList %prec <ANY_CODE>
 |   '{' [+IN_BLOCK] b = innerBlock '}' [-] 
     { $$ = newNode(''); $$.val = '{' + b.val + '}'; }
 ;
@@ -368,14 +372,19 @@ actionBlock:
     innerActionBlock close = "}" [-] { lexact.endBlock(close); }
 ;
 always: '%always' { always = true; } | /* empty */ { always = false; };
-innerActionBlock: innerActionBlock innerActionBlockItem |;
+innerActionBlock: innerActionBlock innerActionBlockItem | /* empty */;
 innerActionBlockItem:
-    c = <ANY_CODE> { lexact.raw(c.val); }
+    c = codeList %prec <ANY_CODE> { lexact.raw(c.val); }
 |   <LHS_REF> { lexact.lhs(); }
 |   <TOKEN_REF> { lexact.tokenObj(); }
 |   <MATCHED> { lexact.matched(); }
 |   t = <EMIT_TOKEN> { gb.addEmitTokenAction(lexact, t); }
 |   '{' [+IN_ACTION_BLOCK] { lexact.raw('\{'); } innerActionBlock '}' [-] { lexact.raw('\}'); }
+;
+
+codeList:
+    codeList c = <ANY_CODE> { nodeExtend($$, c, $$.val + c.val); }
+|   <ANY_CODE>
 ;
 %%
 
@@ -555,8 +564,7 @@ export function yyparse(ctx: Context, source: string): File{
     parser.init(ctx, gb);
 
     ctx.beginTime('parse grammar file');
-    parser.accept(source);
-    parser.end();
+    parser.parse(source);
     ctx.endTime();
 
     var eol = parser.getLineTerminator();

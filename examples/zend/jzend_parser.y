@@ -2047,15 +2047,12 @@ exports.compile = function compile(fname, source, errs){
     var outputs = { astRoot: null };
     var err = false;
     parser.init(outputs);
-    parser.on('lexicalerror', function(c, line, column){
-        line++;
-        column++;
-        errs.push('lexical error: (line ' + line + ', column ' + column + '): unexpected character "' + c + '"');
-        parser.halt();
-        err = true;
-    });
-    parser.on('syntaxerror', function(msg, token){
-        errs.push('syntax error: (line ' + token.startLine + ', column ' + token.startColumn + '):' + msg);
+    parser.on('syntaxerror', function(token, state){
+        var msg = 'unexpected token ' + token.toString() + ', expecting one of the following tokens:\n';
+        for(var i = 0, _a = getExpectedTokens(state); i < _a.length; i++){
+            msg += '    ' + tokenToString(_a[i]) + ' ...\n';
+        }
+        errs.push('syntax error: (line ' + token.startLine + ', column ' + token.startColumn + '): ' + msg);
         parser.halt();
         err = true;
     });

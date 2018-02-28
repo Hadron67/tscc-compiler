@@ -1,6 +1,6 @@
 state 0
     [ 0: (accept) => . start <EOF> ]*
-    default action: reduce with rule 3
+    default action: reduce with rule 3 (top_statement_list)
     start : go to state 1
     top_statement_list : go to state 2
 
@@ -14,7 +14,7 @@ state 1
 state 2
     [ 1: start => top_statement_list . ]*
     [ 2: top_statement_list => top_statement_list . top_statement ]*
-    default action: reduce with rule 1
+    default action: reduce with rule 1 (start)
     <INLINE_HTML> : shift, and go to state 205
     "<?=" : shift, and go to state 195
     <NAME> : shift, and go to state 43
@@ -71,22 +71,22 @@ state 2
 
 state 3
     [ 0: (accept) => start <EOF> . ]*
-    default action: reduce with rule 0
+    default action: reduce with rule 0 ((accept))
 
 
 state 4
     [ 2: top_statement_list => top_statement_list top_statement . ]*
-    default action: reduce with rule 2
+    default action: reduce with rule 2 (top_statement_list)
 
 
 state 5
     [ 4: top_statement => statement . ]*
-    default action: reduce with rule 4
+    default action: reduce with rule 4 (top_statement)
 
 
 state 6
     [ 5: top_statement => function_declaration_statement . ]*
-    default action: reduce with rule 5
+    default action: reduce with rule 5 (top_statement)
 
 
 state 7
@@ -121,7 +121,7 @@ state 10
 
 state 11
     [ 9: const_list => const_decl . ]*
-    default action: reduce with rule 9
+    default action: reduce with rule 9 (const_list)
 
 
 state 12
@@ -165,7 +165,7 @@ state 14
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 35
+    default action: reduce with rule 35 (echo_expr_list)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -196,7 +196,7 @@ state 14
 
 state 15
     [ 36: optional_num => <INT> . ]*
-    default action: reduce with rule 36
+    default action: reduce with rule 36 (optional_num)
 
 
 state 16
@@ -209,18 +209,18 @@ state 17
     [ 173: array_pair_list => non_empty_array_pair_list . ]*
     [ 174: non_empty_array_pair_list => non_empty_array_pair_list . "," array_pair ]*
     [ 175: non_empty_array_pair_list => non_empty_array_pair_list . "," ]*
-    default action: reduce with rule 173
+    default action: reduce with rule 173 (array_pair_list)
     "," : shift, and go to state 59
 
 
 state 18
     [ 176: non_empty_array_pair_list => possible_array_pair . ]*
-    default action: reduce with rule 176
+    default action: reduce with rule 176 (non_empty_array_pair_list)
 
 
 state 19
     [ 177: possible_array_pair => array_pair . ]*
-    default action: reduce with rule 177
+    default action: reduce with rule 177 (possible_array_pair)
 
 
 state 20
@@ -253,7 +253,7 @@ state 20
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 179
+    default action: reduce with rule 179 (array_pair)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -322,12 +322,12 @@ state 21
 
 state 22
     [ 50: dereferencable => dereferencable_primitive . ]*
-    default action: reduce with rule 50
+    default action: reduce with rule 50 (dereferencable)
 
 
 state 23
     [ 51: dereferencable_primitive => "[" . array_pair_list "]" ]*
-    default action: reduce with rule 178
+    default action: reduce with rule 178 (possible_array_pair)
     <NAME> : shift, and go to state 43
     <DECIMAL> : shift, and go to state 42
     <INT> : shift, and go to state 41
@@ -368,7 +368,7 @@ state 23
 
 state 24
     [ 6: top_statement => "const" const_list ";" . ]*
-    default action: reduce with rule 6
+    default action: reduce with rule 6 (top_statement)
 
 
 state 25
@@ -423,7 +423,7 @@ state 27
 
 state 28
     [ 11: statement_list => statement_list statement . ]*
-    default action: reduce with rule 11
+    default action: reduce with rule 11 (statement_list)
 
 
 state 29
@@ -645,65 +645,65 @@ state 35
 
 state 36
     [ 129: expr_without_var => "`" . @2 quote_list "`" @3 ]*
-    default action: reduce with rule 127
+    default action: reduce with rule 127 (@2)
     @2 : go to state 83
 
 
 state 37
     [ 130: expr_without_var => primitive . ]*
-    default action: reduce with rule 130
+    default action: reduce with rule 130 (expr_without_var)
 
 
 state 38
     [ 132: expr_without_var => function_call . ]*
-    default action: reduce with rule 132
+    default action: reduce with rule 132 (expr_without_var)
 
 
 state 39
     [ 56: callable_variable => simple_var . ]*
-    default action: reduce with rule 56
+    default action: reduce with rule 56 (callable_variable)
 
 
 state 40
     [ 50: dereferencable => dereferencable_primitive . ]*
     [ 157: primitive => dereferencable_primitive . ]*
-    default action: reduce with rule 157
-    "->" : reduce with rule 50
-    "[" : reduce with rule 50
+    default action: reduce with rule 157 (primitive)
+    "->" : reduce with rule 50 (dereferencable)
+    "[" : reduce with rule 50 (dereferencable)
 
 
 state 41
     [ 143: primitive => <INT> . ]*
-    default action: reduce with rule 143
+    default action: reduce with rule 143 (primitive)
 
 
 state 42
     [ 144: primitive => <DECIMAL> . ]*
-    default action: reduce with rule 144
+    default action: reduce with rule 144 (primitive)
 
 
 state 43
     [ 145: primitive => <NAME> . ]*
     [ 70: function_call => <NAME> . "(" argument_list ")" ]*
-    default action: reduce with rule 145
+    default action: reduce with rule 145 (primitive)
     "(" : shift, and go to state 84
 
 
 state 44
     [ 148: primitive => """ . @4 quote_list """ @5 ]*
-    default action: reduce with rule 146
+    default action: reduce with rule 146 (@4)
     @4 : go to state 85
 
 
 state 45
     [ 152: primitive => <HEREDOC_HEADER> . @6 @7 heredoc_list <END_OF_HEREDOC> @8 ]*
-    default action: reduce with rule 149
+    default action: reduce with rule 149 (@6)
     @6 : go to state 86
 
 
 state 46
     [ 156: primitive => <NOWDOC_HEADER> . @9 @10 heredoc_list <END_OF_HEREDOC> @11 ]*
-    default action: reduce with rule 153
+    default action: reduce with rule 153 (@9)
     @9 : go to state 87
 
 
@@ -715,7 +715,7 @@ state 47
 
 state 48
     [ 59: simple_var => <VARIABLE> . ]*
-    default action: reduce with rule 59
+    default action: reduce with rule 59 (simple_var)
 
 
 state 49
@@ -736,7 +736,7 @@ state 50
 
 state 51
     [ 53: dereferencable_primitive => <STRING> . ]*
-    default action: reduce with rule 53
+    default action: reduce with rule 53 (dereferencable_primitive)
 
 
 state 52
@@ -784,7 +784,7 @@ state 53
 
 state 54
     [ 133: function_declaration_statement => "function" <NAME> "(" . parameter_list ")" "{" statement_list "}" ]*
-    default action: reduce with rule 134
+    default action: reduce with rule 134 (parameter_list)
     <VARIABLE> : shift, and go to state 57
     parameter_list : go to state 120
     non_empty_parameter_list : go to state 55
@@ -794,18 +794,18 @@ state 54
 state 55
     [ 135: parameter_list => non_empty_parameter_list . ]*
     [ 136: non_empty_parameter_list => non_empty_parameter_list . "," parameter ]*
-    default action: reduce with rule 135
+    default action: reduce with rule 135 (parameter_list)
     "," : shift, and go to state 121
 
 
 state 56
     [ 137: non_empty_parameter_list => parameter . ]*
-    default action: reduce with rule 137
+    default action: reduce with rule 137 (non_empty_parameter_list)
 
 
 state 57
     [ 138: parameter => <VARIABLE> . ]*
-    default action: reduce with rule 138
+    default action: reduce with rule 138 (parameter)
 
 
 state 58
@@ -837,7 +837,7 @@ state 58
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 69
+    default action: reduce with rule 69 (optional_expr)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -869,7 +869,7 @@ state 58
 state 59
     [ 174: non_empty_array_pair_list => non_empty_array_pair_list "," . array_pair ]*
     [ 175: non_empty_array_pair_list => non_empty_array_pair_list "," . ]*
-    default action: reduce with rule 175
+    default action: reduce with rule 175 (non_empty_array_pair_list)
     <NAME> : shift, and go to state 43
     <DECIMAL> : shift, and go to state 42
     <INT> : shift, and go to state 41
@@ -1010,7 +1010,7 @@ state 62
 state 63
     [ 73: argument_list => non_empty_argument_list . ]*
     [ 74: non_empty_argument_list => non_empty_argument_list . "," expr ]*
-    default action: reduce with rule 73
+    default action: reduce with rule 73 (argument_list)
     "," : shift, and go to state 127
 
 
@@ -1043,7 +1043,7 @@ state 64
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 75
+    default action: reduce with rule 75 (non_empty_argument_list)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -1089,7 +1089,7 @@ state 65
     [ 125: expr_without_var => var . "++" ]*
     [ 126: expr_without_var => var . "--" ]*
     [ 48: dereferencable => var . ]*
-    default action: reduce with rule 44
+    default action: reduce with rule 44 (expr)
     "=" : shift, and go to state 128
     "+=" : shift, and go to state 129
     "-=" : shift, and go to state 130
@@ -1104,20 +1104,20 @@ state 65
     "%=" : shift, and go to state 139
     "++" : shift, and go to state 140
     "--" : shift, and go to state 141
-    "->" : reduce with rule 48
-    "[" : reduce with rule 48
+    "->" : reduce with rule 48 (dereferencable)
+    "[" : reduce with rule 48 (dereferencable)
 
 
 state 66
     [ 45: expr => expr_without_var . ]*
-    default action: reduce with rule 45
+    default action: reduce with rule 45 (expr)
 
 
 state 67
     [ 54: var => callable_variable . ]*
     [ 46: callable_expr => callable_variable . ]*
-    default action: reduce with rule 54
-    "(" : reduce with rule 46
+    default action: reduce with rule 54 (var)
+    "(" : reduce with rule 46 (callable_expr)
 
 
 state 68
@@ -1139,7 +1139,7 @@ state 69
 state 70
     [ 77: expr_without_var => "[" . array_pair_list "]" "=" expr ]*
     [ 51: dereferencable_primitive => "[" . array_pair_list "]" ]*
-    default action: reduce with rule 178
+    default action: reduce with rule 178 (possible_array_pair)
     <NAME> : shift, and go to state 43
     <DECIMAL> : shift, and go to state 42
     <INT> : shift, and go to state 41
@@ -1219,7 +1219,7 @@ state 71
 
 state 72
     [ 8: const_list => const_list "," const_decl . ]*
-    default action: reduce with rule 8
+    default action: reduce with rule 8 (const_list)
 
 
 state 73
@@ -1251,7 +1251,7 @@ state 73
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 10
+    default action: reduce with rule 10 (const_decl)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -1282,7 +1282,7 @@ state 73
 
 state 74
     [ 7: top_statement => "__halt_compiler" "(" ")" ";" . ]*
-    default action: reduce with rule 7
+    default action: reduce with rule 7 (top_statement)
 
 
 state 75
@@ -1314,7 +1314,7 @@ state 75
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 118
+    default action: reduce with rule 118 (expr_without_var)
 
 
 state 76
@@ -1346,7 +1346,7 @@ state 76
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 119
+    default action: reduce with rule 119 (expr_without_var)
 
 
 state 77
@@ -1378,7 +1378,7 @@ state 77
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 120
+    default action: reduce with rule 120 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -1430,7 +1430,7 @@ state 78
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 121
+    default action: reduce with rule 121 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -1479,7 +1479,7 @@ state 79
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 122
+    default action: reduce with rule 122 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -1508,33 +1508,33 @@ state 79
 state 80
     [ 123: expr_without_var => "++" var . ]*
     [ 48: dereferencable => var . ]*
-    default action: reduce with rule 123
-    "->" : reduce with rule 48
-    "[" : reduce with rule 48
+    default action: reduce with rule 123 (expr_without_var)
+    "->" : reduce with rule 48 (dereferencable)
+    "[" : reduce with rule 48 (dereferencable)
 
 
 state 81
     [ 54: var => callable_variable . ]*
-    default action: reduce with rule 54
+    default action: reduce with rule 54 (var)
 
 
 state 82
     [ 124: expr_without_var => "--" var . ]*
     [ 48: dereferencable => var . ]*
-    default action: reduce with rule 124
-    "->" : reduce with rule 48
-    "[" : reduce with rule 48
+    default action: reduce with rule 124 (expr_without_var)
+    "->" : reduce with rule 48 (dereferencable)
+    "[" : reduce with rule 48 (dereferencable)
 
 
 state 83
     [ 129: expr_without_var => "`" @2 . quote_list "`" @3 ]*
-    default action: reduce with rule 163
+    default action: reduce with rule 163 (quote_list)
     quote_list : go to state 148
 
 
 state 84
     [ 70: function_call => <NAME> "(" . argument_list ")" ]*
-    default action: reduce with rule 72
+    default action: reduce with rule 72 (argument_list)
     <NAME> : shift, and go to state 43
     <DECIMAL> : shift, and go to state 42
     <INT> : shift, and go to state 41
@@ -1573,25 +1573,25 @@ state 84
 
 state 85
     [ 148: primitive => """ @4 . quote_list """ @5 ]*
-    default action: reduce with rule 163
+    default action: reduce with rule 163 (quote_list)
     quote_list : go to state 150
 
 
 state 86
     [ 152: primitive => <HEREDOC_HEADER> @6 . @7 heredoc_list <END_OF_HEREDOC> @8 ]*
-    default action: reduce with rule 150
+    default action: reduce with rule 150 (@7)
     @7 : go to state 151
 
 
 state 87
     [ 156: primitive => <NOWDOC_HEADER> @9 . @10 heredoc_list <END_OF_HEREDOC> @11 ]*
-    default action: reduce with rule 154
+    default action: reduce with rule 154 (@10)
     @10 : go to state 152
 
 
 state 88
     [ 71: function_call => callable_expr "(" . argument_list ")" ]*
-    default action: reduce with rule 72
+    default action: reduce with rule 72 (argument_list)
     <NAME> : shift, and go to state 43
     <DECIMAL> : shift, and go to state 42
     <INT> : shift, and go to state 41
@@ -1667,12 +1667,12 @@ state 89
 
 state 90
     [ 61: simple_var => "$" simple_var . ]*
-    default action: reduce with rule 61
+    default action: reduce with rule 61 (simple_var)
 
 
 state 91
     [ 52: dereferencable_primitive => "array" "(" . array_pair_list ")" ]*
-    default action: reduce with rule 178
+    default action: reduce with rule 178 (possible_array_pair)
     <NAME> : shift, and go to state 43
     <DECIMAL> : shift, and go to state 42
     <INT> : shift, and go to state 41
@@ -1740,7 +1740,7 @@ state 92
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 34
+    default action: reduce with rule 34 (echo_expr_list)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -2735,7 +2735,7 @@ state 118
 
 state 119
     [ 131: expr_without_var => "function" "(" . parameter_list ")" lexical_vars "{" statement_list "}" ]*
-    default action: reduce with rule 134
+    default action: reduce with rule 134 (parameter_list)
     <VARIABLE> : shift, and go to state 57
     parameter_list : go to state 187
     non_empty_parameter_list : go to state 55
@@ -2757,7 +2757,7 @@ state 121
 
 state 122
     [ 174: non_empty_array_pair_list => non_empty_array_pair_list "," array_pair . ]*
-    default action: reduce with rule 174
+    default action: reduce with rule 174 (non_empty_array_pair_list)
 
 
 state 123
@@ -2789,7 +2789,7 @@ state 123
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 180
+    default action: reduce with rule 180 (array_pair)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -2820,17 +2820,17 @@ state 123
 
 state 124
     [ 49: dereferencable => "(" expr ")" . ]*
-    default action: reduce with rule 49
+    default action: reduce with rule 49 (dereferencable)
 
 
 state 125
     [ 51: dereferencable_primitive => "[" array_pair_list "]" . ]*
-    default action: reduce with rule 51
+    default action: reduce with rule 51 (dereferencable_primitive)
 
 
 state 126
     [ 162: quote_list => quote_list encaps . ]*
-    default action: reduce with rule 162
+    default action: reduce with rule 162 (quote_list)
 
 
 state 127
@@ -3316,24 +3316,24 @@ state 139
 
 state 140
     [ 125: expr_without_var => var "++" . ]*
-    default action: reduce with rule 125
+    default action: reduce with rule 125 (expr_without_var)
 
 
 state 141
     [ 126: expr_without_var => var "--" . ]*
-    default action: reduce with rule 126
+    default action: reduce with rule 126 (expr_without_var)
 
 
 state 142
     [ 55: var => dereferencable arrow_and_property . ]*
     [ 58: callable_variable => dereferencable arrow_and_property . "(" argument_list ")" ]*
-    default action: reduce with rule 55
+    default action: reduce with rule 55 (var)
     "(" : shift, and go to state 228
 
 
 state 143
     [ 57: callable_variable => dereferencable "[" . optional_expr "]" ]*
-    default action: reduce with rule 68
+    default action: reduce with rule 68 (optional_expr)
     <NAME> : shift, and go to state 43
     <DECIMAL> : shift, and go to state 42
     <INT> : shift, and go to state 41
@@ -3371,13 +3371,13 @@ state 143
 
 state 144
     [ 64: arrow_and_property => "->" . @0 property_name @1 ]*
-    default action: reduce with rule 62
+    default action: reduce with rule 62 (@0)
     @0 : go to state 230
 
 
 state 145
     [ 76: expr_without_var => "list" "(" . array_pair_list ")" "=" expr ]*
-    default action: reduce with rule 178
+    default action: reduce with rule 178 (possible_array_pair)
     <NAME> : shift, and go to state 43
     <DECIMAL> : shift, and go to state 42
     <INT> : shift, and go to state 41
@@ -3518,13 +3518,13 @@ state 150
 
 state 151
     [ 152: primitive => <HEREDOC_HEADER> @6 @7 . heredoc_list <END_OF_HEREDOC> @8 ]*
-    default action: reduce with rule 159
+    default action: reduce with rule 159 (heredoc_list)
     heredoc_list : go to state 237
 
 
 state 152
     [ 156: primitive => <NOWDOC_HEADER> @9 @10 . heredoc_list <END_OF_HEREDOC> @11 ]*
-    default action: reduce with rule 159
+    default action: reduce with rule 159 (heredoc_list)
     heredoc_list : go to state 238
 
 
@@ -3602,16 +3602,16 @@ state 155
 state 156
     [ 27: foreach_as => foreach_variable . ]*
     [ 28: foreach_as => foreach_variable . "=>" foreach_variable ]*
-    default action: reduce with rule 27
+    default action: reduce with rule 27 (foreach_as)
     "=>" : shift, and go to state 242
 
 
 state 157
     [ 29: foreach_variable => var . ]*
     [ 48: dereferencable => var . ]*
-    default action: reduce with rule 29
-    "->" : reduce with rule 48
-    "[" : reduce with rule 48
+    default action: reduce with rule 29 (foreach_variable)
+    "->" : reduce with rule 48 (dereferencable)
+    "[" : reduce with rule 48 (dereferencable)
 
 
 state 158
@@ -3623,7 +3623,7 @@ state 158
 state 159
     [ 31: foreach_variable => "[" . array_pair_list "]" ]*
     [ 51: dereferencable_primitive => "[" . array_pair_list "]" ]*
-    default action: reduce with rule 178
+    default action: reduce with rule 178 (possible_array_pair)
     <NAME> : shift, and go to state 43
     <DECIMAL> : shift, and go to state 42
     <INT> : shift, and go to state 41
@@ -3787,7 +3787,7 @@ state 162
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 92
+    default action: reduce with rule 92 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -3828,7 +3828,7 @@ state 163
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 93
+    default action: reduce with rule 93 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -3869,7 +3869,7 @@ state 164
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 94
+    default action: reduce with rule 94 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -3910,7 +3910,7 @@ state 165
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 95
+    default action: reduce with rule 95 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -3951,7 +3951,7 @@ state 166
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 96
+    default action: reduce with rule 96 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -3992,7 +3992,7 @@ state 167
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 97
+    default action: reduce with rule 97 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -4033,7 +4033,7 @@ state 168
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 98
+    default action: reduce with rule 98 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -4074,7 +4074,7 @@ state 169
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 99
+    default action: reduce with rule 99 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -4115,7 +4115,7 @@ state 170
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 100
+    default action: reduce with rule 100 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -4165,7 +4165,7 @@ state 171
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 101
+    default action: reduce with rule 101 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -4216,7 +4216,7 @@ state 172
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 102
+    default action: reduce with rule 102 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -4265,7 +4265,7 @@ state 173
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 103
+    default action: reduce with rule 103 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -4304,7 +4304,7 @@ state 174
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 104
+    default action: reduce with rule 104 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -4343,7 +4343,7 @@ state 175
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 105
+    default action: reduce with rule 105 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -4395,7 +4395,7 @@ state 176
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 106
+    default action: reduce with rule 106 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -4448,7 +4448,7 @@ state 177
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 107
+    default action: reduce with rule 107 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -4505,7 +4505,7 @@ state 178
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 108
+    default action: reduce with rule 108 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -4561,7 +4561,7 @@ state 179
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 109
+    default action: reduce with rule 109 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -4616,7 +4616,7 @@ state 180
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 110
+    default action: reduce with rule 110 (expr_without_var)
     "*" : shift, and go to state 114
     "/" : shift, and go to state 115
     "**" : shift, and go to state 117
@@ -4652,7 +4652,7 @@ state 181
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 111
+    default action: reduce with rule 111 (expr_without_var)
     "*" : shift, and go to state 114
     "/" : shift, and go to state 115
     "**" : shift, and go to state 117
@@ -4688,7 +4688,7 @@ state 182
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 112
+    default action: reduce with rule 112 (expr_without_var)
     "**" : shift, and go to state 117
 
 
@@ -4721,7 +4721,7 @@ state 183
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 113
+    default action: reduce with rule 113 (expr_without_var)
     "**" : shift, and go to state 117
 
 
@@ -4754,7 +4754,7 @@ state 184
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 114
+    default action: reduce with rule 114 (expr_without_var)
     "**" : shift, and go to state 117
 
 
@@ -4787,7 +4787,7 @@ state 185
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 115
+    default action: reduce with rule 115 (expr_without_var)
     "**" : shift, and go to state 117
 
 
@@ -4820,7 +4820,7 @@ state 186
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 116
+    default action: reduce with rule 116 (expr_without_var)
     "*" : shift, and go to state 114
     "/" : shift, and go to state 115
     "**" : shift, and go to state 117
@@ -4847,18 +4847,18 @@ state 189
 
 state 190
     [ 136: non_empty_parameter_list => non_empty_parameter_list "," parameter . ]*
-    default action: reduce with rule 136
+    default action: reduce with rule 136 (non_empty_parameter_list)
 
 
 state 191
     [ 13: statement => "{" . statement_list "}" ]*
-    default action: reduce with rule 12
+    default action: reduce with rule 12 (statement_list)
     statement_list : go to state 250
 
 
 state 192
     [ 14: statement => ";" . ]*
-    default action: reduce with rule 14
+    default action: reduce with rule 14 (statement)
 
 
 state 193
@@ -4923,7 +4923,7 @@ state 193
 state 194
     [ 16: statement => inline_html_list . ]*
     [ 32: inline_html_list => inline_html_list . <INLINE_HTML> ]*
-    default action: reduce with rule 16
+    default action: reduce with rule 16 (statement)
     <INLINE_HTML> : shift, and go to state 252
 
 
@@ -5004,7 +5004,7 @@ state 196
 
 state 197
     [ 19: statement => if_statement . ]*
-    default action: reduce with rule 19
+    default action: reduce with rule 19 (statement)
 
 
 state 198
@@ -5080,7 +5080,7 @@ state 201
 
 state 202
     [ 24: statement => "return" . optional_expr ";" ]*
-    default action: reduce with rule 68
+    default action: reduce with rule 68 (optional_expr)
     <NAME> : shift, and go to state 43
     <DECIMAL> : shift, and go to state 42
     <INT> : shift, and go to state 41
@@ -5118,21 +5118,21 @@ state 202
 
 state 203
     [ 25: statement => "break" . optional_num ";" ]*
-    default action: reduce with rule 37
+    default action: reduce with rule 37 (optional_num)
     <INT> : shift, and go to state 15
     optional_num : go to state 260
 
 
 state 204
     [ 26: statement => "continue" . optional_num ";" ]*
-    default action: reduce with rule 37
+    default action: reduce with rule 37 (optional_num)
     <INT> : shift, and go to state 15
     optional_num : go to state 261
 
 
 state 205
     [ 33: inline_html_list => <INLINE_HTML> . ]*
-    default action: reduce with rule 33
+    default action: reduce with rule 33 (inline_html_list)
 
 
 state 206
@@ -5171,7 +5171,7 @@ state 207
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 74
+    default action: reduce with rule 74 (non_empty_argument_list)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -5202,43 +5202,43 @@ state 207
 
 state 208
     [ 158: heredoc_list => heredoc_list heredoc_item . ]*
-    default action: reduce with rule 158
+    default action: reduce with rule 158 (heredoc_list)
 
 
 state 209
     [ 160: heredoc_item => <HEREDOC_END_LABEL> . ]*
-    default action: reduce with rule 160
+    default action: reduce with rule 160 (heredoc_item)
 
 
 state 210
     [ 161: heredoc_item => encaps . ]*
-    default action: reduce with rule 161
+    default action: reduce with rule 161 (heredoc_item)
 
 
 state 211
     [ 164: encaps => <ANY_CONTENT> . ]*
-    default action: reduce with rule 164
+    default action: reduce with rule 164 (encaps)
 
 
 state 212
     [ 165: encaps => <VARIABLE_IN_STRING> . ]*
-    default action: reduce with rule 165
+    default action: reduce with rule 165 (encaps)
 
 
 state 213
     [ 166: encaps => <PROPERTY_IN_STRING> . ]*
-    default action: reduce with rule 166
+    default action: reduce with rule 166 (encaps)
 
 
 state 214
     [ 169: encaps => <OFFSET_IN_STRING> . @12 expr "]" @13 ]*
-    default action: reduce with rule 167
+    default action: reduce with rule 167 (@12)
     @12 : go to state 263
 
 
 state 215
     [ 172: encaps => "${" . @14 expr "}" @15 ]*
-    default action: reduce with rule 170
+    default action: reduce with rule 170 (@14)
     @14 : go to state 264
 
 
@@ -5271,7 +5271,7 @@ state 216
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 78
+    default action: reduce with rule 78 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -5326,7 +5326,7 @@ state 217
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 79
+    default action: reduce with rule 79 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -5381,7 +5381,7 @@ state 218
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 80
+    default action: reduce with rule 80 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -5436,7 +5436,7 @@ state 219
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 81
+    default action: reduce with rule 81 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -5491,7 +5491,7 @@ state 220
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 82
+    default action: reduce with rule 82 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -5546,7 +5546,7 @@ state 221
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 83
+    default action: reduce with rule 83 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -5601,7 +5601,7 @@ state 222
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 84
+    default action: reduce with rule 84 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -5656,7 +5656,7 @@ state 223
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 85
+    default action: reduce with rule 85 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -5711,7 +5711,7 @@ state 224
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 86
+    default action: reduce with rule 86 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -5766,7 +5766,7 @@ state 225
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 87
+    default action: reduce with rule 87 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -5821,7 +5821,7 @@ state 226
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 88
+    default action: reduce with rule 88 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -5876,7 +5876,7 @@ state 227
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 89
+    default action: reduce with rule 89 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -5904,7 +5904,7 @@ state 227
 
 state 228
     [ 58: callable_variable => dereferencable arrow_and_property "(" . argument_list ")" ]*
-    default action: reduce with rule 72
+    default action: reduce with rule 72 (argument_list)
     <NAME> : shift, and go to state 43
     <DECIMAL> : shift, and go to state 42
     <INT> : shift, and go to state 41
@@ -5967,7 +5967,7 @@ state 231
 state 232
     [ 77: expr_without_var => "[" array_pair_list "]" . "=" expr ]*
     [ 51: dereferencable_primitive => "[" array_pair_list "]" . ]*
-    default action: reduce with rule 51
+    default action: reduce with rule 51 (dereferencable_primitive)
     "=" : shift, and go to state 272
 
 
@@ -5975,26 +5975,26 @@ state 233
     [ 117: expr_without_var => "(" expr ")" . ]*
     [ 49: dereferencable => "(" expr ")" . ]*
     [ 47: callable_expr => "(" expr ")" . ]*
-    default action: reduce with rule 117
-    "->" : reduce with rule 49
-    "(" : reduce with rule 47
-    "[" : reduce with rule 49
+    default action: reduce with rule 117 (expr_without_var)
+    "->" : reduce with rule 49 (dereferencable)
+    "(" : reduce with rule 47 (callable_expr)
+    "[" : reduce with rule 49 (dereferencable)
 
 
 state 234
     [ 129: expr_without_var => "`" @2 quote_list "`" . @3 ]*
-    default action: reduce with rule 128
+    default action: reduce with rule 128 (@3)
     @3 : go to state 273
 
 
 state 235
     [ 70: function_call => <NAME> "(" argument_list ")" . ]*
-    default action: reduce with rule 70
+    default action: reduce with rule 70 (function_call)
 
 
 state 236
     [ 148: primitive => """ @4 quote_list """ . @5 ]*
-    default action: reduce with rule 147
+    default action: reduce with rule 147 (@5)
     @5 : go to state 274
 
 
@@ -6030,17 +6030,17 @@ state 238
 
 state 239
     [ 71: function_call => callable_expr "(" argument_list ")" . ]*
-    default action: reduce with rule 71
+    default action: reduce with rule 71 (function_call)
 
 
 state 240
     [ 60: simple_var => "$" "{" expr "}" . ]*
-    default action: reduce with rule 60
+    default action: reduce with rule 60 (simple_var)
 
 
 state 241
     [ 52: dereferencable_primitive => "array" "(" array_pair_list ")" . ]*
-    default action: reduce with rule 52
+    default action: reduce with rule 52 (dereferencable_primitive)
 
 
 state 242
@@ -6063,7 +6063,7 @@ state 242
 
 state 243
     [ 30: foreach_variable => "list" "(" . array_pair_list ")" ]*
-    default action: reduce with rule 178
+    default action: reduce with rule 178 (possible_array_pair)
     <NAME> : shift, and go to state 43
     <DECIMAL> : shift, and go to state 42
     <INT> : shift, and go to state 41
@@ -6175,7 +6175,7 @@ state 246
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 91
+    default action: reduce with rule 91 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -6202,14 +6202,14 @@ state 246
 
 state 247
     [ 131: expr_without_var => "function" "(" parameter_list ")" . lexical_vars "{" statement_list "}" ]*
-    default action: reduce with rule 139
+    default action: reduce with rule 139 (lexical_vars)
     "use" : shift, and go to state 189
     lexical_vars : go to state 283
 
 
 state 248
     [ 133: function_declaration_statement => "function" <NAME> "(" parameter_list ")" "{" . statement_list "}" ]*
-    default action: reduce with rule 12
+    default action: reduce with rule 12 (statement_list)
     statement_list : go to state 284
 
 
@@ -6277,12 +6277,12 @@ state 250
 
 state 251
     [ 15: statement => expr ";" . ]*
-    default action: reduce with rule 15
+    default action: reduce with rule 15 (statement)
 
 
 state 252
     [ 32: inline_html_list => inline_html_list <INLINE_HTML> . ]*
-    default action: reduce with rule 32
+    default action: reduce with rule 32 (inline_html_list)
 
 
 state 253
@@ -6398,7 +6398,7 @@ state 256
 
 state 257
     [ 22: statement => "for" "(" . for_exprs ";" for_exprs ";" for_exprs ")" statement ]*
-    default action: reduce with rule 40
+    default action: reduce with rule 40 (for_exprs)
     <NAME> : shift, and go to state 43
     <DECIMAL> : shift, and go to state 42
     <INT> : shift, and go to state 41
@@ -6610,18 +6610,18 @@ state 265
 
 state 266
     [ 57: callable_variable => dereferencable "[" optional_expr "]" . ]*
-    default action: reduce with rule 57
+    default action: reduce with rule 57 (callable_variable)
 
 
 state 267
     [ 64: arrow_and_property => "->" @0 property_name . @1 ]*
-    default action: reduce with rule 63
+    default action: reduce with rule 63 (@1)
     @1 : go to state 301
 
 
 state 268
     [ 65: property_name => <NAME> . ]*
-    default action: reduce with rule 65
+    default action: reduce with rule 65 (property_name)
 
 
 state 269
@@ -6663,7 +6663,7 @@ state 269
 
 state 270
     [ 67: property_name => simple_var . ]*
-    default action: reduce with rule 67
+    default action: reduce with rule 67 (property_name)
 
 
 state 271
@@ -6711,30 +6711,30 @@ state 272
 
 state 273
     [ 129: expr_without_var => "`" @2 quote_list "`" @3 . ]*
-    default action: reduce with rule 129
+    default action: reduce with rule 129 (expr_without_var)
 
 
 state 274
     [ 148: primitive => """ @4 quote_list """ @5 . ]*
-    default action: reduce with rule 148
+    default action: reduce with rule 148 (primitive)
 
 
 state 275
     [ 152: primitive => <HEREDOC_HEADER> @6 @7 heredoc_list <END_OF_HEREDOC> . @8 ]*
-    default action: reduce with rule 151
+    default action: reduce with rule 151 (@8)
     @8 : go to state 305
 
 
 state 276
     [ 156: primitive => <NOWDOC_HEADER> @9 @10 heredoc_list <END_OF_HEREDOC> . @11 ]*
-    default action: reduce with rule 155
+    default action: reduce with rule 155 (@11)
     @11 : go to state 306
 
 
 state 277
     [ 41: for_exprs => non_empty_for_exprs . ]*
     [ 42: non_empty_for_exprs => non_empty_for_exprs . "," expr ]*
-    default action: reduce with rule 41
+    default action: reduce with rule 41 (for_exprs)
     "," : shift, and go to state 307
 
 
@@ -6767,7 +6767,7 @@ state 278
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 43
+    default action: reduce with rule 43 (non_empty_for_exprs)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -6798,7 +6798,7 @@ state 278
 
 state 279
     [ 28: foreach_as => foreach_variable "=>" foreach_variable . ]*
-    default action: reduce with rule 28
+    default action: reduce with rule 28 (foreach_as)
 
 
 state 280
@@ -6810,9 +6810,9 @@ state 280
 state 281
     [ 31: foreach_variable => "[" array_pair_list "]" . ]*
     [ 51: dereferencable_primitive => "[" array_pair_list "]" . ]*
-    default action: reduce with rule 31
-    "->" : reduce with rule 51
-    "[" : reduce with rule 51
+    default action: reduce with rule 31 (foreach_variable)
+    "->" : reduce with rule 51 (dereferencable_primitive)
+    "[" : reduce with rule 51 (dereferencable_primitive)
 
 
 state 282
@@ -6844,7 +6844,7 @@ state 282
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 90
+    default action: reduce with rule 90 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -6940,24 +6940,24 @@ state 285
 
 state 286
     [ 142: lexical_var_list => <VARIABLE> . ]*
-    default action: reduce with rule 142
+    default action: reduce with rule 142 (lexical_var_list)
 
 
 state 287
     [ 13: statement => "{" statement_list "}" . ]*
-    default action: reduce with rule 13
+    default action: reduce with rule 13 (statement)
 
 
 state 288
     [ 17: statement => "<?=" expr inline_html_list . ]*
     [ 32: inline_html_list => inline_html_list . <INLINE_HTML> ]*
-    default action: reduce with rule 17
+    default action: reduce with rule 17 (statement)
     <INLINE_HTML> : shift, and go to state 252
 
 
 state 289
     [ 18: statement => "echo" echo_expr_list ";" . ]*
-    default action: reduce with rule 18
+    default action: reduce with rule 18 (statement)
 
 
 state 290
@@ -7092,17 +7092,17 @@ state 293
 
 state 294
     [ 24: statement => "return" optional_expr ";" . ]*
-    default action: reduce with rule 24
+    default action: reduce with rule 24 (statement)
 
 
 state 295
     [ 25: statement => "break" optional_num ";" . ]*
-    default action: reduce with rule 25
+    default action: reduce with rule 25 (statement)
 
 
 state 296
     [ 26: statement => "continue" optional_num ";" . ]*
-    default action: reduce with rule 26
+    default action: reduce with rule 26 (statement)
 
 
 state 297
@@ -7285,12 +7285,12 @@ state 299
 
 state 300
     [ 58: callable_variable => dereferencable arrow_and_property "(" argument_list ")" . ]*
-    default action: reduce with rule 58
+    default action: reduce with rule 58 (callable_variable)
 
 
 state 301
     [ 64: arrow_and_property => "->" @0 property_name @1 . ]*
-    default action: reduce with rule 64
+    default action: reduce with rule 64 (arrow_and_property)
 
 
 state 302
@@ -7418,7 +7418,7 @@ state 304
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 77
+    default action: reduce with rule 77 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -7446,12 +7446,12 @@ state 304
 
 state 305
     [ 152: primitive => <HEREDOC_HEADER> @6 @7 heredoc_list <END_OF_HEREDOC> @8 . ]*
-    default action: reduce with rule 152
+    default action: reduce with rule 152 (primitive)
 
 
 state 306
     [ 156: primitive => <NOWDOC_HEADER> @9 @10 heredoc_list <END_OF_HEREDOC> @11 . ]*
-    default action: reduce with rule 156
+    default action: reduce with rule 156 (primitive)
 
 
 state 307
@@ -7493,23 +7493,23 @@ state 307
 
 state 308
     [ 30: foreach_variable => "list" "(" array_pair_list ")" . ]*
-    default action: reduce with rule 30
+    default action: reduce with rule 30 (foreach_variable)
 
 
 state 309
     [ 131: expr_without_var => "function" "(" parameter_list ")" lexical_vars "{" . statement_list "}" ]*
-    default action: reduce with rule 12
+    default action: reduce with rule 12 (statement_list)
     statement_list : go to state 323
 
 
 state 310
     [ 133: function_declaration_statement => "function" <NAME> "(" parameter_list ")" "{" statement_list "}" . ]*
-    default action: reduce with rule 133
+    default action: reduce with rule 133 (function_declaration_statement)
 
 
 state 311
     [ 140: lexical_vars => "use" "(" lexical_var_list ")" . ]*
-    default action: reduce with rule 140
+    default action: reduce with rule 140 (lexical_vars)
 
 
 state 312
@@ -7610,7 +7610,7 @@ state 314
 
 state 315
     [ 22: statement => "for" "(" for_exprs ";" . for_exprs ";" for_exprs ")" statement ]*
-    default action: reduce with rule 40
+    default action: reduce with rule 40 (for_exprs)
     <NAME> : shift, and go to state 43
     <DECIMAL> : shift, and go to state 42
     <INT> : shift, and go to state 41
@@ -7722,19 +7722,19 @@ state 317
 
 state 318
     [ 169: encaps => <OFFSET_IN_STRING> @12 expr "]" . @13 ]*
-    default action: reduce with rule 168
+    default action: reduce with rule 168 (@13)
     @13 : go to state 330
 
 
 state 319
     [ 172: encaps => "${" @14 expr "}" . @15 ]*
-    default action: reduce with rule 171
+    default action: reduce with rule 171 (@15)
     @15 : go to state 331
 
 
 state 320
     [ 66: property_name => "{" expr "}" . ]*
-    default action: reduce with rule 66
+    default action: reduce with rule 66 (property_name)
 
 
 state 321
@@ -7766,7 +7766,7 @@ state 321
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 76
+    default action: reduce with rule 76 (expr_without_var)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -7821,7 +7821,7 @@ state 322
     [ 114: expr_without_var => expr . "%" expr ]*
     [ 115: expr_without_var => expr . "**" expr ]*
     [ 116: expr_without_var => expr . "." expr ]*
-    default action: reduce with rule 42
+    default action: reduce with rule 42 (non_empty_for_exprs)
     "+" : shift, and go to state 112
     "-" : shift, and go to state 113
     "*" : shift, and go to state 114
@@ -7907,12 +7907,12 @@ state 323
 
 state 324
     [ 141: lexical_var_list => lexical_var_list "," <VARIABLE> . ]*
-    default action: reduce with rule 141
+    default action: reduce with rule 141 (lexical_var_list)
 
 
 state 325
     [ 20: statement => "while" "(" expr ")" statement . ]*
-    default action: reduce with rule 20
+    default action: reduce with rule 20 (statement)
 
 
 state 326
@@ -7989,23 +7989,23 @@ state 328
 state 329
     [ 38: if_statement => "if" "(" expr ")" statement . ]*
     [ 39: if_statement => "if" "(" expr ")" statement . "else" statement ]*
-    default action: reduce with rule 38
+    default action: reduce with rule 38 (if_statement)
     "else" : shift, and go to state 336
 
 
 state 330
     [ 169: encaps => <OFFSET_IN_STRING> @12 expr "]" @13 . ]*
-    default action: reduce with rule 169
+    default action: reduce with rule 169 (encaps)
 
 
 state 331
     [ 172: encaps => "${" @14 expr "}" @15 . ]*
-    default action: reduce with rule 172
+    default action: reduce with rule 172 (encaps)
 
 
 state 332
     [ 131: expr_without_var => "function" "(" parameter_list ")" lexical_vars "{" statement_list "}" . ]*
-    default action: reduce with rule 131
+    default action: reduce with rule 131 (expr_without_var)
 
 
 state 333
@@ -8016,7 +8016,7 @@ state 333
 
 state 334
     [ 22: statement => "for" "(" for_exprs ";" for_exprs ";" . for_exprs ")" statement ]*
-    default action: reduce with rule 40
+    default action: reduce with rule 40 (for_exprs)
     <NAME> : shift, and go to state 43
     <DECIMAL> : shift, and go to state 42
     <INT> : shift, and go to state 41
@@ -8161,7 +8161,7 @@ state 336
 
 state 337
     [ 21: statement => "do" statement "while" "(" expr ")" ";" . ]*
-    default action: reduce with rule 21
+    default action: reduce with rule 21 (statement)
 
 
 state 338
@@ -8172,12 +8172,12 @@ state 338
 
 state 339
     [ 23: statement => "foreach" "(" expr "as" foreach_as ")" statement . ]*
-    default action: reduce with rule 23
+    default action: reduce with rule 23 (statement)
 
 
 state 340
     [ 39: if_statement => "if" "(" expr ")" statement "else" statement . ]*
-    default action: reduce with rule 39
+    default action: reduce with rule 39 (if_statement)
 
 
 state 341
@@ -8235,6 +8235,6 @@ state 341
 
 state 342
     [ 22: statement => "for" "(" for_exprs ";" for_exprs ";" for_exprs ")" statement . ]*
-    default action: reduce with rule 22
+    default action: reduce with rule 22 (statement)
 
 

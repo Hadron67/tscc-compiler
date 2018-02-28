@@ -9,26 +9,33 @@
         <link rel="stylesheet" href="lib/codemirror.css">
     </head>
     <body>
-        <div class="code-editor-container">
-            <div class="code-editor-titlebar">
-                
+        <nav class="navbar">
+            <div class="navbar-content">
+                tscc
             </div>
-            <div class="code-editor-outter-frame">
-                <textarea id="text1" class="code-editor" spellcheck="false"></textarea>
+        </nav>
+        <div class="main-container">
+            <div class="code-editor-container">
+                <div class="code-editor-titlebar">
+                    
+                </div>
+                <div class="code-editor-outter-frame">
+                    <textarea id="text1" class="code-editor" spellcheck="false"></textarea>
+                </div>
             </div>
-        </div>
-        <div style="margin-top: 5px;">
-            <input type="file" id="source" />                
-        </div>
-        <div>
-            <button id="btn-parse" class="parse-btn">parse</button>
-            <button id="btn-item-sets" class="parse-btn">item sets</button>
-            <button id="btn-parse-table" class="parse-btn">parse table</button>
-        </div>
-        <div id="result" class="result-panel"></div>
-        <div>
-            <input type="text" id="test-input" class="demo-input"/>
-            <button id="btn-test" class="parse-btn">run test</button>
+            <div style="margin-top: 5px;">
+                <input type="file" id="source" />                
+            </div>
+            <div>
+                <button id="btn-parse" class="parse-btn">parse</button>
+                <button id="btn-item-sets" class="parse-btn">item sets</button>
+                <button id="btn-parse-table" class="parse-btn">parse table</button>
+            </div>
+            <div id="result" class="result-panel"></div>
+            <div>
+                <input type="text" id="test-input" class="demo-input"/>
+                <button id="btn-test" class="parse-btn">run test</button>
+            </div>
         </div>
     </body>
     <script src="src/tscc.js"></script>

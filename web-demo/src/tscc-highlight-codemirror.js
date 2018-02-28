@@ -5,16 +5,14 @@ void function(tscc, CodeMirror){
     var start = hc.getState();
     var eol = '\n'.charCodeAt(0);
     var stream = null;
-    function eof(){
-        return stream.peek() === undefined && stream.lookAhead(1) === undefined;
-    }
+
     hc.load({
         current: function(){ 
             var c = stream.peek();
-            return c !== undefined ? c.charCodeAt(0) : null;
+            return c !== undefined ? c.charCodeAt(0) : eol;
         },
         next: function(){ stream.next(); },
-        isEof: function(){ return stream.peek() === undefined; },
+        isEof: function(){ return false; },
         backup: function(s){ stream.backUp(s.length); }
     });
 

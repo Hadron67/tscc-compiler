@@ -2,11 +2,8 @@ import { TokenDef } from "../grammar/token-entry";
 import { CodeGenerator } from '../codegen/code-generator';
 import { Position } from "../parser/node";
 
-// export interface LexAction{
-//     toCode(c: CodeGenerator);
-//     token: number;
-// };
 type Codecb = (c: CodeGenerator) => any;
+
 export function pushStateAction(sn: number): Codecb{
     return c => {
         c.pushLexState(sn);
@@ -26,7 +23,6 @@ export class LexAction{
             act !== null && act(c);
         }
     }
-
     returnToken(tk: TokenDef){
         this.token = tk;
     }
