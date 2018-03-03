@@ -8,8 +8,8 @@ tscc-min: tscc
 	@echo "created tscc.min.js"
 
 copy-tscc: tscc
-	@cp lib/tscc.js web-demo/src/tscc.js
-	@cp lib/tscc.d.ts web-demo/src/tscc.d.ts
+	@cp lib/tscc.js web-demo/lib/tscc.js
+	@cp lib/tscc.d.ts web-demo/lib/tscc.d.ts
 	@echo "copied tscc.js";
 
 templates: $(wildcard src/templates/*.ets)

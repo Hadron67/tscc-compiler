@@ -1,0 +1,14 @@
+# only bin/, lib/ and cli/ will be published into the package
+.vscode/**
+.rpt2_cache/**
+node_modules/**
+tmp/**
+*.bak
+examples/**
+scripts/**
+src/**
+tests/**
+web-demo/**
+rollup.config.js
+tsconfig.js
+README.md

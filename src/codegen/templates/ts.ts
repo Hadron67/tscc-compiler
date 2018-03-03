@@ -922,7 +922,11 @@ for(var tdef of input.file.grammar.tokens){
     echoLine("    function end(){");
     echoLine("        ");
     echoLine("    }");
-    echoLine("    function parse(input: ParserInput | string): boolean {");
+    echo("    function parse(input");
+    echo(ts(': ParserInput | string') );
+    echo(")");
+    echo(ts(": boolean") );
+    echoLine(" {");
     echoLine("        load(input);");
     echoLine("        var t;");
     echo("        while(!");

@@ -65,7 +65,8 @@ function cut(s){
 /*
     constants
 */
-var jjeol = '\n'.charCodeAt(0);
+var jjlf = '\n'.charCodeAt(0);
+var jjcr = '\r'.charCodeAt(0);
 /*
     dfa table definations
 */
@@ -161,13 +162,13 @@ function jjfindUnicodeClass(uc, c){
     tokens that a lexical dfa state can return
 */
 var jjlexTokens0 = [ 
-        -1,    -1,    10,    11,     7,     5,     6,    -1,     8,     1,
-        -1,     9,     1,     1,    -1,     2,     3,     4,    -1,     1,
-         1,    12,
+        -1,    -1,    11,    12,     8,     6,     7,    -1,     9,     2,
+        -1,    10,     2,     2,    -1,     3,     4,     5,    -1,     2,
+         2,    13,
 ]; 
 
 var jjstateCount = 31;
-var jjtokenCount = 13;
+var jjtokenCount = 14;
 var jjactERR = 32;
 /*
     compressed action table: action = jjpact[jjdisact[STATE-NUM] + TOKEN]
@@ -195,10 +196,10 @@ var jjpact = [
     displacement of action table.
 */
 var jjdisact = [ 
-        95,    22,   127,   -13,   -13,   -13,   -13,   -13,     0,   -13,
-        83,    71,    59,    47,    35,    23,    11,   107,    -1,   -13,
-       -13,   120,   115,   107,    11,    -1,   -13,   -13,   -13,   -13,
-       -13,
+        94,    22,   126,   -14,   -14,   -14,   -14,   -14,    -1,   -14,
+        82,    70,    58,    46,    34,    22,    10,   106,    -2,   -14,
+       -14,   119,   114,   106,    10,    -2,   -14,   -14,   -14,   -14,
+       -14,
 ]; 
 /*
     used to check if a position in jjpact is out of bouds.
@@ -265,27 +266,62 @@ var jjlhs = [
     token names
 */
 var jjtokenNames = [ 
-                   "EOF",             "CONST",                 "I",
-                     "J",                 "K",              "PLUS",
-                 "MINUS",             "TIMES",            "DIVIDE",
-                   "ABS",               "BRA",               "KET",
-                   "EXP",
+                   "EOF",             "ERROR",             "CONST",
+                     "I",                 "J",                 "K",
+                  "PLUS",             "MINUS",             "TIMES",
+                "DIVIDE",               "ABS",               "BRA",
+                   "KET",               "EXP",
 ]; 
 /*
     token alias
 */
 var jjtokenAlias = [ 
                     null,                null,                null,
-                    null,                null,                 "+",
-                     "-",                 "*",                 "/",
-                     "|",                 "(",                 ")",
-                   "exp",
+                    null,                null,                null,
+                     "+",                 "-",                 "*",
+                     "/",                 "|",                 "(",
+                     ")",               "exp",
 ]; 
 
 
 function tokenToString(tk){
     return jjtokenAlias[tk] === null ? "<" + jjtokenNames[tk] + ">" : '"' + jjtokenAlias[tk] + '"';
 }
+function getExpectedTokens(state){
+        var dis = jjdisact[state];
+        var ret = [];
+        function expect(tk){
+            var ind = dis + tk;
+            if(ind < 0 || ind >= jjpact.length || state !== jjcheckact[ind]){
+                return jjdefred[state] !== -1;
+            }
+            else {
+                return true;
+            }
+        }
+        for(var tk = 0; tk < jjtokenCount; tk++){
+            expect(tk) && ret.push(tk);
+        }
+        return ret;
+}
+// Token kinds
+var TokenKind = {
+    EOF : 0,
+    ERROR : 1,
+    CONST : 2,
+    I : 3,
+    J : 4,
+    K : 5,
+    PLUS : 6,
+    MINUS : 7,
+    TIMES : 8,
+    DIVIDE : 9,
+    ABS : 10,
+    BRA : 11,
+    KET : 12,
+    EXP : 13,
+
+};
 function Token(id, val, startLine, startColumn, endLine, endColumn){
     this.id = id;
     this.val = val;
@@ -309,28 +345,39 @@ Token.prototype.toString = function(){
         '<' + jjtokenNames[this.id] + '>' :
         '"' + jjtokenAlias[this.id] + '"') + "(" + this.val + ")";
 }
+var LineTerm = {
+    NONE: 1,
+    AUTO: 2,
+    CR: 3,
+    LF: 4,
+    CRLF: 5
+};
+
 function createParser() {
-    // members for lexer
+    //#region parser state variables
     var jjlexState;
     var jjstate;
+    var jjlastCR;
     var jjmatched;
-    var jjtoken;
-    
     var jjmarker = { state: -1, line: 0, column: 0 };
     var jjbackupCount;
-
     var jjline;
     var jjcolumn;
     var jjtline;
     var jjtcolumn;
 
-    // members for parser
     var jjlrState;
     var jjsematicS;
+    //#endregion
+
+    var jjinput;
     var jjsematicVal;
     var jjtokenQueue;
-
+    var jjtoken;
     var jjstop;
+    var jjtokenEmitted;
+    var jjenableBlock = true;
+    var jjlineTerm;
 
     var jjhandlers = {};
 
@@ -342,9 +389,18 @@ function createParser() {
     return {
         init: init,
         on: on,
+        setLineTerminator: setLineTerminator,
+        getLineTerminator: function() { return jjlineTerm; },
         accept: accept,
         end: end,
-        halt: halt
+        load: load,
+        nextToken: nextToken,
+        halt: halt,
+        enableBlocks: enableBlocks,
+        disableBlocks: disableBlocks,
+        loadParserState: loadParserState,
+        getParserState: getParserState,
+        parse: parse
     };
     function init(out1){
         jjlexState = [ 0 ];// DEFAULT
@@ -361,12 +417,108 @@ function createParser() {
         jjsematicVal = null;
         jjtokenQueue = [];
 
-        jjstop = false;
+        jjlineTerm = LineTerm.AUTO;
+        jjlastCR = false;
+
         
     out = out1;
 
 
         jjtryReduce();
+    }
+    function load(input){
+        if(typeof input === 'string'){
+            var i = 0;
+            var s = input;
+            jjinput = {
+                current: function(){ return i < s.length ? s.charCodeAt(i) : null; },
+                next: function(){ return i++; },
+                isEof: function(){ return i >= s.length; },
+                backup: function(t){ return i -= t.length; }
+            }
+        }
+        else {
+            jjinput = input;
+        }
+    }
+    function nextToken(){
+        jjtokenEmitted = false;
+        while(!jjstop && !jjtokenEmitted){
+            var c = jjinput.current();
+            if(c !== null){
+                jjacceptChar(c);
+            }
+            // null means end of file or no input available at present
+            else if(jjinput.isEof()){
+                if(jjacceptEOF()){
+                    break;
+                }
+            }
+            else {
+                return null;
+            }
+        }
+        return jjtoken;
+    }
+    function setLineTerminator(lt){
+        jjlineTerm = lt;
+    }
+    function enableBlocks(){
+        jjenableBlock = true;
+    }
+    function disableBlocks(){
+        jjenableBlock = false;
+    }
+    /**
+     *  input a string
+     *  @api public
+     *  @deprecated
+     */
+    function accept(s){
+        var i = 0;
+        load({
+            current: function(){ return i < s.length ? s.charCodeAt(i) : null; },
+            next: function(){ return i++; },
+            isEof: function(){ return i >= s.length; },
+            backup: function(t){ return i -= t.length; }
+        });
+        while(!jjstop && nextToken().id !== 0);
+    }
+    /**
+     *  tell the compiler that end of file is reached
+     *  @api public
+     */
+    function end(){
+        
+    }
+    function parse(input) {
+        load(input);
+        var t;
+        while(!jjstop){
+            t = nextToken();
+            if(t === null){
+                return false;
+            }
+            else if(t.id === 0){
+                return true;
+            }
+        }
+        return true;
+    }
+    function halt(){
+        jjstop = true;
+    }
+    function loadParserState(state){
+        jjlexState = state.lexState;
+        jjlrState = state.lrState;
+        jjsematicS = state.sematicS;
+    }
+    function getParserState() {
+        return {
+            lexState: jjlexState,
+            lrState: jjlrState,
+            sematicS: jjsematicS
+        };
     }
     /**
      *  set 
@@ -386,6 +538,7 @@ function createParser() {
 
         jjtokenQueue.push(jjtoken);
 
+        jjtokenEmitted = true;
         jjmatched = '';
         jjtline = jjline;
         jjtcolumn = jjcolumn;
@@ -410,28 +563,28 @@ function createParser() {
                 jjsetImg(""); 
                 break;
             case 9:
-                { jjsematicVal = new Quaternion(Number(jjtoken.val), 0, 0, 0); }
+                if(jjenableBlock){ jjsematicVal = new Quaternion(Number(jjtoken.val), 0, 0, 0); }
                 break;
             case 12:
-                { jjsematicVal = new Quaternion(Number(jjtoken.val), 0, 0, 0); }
+                if(jjenableBlock){ jjsematicVal = new Quaternion(Number(jjtoken.val), 0, 0, 0); }
                 break;
             case 13:
-                { jjsematicVal = new Quaternion(Number(jjtoken.val), 0, 0, 0); }
+                if(jjenableBlock){ jjsematicVal = new Quaternion(Number(jjtoken.val), 0, 0, 0); }
                 break;
             case 15:
-                { jjsematicVal = new Quaternion(0, Number(cut(jjtoken.val)), 0, 0); }
+                if(jjenableBlock){ jjsematicVal = new Quaternion(0, Number(cut(jjtoken.val)), 0, 0); }
                 break;
             case 16:
-                { jjsematicVal = new Quaternion(0, 0, Number(cut(jjtoken.val)), 0); }
+                if(jjenableBlock){ jjsematicVal = new Quaternion(0, 0, Number(cut(jjtoken.val)), 0); }
                 break;
             case 17:
-                { jjsematicVal = new Quaternion(0, 0, 0, Number(cut(jjtoken.val))); }
+                if(jjenableBlock){ jjsematicVal = new Quaternion(0, 0, 0, Number(cut(jjtoken.val))); }
                 break;
             case 19:
-                { jjsematicVal = new Quaternion(Number(jjtoken.val), 0, 0, 0); }
+                if(jjenableBlock){ jjsematicVal = new Quaternion(Number(jjtoken.val), 0, 0, 0); }
                 break;
             case 20:
-                { jjsematicVal = new Quaternion(Number(jjtoken.val), 0, 0, 0); }
+                if(jjenableBlock){ jjsematicVal = new Quaternion(Number(jjtoken.val), 0, 0, 0); }
                 break;
             default:;
         }
@@ -452,13 +605,13 @@ function createParser() {
     }
     function jjrollback(){
         var ret = jjmatched.substr(jjmatched.length - jjbackupCount, jjbackupCount);
+        jjinput.backup(ret);
         jjmatched = jjmatched.substr(0, jjmatched.length - jjbackupCount);
         jjbackupCount = 0;
         jjline = jjmarker.line;
         jjcolumn = jjmarker.column;
         jjstate = jjmarker.state;
         jjmarker.state = -1;
-        return ret;
     }
     function jjmark(){
         jjmarker.state = jjstate;
@@ -467,10 +620,59 @@ function createParser() {
         jjbackupCount = 0;
     }
     function jjconsume(c){
-        c === jjeol ? (jjline++, jjcolumn = 0) : (jjcolumn += c > 0xff ? 2 : 1);
+        // c === jjeol ? (jjline++, jjcolumn = 0) : (jjcolumn += c > 0xff ? 2 : 1);
+        switch(jjlineTerm){
+            case LineTerm.NONE:
+                jjcolumn += c > 0xff ? 2 : 1;
+                break;
+            case LineTerm.CR:
+                c === jjcr ? (jjline++, jjcolumn = 0) : (jjcolumn += c > 0xff ? 2 : 1);
+                break;
+            case LineTerm.LF:
+                c === jjlf ? (jjline++, jjcolumn = 0) : (jjcolumn += c > 0xff ? 2 : 1);
+                break;
+            case LineTerm.CRLF:
+                if(jjlastCR){
+                    if(c === jjlf){
+                        jjline++, jjcolumn = 0;
+                        jjlastCR = false;
+                    }
+                    else {
+                        jjcolumn += c > 0xff ? 2 : 1;
+                        jjlastCR = c === jjcr;
+                    }
+                }
+                else {
+                    jjcolumn += c > 0xff ? 2 : 1;
+                    jjlastCR = c === jjcr;
+                }
+                break;
+            case LineTerm.AUTO:
+                if(jjlastCR){
+                    if(c === jjlf){
+                        jjline++, jjcolumn = 0;
+                        jjlastCR = false;
+                        jjlineTerm = LineTerm.CRLF;
+                    }
+                    else {
+                        jjline++, jjcolumn = 0;
+                        jjlineTerm = LineTerm.CR;
+                        c === jjcr ? (jjline++, jjcolumn = 0) : (jjcolumn += c > 0xff ? 2 : 1);
+                    }
+                }
+                else if(c === jjlf){
+                    jjline++, jjcolumn = 0;
+                    jjlineTerm = LineTerm.LF;
+                }
+                else {
+                    jjcolumn += c > 0xff ? 2 : 1;
+                    jjlastCR = c === jjcr;
+                }
+                break;
+        }
         jjmatched += String.fromCharCode(c);
         jjmarker.state !== -1 && (jjbackupCount++);
-        return true;
+        jjinput.next();
     }
     /**
      *  accept a character
@@ -504,7 +706,6 @@ function createParser() {
                     jjbackupCount = 0;
                     jjstate = 0;                    
                     // character not consumed
-                    return false;
                 }
                 else {
                     // now we can either go to that new state, or stay where we are
@@ -513,7 +714,9 @@ function createParser() {
                     // an error occurs later, we could just return to this state.
                     jjmark();
                     jjstate = nstate;
-                    return jjconsume(ccode);
+                    jjconsume(ccode);
+                    // check for terminate state
+                    jjtryLexEnd();
                 }
             }
             else {
@@ -524,7 +727,6 @@ function createParser() {
                 jjbackupCount = 0;
                 jjstate = 0;
                 // character not consumed
-                return false;
             }
         }
         else {
@@ -533,24 +735,29 @@ function createParser() {
                 // check marker to verify that
                 if(jjmarker.state !== -1){
                     // we have a previously marked state, which is a terminate state.
-                    var s = jjrollback();
+                    jjrollback();
                     jjdoLexAction(lexstate, jjstate);
                     jjstate = 0;
-                    accept(s);
+                    // accept(s);
                     // character not consumed
-                    return false;
                 }
                 else {
                     // error occurs
                     jjemit('lexicalerror', String.fromCharCode(ccode), jjline, jjcolumn);
                     // force consume
-                    return true;
+                    jjconsume(ccode);
+                    // emit an error token
+                    jjprepareToken(1);
+                    jjtokenQueue.length > 0 && jjacceptToken(null);
+                    jjstate = 0;
                 }
             }
             else {
                 jjstate = nstate;
                 // character consumed
-                return jjconsume(ccode);
+                jjconsume(ccode);
+                // check for terminate state
+                jjtryLexEnd();
             }
         }
     }
@@ -572,37 +779,31 @@ function createParser() {
                 return false;
             }
             else if(jjmarker.state !== -1){
-                var s = jjrollback();
+                jjrollback();
                 jjdoLexAction(lexstate, jjstate);
                 jjstate = 0;
-                accept(s);
                 return false;
             }
             else {
                 jjemit('lexicalerror', '', jjline, jjcolumn);
+                jjprepareToken(1);
+                jjtokenQueue.length > 0 && jjacceptToken(null);
+                jjstate = 0;
                 return true;
             }
         }
     }
-    /**
-     *  input a string
-     *  @api public
-     */
-    function accept(s){
-        for(var i = 0; i < s.length && !jjstop;){
-            jjacceptChar(s.charCodeAt(i)) && i++;
+    function jjtryLexEnd(){
+        var lexstate = jjlexState[jjlexState.length - 1];
+        var ltable = jjdfaTables[lexstate];
+        var isEnd = ltable.isEnd[jjstate] === 1;
+        var hasArc = ltable.hasArc[jjstate] === 1;
+        if(isEnd && !hasArc){
+            jjdoLexAction(lexstate, jjstate);
+            jjmarker.state = -1;
+            jjbackupCount = 0;
+            jjstate = 0;
         }
-    }
-    /**
-     *  tell the compiler that end of file is reached
-     *  @api public
-     */
-    function end(){
-        while(!jjstop && !jjacceptEOF());
-        jjstop = true;
-    }
-    function halt(){
-        jjstop = true;
     }
     function jjdoReduction(jjrulenum){
         var jjnt = jjlhs[jjrulenum];
@@ -612,61 +813,61 @@ function createParser() {
             case 1:
                 /* 1: start => expr */
                 var a = jjsematicS[jjsp - 1];
-                { out.val = a; } 
+                if(jjenableBlock){ out.val = a; } 
                 break;
             case 2:
                 /* 2: expr => expr "+" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = Quaternion.addQ(a, b); } 
+                if(jjenableBlock){ jjtop = Quaternion.addQ(a, b); } 
                 break;
             case 3:
                 /* 3: expr => expr "-" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = Quaternion.minusQ(a, b); } 
+                if(jjenableBlock){ jjtop = Quaternion.minusQ(a, b); } 
                 break;
             case 4:
                 /* 4: expr => expr "*" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = Quaternion.multiQ(a, b); } 
+                if(jjenableBlock){ jjtop = Quaternion.multiQ(a, b); } 
                 break;
             case 5:
                 /* 5: expr => expr "/" expr */
                 var a = jjsematicS[jjsp - 3];
                 var b = jjsematicS[jjsp - 1];
-                { jjtop = Quaternion.multiQ(a, b.inv()) } 
+                if(jjenableBlock){ jjtop = Quaternion.multiQ(a, b.inv()) } 
                 break;
             case 6:
                 /* 6: expr => "+" expr */
                 var a = jjsematicS[jjsp - 1];
-                { jjtop = a; } 
+                if(jjenableBlock){ jjtop = a; } 
                 break;
             case 7:
                 /* 7: expr => "-" expr */
                 var a = jjsematicS[jjsp - 1];
-                { jjtop = a.neg(); } 
+                if(jjenableBlock){ jjtop = a.neg(); } 
                 break;
             case 8:
                 /* 8: expr => expr "*" */
                 var a = jjsematicS[jjsp - 2];
-                { jjtop = a.dagger(); } 
+                if(jjenableBlock){ jjtop = a.dagger(); } 
                 break;
             case 9:
                 /* 9: expr => "(" expr ")" */
                 var a = jjsematicS[jjsp - 2];
-                { jjtop = a; } 
+                if(jjenableBlock){ jjtop = a; } 
                 break;
             case 10:
                 /* 10: expr => "|" expr "|" */
                 var a = jjsematicS[jjsp - 2];
-                { jjtop = a.module(); } 
+                if(jjenableBlock){ jjtop = a.module(); } 
                 break;
             case 16:
                 /* 16: funcs => "exp" "(" expr ")" */
                 var a = jjsematicS[jjsp - 2];
-                { jjtop = Quaternion.exp(a); } 
+                if(jjenableBlock){ jjtop = Quaternion.exp(a); } 
                 break;
         }
         jjlrState.length -= jjruleLen[jjrulenum];
@@ -734,26 +935,7 @@ function createParser() {
         }
     }
     function jjsyntaxError(t){
-        var msg = "unexpected token " + t.toString() + ", expecting one of the following token(s):\n"
-        msg += jjexpected(jjlrState[jjlrState.length - 1]);
-        jjemit("syntaxerror", msg, t);
-    }
-    function jjexpected(state){
-        var dis = jjdisact[state];
-        var ret = '';
-        function expect(tk){
-            var ind = dis + tk;
-            if(ind < 0 || ind >= jjpact.length || state !== jjcheckact[ind]){
-                return jjdefred[state] !== -1;
-            }
-            else {
-                return true;
-            }
-        }
-        for(var tk = 0; tk < jjtokenCount; tk++){
-            expect(tk) && (ret += "    " + tokenToString(tk) + " ..." + '\n');
-        }
-        return ret;
+        jjemit("syntaxerror", t, jjlrState[jjlrState.length - 1]);
     }
 }
 
@@ -774,8 +956,7 @@ module.exports = function (s, args){
     parser.on('accept', function(){
         // console.log('result: ' + out.val);
     });
-    parser.accept(s);
-    parser.end();
+    parser.parse(s);
     if(errMsg !== null){
         throw errMsg;
     }

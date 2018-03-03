@@ -186,7 +186,14 @@ interface TSCCContext {
      * @returns `true` if compilation was terminated, and `false` if compilation was complete.
      */
     isTerminated(): boolean;
-    
+
+    /**
+     * Whether compilation is done. All output will be available only
+     * when compilation is done.
+     * @returns `true` if compilation is completed, otherwise `false`.
+     */
+    isDone(): boolean;
+
     /**
      * Parse the given input using the generated parse table. 
      * @param tokens An array of tokens to be parsed. An element of the form `<...>` will be treated

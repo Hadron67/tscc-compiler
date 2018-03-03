@@ -1,57 +1,12 @@
 state 0
     [ 0: (accept) => . topstmtlist <EOF> ]*
-    [ 1: topstmtlist => . topstmtlist topstmt ]
-    [ 2: topstmtlist => . ]
-    default action: reduce with rule 2
+    default action: reduce with rule 2 (topstmtlist)
     topstmtlist : go to state 1
 
 
 state 1
     [ 0: (accept) => topstmtlist . <EOF> ]*
     [ 1: topstmtlist => topstmtlist . topstmt ]*
-    [ 3: topstmt => . stmt ]
-    [ 4: topstmt => . "function" "(" argdeflist ")" "{" stmtlist "}" ]
-    [ 11: stmt => . ";" ]
-    [ 12: stmt => . "{" stmtlist "}" ]
-    [ 13: stmt => . exprlist ";" ]
-    [ 14: stmt => . "if" "(" exprlist ")" stmt elsestmt ]
-    [ 15: stmt => . "while" "(" exprlist ")" stmt ]
-    [ 16: stmt => . "do" stmt "while" "(" exprlist ")" ";" ]
-    [ 17: stmt => . "for" "(" forexpr ";" forexpr ";" forexpr ")" stmt ]
-    [ 22: exprlist => . exprlist "," expr ]
-    [ 23: exprlist => . expr ]
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <EOF> : shift, and go to state 2
     <NAME> : shift, and go to state 38
@@ -80,17 +35,17 @@ state 1
 
 state 2
     [ 0: (accept) => topstmtlist <EOF> . ]*
-    default action: reduce with rule 0
+    default action: reduce with rule 0 ((accept))
 
 
 state 3
     [ 1: topstmtlist => topstmtlist topstmt . ]*
-    default action: reduce with rule 1
+    default action: reduce with rule 1 (topstmtlist)
 
 
 state 4
     [ 3: topstmt => stmt . ]*
-    default action: reduce with rule 3
+    default action: reduce with rule 3 (topstmt)
 
 
 state 5
@@ -101,11 +56,7 @@ state 5
 
 state 6
     [ 4: topstmt => "function" "(" . argdeflist ")" "{" stmtlist "}" ]*
-    [ 5: argdeflist => . neargdeflist ]
-    [ 6: argdeflist => . ]
-    [ 7: neargdeflist => . neargdeflist "," <NAME> ]
-    [ 8: neargdeflist => . <NAME> ]
-    default action: reduce with rule 6
+    default action: reduce with rule 6 (argdeflist)
     <NAME> : shift, and go to state 35
     argdeflist : go to state 33
     neargdeflist : go to state 34
@@ -113,87 +64,87 @@ state 6
 
 state 7
     [ 62: coptr => ">" . ]*
-    default action: reduce with rule 62
+    default action: reduce with rule 62 (coptr)
 
 
 state 8
     [ 63: coptr => "<" . ]*
-    default action: reduce with rule 63
+    default action: reduce with rule 63 (coptr)
 
 
 state 9
     [ 64: coptr => ">=" . ]*
-    default action: reduce with rule 64
+    default action: reduce with rule 64 (coptr)
 
 
 state 10
     [ 65: coptr => "<=" . ]*
-    default action: reduce with rule 65
+    default action: reduce with rule 65 (coptr)
 
 
 state 11
     [ 66: coptr => "==" . ]*
-    default action: reduce with rule 66
+    default action: reduce with rule 66 (coptr)
 
 
 state 12
     [ 67: coptr => "!=" . ]*
-    default action: reduce with rule 67
+    default action: reduce with rule 67 (coptr)
 
 
 state 13
     [ 51: aoptr => "=" . ]*
-    default action: reduce with rule 51
+    default action: reduce with rule 51 (aoptr)
 
 
 state 14
     [ 52: aoptr => "+=" . ]*
-    default action: reduce with rule 52
+    default action: reduce with rule 52 (aoptr)
 
 
 state 15
     [ 53: aoptr => "-=" . ]*
-    default action: reduce with rule 53
+    default action: reduce with rule 53 (aoptr)
 
 
 state 16
     [ 54: aoptr => "*=" . ]*
-    default action: reduce with rule 54
+    default action: reduce with rule 54 (aoptr)
 
 
 state 17
     [ 55: aoptr => "/=" . ]*
-    default action: reduce with rule 55
+    default action: reduce with rule 55 (aoptr)
 
 
 state 18
     [ 56: aoptr => "&=" . ]*
-    default action: reduce with rule 56
+    default action: reduce with rule 56 (aoptr)
 
 
 state 19
     [ 57: aoptr => "|=" . ]*
-    default action: reduce with rule 57
+    default action: reduce with rule 57 (aoptr)
 
 
 state 20
     [ 58: aoptr => "^=" . ]*
-    default action: reduce with rule 58
+    default action: reduce with rule 58 (aoptr)
 
 
 state 21
     [ 59: aoptr => ">>=" . ]*
-    default action: reduce with rule 59
+    default action: reduce with rule 59 (aoptr)
 
 
 state 22
     [ 60: aoptr => "<<=" . ]*
-    default action: reduce with rule 60
+    default action: reduce with rule 60 (aoptr)
 
 
 state 23
     [ 61: aoptr => "%=" . ]*
-    default action: reduce with rule 61
+    default action: reduce with rule 61 (aoptr)
 
 
 state 24
@@ -201,18 +152,7 @@ state 24
     [ 48: expr => var . ]*
     [ 49: expr => var . "++" ]*
     [ 50: expr => var . "--" ]*
-    [ 51: aoptr => . "=" ]
-    [ 52: aoptr => . "+=" ]
-    [ 53: aoptr => . "-=" ]
-    [ 54: aoptr => . "*=" ]
-    [ 55: aoptr => . "/=" ]
-    [ 56: aoptr => . "&=" ]
-    [ 57: aoptr => . "|=" ]
-    [ 58: aoptr => . "^=" ]
-    [ 59: aoptr => . ">>=" ]
-    [ 60: aoptr => . "<<=" ]
-    [ 61: aoptr => . "%=" ]
-    default action: reduce with rule 48
+    default action: reduce with rule 48 (expr)
     "=" : shift, and go to state 13
     "+=" : shift, and go to state 14
     "-=" : shift, and go to state 15
@@ -231,38 +171,6 @@ state 24
 
 state 25
     [ 41: expr => "+" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -280,38 +188,6 @@ state 25
 
 state 26
     [ 42: expr => "-" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -329,38 +205,6 @@ state 26
 
 state 27
     [ 43: expr => "~" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -378,38 +222,6 @@ state 27
 
 state 28
     [ 44: expr => "!" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -427,43 +239,11 @@ state 28
 
 state 29
     [ 45: expr => const . ]*
-    default action: reduce with rule 45
+    default action: reduce with rule 45 (expr)
 
 
 state 30
     [ 46: expr => "(" . expr ")" ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -485,34 +265,23 @@ state 31
     [ 48: expr => var . ]*
     [ 49: expr => var . "++" ]*
     [ 50: expr => var . "--" ]*
-    [ 51: aoptr => . "=" ]
-    [ 52: aoptr => . "+=" ]
-    [ 53: aoptr => . "-=" ]
-    [ 54: aoptr => . "*=" ]
-    [ 55: aoptr => . "/=" ]
-    [ 56: aoptr => . "&=" ]
-    [ 57: aoptr => . "|=" ]
-    [ 58: aoptr => . "^=" ]
-    [ 59: aoptr => . ">>=" ]
-    [ 60: aoptr => . "<<=" ]
-    [ 61: aoptr => . "%=" ]
-    default action: reduce with rule 48
+    default action: reduce with rule 48 (expr)
     "++" : shift, and go to state 63
     "--" : shift, and go to state 64
-    "=" : reduce with rule 77
-    "+=" : reduce with rule 77
-    "-=" : reduce with rule 77
-    "*=" : reduce with rule 77
-    "/=" : reduce with rule 77
-    "&=" : reduce with rule 77
-    "|=" : reduce with rule 77
-    "^=" : reduce with rule 77
-    ">>=" : reduce with rule 77
-    "<<=" : reduce with rule 77
-    "%=" : reduce with rule 77
-    ")" : reduce with rule 77
-    "," : reduce with rule 77
-    ";" : reduce with rule 77
+    "=" : reduce with rule 77 (var)
+    "+=" : reduce with rule 77 (var)
+    "-=" : reduce with rule 77 (var)
+    "*=" : reduce with rule 77 (var)
+    "/=" : reduce with rule 77 (var)
+    "&=" : reduce with rule 77 (var)
+    "|=" : reduce with rule 77 (var)
+    "^=" : reduce with rule 77 (var)
+    ">>=" : reduce with rule 77 (var)
+    "<<=" : reduce with rule 77 (var)
+    "%=" : reduce with rule 77 (var)
+    ")" : reduce with rule 77 (var)
+    "," : reduce with rule 77 (var)
+    ";" : reduce with rule 77 (var)
     aoptr : go to state 62
 
 
@@ -522,34 +291,23 @@ state 32
     [ 48: expr => var . ]*
     [ 49: expr => var . "++" ]*
     [ 50: expr => var . "--" ]*
-    [ 51: aoptr => . "=" ]
-    [ 52: aoptr => . "+=" ]
-    [ 53: aoptr => . "-=" ]
-    [ 54: aoptr => . "*=" ]
-    [ 55: aoptr => . "/=" ]
-    [ 56: aoptr => . "&=" ]
-    [ 57: aoptr => . "|=" ]
-    [ 58: aoptr => . "^=" ]
-    [ 59: aoptr => . ">>=" ]
-    [ 60: aoptr => . "<<=" ]
-    [ 61: aoptr => . "%=" ]
-    default action: reduce with rule 48
+    default action: reduce with rule 48 (expr)
     "++" : shift, and go to state 63
     "--" : shift, and go to state 64
-    "=" : reduce with rule 78
-    "+=" : reduce with rule 78
-    "-=" : reduce with rule 78
-    "*=" : reduce with rule 78
-    "/=" : reduce with rule 78
-    "&=" : reduce with rule 78
-    "|=" : reduce with rule 78
-    "^=" : reduce with rule 78
-    ">>=" : reduce with rule 78
-    "<<=" : reduce with rule 78
-    "%=" : reduce with rule 78
-    ")" : reduce with rule 78
-    "," : reduce with rule 78
-    ";" : reduce with rule 78
+    "=" : reduce with rule 78 (var)
+    "+=" : reduce with rule 78 (var)
+    "-=" : reduce with rule 78 (var)
+    "*=" : reduce with rule 78 (var)
+    "/=" : reduce with rule 78 (var)
+    "&=" : reduce with rule 78 (var)
+    "|=" : reduce with rule 78 (var)
+    "^=" : reduce with rule 78 (var)
+    ">>=" : reduce with rule 78 (var)
+    "<<=" : reduce with rule 78 (var)
+    "%=" : reduce with rule 78 (var)
+    ")" : reduce with rule 78 (var)
+    "," : reduce with rule 78 (var)
+    ";" : reduce with rule 78 (var)
     aoptr : go to state 62
 
 
@@ -562,18 +320,18 @@ state 33
 state 34
     [ 5: argdeflist => neargdeflist . ]*
     [ 7: neargdeflist => neargdeflist . "," <NAME> ]*
-    default action: reduce with rule 5
+    default action: reduce with rule 5 (argdeflist)
     "," : shift, and go to state 71
 
 
 state 35
     [ 8: neargdeflist => <NAME> . ]*
-    default action: reduce with rule 8
+    default action: reduce with rule 8 (neargdeflist)
 
 
 state 36
     [ 9: stmtlist => stmtlist stmt . ]*
-    default action: reduce with rule 9
+    default action: reduce with rule 9 (stmtlist)
 
 
 state 37
@@ -596,13 +354,7 @@ state 37
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
-    default action: reduce with rule 23
+    default action: reduce with rule 23 (exprlist)
     "+" : shift, and go to state 54
     "-" : shift, and go to state 55
     "*" : shift, and go to state 56
@@ -631,43 +383,11 @@ state 37
 
 state 38
     [ 75: var => <NAME> . ]*
-    default action: reduce with rule 75
+    default action: reduce with rule 75 (var)
 
 
 state 39
     [ 77: var => "++" . var ]*
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -685,38 +405,6 @@ state 39
 
 state 40
     [ 78: var => "--" . var ]*
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -734,15 +422,13 @@ state 40
 
 state 41
     [ 74: const => <NUM> . ]*
-    default action: reduce with rule 74
+    default action: reduce with rule 74 (const)
 
 
 state 42
     [ 68: arglist => narglist . possibleComma ]*
     [ 70: narglist => narglist . "," expr ]*
-    [ 72: possibleComma => . "," ]
-    [ 73: possibleComma => . ]
-    default action: reduce with rule 73
+    default action: reduce with rule 73 (possibleComma)
     "," : shift, and go to state 77
     possibleComma : go to state 76
 
@@ -767,13 +453,7 @@ state 43
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
-    default action: reduce with rule 71
+    default action: reduce with rule 71 (narglist)
     "+" : shift, and go to state 54
     "-" : shift, and go to state 55
     "*" : shift, and go to state 56
@@ -802,38 +482,6 @@ state 43
 
 state 44
     [ 25: expr => expr "?" . expr ":" expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -851,38 +499,6 @@ state 44
 
 state 45
     [ 26: expr => expr "||" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -900,38 +516,6 @@ state 45
 
 state 46
     [ 27: expr => expr "&&" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -949,38 +533,6 @@ state 46
 
 state 47
     [ 28: expr => expr "|" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -998,38 +550,6 @@ state 47
 
 state 48
     [ 29: expr => expr "^" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -1047,38 +567,6 @@ state 48
 
 state 49
     [ 30: expr => expr "&" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -1096,38 +584,6 @@ state 49
 
 state 50
     [ 31: expr => expr coptr . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -1145,38 +601,6 @@ state 50
 
 state 51
     [ 32: expr => expr ">>" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -1194,38 +618,6 @@ state 51
 
 state 52
     [ 33: expr => expr "<<" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -1243,38 +635,6 @@ state 52
 
 state 53
     [ 34: expr => expr ">>>" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -1292,38 +652,6 @@ state 53
 
 state 54
     [ 35: expr => expr "+" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -1341,38 +669,6 @@ state 54
 
 state 55
     [ 36: expr => expr "-" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -1390,38 +686,6 @@ state 55
 
 state 56
     [ 37: expr => expr "*" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -1439,38 +703,6 @@ state 56
 
 state 57
     [ 38: expr => expr "/" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -1488,38 +720,6 @@ state 57
 
 state 58
     [ 39: expr => expr "%" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -1537,38 +737,6 @@ state 58
 
 state 59
     [ 40: expr => expr "**" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -1586,43 +754,7 @@ state 59
 
 state 60
     [ 47: expr => expr "(" . arglist ")" ]*
-    [ 68: arglist => . narglist possibleComma ]
-    [ 69: arglist => . ]
-    [ 70: narglist => . narglist "," expr ]
-    [ 71: narglist => . expr ]
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
-    default action: reduce with rule 69
+    default action: reduce with rule 69 (arglist)
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
     "+" : shift, and go to state 25
@@ -1641,40 +773,6 @@ state 60
 
 state 61
     [ 76: var => expr "[" . exprlist "]" ]*
-    [ 22: exprlist => . exprlist "," expr ]
-    [ 23: exprlist => . expr ]
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -1693,38 +791,6 @@ state 61
 
 state 62
     [ 24: expr => var aoptr . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -1742,12 +808,12 @@ state 62
 
 state 63
     [ 49: expr => var "++" . ]*
-    default action: reduce with rule 49
+    default action: reduce with rule 49 (expr)
 
 
 state 64
     [ 50: expr => var "--" . ]*
-    default action: reduce with rule 50
+    default action: reduce with rule 50 (expr)
 
 
 state 65
@@ -1770,13 +836,7 @@ state 65
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
-    default action: reduce with rule 41
+    default action: reduce with rule 41 (expr)
     "(" : shift, and go to state 60
     "[" : shift, and go to state 61
     coptr : go to state 50
@@ -1802,13 +862,7 @@ state 66
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
-    default action: reduce with rule 42
+    default action: reduce with rule 42 (expr)
     "(" : shift, and go to state 60
     "[" : shift, and go to state 61
     coptr : go to state 50
@@ -1834,13 +888,7 @@ state 67
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
-    default action: reduce with rule 43
+    default action: reduce with rule 43 (expr)
     "+" : shift, and go to state 54
     "-" : shift, and go to state 55
     "*" : shift, and go to state 56
@@ -1881,13 +929,7 @@ state 68
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
-    default action: reduce with rule 44
+    default action: reduce with rule 44 (expr)
     "+" : shift, and go to state 54
     "-" : shift, and go to state 55
     "*" : shift, and go to state 56
@@ -1931,12 +973,6 @@ state 69
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
     no default action
     "+" : shift, and go to state 54
     "-" : shift, and go to state 55
@@ -1979,38 +1015,6 @@ state 71
 
 state 72
     [ 22: exprlist => exprlist "," . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -2032,36 +1036,25 @@ state 73
     [ 48: expr => var . ]*
     [ 49: expr => var . "++" ]*
     [ 50: expr => var . "--" ]*
-    [ 51: aoptr => . "=" ]
-    [ 52: aoptr => . "+=" ]
-    [ 53: aoptr => . "-=" ]
-    [ 54: aoptr => . "*=" ]
-    [ 55: aoptr => . "/=" ]
-    [ 56: aoptr => . "&=" ]
-    [ 57: aoptr => . "|=" ]
-    [ 58: aoptr => . "^=" ]
-    [ 59: aoptr => . ">>=" ]
-    [ 60: aoptr => . "<<=" ]
-    [ 61: aoptr => . "%=" ]
-    default action: reduce with rule 48
+    default action: reduce with rule 48 (expr)
     "++" : shift, and go to state 63
     "--" : shift, and go to state 64
-    ":" : reduce with rule 77
-    "=" : reduce with rule 77
-    "+=" : reduce with rule 77
-    "-=" : reduce with rule 77
-    "*=" : reduce with rule 77
-    "/=" : reduce with rule 77
-    "&=" : reduce with rule 77
-    "|=" : reduce with rule 77
-    "^=" : reduce with rule 77
-    ">>=" : reduce with rule 77
-    "<<=" : reduce with rule 77
-    "%=" : reduce with rule 77
-    ")" : reduce with rule 77
-    "]" : reduce with rule 77
-    "," : reduce with rule 77
-    ";" : reduce with rule 77
+    ":" : reduce with rule 77 (var)
+    "=" : reduce with rule 77 (var)
+    "+=" : reduce with rule 77 (var)
+    "-=" : reduce with rule 77 (var)
+    "*=" : reduce with rule 77 (var)
+    "/=" : reduce with rule 77 (var)
+    "&=" : reduce with rule 77 (var)
+    "|=" : reduce with rule 77 (var)
+    "^=" : reduce with rule 77 (var)
+    ">>=" : reduce with rule 77 (var)
+    "<<=" : reduce with rule 77 (var)
+    "%=" : reduce with rule 77 (var)
+    ")" : reduce with rule 77 (var)
+    "]" : reduce with rule 77 (var)
+    "," : reduce with rule 77 (var)
+    ";" : reduce with rule 77 (var)
     aoptr : go to state 62
 
 
@@ -2084,12 +1077,6 @@ state 74
     [ 39: expr => expr . "%" expr ]*
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
     no default action
     "+" : shift, and go to state 54
     "-" : shift, and go to state 55
@@ -2123,80 +1110,37 @@ state 75
     [ 48: expr => var . ]*
     [ 49: expr => var . "++" ]*
     [ 50: expr => var . "--" ]*
-    [ 51: aoptr => . "=" ]
-    [ 52: aoptr => . "+=" ]
-    [ 53: aoptr => . "-=" ]
-    [ 54: aoptr => . "*=" ]
-    [ 55: aoptr => . "/=" ]
-    [ 56: aoptr => . "&=" ]
-    [ 57: aoptr => . "|=" ]
-    [ 58: aoptr => . "^=" ]
-    [ 59: aoptr => . ">>=" ]
-    [ 60: aoptr => . "<<=" ]
-    [ 61: aoptr => . "%=" ]
-    default action: reduce with rule 48
+    default action: reduce with rule 48 (expr)
     "++" : shift, and go to state 63
     "--" : shift, and go to state 64
-    ":" : reduce with rule 78
-    "=" : reduce with rule 78
-    "+=" : reduce with rule 78
-    "-=" : reduce with rule 78
-    "*=" : reduce with rule 78
-    "/=" : reduce with rule 78
-    "&=" : reduce with rule 78
-    "|=" : reduce with rule 78
-    "^=" : reduce with rule 78
-    ">>=" : reduce with rule 78
-    "<<=" : reduce with rule 78
-    "%=" : reduce with rule 78
-    ")" : reduce with rule 78
-    "]" : reduce with rule 78
-    "," : reduce with rule 78
-    ";" : reduce with rule 78
+    ":" : reduce with rule 78 (var)
+    "=" : reduce with rule 78 (var)
+    "+=" : reduce with rule 78 (var)
+    "-=" : reduce with rule 78 (var)
+    "*=" : reduce with rule 78 (var)
+    "/=" : reduce with rule 78 (var)
+    "&=" : reduce with rule 78 (var)
+    "|=" : reduce with rule 78 (var)
+    "^=" : reduce with rule 78 (var)
+    ">>=" : reduce with rule 78 (var)
+    "<<=" : reduce with rule 78 (var)
+    "%=" : reduce with rule 78 (var)
+    ")" : reduce with rule 78 (var)
+    "]" : reduce with rule 78 (var)
+    "," : reduce with rule 78 (var)
+    ";" : reduce with rule 78 (var)
     aoptr : go to state 62
 
 
 state 76
     [ 68: arglist => narglist possibleComma . ]*
-    default action: reduce with rule 68
+    default action: reduce with rule 68 (arglist)
 
 
 state 77
     [ 70: narglist => narglist "," . expr ]*
     [ 72: possibleComma => "," . ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
-    default action: reduce with rule 72
+    default action: reduce with rule 72 (possibleComma)
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
     "+" : shift, and go to state 25
@@ -2231,12 +1175,6 @@ state 78
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
     no default action
     "+" : shift, and go to state 54
     "-" : shift, and go to state 55
@@ -2285,13 +1223,7 @@ state 79
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
-    default action: reduce with rule 26
+    default action: reduce with rule 26 (expr)
     "+" : shift, and go to state 54
     "-" : shift, and go to state 55
     "*" : shift, and go to state 56
@@ -2336,13 +1268,7 @@ state 80
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
-    default action: reduce with rule 27
+    default action: reduce with rule 27 (expr)
     "+" : shift, and go to state 54
     "-" : shift, and go to state 55
     "*" : shift, and go to state 56
@@ -2386,13 +1312,7 @@ state 81
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
-    default action: reduce with rule 28
+    default action: reduce with rule 28 (expr)
     "+" : shift, and go to state 54
     "-" : shift, and go to state 55
     "*" : shift, and go to state 56
@@ -2435,13 +1355,7 @@ state 82
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
-    default action: reduce with rule 29
+    default action: reduce with rule 29 (expr)
     "+" : shift, and go to state 54
     "-" : shift, and go to state 55
     "*" : shift, and go to state 56
@@ -2483,13 +1397,7 @@ state 83
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
-    default action: reduce with rule 30
+    default action: reduce with rule 30 (expr)
     "+" : shift, and go to state 54
     "-" : shift, and go to state 55
     "*" : shift, and go to state 56
@@ -2530,13 +1438,7 @@ state 84
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
-    default action: reduce with rule 31
+    default action: reduce with rule 31 (expr)
     "+" : shift, and go to state 54
     "-" : shift, and go to state 55
     "*" : shift, and go to state 56
@@ -2571,13 +1473,7 @@ state 85
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
-    default action: reduce with rule 32
+    default action: reduce with rule 32 (expr)
     "+" : shift, and go to state 54
     "-" : shift, and go to state 55
     "*" : shift, and go to state 56
@@ -2609,13 +1505,7 @@ state 86
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
-    default action: reduce with rule 33
+    default action: reduce with rule 33 (expr)
     "+" : shift, and go to state 54
     "-" : shift, and go to state 55
     "*" : shift, and go to state 56
@@ -2647,13 +1537,7 @@ state 87
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
-    default action: reduce with rule 34
+    default action: reduce with rule 34 (expr)
     "+" : shift, and go to state 54
     "-" : shift, and go to state 55
     "*" : shift, and go to state 56
@@ -2685,13 +1569,7 @@ state 88
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
-    default action: reduce with rule 35
+    default action: reduce with rule 35 (expr)
     "*" : shift, and go to state 56
     "/" : shift, and go to state 57
     "**" : shift, and go to state 59
@@ -2721,13 +1599,7 @@ state 89
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
-    default action: reduce with rule 36
+    default action: reduce with rule 36 (expr)
     "*" : shift, and go to state 56
     "/" : shift, and go to state 57
     "**" : shift, and go to state 59
@@ -2757,13 +1629,7 @@ state 90
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
-    default action: reduce with rule 37
+    default action: reduce with rule 37 (expr)
     "**" : shift, and go to state 59
     "(" : shift, and go to state 60
     "[" : shift, and go to state 61
@@ -2790,13 +1656,7 @@ state 91
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
-    default action: reduce with rule 38
+    default action: reduce with rule 38 (expr)
     "**" : shift, and go to state 59
     "(" : shift, and go to state 60
     "[" : shift, and go to state 61
@@ -2823,13 +1683,7 @@ state 92
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
-    default action: reduce with rule 39
+    default action: reduce with rule 39 (expr)
     "**" : shift, and go to state 59
     "(" : shift, and go to state 60
     "[" : shift, and go to state 61
@@ -2856,13 +1710,7 @@ state 93
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
-    default action: reduce with rule 40
+    default action: reduce with rule 40 (expr)
     "**" : shift, and go to state 59
     "(" : shift, and go to state 60
     "[" : shift, and go to state 61
@@ -2903,13 +1751,7 @@ state 96
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
-    default action: reduce with rule 24
+    default action: reduce with rule 24 (expr)
     "+" : shift, and go to state 54
     "-" : shift, and go to state 55
     "*" : shift, and go to state 56
@@ -2938,32 +1780,28 @@ state 96
 
 state 97
     [ 46: expr => "(" expr ")" . ]*
-    default action: reduce with rule 46
+    default action: reduce with rule 46 (expr)
 
 
 state 98
     [ 4: topstmt => "function" "(" argdeflist ")" "{" . stmtlist "}" ]*
-    [ 9: stmtlist => . stmtlist stmt ]
-    [ 10: stmtlist => . ]
-    default action: reduce with rule 10
+    default action: reduce with rule 10 (stmtlist)
     stmtlist : go to state 112
 
 
 state 99
     [ 7: neargdeflist => neargdeflist "," <NAME> . ]*
-    default action: reduce with rule 7
+    default action: reduce with rule 7 (neargdeflist)
 
 
 state 100
     [ 11: stmt => ";" . ]*
-    default action: reduce with rule 11
+    default action: reduce with rule 11 (stmt)
 
 
 state 101
     [ 12: stmt => "{" . stmtlist "}" ]*
-    [ 9: stmtlist => . stmtlist stmt ]
-    [ 10: stmtlist => . ]
-    default action: reduce with rule 10
+    default action: reduce with rule 10 (stmtlist)
     stmtlist : go to state 113
 
 
@@ -2989,47 +1827,6 @@ state 104
 
 state 105
     [ 16: stmt => "do" . stmt "while" "(" exprlist ")" ";" ]*
-    [ 11: stmt => . ";" ]
-    [ 12: stmt => . "{" stmtlist "}" ]
-    [ 13: stmt => . exprlist ";" ]
-    [ 14: stmt => . "if" "(" exprlist ")" stmt elsestmt ]
-    [ 15: stmt => . "while" "(" exprlist ")" stmt ]
-    [ 16: stmt => . "do" stmt "while" "(" exprlist ")" ";" ]
-    [ 17: stmt => . "for" "(" forexpr ";" forexpr ";" forexpr ")" stmt ]
-    [ 22: exprlist => . exprlist "," expr ]
-    [ 23: exprlist => . expr ]
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -3079,13 +1876,7 @@ state 107
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
-    default action: reduce with rule 22
+    default action: reduce with rule 22 (exprlist)
     "+" : shift, and go to state 54
     "-" : shift, and go to state 55
     "*" : shift, and go to state 56
@@ -3132,13 +1923,7 @@ state 108
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
-    default action: reduce with rule 70
+    default action: reduce with rule 70 (narglist)
     "+" : shift, and go to state 54
     "-" : shift, and go to state 55
     "*" : shift, and go to state 56
@@ -3167,38 +1952,6 @@ state 108
 
 state 109
     [ 25: expr => expr "?" expr ":" . expr ]*
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -3216,58 +1969,17 @@ state 109
 
 state 110
     [ 47: expr => expr "(" arglist ")" . ]*
-    default action: reduce with rule 47
+    default action: reduce with rule 47 (expr)
 
 
 state 111
     [ 76: var => expr "[" exprlist "]" . ]*
-    default action: reduce with rule 76
+    default action: reduce with rule 76 (var)
 
 
 state 112
     [ 4: topstmt => "function" "(" argdeflist ")" "{" stmtlist . "}" ]*
     [ 9: stmtlist => stmtlist . stmt ]*
-    [ 11: stmt => . ";" ]
-    [ 12: stmt => . "{" stmtlist "}" ]
-    [ 13: stmt => . exprlist ";" ]
-    [ 14: stmt => . "if" "(" exprlist ")" stmt elsestmt ]
-    [ 15: stmt => . "while" "(" exprlist ")" stmt ]
-    [ 16: stmt => . "do" stmt "while" "(" exprlist ")" ";" ]
-    [ 17: stmt => . "for" "(" forexpr ";" forexpr ";" forexpr ")" stmt ]
-    [ 22: exprlist => . exprlist "," expr ]
-    [ 23: exprlist => . expr ]
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -3295,47 +2007,6 @@ state 112
 state 113
     [ 12: stmt => "{" stmtlist . "}" ]*
     [ 9: stmtlist => stmtlist . stmt ]*
-    [ 11: stmt => . ";" ]
-    [ 12: stmt => . "{" stmtlist "}" ]
-    [ 13: stmt => . exprlist ";" ]
-    [ 14: stmt => . "if" "(" exprlist ")" stmt elsestmt ]
-    [ 15: stmt => . "while" "(" exprlist ")" stmt ]
-    [ 16: stmt => . "do" stmt "while" "(" exprlist ")" ";" ]
-    [ 17: stmt => . "for" "(" forexpr ";" forexpr ";" forexpr ")" stmt ]
-    [ 22: exprlist => . exprlist "," expr ]
-    [ 23: exprlist => . expr ]
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -3362,45 +2033,11 @@ state 113
 
 state 114
     [ 13: stmt => exprlist ";" . ]*
-    default action: reduce with rule 13
+    default action: reduce with rule 13 (stmt)
 
 
 state 115
     [ 14: stmt => "if" "(" . exprlist ")" stmt elsestmt ]*
-    [ 22: exprlist => . exprlist "," expr ]
-    [ 23: exprlist => . expr ]
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -3419,40 +2056,6 @@ state 115
 
 state 116
     [ 15: stmt => "while" "(" . exprlist ")" stmt ]*
-    [ 22: exprlist => . exprlist "," expr ]
-    [ 23: exprlist => . expr ]
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -3477,43 +2080,7 @@ state 117
 
 state 118
     [ 17: stmt => "for" "(" . forexpr ";" forexpr ";" forexpr ")" stmt ]*
-    [ 20: forexpr => . ]
-    [ 21: forexpr => . exprlist ]
-    [ 22: exprlist => . exprlist "," expr ]
-    [ 23: exprlist => . expr ]
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
-    default action: reduce with rule 20
+    default action: reduce with rule 20 (forexpr)
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
     "+" : shift, and go to state 25
@@ -3550,13 +2117,7 @@ state 119
     [ 40: expr => expr . "**" expr ]*
     [ 47: expr => expr . "(" arglist ")" ]*
     [ 76: var => expr . "[" exprlist "]" ]*
-    [ 62: coptr => . ">" ]
-    [ 63: coptr => . "<" ]
-    [ 64: coptr => . ">=" ]
-    [ 65: coptr => . "<=" ]
-    [ 66: coptr => . "==" ]
-    [ 67: coptr => . "!=" ]
-    default action: reduce with rule 25
+    default action: reduce with rule 25 (expr)
     "+" : shift, and go to state 54
     "-" : shift, and go to state 55
     "*" : shift, and go to state 56
@@ -3584,12 +2145,12 @@ state 119
 
 state 120
     [ 4: topstmt => "function" "(" argdeflist ")" "{" stmtlist "}" . ]*
-    default action: reduce with rule 4
+    default action: reduce with rule 4 (topstmt)
 
 
 state 121
     [ 12: stmt => "{" stmtlist "}" . ]*
-    default action: reduce with rule 12
+    default action: reduce with rule 12 (stmt)
 
 
 state 122
@@ -3623,53 +2184,12 @@ state 125
 state 126
     [ 21: forexpr => exprlist . ]*
     [ 22: exprlist => exprlist . "," expr ]*
-    default action: reduce with rule 21
+    default action: reduce with rule 21 (forexpr)
     "," : shift, and go to state 72
 
 
 state 127
     [ 14: stmt => "if" "(" exprlist ")" . stmt elsestmt ]*
-    [ 11: stmt => . ";" ]
-    [ 12: stmt => . "{" stmtlist "}" ]
-    [ 13: stmt => . exprlist ";" ]
-    [ 14: stmt => . "if" "(" exprlist ")" stmt elsestmt ]
-    [ 15: stmt => . "while" "(" exprlist ")" stmt ]
-    [ 16: stmt => . "do" stmt "while" "(" exprlist ")" ";" ]
-    [ 17: stmt => . "for" "(" forexpr ";" forexpr ";" forexpr ")" stmt ]
-    [ 22: exprlist => . exprlist "," expr ]
-    [ 23: exprlist => . expr ]
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -3695,47 +2215,6 @@ state 127
 
 state 128
     [ 15: stmt => "while" "(" exprlist ")" . stmt ]*
-    [ 11: stmt => . ";" ]
-    [ 12: stmt => . "{" stmtlist "}" ]
-    [ 13: stmt => . exprlist ";" ]
-    [ 14: stmt => . "if" "(" exprlist ")" stmt elsestmt ]
-    [ 15: stmt => . "while" "(" exprlist ")" stmt ]
-    [ 16: stmt => . "do" stmt "while" "(" exprlist ")" ";" ]
-    [ 17: stmt => . "for" "(" forexpr ";" forexpr ";" forexpr ")" stmt ]
-    [ 22: exprlist => . exprlist "," expr ]
-    [ 23: exprlist => . expr ]
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -3761,40 +2240,6 @@ state 128
 
 state 129
     [ 16: stmt => "do" stmt "while" "(" . exprlist ")" ";" ]*
-    [ 22: exprlist => . exprlist "," expr ]
-    [ 23: exprlist => . expr ]
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -3813,43 +2258,7 @@ state 129
 
 state 130
     [ 17: stmt => "for" "(" forexpr ";" . forexpr ";" forexpr ")" stmt ]*
-    [ 20: forexpr => . ]
-    [ 21: forexpr => . exprlist ]
-    [ 22: exprlist => . exprlist "," expr ]
-    [ 23: exprlist => . expr ]
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
-    default action: reduce with rule 20
+    default action: reduce with rule 20 (forexpr)
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
     "+" : shift, and go to state 25
@@ -3868,16 +2277,14 @@ state 130
 
 state 131
     [ 14: stmt => "if" "(" exprlist ")" stmt . elsestmt ]*
-    [ 18: elsestmt => . ]
-    [ 19: elsestmt => . "else" stmt ]
-    default action: reduce with rule 18
+    default action: reduce with rule 18 (elsestmt)
     "else" : shift, and go to state 136
     elsestmt : go to state 135
 
 
 state 132
     [ 15: stmt => "while" "(" exprlist ")" stmt . ]*
-    default action: reduce with rule 15
+    default action: reduce with rule 15 (stmt)
 
 
 state 133
@@ -3896,52 +2303,11 @@ state 134
 
 state 135
     [ 14: stmt => "if" "(" exprlist ")" stmt elsestmt . ]*
-    default action: reduce with rule 14
+    default action: reduce with rule 14 (stmt)
 
 
 state 136
     [ 19: elsestmt => "else" . stmt ]*
-    [ 11: stmt => . ";" ]
-    [ 12: stmt => . "{" stmtlist "}" ]
-    [ 13: stmt => . exprlist ";" ]
-    [ 14: stmt => . "if" "(" exprlist ")" stmt elsestmt ]
-    [ 15: stmt => . "while" "(" exprlist ")" stmt ]
-    [ 16: stmt => . "do" stmt "while" "(" exprlist ")" ";" ]
-    [ 17: stmt => . "for" "(" forexpr ";" forexpr ";" forexpr ")" stmt ]
-    [ 22: exprlist => . exprlist "," expr ]
-    [ 23: exprlist => . expr ]
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -3973,43 +2339,7 @@ state 137
 
 state 138
     [ 17: stmt => "for" "(" forexpr ";" forexpr ";" . forexpr ")" stmt ]*
-    [ 20: forexpr => . ]
-    [ 21: forexpr => . exprlist ]
-    [ 22: exprlist => . exprlist "," expr ]
-    [ 23: exprlist => . expr ]
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
-    default action: reduce with rule 20
+    default action: reduce with rule 20 (forexpr)
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
     "+" : shift, and go to state 25
@@ -4028,12 +2358,12 @@ state 138
 
 state 139
     [ 19: elsestmt => "else" stmt . ]*
-    default action: reduce with rule 19
+    default action: reduce with rule 19 (elsestmt)
 
 
 state 140
     [ 16: stmt => "do" stmt "while" "(" exprlist ")" ";" . ]*
-    default action: reduce with rule 16
+    default action: reduce with rule 16 (stmt)
 
 
 state 141
@@ -4044,47 +2374,6 @@ state 141
 
 state 142
     [ 17: stmt => "for" "(" forexpr ";" forexpr ";" forexpr ")" . stmt ]*
-    [ 11: stmt => . ";" ]
-    [ 12: stmt => . "{" stmtlist "}" ]
-    [ 13: stmt => . exprlist ";" ]
-    [ 14: stmt => . "if" "(" exprlist ")" stmt elsestmt ]
-    [ 15: stmt => . "while" "(" exprlist ")" stmt ]
-    [ 16: stmt => . "do" stmt "while" "(" exprlist ")" ";" ]
-    [ 17: stmt => . "for" "(" forexpr ";" forexpr ";" forexpr ")" stmt ]
-    [ 22: exprlist => . exprlist "," expr ]
-    [ 23: exprlist => . expr ]
-    [ 24: expr => . var aoptr expr ]
-    [ 25: expr => . expr "?" expr ":" expr ]
-    [ 26: expr => . expr "||" expr ]
-    [ 27: expr => . expr "&&" expr ]
-    [ 28: expr => . expr "|" expr ]
-    [ 29: expr => . expr "^" expr ]
-    [ 30: expr => . expr "&" expr ]
-    [ 31: expr => . expr coptr expr ]
-    [ 32: expr => . expr ">>" expr ]
-    [ 33: expr => . expr "<<" expr ]
-    [ 34: expr => . expr ">>>" expr ]
-    [ 35: expr => . expr "+" expr ]
-    [ 36: expr => . expr "-" expr ]
-    [ 37: expr => . expr "*" expr ]
-    [ 38: expr => . expr "/" expr ]
-    [ 39: expr => . expr "%" expr ]
-    [ 40: expr => . expr "**" expr ]
-    [ 41: expr => . "+" expr ]
-    [ 42: expr => . "-" expr ]
-    [ 43: expr => . "~" expr ]
-    [ 44: expr => . "!" expr ]
-    [ 45: expr => . const ]
-    [ 46: expr => . "(" expr ")" ]
-    [ 47: expr => . expr "(" arglist ")" ]
-    [ 48: expr => . var ]
-    [ 49: expr => . var "++" ]
-    [ 50: expr => . var "--" ]
-    [ 75: var => . <NAME> ]
-    [ 76: var => . expr "[" exprlist "]" ]
-    [ 77: var => . "++" var ]
-    [ 78: var => . "--" var ]
-    [ 74: const => . <NUM> ]
     no default action
     <NAME> : shift, and go to state 38
     <NUM> : shift, and go to state 41
@@ -4110,6 +2399,6 @@ state 142
 
 state 143
     [ 17: stmt => "for" "(" forexpr ";" forexpr ";" forexpr ")" stmt . ]*
-    default action: reduce with rule 17
+    default action: reduce with rule 17 (stmt)
 
 

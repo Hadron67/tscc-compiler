@@ -79,6 +79,8 @@
 %right '['
 %right '('
 
+%output 'javascript'
+
 %%
 
 topstmtlist: topstmtlist topstmt | /* empty */;

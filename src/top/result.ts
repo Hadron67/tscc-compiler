@@ -36,6 +36,7 @@ export interface TSCCContext {
     hasError(): boolean;
     warningSummary(): string;
     isTerminated(): boolean;
+    isDone(): boolean;
     testParse(tokens: string[], onErr: (msg: string) => any): string[];
     genCode(fc: FileCreator);
 }
@@ -49,6 +50,7 @@ export function createContext(): TSCCContext{
     let warnings: JsccError[] = [];
     let needLinecbs: ((ctx: Context, lines: string[]) => any)[] = [];
     let terminated = false;
+    let done = false;
     let timers: {name: string, start: Date, end: Date}[] = [];
 
     let escapes: EscapeDef = null;
@@ -79,6 +81,7 @@ export function createContext(): TSCCContext{
         warningSummary: () => `${warnings.length} warning(s), ${errors.length} error(s)`,
         genCode,
         isTerminated: () => terminated,
+        isDone: () => done
     };
 
     function reset(){
@@ -91,6 +94,7 @@ export function createContext(): TSCCContext{
         warnings.length = 0;
         needLinecbs.length = 0;
         terminated = false;
+        done = false;
         timers.length = 0;
     }
     function setEscape(e: {[s: string]: string}){
@@ -172,6 +176,8 @@ export function createContext(): TSCCContext{
             file.dfaTables.push(new DFATable<LexAction>(dfa));
         }
         endTime();
+
+        done = true;
     }
     function beginTime(name: string){
         timers.push({ name, start: new Date(), end: null});

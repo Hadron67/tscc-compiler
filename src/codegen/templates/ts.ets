@@ -547,7 +547,7 @@ function create<%= className %>()<%= ts(': ' + className) %> {
     function end(){
         
     }
-    function parse(input: ParserInput | string): boolean {
+    function parse(input<%= ts(': ParserInput | string') %>)<%= ts(": boolean") %> {
         load(input);
         var t;
         while(!<%= prefix %>stop){

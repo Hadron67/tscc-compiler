@@ -137,8 +137,7 @@ module.exports = function (s, args){
     parser.on('accept', function(){
         // console.log('result: ' + out.val);
     });
-    parser.accept(s);
-    parser.end();
+    parser.parse(s);
     if(errMsg !== null){
         throw errMsg;
     }

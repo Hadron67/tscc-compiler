@@ -5,41 +5,204 @@
         <meta charset="UTF-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <link href="style.css" rel="stylesheet" media="screen">
-        <link rel="stylesheet" href="lib/codemirror.css">
+        <link href="css/fontawesome-all.min.css" rel="stylesheet">
+        <!-- 咸鱼面筋 -->
+        <!-- 咸鱼免进 -->
+        <!-- 闲人免进 -->
+        <link href="css/main.css" rel="stylesheet" media="screen">
+        <link rel="stylesheet" href="css/codemirror.css">
     </head>
     <body>
-        <nav class="navbar">
-            <div class="navbar-content">
-                tscc
-            </div>
-        </nav>
-        <div class="main-container">
-            <div class="code-editor-container">
-                <div class="code-editor-titlebar">
-                    
+        <div class="top-container">
+            <div class="titlebar">
+                <div class="titlebar-header">
+                    <a class="titlebar-title titlebar-item" href="#">TSCC Demo</a>
+                    <div class="cbtn-container">
+                        <button class="collapse-btn" data-collapse="#titlebar-collapse">
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                    </div>
                 </div>
-                <div class="code-editor-outter-frame">
-                    <textarea id="text1" class="code-editor" spellcheck="false"></textarea>
+                <div class="titlebar-seperator"></div>
+                <div class="titlebar-collapse collapsed" id="titlebar-collapse">
+                    <ul class="titlebar-list">
+                        <li>
+                            <div class="titlebar-item titlebar-list-item titlebar-button" id="btn-compile" title="Compile">
+                                <span class="fa fa-gavel"></span>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="titlebar-item titlebar-list-item titlebar-button" id="btn-run" title="Run">
+                                <span class="fa fa-play"></span>
+                            </div>
+                        </li>
+                        <li class="dropdown" data-dropdown="#demo-files">
+                            <div class="titlebar-item titlebar-list-item titlebar-button" title="Demo code files">
+                                <span class="fa fa-file-code"></span>
+                            </div>
+                            <div class="dropdown-content" id="demo-files" style="display: none;"></div>
+                        </li>
+                        <li>
+                            <div class="titlebar-item titlebar-list-item titlebar-button" title="Help">
+                                <span class="fa fa-question-circle"></span>
+                            </div>
+                        </li>
+                    </ul>
                 </div>
             </div>
-            <div style="margin-top: 5px;">
-                <input type="file" id="source" />                
+            <div class="editor-container" id="editor-container" style="flex-grow: 1;"></div>
+            <div class="footer-panel" id="footer-panel" style="display: none; flex-grow: 0.5;">
+                <div class="resizer-col" id="footer-resizer">
+                    <span class="icon-resizer-bar"></span>
+                    <span class="icon-resizer-bar"></span>
+                    <span class="icon-resizer-bar"></span>
+                </div>
+                <div class="footer-head">
+                    <a class="footer-small-btn btn-left btn-clear-msg" href="javascript:void(0);" title="Clear messages">
+                        <span class="fa fa-trash-alt"></span>
+                    </a>
+                    <a class="footer-small-btn btn-left btn-clear-output" href="javascript:void(0);" title="Clear output">
+                        <span class="fa fa-trash-alt"></span>
+                    </a>
+                    <a class="footer-small-btn btn-right btn-close" href="javascript:void(0);" title="Hide footer panel">
+                        <span class="fa fa-times"></span>
+                    </a>
+                </div>
+                <div class="content-container" id="message-panel">
+                    <div class="footer-content" id="message-content"></div>
+                </div>
+                <div class="content-container" id="output-panel">
+                    <div class="footer-content" id="output-content"></div>
+                </div>
+                <div class="content-container" id="input-panel">
+                    <div class="input-panel-container">
+                        <div class="input-panel-head">
+                            <span class="input-panel-title">The following input can be accessed through variable 'input':</span>
+                        </div>
+                        <textarea class="parse-input" id="parse-input" spellcheck="false"></textarea>
+                    </div>
+                </div>
             </div>
-            <div>
-                <button id="btn-parse" class="parse-btn">parse</button>
-                <button id="btn-item-sets" class="parse-btn">item sets</button>
-                <button id="btn-parse-table" class="parse-btn">parse table</button>
-            </div>
-            <div id="result" class="result-panel"></div>
-            <div>
-                <input type="text" id="test-input" class="demo-input"/>
-                <button id="btn-test" class="parse-btn">run test</button>
+            <div class="footer-buttons">
+                <a class="footer-button fbtn-messages" href="javascript:void(0);" data-show="messages">Messages</a>
+                <a class="footer-button fbtn-output" href="javascript:void(0);" data-show="output">Output</a>
+                <a class="footer-button fbtn-input" href="javascript:void(0);" data-show="input">Input</a>
             </div>
         </div>
+        <!-- Github ribbon -->
+        <a class="github-ribbon" href="https://github.com/Hadron67/tscc-compiler">
+            <img style="position: fixed; top: 0; right: 0; border: 0; z-index: 1001;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" alt="Fork me on GitHub">
+        </a>
     </body>
-    <script src="src/tscc.js"></script>
-    <script src="lib/codemirror.js"></script>
-    <script src="src/tscc-highlight-codemirror.js"></script>
-    <script src="app.js"></script>
+    <script type="text/tscc" class="tscc-demo-script" data-fname="calculator.y" data-indent="2">
+        // This grammar implements a simple calculator
+        %lex {
+            DIGIT = < ['0'-'9'] >
+            EXP_TRAILER = < ['e', 'E']['+', '-']? <DIGIT>+ >
+            
+            // white space
+            < ([' ', '\t', '\r', '\n'] | '\r\n')+ >: [='']
+
+            // numbers. Decimals and exponentials are allowed
+            < NUM: ( <DIGIT>+ ('.' <DIGIT>*)? | '.' <DIGIT>+ ) <EXP_TRAILER>? >: { $$ = Number($token.val); }
+            // operators
+            < PLUS: '+' >
+            < MINUS: '-' >
+            < TIMES: '*' >
+            < EXP: '**' >
+            < DIVIDE: '/' >
+            // brackets
+            < OPEN_BRACE: '(' >
+            < CLOSE_BRACE: ')' >
+        }
+        // define operators' associativity and priority
+        %left '+' '-'
+        %left '*' '/'
+        %right '**'
+        // should be javascript, or test run will fail
+        %output 'javascript'
+        %%
+        start: expr { console.log('result: ' + $$); };
+        expr:
+            a = expr '+' b = expr  { $$ = a + b; }
+        |   a = expr '-' b = expr  { $$ = a - b; }
+        |   a = expr '*' b = expr  { $$ = a * b; }
+        |   a = expr '/' b = expr  { $$ = a / b; }
+        |   a = expr '**' b = expr { $$ = Math.exp(a, b); }
+        |   '(' a = expr ')'       { $$ = a; }
+        |   <NUM>
+        ;
+        %%
+        var parser = createParser();
+        parser.init();
+        // error handling
+        parser.on('syntaxerror', function(token, state){
+            // token may be an ERROR token, which indicates a lexical error.
+            if(token.id === TokenKind.ERROR){
+                console.log('unexpected illegal token ' + token.toString());
+            }
+            else {
+                console.log('unexpected token ' + token.toString() + ', expecting:\n');
+                for(var i = 0, _a = getExpectedTokens(state); i < _a.length; i++){
+                    console.log('    ' + tokenToString(_a[i]) + '...');
+                }
+            }
+            // stop the parser
+            parser.halt();
+        });
+        parser.parse(input);
+    </script>
+    <script type="text/tscc" class="tscc-demo-script" data-fname="json.y" data-indent="2">
+        %lex {
+            LETTER = < ['a'-'z', 'A'-'Z', '$', '_'] >
+            DIGIT = < ['0'-'9'] >
+            EXP_TRAILER = < ['e', 'E']['+', '-']? <DIGIT>+ >
+        
+            HEX = < ['0'-'9', 'a'-'f', 'A'-'F'] >
+            ESCAPE_CHAR = < "\\" (['n', 't', 'b', 'r', 'f', '"', "'", "\\"] | <UNICODE>) >
+            UNICODE = < ['x', 'u', 'X', 'U'] <HEX>+ >
+        
+            < ( ['\r', '\n', ' ', '\t'] | '\r\n')+ >: [='']
+        
+            < STRING: 
+                '"' ( [^'"', '\n', '\\'] | <ESCAPE_CHAR> )* '"' 
+            |   "'" ( [^"'", '\n', '\\'] | <ESCAPE_CHAR> )* "'"
+            >: { $$ = $token.val; $$ = $$.substr(1, $$.length - 2); }
+            < NAME: <LETTER> (<DIGIT>|<LETTER>)* >: { $$ = $token.val; }
+            < NUM: ( <DIGIT>+ ('.' <DIGIT>*)? | '.' <DIGIT>+ ) <EXP_TRAILER>? >: { $$ = Number($token.val); }
+        
+            < TRUE: 'true' >
+            < FALSE: 'false' >
+            < NULL: 'null' >
+            < OPEN_CUBIC_B: '[' >
+            < CLOSE_CUBIC_B: ']' >
+            < OPEN_CURLY_B: '{' >
+            < CLOSE_CURLY_B: '}' >
+            < COMMA: ',' >
+            < COLLON: ':' >
+        }
+        %output "javascript"
+        %%
+        
+        json: primitives | '[' array ']' | '{' obj '}';
+        
+        primitives: <NAME> | <STRING> | <NUM> | 'true' | 'false' | 'null';
+        
+        array: nearray comma | /* empty */;
+        nearray: nearray ',' json | json;
+        
+        obj: neobj comma | /* empty */;
+        neobj: neobj ','oitem | oitem;
+        oitem: key ':' json;
+        key: <NAME> | <STRING>;
+        
+        comma: ',' | /* empty */;
+        %%
+        var jsonParser = createParser();
+        jsonParser.init();
+        jsonParser.parse(input);
+    </script>
+    <script data-main="requirejs.config.js" src="lib/require.js"></script>
 </html>

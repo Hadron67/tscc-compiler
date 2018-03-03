@@ -7,20 +7,10 @@
 */
 var jjlf = '\n'.charCodeAt(0);
 var jjcr = '\r'.charCodeAt(0);
-interface DFATable{
-    pnext: number[];
-    disnext: number[];
-    checknext: number[];
-    maxAsicii: number;
-    classTable: number[];
-    unicodeClassTable: number[];
-    isEnd: number[];
-    hasArc: number[];
-};
 /*
     dfa table definations
 */
-var jjlexpnext0: number[] = [ 
+var jjlexpnext0 = [ 
          1,     1,     2,     3,     4,     5,     6,     7,     8,     9,
         10,    11,    12,    13,    14,    15,    16,    17,    18,    19,
         20,    21,    22,    23,     4,    24,    25,    26,     4,    27,
@@ -115,7 +105,7 @@ var jjlexpnext0: number[] = [
         -1,    -1,    35,    35,    35,    35,    35,    35,    35,    35,
         35,    35,    35,    35,    35,    35,
 ]; 
-var jjlexdisnext0: number[] = [ 
+var jjlexdisnext0 = [ 
          0,    49,    46,    73,   888,    70,    72,   -42,   -42,    71,
         69,   -42,    43,    67,    70,   -42,   -42,    42,    65,    39,
        -42,   -42,   -42,    64,   854,   820,   786,   752,   718,   -42,
@@ -125,7 +115,7 @@ var jjlexdisnext0: number[] = [
        -42,   -42,   -42,   -42,   412,   378,   344,   310,   276,   242,
        208,   174,   140,   106,    72,    38,
 ]; 
-var jjlexchecknext0: number[] = [ 
+var jjlexchecknext0 = [ 
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
          0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
@@ -220,7 +210,7 @@ var jjlexchecknext0: number[] = [
         -1,    -1,     4,     4,     4,     4,     4,     4,     4,     4,
          4,     4,     4,     4,     4,     4,
 ]; 
-var jjlexclassTable0: number[] = [ 
+var jjlexclassTable0 = [ 
         -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,     0,
          1,    -1,    -1,     2,    -1,    -1,    -1,    -1,    -1,    -1,
         -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
@@ -248,10 +238,10 @@ var jjlexclassTable0: number[] = [
         -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
         -1,    -1,    -1,    -1,    -1,    -1,
 ]; 
-var jjlexunicodeClassTable0: number[] = [ 
+var jjlexunicodeClassTable0 = [ 
     
 ]; 
-var jjlexisEnd0: number[] = [ 
+var jjlexisEnd0 = [ 
     0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -259,7 +249,7 @@ var jjlexisEnd0: number[] = [
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
     1,
 ]; 
-var jjlexhasArc0: number[] = [ 
+var jjlexhasArc0 = [ 
     1,1,1,1,1,1,1,0,0,1,1,0,1,1,1,
     0,0,1,1,1,0,0,0,1,1,1,1,1,1,0,
     1,0,0,1,0,1,1,0,0,0,0,0,0,0,0,
@@ -267,7 +257,7 @@ var jjlexhasArc0: number[] = [
     0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,
     1,
 ]; 
-var jjlextable0: DFATable = {
+var jjlextable0 = {
     pnext: jjlexpnext0,
     disnext: jjlexdisnext0,
     checknext: jjlexchecknext0,
@@ -280,13 +270,13 @@ var jjlextable0: DFATable = {
 /*
     dfa tables
 */
-var jjdfaTables: DFATable[] = [
+var jjdfaTables = [
     jjlextable0,
 ];
 /*
     find unicode class
 */
-function jjfindUnicodeClass(uc: number[], c: number){
+function jjfindUnicodeClass(uc, c){
     for(var i = 0; i < uc.length; i += 3){
         if(c >= uc[i + 1] && c <= uc[i + 2]){
             return uc[i];
@@ -300,7 +290,7 @@ function jjfindUnicodeClass(uc: number[], c: number){
 /*
     tokens that a lexical dfa state can return
 */
-var jjlexTokens0: number[] = [ 
+var jjlexTokens0 = [ 
         -1,    -1,    -1,    48,     2,    11,    29,    38,    39,     6,
          4,    42,     5,     7,     3,    10,    45,    13,    18,    12,
          9,    40,    41,    31,     2,     2,     2,     2,     2,    43,
@@ -320,7 +310,7 @@ var jjactERR = 145;
     when action < 0, reduce with rule (1-action);
     when action = 0, do default action.
 */
-var jjpact: number[] = [ 
+var jjpact = [ 
         55,    56,    57,    58,    60,    45,   110,    59,     8,     9,
         10,    11,    12,    13,   -79,   -79,   -79,   -79,   -79,   -79,
        -79,   -79,   -79,   -79,   -79,    50,    48,    49,   143,    64,
@@ -467,7 +457,7 @@ var jjpact: number[] = [
 /*
     displacement of action table.
 */
-var jjdisact: number[] = [ 
+var jjdisact = [ 
        -55,   602,   -55,   -55,   -55,   219,   248,   -55,   -55,   -55,
        -55,   -55,   -55,   -55,   -55,   -55,   -55,   -55,   -55,   -55,
        -55,   -55,   -55,   -55,    40,  1324,  1313,  1276,  1265,   -55,
@@ -488,7 +478,7 @@ var jjdisact: number[] = [
     used to check if a position in jjpact is out of bouds.
     if jjcheckact[jjdisact[STATE-NUM] + TOKEN] = STATE-NUM, this position is not out of bounds.
 */
-var jjcheckact: number[] = [ 
+var jjcheckact = [ 
         78,    78,    78,    78,    78,    78,    78,    78,    78,    78,
         78,    78,    78,    78,    32,    32,    32,    32,    32,    32,
         32,    32,    32,    32,    32,    78,    78,    78,   141,    32,
@@ -636,7 +626,7 @@ var jjcheckact: number[] = [
     default action table. action = jjdefred[STATE-NUM],
     where action is the number of the rule to reduce with.
 */
-var jjdefred: number[] = [ 
+var jjdefred = [ 
          2,    -1,     0,     1,     3,    -1,     6,    62,    63,    64,
         65,    66,    67,    51,    52,    53,    54,    55,    56,    57,
         58,    59,    60,    61,    48,    -1,    -1,    -1,    -1,    45,
@@ -656,7 +646,7 @@ var jjdefred: number[] = [
 /*
     compressed goto table: goto = jjpgoto[jjdisgoto[STATE-NUM] + NON_TERMINAL]
 */
-var jjpgoto: number[] = [ 
+var jjpgoto = [ 
         50,    50,    50,    50,    50,    50,    50,    50,    50,    50,
         50,    50,    50,    50,    50,    50,    50,    50,    50,    50,
          3,    50,   143,    50,     4,   102,    37,   102,    37,   141,
@@ -682,7 +672,7 @@ var jjpgoto: number[] = [
 /*
     displacement of the goto table
 */
-var jjdisgoto: number[] = [ 
+var jjdisgoto = [ 
        177,    18,   -18,   -18,   -18,   -18,   110,   -18,   -18,   -18,
        -18,   -18,   -18,   -18,   -18,   -18,   -18,   -18,   -18,   -18,
        -18,   -18,   -18,   -18,   154,   182,   180,   177,   172,   -18,
@@ -702,7 +692,7 @@ var jjdisgoto: number[] = [
 /*
     length of each rule: rule length = jjruleLen[RULE-NUM]
 */
-var jjruleLen: number[] = [ 
+var jjruleLen = [ 
          2,     2,     0,     1,     7,     1,     0,     3,     1,     2,
          0,     1,     3,     2,     6,     5,     7,     9,     0,     2,
          0,     1,     3,     1,     3,     5,     3,     3,     3,     3,
@@ -715,7 +705,7 @@ var jjruleLen: number[] = [
 /*
     index of the LHS of each rule
 */
-var jjlhs: number[] = [ 
+var jjlhs = [ 
          0,     1,     1,     2,     2,     3,     3,     4,     4,     5,
          5,     6,     6,     6,     6,     6,     6,     6,     7,     7,
          8,     8,     9,     9,    10,    10,    10,    10,    10,    10,
@@ -728,7 +718,7 @@ var jjlhs: number[] = [
 /*
     token names
 */
-var jjtokenNames: string[] = [ 
+var jjtokenNames = [ 
                    "EOF",             "ERROR",              "NAME",
                    "NUM",              "PLUS",             "MINUS",
                  "TIMES",            "DIVIDE",               "EXP",
@@ -752,7 +742,7 @@ var jjtokenNames: string[] = [
 /*
     token alias
 */
-var jjtokenAlias: string[] = [ 
+var jjtokenAlias = [ 
                     null,                null,                null,
                     null,                 "+",                 "-",
                      "*",                 "/",                "**",
@@ -775,13 +765,13 @@ var jjtokenAlias: string[] = [
 ]; 
 
 
-function tokenToString(tk: number){
-    return jjtokenAlias[tk] === null ? `<${jjtokenNames[tk]}>` : `"${jjtokenAlias[tk]}"`;
+function tokenToString(tk){
+    return jjtokenAlias[tk] === null ? "<" + jjtokenNames[tk] + ">" : '"' + jjtokenAlias[tk] + '"';
 }
-function getExpectedTokens(state: number): number[]{
+function getExpectedTokens(state){
         var dis = jjdisact[state];
-        var ret: number[] = [];
-        function expect(tk: number){
+        var ret = [];
+        function expect(tk){
             var ind = dis + tk;
             if(ind < 0 || ind >= jjpact.length || state !== jjcheckact[ind]){
                 return jjdefred[state] !== -1;
@@ -796,174 +786,141 @@ function getExpectedTokens(state: number): number[]{
         return ret;
 }
 // Token kinds
-enum TokenKind {
-    EOF = 0,
-    ERROR = 1,
-    NAME = 2,
-    NUM = 3,
-    PLUS = 4,
-    MINUS = 5,
-    TIMES = 6,
-    DIVIDE = 7,
-    EXP = 8,
-    QUESTION = 9,
-    COLON = 10,
-    PERCENT = 11,
-    GT = 12,
-    LT = 13,
-    GTOE = 14,
-    LTOE = 15,
-    EQU = 16,
-    NEQ = 17,
-    ASSIGN = 18,
-    PLUS_ASSIGN = 19,
-    MINUS_ASSIGN = 20,
-    TIMES_ASSIGN = 21,
-    DIVIDE_ASSIGN = 22,
-    BIT_AND_ASSIGN = 23,
-    BIT_OR_ASSIGN = 24,
-    BIT_XOR_ASSIGN = 25,
-    RIGHT_SHIFT_ASSIGN = 26,
-    LEFT_SHIFT_ASSIGN = 27,
-    MOD_ASSIGN = 28,
-    BIT_AND = 29,
-    BIT_OR = 30,
-    BIT_XOR = 31,
-    BIT_NOT = 32,
-    INC = 33,
-    DEC = 34,
-    LEFT_SHIFT = 35,
-    RIGHT_SHIFT = 36,
-    RIGHT_SHIFT2 = 37,
-    BRA = 38,
-    KET = 39,
-    CBRA = 40,
-    CKET = 41,
-    COMMA = 42,
-    BBRA = 43,
-    BKET = 44,
-    EOL = 45,
-    AND = 46,
-    OR = 47,
-    NOT = 48,
-    IF = 49,
-    ELSE = 50,
-    WHILE = 51,
-    DO = 52,
-    FOR = 53,
-    FUNCTION = 54,
+var TokenKind = {
+    EOF : 0,
+    ERROR : 1,
+    NAME : 2,
+    NUM : 3,
+    PLUS : 4,
+    MINUS : 5,
+    TIMES : 6,
+    DIVIDE : 7,
+    EXP : 8,
+    QUESTION : 9,
+    COLON : 10,
+    PERCENT : 11,
+    GT : 12,
+    LT : 13,
+    GTOE : 14,
+    LTOE : 15,
+    EQU : 16,
+    NEQ : 17,
+    ASSIGN : 18,
+    PLUS_ASSIGN : 19,
+    MINUS_ASSIGN : 20,
+    TIMES_ASSIGN : 21,
+    DIVIDE_ASSIGN : 22,
+    BIT_AND_ASSIGN : 23,
+    BIT_OR_ASSIGN : 24,
+    BIT_XOR_ASSIGN : 25,
+    RIGHT_SHIFT_ASSIGN : 26,
+    LEFT_SHIFT_ASSIGN : 27,
+    MOD_ASSIGN : 28,
+    BIT_AND : 29,
+    BIT_OR : 30,
+    BIT_XOR : 31,
+    BIT_NOT : 32,
+    INC : 33,
+    DEC : 34,
+    LEFT_SHIFT : 35,
+    RIGHT_SHIFT : 36,
+    RIGHT_SHIFT2 : 37,
+    BRA : 38,
+    KET : 39,
+    CBRA : 40,
+    CKET : 41,
+    COMMA : 42,
+    BBRA : 43,
+    BKET : 44,
+    EOL : 45,
+    AND : 46,
+    OR : 47,
+    NOT : 48,
+    IF : 49,
+    ELSE : 50,
+    WHILE : 51,
+    DO : 52,
+    FOR : 53,
+    FUNCTION : 54,
 
 };
-class Token {
-    constructor(
-        public id: number,
-        public val: string,
-        public startLine: number,
-        public startColumn: number,
-        public endLine: number,
-        public endColumn: number
-    ){}
-    clone(){
-        return new Token(
-            this.id,
-            this.val,
-            this.startLine,
-            this.startColumn,
-            this.endLine,
-            this.endColumn
-        );
-    }
-    toString(){
-        return (jjtokenAlias[this.id] === null ? 
-            `<${jjtokenNames[this.id]}>` :
-            `"${jjtokenAlias[this.id]}"`) + `("${this.val}")`;
-    }
+function Token(id, val, startLine, startColumn, endLine, endColumn){
+    this.id = id;
+    this.val = val;
+    this.startLine = startLine;
+    this.startColumn = startColumn;
+    this.endLine = endLine;
+    this.endColumn = endColumn;
 }
-interface Parser{
-    init();
-    accept(s: string);
-    end();
-    parse(input: ParserInput | string): boolean;
-    load(input: ParserInput | string);
-    nextToken(): Token;
-
-    setLineTerminator(lt: LineTerm);
-    getLineTerminator(): LineTerm;
-    halt();
-    on(ent: 'lexicalerror', cb: (c: string, line: number, col: number) => any);
-    on(ent: 'syntaxerror', cb: (t: Token, state: number) => any);
-    on(ent: 'accept', cb: () => any);
-
-    enableBlocks();
-    disableBlocks();
-    loadParserState(state: ParserState);
-    getParserState(): ParserState;
+Token.prototype.clone = function(){
+    return new Token(
+        this.id,
+        this.val,
+        this.startLine,
+        this.startColumn,
+        this.endLine,
+        this.endColumn
+    );
 }
-interface ParserState {
-    lexState: number[];
-    lrState: number[];
-    sematicS: any[];
-};
-interface ParserInput {
-    current(): number;
-    next();
-    isEof(): boolean;
-    backup(s: string);
-};
-enum LineTerm{
-    NONE = 1,
-    AUTO,
-    CR,
-    LF,
-    CRLF
+Token.prototype.toString = function(){
+    return (jjtokenAlias[this.id] === null ? 
+        '<' + jjtokenNames[this.id] + '>' :
+        '"' + jjtokenAlias[this.id] + '"') + "(" + this.val + ")";
+}
+var LineTerm = {
+    NONE: 1,
+    AUTO: 2,
+    CR: 3,
+    LF: 4,
+    CRLF: 5
 };
 
-function createParser(): Parser {
+function createParser() {
     //#region parser state variables
-    var jjlexState: number[];
-    var jjstate: number;
-    var jjlastCR: boolean;
-    var jjmatched: string;
-    var jjmarker: { state: number, line: number, column: number } = { state: -1, line: 0, column: 0 };
-    var jjbackupCount: number;
-    var jjline: number;
-    var jjcolumn: number;
-    var jjtline: number;
-    var jjtcolumn: number;
+    var jjlexState;
+    var jjstate;
+    var jjlastCR;
+    var jjmatched;
+    var jjmarker = { state: -1, line: 0, column: 0 };
+    var jjbackupCount;
+    var jjline;
+    var jjcolumn;
+    var jjtline;
+    var jjtcolumn;
 
-    var jjlrState: number[];
-    var jjsematicS: any[];
+    var jjlrState;
+    var jjsematicS;
     //#endregion
 
-    var jjinput: ParserInput;
-    var jjsematicVal: any;
-    var jjtokenQueue: Token[];
-    var jjtoken: Token;
-    var jjstop: boolean;
-    var jjtokenEmitted: boolean;
-    var jjenableBlock: boolean = true;
-    var jjlineTerm: LineTerm;
+    var jjinput;
+    var jjsematicVal;
+    var jjtokenQueue;
+    var jjtoken;
+    var jjstop;
+    var jjtokenEmitted;
+    var jjenableBlock = true;
+    var jjlineTerm;
 
-    var jjhandlers: {[s: string]: ((a1?, a2?, a3?) => any)[]} = {};
+    var jjhandlers = {};
 
     // extra members, defined by %extra_arg
     
 
     return {
-        init,
-        on,
-        setLineTerminator,
-        getLineTerminator: () => jjlineTerm,
-        accept,
-        end,
-        load,
-        parse,
-        nextToken,
-        halt,
-        enableBlocks,
-        disableBlocks,
-        loadParserState,
-        getParserState
+        init: init,
+        on: on,
+        setLineTerminator: setLineTerminator,
+        getLineTerminator: function() { return jjlineTerm; },
+        accept: accept,
+        end: end,
+        load: load,
+        nextToken: nextToken,
+        halt: halt,
+        enableBlocks: enableBlocks,
+        disableBlocks: disableBlocks,
+        loadParserState: loadParserState,
+        getParserState: getParserState,
+        parse: parse
     };
     function init(){
         jjlexState = [ 0 ];// DEFAULT
@@ -987,22 +944,22 @@ function createParser(): Parser {
 
         jjtryReduce();
     }
-    function load(input: ParserInput | string){
+    function load(input){
         if(typeof input === 'string'){
             var i = 0;
-            var s: string = input;
+            var s = input;
             jjinput = {
-                current: () => i < s.length ? s.charCodeAt(i) : null,
-                next: () => i++,
-                isEof: () => i >= s.length,
-                backup: t => i -= t.length
+                current: function(){ return i < s.length ? s.charCodeAt(i) : null; },
+                next: function(){ return i++; },
+                isEof: function(){ return i >= s.length; },
+                backup: function(t){ return i -= t.length; }
             }
         }
         else {
             jjinput = input;
         }
     }
-    function nextToken(): Token{
+    function nextToken(){
         jjtokenEmitted = false;
         while(!jjstop && !jjtokenEmitted){
             var c = jjinput.current();
@@ -1021,7 +978,7 @@ function createParser(): Parser {
         }
         return jjtoken;
     }
-    function setLineTerminator(lt: LineTerm){
+    function setLineTerminator(lt){
         jjlineTerm = lt;
     }
     function enableBlocks(){
@@ -1035,13 +992,13 @@ function createParser(): Parser {
      *  @api public
      *  @deprecated
      */
-    function accept(s: string){
+    function accept(s){
         var i = 0;
         load({
-            current: () => i < s.length ? s.charCodeAt(i) : null,
-            next: () => i++,
-            isEof: () => i >= s.length,
-            backup: t => i -= t.length
+            current: function(){ return i < s.length ? s.charCodeAt(i) : null; },
+            next: function(){ return i++; },
+            isEof: function(){ return i >= s.length; },
+            backup: function(t){ return i -= t.length; }
         });
         while(!jjstop && nextToken().id !== 0);
     }
@@ -1052,7 +1009,7 @@ function createParser(): Parser {
     function end(){
         
     }
-    function parse(input: ParserInput | string): boolean {
+    function parse(input) {
         load(input);
         var t;
         while(!jjstop){
@@ -1069,12 +1026,12 @@ function createParser(): Parser {
     function halt(){
         jjstop = true;
     }
-    function loadParserState(state: ParserState){
+    function loadParserState(state){
         jjlexState = state.lexState;
         jjlrState = state.lrState;
         jjsematicS = state.sematicS;
     }
-    function getParserState(): ParserState {
+    function getParserState() {
         return {
             lexState: jjlexState,
             lrState: jjlrState,
@@ -1084,12 +1041,12 @@ function createParser(): Parser {
     /**
      *  set 
      */
-    function jjsetImg(s: string){
+    function jjsetImg(s){
         jjmatched = s;
         jjtline = jjline;
         jjtcolumn = jjcolumn;
     }
-    function jjprepareToken(tid: number){
+    function jjprepareToken(tid){
         jjtoken.id = tid;
         jjtoken.val = jjmatched;
         jjtoken.startLine = jjtline;
@@ -1104,7 +1061,7 @@ function createParser(): Parser {
         jjtline = jjline;
         jjtcolumn = jjcolumn;
     }
-    function jjemit(name: string, a1?, a2?, a3?){
+    function jjemit(name, a1, a2, a3){
         var cbs = jjhandlers[name];
         if(cbs){
             for(var i = 0; i < cbs.length; i++){
@@ -1112,11 +1069,11 @@ function createParser(): Parser {
             }
         }
     }
-    function on(name: string, cb: (a1?, a2?, a3?) => any){
+    function on(name, cb){
         jjhandlers[name] || (jjhandlers[name] = []);
         jjhandlers[name].push(cb);
     }
-    function jjdoLexAction0(jjstaten: number){
+    function jjdoLexAction0(jjstaten){
         var jjtk = jjlexTokens0[jjstaten];
         jjtk !== -1 && jjprepareToken(jjtk);
         switch(jjstaten){
@@ -1137,7 +1094,7 @@ function createParser(): Parser {
      *  @api private
      *  @internal
      */
-    function jjdoLexAction(lexstate: number, state: number){
+    function jjdoLexAction(lexstate, state){
         switch(lexstate){
             case 0:
                 jjdoLexAction0(state);
@@ -1162,7 +1119,7 @@ function createParser(): Parser {
         jjmarker.column = jjcolumn;
         jjbackupCount = 0;
     }
-    function jjconsume(c: number){
+    function jjconsume(c){
         // c === jjeol ? (jjline++, jjcolumn = 0) : (jjcolumn += c > 0xff ? 2 : 1);
         switch(jjlineTerm){
             case LineTerm.NONE:
@@ -1223,7 +1180,7 @@ function createParser(): Parser {
      *  @api private
      *  @internal
      */
-    function jjacceptChar(ccode: number){
+    function jjacceptChar(ccode){
         var lexstate = jjlexState[jjlexState.length - 1];
         var ltable = jjdfaTables[lexstate];
         var isEnd = ltable.isEnd[jjstate] === 1;
@@ -1348,7 +1305,7 @@ function createParser(): Parser {
             jjstate = 0;
         }
     }
-    function jjdoReduction(jjrulenum: number){
+    function jjdoReduction(jjrulenum){
         var jjnt = jjlhs[jjrulenum];
         var jjsp = jjsematicS.length;
         var jjtop = jjsematicS[jjsp - jjruleLen[jjrulenum]] || null;
@@ -1361,7 +1318,7 @@ function createParser(): Parser {
         jjsematicS.length -= jjruleLen[jjrulenum];
         jjsematicS.push(jjtop);
     }
-    function jjacceptToken(tk: Token){
+    function jjacceptToken(tk){
         // look up action table
         var shifted = false;
         tk !== null && jjtokenQueue.push(tk);
@@ -1418,7 +1375,7 @@ function createParser(): Parser {
             cstate = jjlrState[jjlrState.length - 1];
         }
     }
-    function jjsyntaxError(t: Token){
+    function jjsyntaxError(t){
         jjemit("syntaxerror", t, jjlrState[jjlrState.length - 1]);
     }
 }
