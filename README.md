@@ -98,5 +98,8 @@ The syntax of the grammar specifying file used by tscc is similiar to yacc. Chec
 ## Syntax highlight
 A syntax highlight mode of grammar file for CodeMirror can be found at `web-demo/lib/tscc-highlight-codemirror.js`. Feel free to check it out and use it.
 
+## Demo
+An online demo for tscc-compiler can be found [here](http://hadroncfy.com/tscc-compiler/web-demo/).
+
 ## License
 MIT.
