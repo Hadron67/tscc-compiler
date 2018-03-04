@@ -13,6 +13,49 @@
         <link rel="stylesheet" href="css/codemirror.css">
     </head>
     <body>
+        <div class="mortal-overlay" id="help-container" style="display: none;">
+            <div class="help-panel">
+                <a href="javascript:void(0);" class="fa-btn close-btn help-close-btn" data-target="#help-container">
+                    <span class="fa fa-times"></span>
+                </a>
+                <h1>Help</h1>
+                <p>
+                    This site is a demo for tscc-compiler, an LALR(1) parser generator written in typescript. The project
+                    is hosted on <a href="https://github.com/Hadron67/tscc-compiler">github</a>, documentation can be found
+                    at <a href="https://github.com/Hadron67/tscc-compiler/wiki">wiki for tscc-compiler</a>. It has been 
+                    published on <a href="https://www.npmjs.com/package/tscc-compiler"></a>npm, you can install tscc-compiler
+                    using the command
+                </p>
+                <div class="code-block source">npm install tscc-compiler -g</div>
+                <p>
+                    You can input any grammar file you like, or select a demo file by clicking <span class="fa fa-file-code"></span>.
+                    After you've done that, press <span class="fa fa-gavel"></span> to compile. The compilation includes generating tables and 
+                    the parser's source code, and "compile" the code using function constructor of Javascript, with two arguments: 
+                    <span class="source">console</span> and <span class="source">input</span>. The former is an object with the method
+                    <span class="source">log</span>, which prints a specified string into the "Output" tab of the footer panel; The latter
+                    is a string whose value is the value of the text area in the "Input" tab. You can access these two variables
+                    in the inline code blocks or epilogue in the grammar file.
+                </p>
+                <p>
+                    Errors and warnings will be printed in the "Messages" tab of the footer panel if they occur. When input is accepted, you can 
+                    either run the generated code by clicking <span class="fa fa-play"></span>, or print parse table and DFA tables by pressing
+                    <span class="fa fa-desktop"></span> and select what you want to print. Tables will be printed in the "Output" tab.
+                </p>
+                <h2>Credits</h2>
+                <p>
+                    This site is hosted on Github Pages, together with the following libraries:
+                    <ul>
+                        <li>jquery v3.1.1</li>
+                        <li>Font Awesome Free 5.0.8</li>
+                        <li>RequireJS 2.3.5</li>
+                    </ul>
+                </p>
+                <h2>License</h2>
+                <p>
+                    The same as tscc-compiler, this site is licensed under MIT.
+                </p>
+            </div>
+        </div>        
         <div class="top-container">
             <div class="titlebar">
                 <div class="titlebar-header">
@@ -25,7 +68,6 @@
                         </button>
                     </div>
                 </div>
-                <div class="titlebar-seperator"></div>
                 <div class="titlebar-collapse collapsed" id="titlebar-collapse">
                     <ul class="titlebar-list">
                         <li>
@@ -38,14 +80,24 @@
                                 <span class="fa fa-play"></span>
                             </div>
                         </li>
+                        <li class="dropdown" data-dropdown="#show-list">
+                            <div class="titlebar-item titlebar-list-item titlebar-button" title="Show...">
+                                <span class="fa fa-desktop"></span>
+                            </div>
+                            <ul class="dropdown-menu hidden" id="show-list">
+                                <li><a href="javascript:void(0);" class="menu-btn" id="btn-parse-table">Parse&nbsp;table</a></li>
+                                <li><a href="javascript:void(0);" class="menu-btn" id="btn-full-table">Full&nbsp;parse&nbsp;table</a></li>
+                                <li><a href="javascript:void(0);" class="menu-btn" id="btn-dfa-tables">DFA&nbsp;tables</a></li>
+                            </ul>
+                        </li>
                         <li class="dropdown" data-dropdown="#demo-files">
-                            <div class="titlebar-item titlebar-list-item titlebar-button" title="Demo code files">
+                            <div class="titlebar-item titlebar-list-item titlebar-button" title="Open demo file...">
                                 <span class="fa fa-file-code"></span>
                             </div>
-                            <div class="dropdown-content" id="demo-files" style="display: none;"></div>
+                            <ul class="dropdown-menu hidden" id="demo-files"></ul>
                         </li>
                         <li>
-                            <div class="titlebar-item titlebar-list-item titlebar-button" title="Help">
+                            <div class="titlebar-item titlebar-list-item titlebar-button toggle-btn" title="Help" data-target="#help-container">
                                 <span class="fa fa-question-circle"></span>
                             </div>
                         </li>
@@ -60,13 +112,13 @@
                     <span class="icon-resizer-bar"></span>
                 </div>
                 <div class="footer-head">
-                    <a class="footer-small-btn btn-left btn-clear-msg" href="javascript:void(0);" title="Clear messages">
+                    <a class="fa-btn btn-left btn-clear-msg" href="javascript:void(0);" title="Clear messages">
                         <span class="fa fa-trash-alt"></span>
                     </a>
-                    <a class="footer-small-btn btn-left btn-clear-output" href="javascript:void(0);" title="Clear output">
+                    <a class="fa-btn btn-left btn-clear-output" href="javascript:void(0);" title="Clear output">
                         <span class="fa fa-trash-alt"></span>
                     </a>
-                    <a class="footer-small-btn btn-right btn-close" href="javascript:void(0);" title="Hide footer panel">
+                    <a class="fa-btn btn-right btn-close" href="javascript:void(0);" title="Hide footer panel">
                         <span class="fa fa-times"></span>
                     </a>
                 </div>
@@ -96,6 +148,15 @@
             <img style="position: fixed; top: 0; right: 0; border: 0; z-index: 1001;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" alt="Fork me on GitHub">
         </a>
     </body>
+    <script type="text/tscc" id="tscc-hint" data-indent="2">
+        // Input your code here.
+        // or, you can open a demo file by clicking the 4th button on the title bar.
+        // When your input is done, press compile button, which looks like a gavel.
+        // If no error occurs, you can then either run the code by clicking the 2th button,
+        // or print the parse table or DFA tables through the 3th button.
+
+        // For more information, press help.
+    </script>
     <script type="text/tscc" class="tscc-demo-script" data-fname="calculator.y" data-indent="2">
         // This grammar implements a simple calculator
         %lex {

@@ -19,6 +19,7 @@ body {
     flex-direction: column;
     height: 100%;
     width: 100%;
+    position: relative;
 }
 .err-font{
     color: #F31313;
@@ -130,7 +131,7 @@ a.footer-button {
 .btn-left {
     float: left;
 }
-.footer-small-btn {
+.fa-btn {
     text-decoration: none;
     font-size: 1em;
     color: black;
@@ -236,11 +237,6 @@ a.footer-button {
     flex-shrink: 1;
     flex-basis: auto;
 }
-.titlebar-seperator {
-    width: 100%;
-    height: 0.05em;
-    background-color: rgb(90, 205, 176);
-}
 .titlebar-collapse {
     flex-basis: auto;
     position: relative;
@@ -259,9 +255,13 @@ a.footer-button {
     .collapsed {
         display: none;
     }
+    .titlebar-collapse {
+        border-top: solid 1px transparent;
+        box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.116);
+    }
 }
 @media(min-width: 500px){
-    .collapse-btn, .titlebar-seperator {
+    .collapse-btn {
         display: none;
     }
 }
@@ -270,20 +270,69 @@ a.footer-button {
     position: relative;
     display: inline-block;
 }
-.dropdown-content {
+.dropdown-menu {
     position: absolute;
     background-color: #f9f9f9;
-    min-width: 4em;
     box-shadow: 0em 0.5em 1em 0em rgba(0,0,0,0.2);
     z-index: 1000;
+    padding: 0;
+    overflow: hidden;
 }
-.dropdown-content a {
+.dropdown-menu > li {
+    list-style-type: none;
+    padding: 0.5em 1em;
+    display: block;
+}
+.menu-btn {
     color: black;
     font-size: 1em;
     font-family: Arial, Helvetica, sans-serif;
-    padding: 0.5em 1em;
     text-decoration: none;
-    display: block;
 }
 
-.dropdown-content a:hover {background-color: #f1f1f1}
+.dropdown-menu > li:hover {background-color: #f1f1f1}
+
+.hidden {
+    display: none;
+}
+.mortal-overlay {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: 5000;
+    background-color: rgba(0, 0, 0, 0.733);
+    overflow: auto;
+}
+.help-panel {
+    padding: 1em;
+    margin: 5em 10em 10em;
+    background-color: aliceblue;
+    border-radius: 1em;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1em;
+}
+.help-panel > h1 {
+    text-align: center;
+    font-size: 2em;
+}
+.help-panel > h2 {
+    font-size: 1em;
+}
+.help-panel > p {
+    line-height: 1.2em;
+}
+.help-close-btn {
+    float: right;
+}
+@media(max-width: 600px){
+    .help-panel {
+        margin: 5em 2em;
+    }
+}
+.source {
+    background-color: #f1cdcd;
+    font-family: 'Courier New', Courier, monospace;
+}
+.code-block {
+    padding: 1em;
+}

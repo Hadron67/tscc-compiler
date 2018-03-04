@@ -25,22 +25,28 @@ export function printParseTable(
     var tokenCount = g.tokenCount;
     var ntCount = g.nts.length;
     var tab = '    ';
+    function echo(s: string){
+        if(escapes){
+            s = escapeString(s, escapes);
+        }
+        os.writeln(s);
+    }
     doneList.forEach(function(set){
         var i = set.stateIndex;
         var shift = '';
         var reduce = '';
         var gotot = '';
         var defred = '';
-        os.writeln(`state ${i}`);        
+        echo(`state ${i}`);        
         set.forEach(function(item){
-            (showFullItemsets || item.isKernel) && os.writeln(tab + item.toString({ showlah }));
+            (showFullItemsets || item.isKernel) && echo(tab + item.toString({ showlah }));
         });
         if(cela.defred[i] !== -1){
             var def = cela.defred[i];
-            os.writeln(`${tab}default action: reduce with rule ${def} (${g.rules[def].lhs.sym})`);
+            echo(`${tab}default action: reduce with rule ${def} (${g.rules[def].lhs.sym})`);
         }
         else {
-            os.writeln(tab + 'no default action');
+            echo(tab + 'no default action');
         }
         for(var j = 0;j < tokenCount;j++){
             var item = cela.lookupShift(i,j);
@@ -60,10 +66,7 @@ export function printParseTable(
             }
         }
         var line = shift + reduce + gotot;
-        if(escapes){
-            line = escapeString(line, escapes);
-        }
-        os.writeln(line);
+        echo(line);
         os.writeln();
     });
 }
