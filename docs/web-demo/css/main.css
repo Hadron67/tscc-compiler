@@ -241,14 +241,12 @@ a.footer-button {
     flex-basis: auto;
     position: relative;
 }
-
-@media(max-width: 500px){
+@media(max-width: 540px){
     .github-ribbon {
         display: none;
     }
-    /* .titlebar-collapse {
-        display: none;
-    } */
+}
+@media(max-width: 500px){
     .titlebar {
         flex-direction: column;
     }
